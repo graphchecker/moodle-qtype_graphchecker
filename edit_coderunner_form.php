@@ -82,10 +82,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             $this->acelang = $this->question->options->acelang;
         }
         $this->make_error_div($mform);
-        $this->make_questiontype_panel($mform);
-        $this->make_questiontype_help_panel($mform);
-        $this->make_customisation_panel($mform);
-        $this->make_advanced_customisation_panel($mform);
         qtype_coderunner_util::load_ace();
 
         $PAGE->requires->js_call_amd('qtype_coderunner/textareas', 'setupAllTAs');
@@ -106,6 +102,11 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // Defines the bit of the CodeRunner question edit form after the "General"
     // section and before the footer stuff.
     public function definition_inner($mform) {
+        $this->make_questiontype_panel($mform);
+        $this->make_questiontype_help_panel($mform);
+        $this->make_customisation_panel($mform);
+        $this->make_advanced_customisation_panel($mform);
+
         $this->add_sample_answer_field($mform);
         $this->add_preload_answer_field($mform);
         $this->add_globalextra_field($mform);
