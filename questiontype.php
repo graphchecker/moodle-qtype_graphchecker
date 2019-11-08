@@ -275,8 +275,6 @@ class qtype_coderunner extends question_type {
             $DB->delete_records($testcasetable, array('id' => $otc->id));
         }
 
-        $this->notify_prototype_children_if_any($question);
-
         // Lastly, save any datafiles (support files + sample answer files).
         if ($USER->id) {
             // The id check is a hack to deal with phpunit initialisation, when no user exists.
@@ -302,34 +300,6 @@ class qtype_coderunner extends question_type {
     public function clean_question_form($question, $isvalidation=false) {
         $fields = $this->extra_question_fields();
         array_shift($fields); // Discard table name.
-        $customised = isset($question->customise) && $question->customise;
-        $isprototype = $question->prototypetype != 0;
-        if ($customised && $question->prototypetype > 0 && !$isvalidation &&
-                $question->coderunnertype != $question->typename) {
-            // Saving a new user-defined prototype.
-            // Copy new type name into coderunnertype.
-            $question->coderunnertype = $question->typename;
-        }
-
-        // If we're saving a new prototype, make sure its coderunnertype is
-        // unique by appending a suitable suffix. This shouldn't happen via
-        // question edit form, but could be a spurious import or a question
-        // duplication mouse click.
-        if ($question->isnew && $isprototype && !$isvalidation) {
-            $suffix = '';
-            $type = $question->coderunnertype;
-            while (true) {
-                $row = $this->get_prototype($type . $suffix, $question->context);
-                if ($row === null) {
-                    break;
-                }
-                $suffix = $suffix == '' ? '-1' : $suffix - 1;
-                if ($suffix == '-9') {
-                    throw new qtype_coderunner_exception('Too many templates with almost identical names');
-                }
-            }
-            $question->coderunnertype = $type . $suffix;
-        }
 
         // Set all inherited fields to null if the corresponding form
         // field is blank or if it's being saved with customise explicitly
@@ -347,12 +317,6 @@ class qtype_coderunner extends question_type {
         if (trim($question->sandbox) === 'DEFAULT') {
             $question->sandbox = null;
         }
-
-        // Convert penalty regime string to generic form without '%'s and with
-        // ', ' as a separator.
-        $penaltyregime = str_replace('%', '', $question->penaltyregime);
-        $penaltyregime = str_replace(',', ', ', $penaltyregime);
-        $question->penaltyregime = preg_replace('/ *,? +/', ', ', $penaltyregime);
 
         // Copy and clean testcases.
         if (!isset($question->testcases)) {
@@ -611,47 +575,11 @@ class qtype_coderunner extends question_type {
                 'question_coderunner_options',
                 array('questionid' => $questionid));
 
-        /*
-        if ($question->prototypetype != 0) {
-            $typeName = $question->coderunnertype;
-            $nUses = $DB->count_records('question_coderunner_options',
-                    array('prototypetype' => 0,
-                          'coderunnertype' => $typeName));
-            if ($nUses != 0) {
-                // TODO: see if a better solution to this problem can be found.
-                // Throwing an exception is very heavy-handed but the return
-                // value from this function is ignored by the question bank,
-                // and other deletion (e.g. of the question itself) proceeds
-                // regardless, leaving things in an even worse state than if
-                // I didn't even check for an in-use prototype!
-                throw new moodle_exception('Attempting to delete in-use prototype');
-            }
-        }
-
-        */
-
-        $this->notify_prototype_children_if_any($question);
         $success = $DB->delete_records("question_coderunner_tests",
                 array('questionid' => $questionid));
         return $success && parent::delete_question($questionid, $contextid);
     }
 
-
-    // Function to notify any children of a given question (if it is a
-    // prototype) that the parent has been edited (or perhaps deleted).
-    private function notify_prototype_children_if_any($question) {
-        global $DB;
-        if ($question->prototypetype != 0) {
-            $typename = $question->coderunnertype;
-            $children = $DB->get_records('question_coderunner_options',
-                    array('prototypetype' => 0,
-                          'coderunnertype' => $typename)
-            );
-            foreach ($children as $child) {
-                question_bank::notify_question_edited($child->questionid);
-            }
-        }
-    }
 
     /******************** EDIT FORM OPTIONS ************************/
 

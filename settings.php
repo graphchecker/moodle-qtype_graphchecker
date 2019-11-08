@@ -36,13 +36,6 @@ $settings->add(new admin_setting_heading('supportscripts',
 $settings->add(new admin_setting_heading('codeRunnersettings',
         get_string('coderunnersettings', 'qtype_coderunner'), ''));
 
-$settings->add(new admin_setting_configtext(
-        "qtype_coderunner/default_penalty_regime",
-        get_string('default_penalty_regime', 'qtype_coderunner'),
-        get_string('default_penalty_regime_desc', 'qtype_coderunner'),
-        '10, 20, ...'
-        ));
-
 $sandboxes = qtype_coderunner_sandbox::available_sandboxes();
 foreach ($sandboxes as $sandbox => $classname) {
     $settings->add(new admin_setting_configcheckbox(

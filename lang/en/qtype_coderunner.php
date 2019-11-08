@@ -75,7 +75,6 @@ $string['badjsonfunc'] = 'Unknown JSON embedded func ({$a->func})';
 $string['badjsonorfraction'] = 'Bad JSON or missing fraction in combinator grader output. Output was: {$a->output}';
 $string['badmemlimit'] = 'Memory limit must either be left blank or must be a non-negative integer';
 $string['bad_new_prototype_name'] = 'Illegal name for new prototype: already in use';
-$string['badpenalties'] = 'Penalty regime must be a comma separated list of numbers in the range [0, 100]';
 $string['badquestion'] = 'Error in question';
 $string['badrandomintarg'] = 'Bad argument to JSON @randomint function';
 $string['badrandompickarg'] = 'Bad argument to JSON @randompic function';
@@ -120,9 +119,6 @@ $string['customisation'] = 'Customisation';
 
 $string['datafiles'] = 'Support files';
 $string['datafiles_help'] = 'Any files uploaded here will be added to the working directory when the expanded template program is executed. This allows large data or support files to be conveniently added.';
-$string['default_penalty_regime'] = 'Default penalty regime';
-$string['default_penalty_regime_desc'] = 'The default penalty regime to apply to new questions, consisting of a comma separated list of penalty percentages, optionally ending in ", ..." to signify an on-going arithmetic progression.';
-
 
 $string['display'] = 'Display';
 $string['downloadquizattempts'] = 'Download quiz attempts';
@@ -133,7 +129,6 @@ $string['downloadquizattemptshelp'] = 'Click the appropriate course and/or downl
         are the numbers of submissions.';
 $string['editingcoderunner'] = 'Editing a CodeRunner Question';
 $string['empty_new_prototype_name'] = 'New question type name cannot be empty';
-$string['emptypenaltyregime'] = 'Penalty regime must be defined (since version 3.1)';
 $string['enable'] = 'Enable';
 $string['enablecombinator'] = 'Enable combinator';
 $string['enable_diff_check'] = 'Enable \'Show differences\' button';
@@ -327,20 +322,7 @@ by summing the marks for all the test cases that pass
 and expressing this as a fraction of the maximum possible mark.
 The per-test-case marks can be specified only if the all-or-nothing
 checkbox is unchecked. If using a template grader that awards
-part marks to test cases, \'All-or-nothing\' should generally be unchecked.
-
-The mandatory penalty regime is a comma-separated list of penalties (each a percent)
-to apply to successive submissions. These are absolute, not cumulative. As a
-special case the last penalty can be \'...\' to mean "extend the previous
-two penalties as an arithmetic progression up to 100". For example,
-<tt>0,5,10,30,...</tt> is equivalent to <tt>0,5,10,30,50,70,90,100</tt>.
-If there are more submissions than defined penalties, the last value is used.
-Spaces can be used in lieu of commas as a separator.
-
-The default penalty regime can be set site-wide by a system administrator using
-Site administration > Plugins > Question types > CodeRunner.
-
-Set the penalty regime to \'0\' for zero penalties on all submissions.';
+part marks to test cases, \'All-or-nothing\' should generally be unchecked.';
 $string['maxfilesize'] = 'Max allowed file size (bytes)';
 $string['maxfilesize_help'] = 'Select the maximum file upload size (bytes). Allowing large file uploads with large classes can impact performance and and disk space on both Moodle and Jobe servers.';
 $string['memorylimit'] = 'MemLimit (MB)';
@@ -368,8 +350,6 @@ $string['ordering'] = 'Ordering';
 $string['overallresult'] = 'Overall result';
 
 $string['passes'] = 'passes';
-$string['penaltyregime'] = '(penalty regime: {$a} %)';
-$string['penaltyregimelabel'] = 'Penalty regime:';
 
 $string['pass'] = 'Pass';
 $string['pluginname'] = 'CodeRunner';
@@ -832,8 +812,6 @@ the \'Customise\' checkbox.
 
 If the template-debugging checkbox is clicked, the program generated
 for each testcase will be displayed in the output.';
-$string['questiontypedetails'] = 'Question type details';
-
 $string['questiontype_required'] = 'You must select the type of question';
 $string['qWrongBehaviour'] = 'Please use Adaptive Behaviour for all CodeRunner questions, or there can be massive performance hits. For example, all questions on a page will need to be regraded when the page is re-displayed.';
 
@@ -1107,7 +1085,7 @@ the Twig-expanded template parameters as an environment. You will usually
 need to turn on TwigAll if using randomisation within the template parameters';
 $string['twigerror'] = 'Twig error {$a}';
 $string['twigerrorintest'] = 'Twig error when processing this test {$a}';
-$string['type_header'] = 'CodeRunner question type';
+$string['type_header'] = 'Graph settings';
 $string['typename'] = 'Question type';
 $string['typerequired'] = 'Please select the type of question (language, format, etc)';
 
