@@ -96,10 +96,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $responsefieldid = 'id_' . $responsefieldname;
         $answerprompt = html_writer::tag('label',
                 get_string('answerprompt', 'qtype_coderunner'), array('class' => 'answerprompt', 'for' => $responsefieldid));
-        $penaltystring = html_writer::tag('span',
-                get_string('penaltyregime', 'qtype_coderunner', $penalties),
-                array('class' => 'penaltyregime'));
-        $qtext .= $answerprompt . $penaltystring;
+        $qtext .= $answerprompt;
 
         if (empty($question->acelang)) {
             $currentlanguage = $question->language;
