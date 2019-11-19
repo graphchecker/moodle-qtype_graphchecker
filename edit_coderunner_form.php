@@ -104,36 +104,9 @@ class qtype_coderunner_edit_form extends question_edit_form {
     public function definition_inner($mform) {
         $this->make_questiontype_panel($mform);
 
-        $this->add_sample_answer_field($mform);
         $this->add_preload_answer_field($mform);
-        $this->add_globalextra_field($mform);
-
-        if (isset($this->question->options->testcases)) {
-            $numtestcases = count($this->question->options->testcases);
-        } else {
-            $numtestcases = self::NUM_TESTCASES_START;
-        }
-
-        // Confusion alert! A call to $mform->setDefault("mark[$i]", '1.0') looks
-        // plausible and works to set the empty-form default, but it then
-        // overrides (rather than is overridden by) the actual value. The same
-        // thing happens with $repeatedoptions['mark']['default'] = 1.000 in
-        // get_per_testcase_fields (q.v.).
-        // I don't understand this (but see 'Evil hack alert' in the baseclass).
-        // MY EVIL HACK ALERT (OLD: probably out of date ) -- setting just $numTestcases default values
-        // fails when more test cases are added on the fly. So I've set up
-        // enough defaults to handle 5 successive adding of more test cases.
-        // I believe this is a bug in the underlying Moodle question type, not
-        // mine, but ... how to be sure?
-        $mform->setDefault('mark', array_fill(0, $numtestcases + 5 * self::NUM_TESTCASES_ADD, 1.0));
-        $ordering = array();
-        for ($i = 0; $i < $numtestcases + 5 * self::NUM_TESTCASES_ADD; $i++) {
-            $ordering[] = 10 * $i;
-        }
-        $mform->setDefault('ordering', $ordering);
-
-        $this->add_per_testcase_fields($mform, get_string('testcase', 'qtype_coderunner', "{no}"),
-                $numtestcases);
+        $this->add_sample_answer_field($mform);
+        $this->add_tests_field($mform);
 
         // Insert the attachment section to allow file uploads.
         $qtype = question_bank::get_qtype('coderunner');
@@ -222,6 +195,25 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addHelpButton('answer', 'answer', 'qtype_coderunner');
     }
 
+
+    /**
+     * Add a field for the test cases.
+     * @param object $mform the form being built
+     */
+    protected function add_tests_field($mform) {
+        global $CFG;
+        $mform->addElement('header', 'testshdr',
+                    get_string('tests', 'qtype_coderunner'), '');
+        $mform->setExpanded('testshdr', 1);
+        $mform->addElement('textarea', 'tests',
+            get_string('tests', 'qtype_coderunner'),
+            array(
+                  'class' => 'edit_code'
+            )
+        );
+        $mform->addHelpButton('tests', 'tests', 'qtype_coderunner');
+    }
+
     /**
      * Add a field for a text to be preloaded into the answer box.
      * @param object $mform the form being built
@@ -242,123 +234,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_coderunner');
     }
 
-    /**
-     * Add a field to contain extra text for use by template authors, global
-     * to all tests.
-     * @param object $mform the form being built
-     */
-    protected function add_globalextra_field($mform) {
-        $mform->addElement('header', 'globalextrahdr',
-                    get_string('globalextra', 'qtype_coderunner'), '');
-        $expanded = !empty($this->question->options->globalextra);
-        $mform->setExpanded('globalextrahdr', $expanded);
-        $attributes = array(
-            'rows' => 5,
-            'class' => 'globalextra edit_code');
-        $mform->addElement('textarea', 'globalextra',
-                get_string('globalextra', 'qtype_coderunner'),
-                $attributes);
-        $mform->addHelpButton('globalextra', 'globalextra', 'qtype_coderunner');
-    }
-
-    /*
-     * Add a set of form fields, obtained from get_per_test_fields, to the form,
-     * one for each existing testcase, with some blanks for some new ones
-     * This overrides the base-case version because we're dealing with test
-     * cases, not answers.
-     * @param object $mform the form being built.
-     * @param $label the label to use for each option.
-     * @param $gradeoptions the possible grades for each answer.
-     * @param $minoptions the minimum number of testcase blanks to display.
-     *      Default QUESTION_NUMANS_START.
-     * @param $addoptions the number of testcase blanks to add. Default QUESTION_NUMANS_ADD.
-     */
-    protected function add_per_testcase_fields($mform, $label, $numtestcases) {
-        $mform->addElement('header', 'testcasehdr',
-                    get_string('testcases', 'qtype_coderunner'), '');
-        $mform->setExpanded('testcasehdr', 1);
-        $repeatedoptions = array();
-        $repeated = $this->get_per_testcase_fields($mform, $label, $repeatedoptions);
-        $this->repeat_elements($repeated, $numtestcases, $repeatedoptions,
-                'numtestcases', 'addanswers', QUESTION_NUMANS_ADD,
-                $this->get_more_choices_string(), true);
-        $n = $numtestcases + QUESTION_NUMANS_ADD;
-        for ($i = 0; $i < $n; $i++) {
-            $mform->disabledIf("mark[$i]", 'allornothing', 'checked');
-        }
-    }
-
-
-    /*
-     *  A rewritten version of get_per_answer_fields specific to test cases.
-     */
-    public function get_per_testcase_fields($mform, $label, &$repeatedoptions) {
-        $repeated = array();
-        $repeated[] = $mform->createElement('textarea', 'testcode',
-                $label,
-                array('rows' => 3, 'class' => 'testcaseexpression edit_code'));
-        $repeated[] = $mform->createElement('textarea', 'stdin',
-                get_string('stdin', 'qtype_coderunner'),
-                array('rows' => 3, 'class' => 'testcasestdin edit_code'));
-        $repeated[] = $mform->createElement('textarea', 'expected',
-                get_string('expected', 'qtype_coderunner'),
-                array('rows' => 3, 'class' => 'testcaseresult edit_code'));
-
-        $repeated[] = $mform->createElement('textarea', 'extra',
-                get_string('extra', 'qtype_coderunner'),
-                array('rows' => 3, 'class' => 'testcaseresult edit_code'));
-        $group[] = $mform->createElement('checkbox', 'useasexample', null,
-                get_string('useasexample', 'qtype_coderunner'));
-
-        $options = array();
-        foreach ($this->displayoptions() as $opt) {
-            $options[$opt] = get_string($opt, 'qtype_coderunner');
-        }
-
-        $group[] = $mform->createElement('select', 'display',
-                        get_string('display', 'qtype_coderunner'), $options);
-        $group[] = $mform->createElement('checkbox', 'hiderestiffail', null,
-                        get_string('hiderestiffail', 'qtype_coderunner'));
-        $group[] = $mform->createElement('text', 'mark',
-                get_string('mark', 'qtype_coderunner'),
-                array('size' => 5, 'class' => 'testcasemark'));
-        $group[] = $mform->createElement('text', 'ordering',
-                get_string('ordering', 'qtype_coderunner'),
-                array('size' => 3, 'class' => 'testcaseordering'));
-
-        $repeated[] = $mform->createElement('group', 'testcasecontrols',
-                        get_string('testcasecontrols', 'qtype_coderunner'),
-                        $group, null, false);
-
-        $typevalues = array(
-            constants::TESTTYPE_NORMAL   => get_string('testtype_normal',   'qtype_coderunner'),
-            constants::TESTTYPE_PRECHECK => get_string('testtype_precheck', 'qtype_coderunner'),
-            constants::TESTTYPE_BOTH     => get_string('testtype_both',     'qtype_coderunner'),
-        );
-
-        $repeated[] = $mform->createElement('select', 'testtype',
-                get_string('testtype', 'qtype_coderunner'),
-                $typevalues,
-                array('class' => 'testtype'));
-
-        $repeatedoptions['expected']['type'] = PARAM_RAW;
-        $repeatedoptions['testcode']['type'] = PARAM_RAW;
-        $repeatedoptions['stdin']['type'] = PARAM_RAW;
-        $repeatedoptions['extra']['type'] = PARAM_RAW;
-        $repeatedoptions['mark']['type'] = PARAM_FLOAT;
-        $repeatedoptions['ordering']['type'] = PARAM_INT;
-        $repeatedoptions['testtype']['type'] = PARAM_RAW;
-
-        foreach (array('testcode', 'stdin', 'expected', 'extra', 'testcasecontrols', 'testtype') as $field) {
-            $repeatedoptions[$field]['helpbutton'] = array($field, 'qtype_coderunner');
-        }
-
-        // Here I expected to be able to use: $repeatedoptions['mark']['default'] = 1.000
-        // but it doesn't work. See "Confusion alert" in definition_inner.
-
-        return $repeated;
-    }
-
 
     // A list of the allowed values of the DB 'display' field for each testcase.
     protected function displayoptions() {
@@ -373,14 +248,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
 
         $question->missingprototypemessage = ''; // The optimistic assumption
         if (isset($question->options->testcases)) { // Reloading a saved question?
-
-            // Firstly check if we're editing a question with a missing prototype
-            // Set missing_prototype if so.
-            $q = $this->make_question_from_form_data($question);
-            if ($q->prototype === null) {
-                $question->missingprototypemessage = get_string(
-                        'missingprototype', 'qtype_coderunner', array('crtype' => $question->coderunnertype));
-            }
 
             // Next flatten all the question->options down into the question itself.
             $question->testcode = array();
@@ -402,20 +269,10 @@ class qtype_coderunner_edit_form extends question_edit_form {
                 $question->mark[] = sprintf("%.3f", $tc->mark);
             }
 
-            // The customise field isn't listed as an extra-question-field so also
-            // needs to be copied down from the options here.
-            $question->customise = $question->options->customise;
-
-            // Save the prototypetype so can see if it changed on post-back.
-            $question->saved_prototype_type = $question->prototypetype;
             $question->courseid = $COURSE->id;
 
             // Load the type-name if this is a prototype, else make it blank.
-            if ($question->prototypetype != 0) {
-                $question->typename = $question->coderunnertype;
-            } else {
-                $question->typename = '';
-            }
+            $question->typename = '';
 
             // Convert raw newline chars in testsplitterre into 2-char form
             // so they can be edited in a one-line entry field.
@@ -505,8 +362,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
 
     // Add to the supplied $mform the panel "Coderunner question type".
     private function make_questiontype_panel($mform) {
-        list($languages, $types) = $this->get_languages_and_types();
-
         $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_coderunner'));
         // Insert the (possible) missing prototype message as a hidden field. JavaScript
         // will be used to show it if non-empty.
@@ -515,6 +370,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->setType('missingprototypemessage', PARAM_RAW);
 
         // The Question Type controls (a group with just a single member).
+        $types = array('Undirected graph', 'Directed graph');  // TODO
         $typeselectorelements = array();
         $expandedtypes = array_merge(array('Undefined' => 'Undefined'), $types);
         $typeselectorelements[] = $mform->createElement('select', 'coderunnertype',
@@ -610,34 +466,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
      */
     private function num_examples($data) {
         return isset($data['useasexample']) ? count($data['useasexample']) : 0;
-    }
-
-    private function get_languages_and_types() {
-        // Return two arrays (language => language_upper_case) and (type => subtype) of
-        // all the coderunner question types available in the current course
-        // context.
-        // The subtype is the suffix of the type in the database,
-        // e.g. for java_method it is 'method'. The language is the bit before
-        // the underscore, and language_upper_case is a capitalised version,
-        // e.g. Java for java. For question types without a
-        // subtype the word 'Default' is used.
-
-        $records = qtype_coderunner::get_all_prototypes();
-        $types = array();
-        foreach ($records as $row) {
-            if (($pos = strpos($row->coderunnertype, '_')) !== false) {
-                $subtype = substr($row->coderunnertype, $pos + 1);
-                $language = substr($row->coderunnertype, 0, $pos);
-            } else {
-                $subtype = 'Default';
-                $language = $row->coderunnertype;
-            }
-            $types[$row->coderunnertype] = $row->coderunnertype;
-            $languages[$language] = ucwords($language);
-        }
-        asort($types);
-        asort($languages);
-        return array($languages, $types);
     }
 
     // Validate the test cases.
@@ -800,8 +628,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $contextid = $DB->get_field('question_categories', 'contextid', array('id' => $category));
         $question->contextid = $contextid;
         $context = context::instance_by_id($contextid, IGNORE_MISSING);
-        $question->prototype = $qtype->get_prototype($questiontype, $context);
-        $qtype->set_inherited_fields($question, $question->prototype);
         return $question;
     }
 

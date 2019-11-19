@@ -48,7 +48,7 @@ $string['answertooshort'] = 'Answer too short. Must be at least {$a} characters.
 $string['atleastonetest'] = 'You must provide at least one test case for this question.';
 $string['ace-language'] = 'Ace language';
 $string['advanced_customisation'] = 'Advanced customisation';
-$string['answer'] = 'Answer';
+$string['answer'] = 'Sample answer';
 $string['answerbox_group'] = 'Answer box';
 $string['answerboxlines'] = 'Rows';
 $string['answerbox_group_help'] = 'Set the number of rows to allocate for the answer box. This sets the minimum height of the User Interface element (e.g. Ace) that controls the answer box. The width is set to fit the window. If the answer overflows the box vertically or horizontally, scrollbars will appear.';
@@ -173,8 +173,6 @@ $string['filloutoneanswer'] = 'You must enter source code that satisfies the spe
 $string['firstfailure'] = 'First failing test case: {$a}';
 $string['forexample'] = 'For example';
 
-$string['globalextra'] = 'Global extra';
-$string['globalextra_help'] = 'A field of text for general-purpose use by template authors, like the extra field of each test case, but global to all tests. Available to the template author as {{ QUESTION.globalextra }}.';
 $string['graphhelp'] = '- Double click at a blank space to create a new node/state.
 - Double click an existing node to "mark" it e.g. as an accept state for Finite State Machines
   (FSMs). Double click again to unmark it.
@@ -1056,12 +1054,14 @@ be hidden from the student, regardless of the setting of the \'Display\' combobo
 
 \'Ordering\' can be used to change the order of testcases when the question is
 saved: testcases are ordered by this field.';
-$string['testcases'] = 'Test cases';
+$string['testcases'] = 'Tests';
 $string['testcode'] = 'Test code';
 $string['testcolhdr'] = 'Test';
 $string['testingquestion'] = 'Testing question {$a}';
 $string['testsplitterre'] = 'Test splitter (regex)';
 $string['testcode_help'] = 'The code for the test, seen by the template as {{TEST.testcode}}';
+$string['tests'] = 'Tests';
+$string['tests_help'] = 'Test cases used to check if the student\'s answer is correct.';
 $string['testtype'] = 'Precheck test type';
 $string['testtype_help'] = 'If Prechecking is enabled and set to \'selected\', this setting controls whether
 the test is used only with a normal run, only with a precheck run or in both runs.

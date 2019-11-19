@@ -31,8 +31,7 @@ define(['jquery', 'qtype_coderunner/userinterfacewrapper'], function($, ui) {
     // text area from PHP by setting its data-params and
     // data-lang attributes.
     function initEditForm(strings) {
-        var globalextra = $('#id_globalextra'),
-            typeCombo = $('#id_coderunnertype'),
+        var typeCombo = $('#id_coderunnertype'),
             preloadHdr = $('#id_answerpreloadhdr'),
             courseId = $('input[name="courseid"]').prop('value'),
             precheck = $('select#id_precheck');
@@ -49,7 +48,6 @@ define(['jquery', 'qtype_coderunner/userinterfacewrapper'], function($, ui) {
                 params = {},
                 uiWrapper;
 
-            ta.attr('data-globalextra', globalextra.val());
             try {
                 params = JSON.parse(paramsJson);
             } catch(err) {}
