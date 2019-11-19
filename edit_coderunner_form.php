@@ -246,7 +246,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
         // standard stuff all loaded.
         global $COURSE;
 
-        $question->missingprototypemessage = ''; // The optimistic assumption
         if (isset($question->options->testcases)) { // Reloading a saved question?
 
             // Next flatten all the question->options down into the question itself.
@@ -363,11 +362,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // Add to the supplied $mform the panel "Coderunner question type".
     private function make_questiontype_panel($mform) {
         $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_coderunner'));
-        // Insert the (possible) missing prototype message as a hidden field. JavaScript
-        // will be used to show it if non-empty.
-        $mform->addElement('hidden', 'missingprototypemessage', '',
-                array('id' => 'id_missing_prototype', 'class' => 'missingprototypeerror'));
-        $mform->setType('missingprototypemessage', PARAM_RAW);
 
         // The Question Type controls (a group with just a single member).
         $types = array('Undirected graph', 'Directed graph');  // TODO
