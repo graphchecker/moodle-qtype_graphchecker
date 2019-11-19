@@ -341,6 +341,18 @@ function xmldb_qtype_coderunner_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019111800, 'qtype', 'coderunner');
     }
 
+    if ($oldversion < 2019111900) {
+
+        // Conditionally drop the tests table.
+        if ($dbman->table_exists('question_coderunner_tests')) {
+            $table = new xmldb_table('question_coderunner_tests');
+            $dbman->drop_table($table);
+        }
+
+        // Coderunner savepoint reached.
+        upgrade_plugin_savepoint(true, 2019111900, 'qtype', 'coderunner');
+    }
+
     require_once(__DIR__ . '/upgradelib.php');
     update_question_types();
 

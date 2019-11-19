@@ -57,24 +57,5 @@
         <INDEX NAME="prototypetype" UNIQUE="false" FIELDS="prototypetype"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="question_coderunner_tests" COMMENT="Contains tests (usually called 'testcases') to perform on a student's code answer; should output the given output. A test case is regarded as an extension of an 'answer' in Moodle parlance.">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key referencing question to which this test case relates"/>
-        <FIELD NAME="testtype" TYPE="int" LENGTH="8" NOTNULL="false" SEQUENCE="false" COMMENT="How to treat this test when precheck='selected'. 0 = Normal (i.e. not included in precheck), 1 = Precheck-only, 2 = Both"/>
-        <FIELD NAME="testcode" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The code for this test, to be combined with the student's code to construct a test program"/>
-        <FIELD NAME="stdin" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The standard input to the program during the test. Empty for most questions"/>
-        <FIELD NAME="expected" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The expected output after running the student's code and executing the shell input"/>
-        <FIELD NAME="extra" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="An extra per-test-case field for templates that need more parameters than just testcode, stdin and expected."/>
-        <FIELD NAME="useasexample" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="True if this testcase is to be displayed in the spec as an example of how the function works."/>
-        <FIELD NAME="display" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="SHOW" SEQUENCE="false" COMMENT="Controls display of this testcase to the students. One of SHOW, HIDE, HIDE_IF_FAIL, HIDE_IF_SUCCEED"/>
-        <FIELD NAME="hiderestiffail" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If this test fails, hide all subsequent tests regardless of their display settings"/>
-        <FIELD NAME="mark" TYPE="number" LENGTH="8" NOTNULL="true" DEFAULT="1.0" SEQUENCE="false" DECIMALS="3" COMMENT="Mark for this testcase (only if not an all_or_nothing question)"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
-      </KEYS>
-    </TABLE>
   </TABLES>
 </XMLDB>

@@ -50,36 +50,14 @@ require_once($CFG->dirroot . '/lib/questionlib.php');
 
 /**
  * qtype_coderunner extends the base question_type to coderunner-specific functionality.
- * A coderunner question requires an additional DB table
- * that contains the definitions for the testcases associated with a programming code
- * question. There are an arbitrary number of these, so they can't be handled
- * by adding columns to the standard question table.
  */
 class qtype_coderunner extends question_type {
 
-    /**
-     * Whether this question type can perform a frequency analysis of student
-     * responses.
-     *
-     * If this method returns true, you must implement the get_possible_responses
-     * method, and the question_definition class must implement the
-     * classify_response method.
-     *
-     * @return bool whether this report can analyse all the student reponses
-     * for things like the quiz statistics report.
-     */
     public function can_analyse_responses() {
         return false;
     }
 
-    /**
-     * If your question type has a table that extends the question table, and
-     * you want the base class to automatically save, backup and restore the extra fields,
-     * override this method to return an array where the first element is the table name,
-     * and the subsequent entries are the column names (apart from id and questionid).
-     *
-     * @return mixed array as above, or null to tell the base class to do nothing.
-     */
+
     public function extra_question_fields() {
         return array('question_coderunner_options',
             'coderunnertype',
@@ -100,108 +78,9 @@ class qtype_coderunner extends question_type {
         );
     }
 
-    /** A list of the extra question fields that are NOT inheritable from
-     *  the prototype and so are not hidden in the usual authoring interface
-     *  as 'customise' fields.
-     * @return array of strings
-     */
-    public static function noninherited_fields() {
-        return array(
-            'coderunnertype',
-            'prototypetype',
-            'showsource',
-            'answerpreload',
-            'globalextra',
-            'answer',
-            'validateonsave',
-            'templateparams',
-            'attachments',
-            'attachmentsrequired',
-            'maxfilesize',
-            'filenamesregex',
-            'filenamesexplain',
-            'displayfeedback'
-            );
-    }
 
     public function response_file_areas() {
         return array('attachments');
-    }
-
-    /**
-     * If you use extra_question_fields, overload this function to return question id field name
-     * in case you table use another name for this column.
-     * [Don't really need this as we're returning the default value, but I
-     * prefer to be explicit.]
-     */
-    public function questionid_column_name() {
-        return 'questionid';
-    }
-
-
-    /**
-     * Abstract function implemented by each question type. It runs all the code
-     * required to set up and save a question of any type for testing purposes.
-     * Alternate DB table prefix may be used to facilitate data deletion.
-     */
-    public function generate_test($name, $courseid=null) {
-        // Closer inspection shows that this method isn't actually implemented
-        // by even the standard question types and wouldn't be called for any
-        // non-standard ones even if implemented. I'm leaving the stub in, in
-        // case it's ever needed, but have set it to throw an exception, and
-        // I've removed the actual test code.
-        throw new coding_exception('Unexpected call to generate_test. Read code for details.');
-    }
-
-
-    // Function to copy testcases from form fields into question->testcases.
-    // If $validation true, we're just validating and need to add an extra
-    // rownum attribute to the testcase to allow failed test case results
-    // to be copied back to the form with a mouse click.
-    private function copy_testcases_from_form(&$question, $validation) {
-        $testcases = array();
-        if (empty($question->testcode)) {
-            $numtests = 0;  // Must be a combinator template grader with no tests.
-        } else {
-            $numtests = count($question->testcode);
-            assert(count($question->expected) == $numtests);
-        }
-        for ($i = 0; $i < $numtests; $i++) {
-            $testcode = $this->filter_crs($question->testcode[$i]);
-            $stdin = $this->filter_crs($question->stdin[$i]);
-            $expected = $this->filter_crs($question->expected[$i]);
-            $extra = $this->filter_crs($question->extra[$i]);
-            if (trim($testcode) === '' && trim($stdin) === '' &&
-                    trim($expected) === '' && trim($extra) === '') {
-                continue; // Ignore testcases with only whitespace in them.
-            }
-            $testcase = new stdClass;
-            if ($validation) {
-                $testcase->rownum = $i;  // The row number in the edit form - relevant only when validating.
-            }
-            $testcase->questionid = isset($question->id) ? $question->id : 0;
-            $testcase->testtype = isset($question->testtype[$i]) ? $question->testtype[$i] : 0;
-            $testcase->testcode = $testcode;
-            $testcase->stdin = $stdin;
-            $testcase->expected = $expected;
-            $testcase->extra = $extra;
-            $testcase->useasexample = isset($question->useasexample[$i]);
-            $testcase->display = $question->display[$i];
-            $testcase->hiderestiffail = isset($question->hiderestiffail[$i]);
-            $testcase->mark = trim($question->mark[$i]) == '' ? 1.0 : floatval($question->mark[$i]);
-            $testcase->ordering = intval($question->ordering[$i]);
-            $testcases[] = $testcase;
-        }
-
-        usort($testcases, function ($tc1, $tc2) {
-            if ($tc1->ordering === $tc2->ordering) {
-                return 0;
-            } else {
-                return $tc1->ordering < $tc2->ordering ? -1 : 1;
-            }
-        });  // Sort by ordering field.
-
-        $question->testcases = $testcases;
     }
 
 
@@ -221,33 +100,11 @@ class qtype_coderunner extends question_type {
         global $DB, $USER;
 
         // Tidy the form, handle inheritance from prototype.
-        $this->clean_question_form($question);
+        //$this->clean_question_form($question);
 
         parent::save_question_options($question);
 
-        // Write test cases to DB, reusing old ones where possible.
-        $testcasetable = "question_coderunner_tests";
-        if (!$oldtestcases = $DB->get_records($testcasetable,
-                array('questionid' => $question->id), 'id ASC')) {
-            $oldtestcases = array();
-        }
-
-        foreach ($question->testcases as $tc) {
-            if (($oldtestcase = array_shift($oldtestcases))) { // Existing testcase, so reuse it.
-                $tc->id = $oldtestcase->id;
-                $DB->update_record($testcasetable, $tc);
-            } else {
-                // A new testcase.
-                $tc->questionid = $question->id;
-                $id = $DB->insert_record($testcasetable, $tc);
-            }
-        }
-
-        // Delete old testcase records.
-        foreach ($oldtestcases as $otc) {
-            $DB->delete_records($testcasetable, array('id' => $otc->id));
-        }
-
+        // TODO [ws] the following is unnecessary I think?
         // Lastly, save any datafiles (support files + sample answer files).
         if ($USER->id) {
             // The id check is a hack to deal with phpunit initialisation, when no user exists.
@@ -264,36 +121,7 @@ class qtype_coderunner extends question_type {
     }
 
 
-    /**
-     * Clean up the "question" (which is actually the question editing form)
-     * ready for saving or for testing before saving ($isvalidation == true).
-     * @param $question the question editing form
-     * @param $isvalidation true if we're cleaning for validation rather than saving.
-     */
-    public function clean_question_form($question, $isvalidation=false) {
-        $fields = $this->extra_question_fields();
-        array_shift($fields); // Discard table name.
-
-        // Set all inherited fields to null if the corresponding form
-        // field is blank or if it's being saved with customise explicitly
-        // turned off and it's not a prototype.
-        $questioninherits = isset($question->customise) && !$question->customise && !$isprototype;
-        foreach ($fields as $field) {
-            $isinherited = !in_array($field, $this->noninherited_fields());
-            $isblankstring = !isset($question->$field) ||
-               (is_string($question->$field) && trim($question->$field) === '');
-            if ($isinherited && ($isblankstring || $questioninherits)) {
-                $question->$field = null;
-            }
-        }
-
-        // Copy and clean testcases.
-        if (!isset($question->testcases)) {
-            $this->copy_testcases_from_form($question, $isvalidation);
-        }
-    }
-
-
+    // TODO [ws] is this needed?
     /**
      * Move all the files belonging to this question from one context to another.
      * Override superclass implementation to handle the extra data files
@@ -308,6 +136,7 @@ class qtype_coderunner extends question_type {
         $fs->move_area_files_to_new_context($oldcontextid,
                 $newcontextid, 'qtype_coderunner', 'datafile', $questionid);
     }
+
 
     // Load the question options (all the question extension fields and
     // testcases) from the database into the question.
@@ -326,14 +155,6 @@ class qtype_coderunner extends question_type {
         $qtype = $options->coderunnertype;
         $context = $this->question_context($question);
         $options->mergedtemplateparams = $options->templateparams;
-
-        // Add in any testcases.
-        if ($testcases = $DB->get_records('question_coderunner_tests',
-                array('questionid' => $question->id), 'id ASC')) {
-            $options->testcases = array_values($testcases); // Reindex tests from zero
-        } else {
-            $options->testcases = array();
-        }
 
         return true;
     }
@@ -366,47 +187,6 @@ class qtype_coderunner extends question_type {
                        AND {question}.category = {question_categories}.id";
             return $DB->get_field_sql($sql, array($questionid), MUST_EXIST);
         }
-    }
-
-    // Initialise the question_definition object from the questiondata
-    // read from the database (probably a cached version of the question
-    // object from the database enhanced by a call to get_question_options).
-    // Only fields not explicitly listed in extra_question_fields (i.e. those
-    // fields not from the question_coderunner_options table) need handling here.
-    // All we do is flatten the question->options fields down into the
-    // question itself, which will be all those fields of question->options
-    // not already flattened down by the parent implementation.
-    protected function initialise_question_instance(question_definition $question, $questiondata) {
-        parent::initialise_question_instance($question, $questiondata);
-        foreach ($questiondata->options as $field => $value) {
-            if (!isset($question->$field)) {
-                $question->$field = $value;
-            }
-        }
-    }
-
-
-    // Override default question deletion code to delete all the question's
-    // testcases.
-    // Includes a check if the question being deleted is a prototype. Currently
-    // I don't have a good way to check if the prototype being deleted has
-    // "children" in the current context. It's over to question authors to make
-    // sure they don't delete in-use prototypes.
-    // All I do when a prototype is deleted is invalidate cached child questions
-    // so that at least their subsequent behaviour is consistent with the
-    // missing prototype. This can occasionally be helpful, e.g. if a duplicate
-    // prototype has somehow been created, and is then deleted again, the
-    // child question will now function correctly.
-    public function delete_question($questionid, $contextid) {
-        global $DB;
-
-        $question = $DB->get_record(
-                'question_coderunner_options',
-                array('questionid' => $questionid));
-
-        $success = $DB->delete_records("question_coderunner_tests",
-                array('questionid' => $questionid));
-        return $success && parent::delete_question($questionid, $contextid);
     }
 
 
