@@ -44,7 +44,7 @@ class qtype_coderunner_jobrunner {
     // $answerlanguage will be the empty string except for multilanguage questions,
     // when it is the language selected in the language drop-down menu.
     // Returns a TestingOutcome object.
-    public function run_tests($question, $code, $testcases, $isprecheck, $answerlanguage) {
+    public function run_tests($question, $code, $testcases, $isprecheck) {
         global $CFG;
 
         $this->question = $question;
@@ -64,7 +64,7 @@ class qtype_coderunner_jobrunner {
         // TODO!
         //$outcome = $this->run_combinator($isprecheck);
         // TODO debug:
-        $outcome = new qtype_coderuner_testing_outcome($this->maximum_possible_mark(), count($this->testcases), $isprecheck);
+        $outcome = new qtype_coderunner_testing_outcome($this->maximum_possible_mark(), count($this->testcases), $isprecheck);
         // TODO!
 
         $this->sandbox->close();

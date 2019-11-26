@@ -171,7 +171,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
             $outcome = new qtype_coderunner_testing_outcome(0, 0, false);
             $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_UNSERIALIZE_FAILED);
         }
-        $resultsclass = $this->results_class($outcome, $q->allornothing);
+        $resultsclass = $this->results_class($outcome);
         $isprecheck = $outcome->is_precheck($qa);
         if ($isprecheck) {
             $resultsclass .= ' precheck';
@@ -331,16 +331,8 @@ class qtype_coderunner_renderer extends qtype_renderer {
                         "&nbsp;" . $this->feedback_image(1.0);
             }
         } else {
-            if ($question->allornothing && !$isprecheck) {
+            if (!$isprecheck) {
                 $lines[] = get_string('noerrorsallowed', 'qtype_coderunner');
-            }
-
-            // Provide a show differences button if answer wrong and equality grader used.
-            if ((empty($question->grader) ||
-                 $question->grader == 'EqualityGrader' ||
-                 $question->grader == 'NearEqualityGrader') &&
-                    !$onlyhiddenfailed) {
-                $lines[] = $this->diff_button($qa);
             }
         }
 
@@ -357,10 +349,6 @@ class qtype_coderunner_renderer extends qtype_renderer {
         if ($outcome->all_correct() && !$isprecheck) {
             $lines[] = get_string('allok', 'qtype_coderunner') .
                     "&nbsp;" . $this->feedback_image(1.0);
-        }
-
-        if ($outcome->show_differences()) {
-             $lines[] = $this->diff_button($qa);
         }
 
         return qtype_coderunner_util::make_html_para($lines);
@@ -529,44 +517,15 @@ class qtype_coderunner_renderer extends qtype_renderer {
      * @param qtype_coderunner_testing_outcome $outcome
      * @return string the CSS class for the given testing outcome
      */
-    protected function results_class($outcome, $isallornothing) {
+    protected function results_class($outcome) {
         if ($outcome->all_correct()) {
             $resultsclass = "coderunner-test-results good";
-        } else if ($isallornothing || $outcome->mark_as_fraction() == 0) {
+        } else if ($outcome->mark_as_fraction() == 0) {
             $resultsclass = "coderunner-test-results bad";
         } else {
             $resultsclass = 'coderunner-test-results partial';
         }
         return $resultsclass;
-    }
-
-
-    // Support method to generate the "Show differences" button.
-    // Returns the HTML for the button, and sets up the JavaScript handler
-    // for it.
-    protected static function diff_button($qa) {
-        global $PAGE;
-        $buttonid = $qa->get_behaviour_field_name('diffbutton');
-        $attributes = array(
-            'type' => 'button',
-            'id' => $buttonid,
-            'name' => $buttonid,
-            'value' => get_string('showdifferences', 'qtype_coderunner'),
-            'class' => 'btn',
-        );
-        $html = html_writer::empty_tag('input', $attributes);
-
-        $PAGE->requires->js_call_amd('qtype_coderunner/showdiff',
-            'initDiffButton',
-            array($attributes['id'],
-                get_string('showdifferences', 'qtype_coderunner'),
-                get_string('hidedifferences', 'qtype_coderunner'),
-                get_string('expectedcolhdr', 'qtype_coderunner'),
-                get_string('gotcolhdr', 'qtype_coderunner')
-            )
-        );
-
-        return $html;
     }
 
 

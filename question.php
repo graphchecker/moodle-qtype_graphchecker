@@ -251,7 +251,7 @@ class qtype_coderunner_question extends question_graded_automatically {
             $code = $response['answer'];
             $testcases = $this->filter_testcases($isprecheck, $this->precheck);
             $runner = new qtype_coderunner_jobrunner();
-            $testoutcome = $runner->run_tests($this, $code, $testcases, $isprecheck, $language);
+            $testoutcome = $runner->run_tests($this, $code, $testcases, $isprecheck);
             $testoutcomeserial = serialize($testoutcome);
         }
 
@@ -260,14 +260,18 @@ class qtype_coderunner_question extends question_graded_automatically {
             return array(0, question_state::$invalid, $datatocache);
         } else if ($testoutcome->all_correct()) {
              return array(1, question_state::$gradedright, $datatocache);
-        } else if ($this->allornothing &&
+        /*} else if ($this->allornothing &&
                 !($this->grader === 'TemplateGrader' && $this->iscombinatortemplate)) {
             return array(0, question_state::$gradedwrong, $datatocache);
         } else {
             // Allow partial marks if not allornothing or if it's a combinator template grader.
             return array($testoutcome->mark_as_fraction(),
                     question_state::$gradedpartial, $datatocache);
+        }*/
+        } else {
+            return array(0, question_state::$gradedwrong, $datatocache);
         }
+        // TODO [ws] I still need to look into this code to allow partial grades. The library code should be able to return a grade
     }
 
 
@@ -432,44 +436,25 @@ class qtype_coderunner_question extends question_graded_automatically {
         return $this->language;
     }
 
+
     // Get the showsource boolean.
     public function get_show_source() {
         return $this->showsource;
     }
 
 
-    // Return the regular expression used to split the combinator template
-    // output into individual tests.
-    public function get_test_splitter_re() {
-        return $this->testsplitterre;
-    }
-
-
     // Return whether or not the template is a combinator.
-    public function get_is_combinator() {
-        return $this->iscombinatortemplate;
+    public function get_tests() {
+        return $this->tests;
     }
 
-
-    // Return whether or not multiple stdins are allowed when using combinator.
-    public function allow_multiple_stdins() {
-        return $this->allowmultiplestdins;
-    }
 
     // Return an instance of the sandbox to be used to run code for this question.
     public function get_sandbox() {
         global $CFG;
-        $sandbox = $this->sandbox; // Get the specified sandbox (if question has one).
-        if ($sandbox === null) {   // No sandbox specified. Use best we can find.
-            $sandboxinstance = qtype_coderunner_sandbox::get_best_sandbox($this->language);
-            if ($sandboxinstance === null) {
-                throw new qtype_coderunner_exception("Language {$this->language} is not available on this system");
-            }
-        } else {
-            $sandboxinstance = qtype_coderunner_sandbox::get_instance($sandbox);
-            if ($sandboxinstance === null) {
-                throw new qtype_coderunner_exception("Question is configured to use a non-existent or disabled sandbox ($sandbox)");
-            }
+        $sandboxinstance = qtype_coderunner_sandbox::get_best_sandbox('python3'); // TODO [ws] I just replaced the language by python3 here, but that should be done in a better way
+        if ($sandboxinstance === null) {
+            throw new qtype_coderunner_exception("Language {$this->language} is not available on this system");
         }
 
         return $sandboxinstance;
@@ -479,11 +464,7 @@ class qtype_coderunner_question extends question_graded_automatically {
     // Get an instance of the grader to be used to grade this question.
     public function get_grader() {
         global $CFG;
-        $grader = $this->grader == null ? constants::DEFAULT_GRADER : $this->grader;
-        if ($grader === 'CombinatorTemplateGrader') { // Legacy grader type.
-            $grader = 'TemplateGrader';
-            assert($this->iscombinatortemplate);
-        }
+        $grader = constants::DEFAULT_GRADER; // TODO [ws] figure out if this is necessary
         $graders = qtype_coderunner_grader::available_graders();
         $graderclass = $graders[$grader];
 
@@ -510,47 +491,5 @@ class qtype_coderunner_question extends question_graded_automatically {
             $this->parameters = json_decode($this->templateparams);
         }
         return $sandboxparams;
-    }
-
-
-    /**
-     *  Return an associative array mapping filename to file contents
-     *  for all the support files the given question (which may be a real
-     *  question or, in the case of a prototype, the question_options row).
-     *  $questionid is the id of the question.
-     *  The sample answer files are not included in the return value.
-     */
-    private static function get_support_files($question, $questionid) {
-        global $DB, $USER;
-
-        // If not given in the question object get the contextid from the database.
-        if (isset($question->contextid)) {
-            $contextid = $question->contextid;
-        } else {
-            $context = qtype_coderunner::question_context($question);
-            $contextid = $context->id;
-        }
-
-        $fs = get_file_storage();
-        $filemap = array();
-
-        if (isset($question->supportfilemanagerdraftid)) {
-            // If we're just validating a question, get files from user draft area.
-            $draftid = $question->supportfilemanagerdraftid;
-            $context = context_user::instance($USER->id);
-            $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, '', false);
-        } else {
-            // Otherwise, get the stored support files for this question (not
-            // the sample answer files).
-            $files = $fs->get_area_files($contextid, 'qtype_coderunner', 'datafile', $questionid);
-        }
-
-        foreach ($files as $f) {
-            $name = $f->get_filename();
-            if ($name !== '.') {
-                $filemap[$f->get_filename()] = $f->get_content();
-            }
-        }
-        return $filemap;
     }
 }
