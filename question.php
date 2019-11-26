@@ -107,9 +107,6 @@ class qtype_coderunner_question extends question_graded_automatically {
     public function get_expected_data() {
         $expecteddata = array('answer' => PARAM_RAW,
                      'language' => PARAM_NOTAGS);
-        if ($this->attachments != 0) {
-            $expecteddata['attachments'] = question_attempt::PARAM_FILES;
-        }
         return $expecteddata;
     }
 
@@ -139,8 +136,6 @@ class qtype_coderunner_question extends question_graded_automatically {
 
 
     public function is_gradable_response(array $response) {
-        // Determine if the given response has a non-empty answer and/or
-        // a suitable number of attachments of accepted types.
         return $this->validate_response($response) == '';
     }
 
@@ -239,7 +234,6 @@ class qtype_coderunner_question extends question_graded_automatically {
         if ($isprecheck && empty($this->precheck)) {
             throw new coding_exception("Unexpected precheck");
         }
-        $language = empty($response['language']) ? '' : $response['language'];
         $gradingreqd = true;
         if (!empty($response['_testoutcome'])) {
             $testoutcomeserial = $response['_testoutcome'];
@@ -255,10 +249,9 @@ class qtype_coderunner_question extends question_graded_automatically {
             // from the response. The attachments is an array with keys being
             // filenames and values being file contents.
             $code = $response['answer'];
-            $attachments = $this->get_attached_files($response);
             $testcases = $this->filter_testcases($isprecheck, $this->precheck);
             $runner = new qtype_coderunner_jobrunner();
-            $testoutcome = $runner->run_tests($this, $code, $attachments, $testcases, $isprecheck, $language);
+            $testoutcome = $runner->run_tests($this, $code, $testcases, $isprecheck, $language);
             $testoutcomeserial = serialize($testoutcome);
         }
 
@@ -275,20 +268,6 @@ class qtype_coderunner_question extends question_graded_automatically {
             return array($testoutcome->mark_as_fraction(),
                     question_state::$gradedpartial, $datatocache);
         }
-    }
-
-
-    // Return a map from filename to file contents for all the attached files
-    // in the given response.
-    private function get_attached_files($response) {
-        $attachments = array();
-        if (array_key_exists('attachments', $response) && $response['attachments']) {
-            $files = $response['attachments']->get_files();
-            foreach ($files as $file) {
-                $attachments[$file->get_filename()] = $file->get_content();
-            }
-        }
-        return $attachments;
     }
 
 
