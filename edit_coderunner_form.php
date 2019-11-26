@@ -103,60 +103,11 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // section and before the footer stuff.
     public function definition_inner($mform) {
         $this->make_questiontype_panel($mform);
-
         $this->add_preload_answer_field($mform);
         $this->add_sample_answer_field($mform);
         $this->add_tests_field($mform);
-
-        // Insert the attachment section to allow file uploads.
-        $qtype = question_bank::get_qtype('coderunner');
-        $mform->addElement('header', 'attachmentoptions', get_string('attachmentoptions', 'qtype_coderunner'));
-        $mform->setExpanded('attachmentoptions', 0);
-
-        $mform->addElement('select', 'attachments',
-                get_string('allowattachments', 'qtype_coderunner'), $qtype->attachment_options());
-        $mform->setDefault('attachments', 0);
-        $mform->addHelpButton('attachments', 'allowattachments', 'qtype_coderunner');
-
-        $mform->addElement('select', 'attachmentsrequired',
-                get_string('attachmentsrequired', 'qtype_coderunner'), $qtype->attachments_required_options());
-        $mform->setDefault('attachmentsrequired', 0);
-        $mform->addHelpButton('attachmentsrequired', 'attachmentsrequired', 'qtype_coderunner');
-        $mform->disabledIf('attachmentsrequired', 'attachments', 'eq', 0);
-
-        $filenamecontrols = array();
-        $filenamecontrols[] = $mform->createElement('text', 'filenamesregex',
-                get_string('filenamesregex', 'qtype_coderunner'));
-        $mform->disabledIf('filenamesregex', 'attachments', 'eq', 0);
-        $mform->setType('filenamesregex', PARAM_RAW);
-        $mform->setDefault('filenamesregex', '');
-        $filenamecontrols[] = $mform->createElement('text', 'filenamesexplain',
-                get_string('filenamesexplain', 'qtype_coderunner'));
-        $mform->disabledIf('filenamesexplain', 'attachments', 'eq', 0);
-        $mform->setType('filenamesexplain', PARAM_RAW);
-        $mform->setDefault('filenamesexplain', '');
-        $mform->addElement('group', 'filenamesgroup',
-                get_string('allowedfilenames', 'qtype_coderunner'), $filenamecontrols, null, false);
-        $mform->addHelpButton('filenamesgroup', 'allowedfilenames', 'qtype_coderunner');
-
-        $mform->addElement('select', 'maxfilesize',
-                get_string('maxfilesize', 'qtype_coderunner'), $qtype->attachment_filesize_max());
-        $mform->addHelpButton('maxfilesize', 'maxfilesize', 'qtype_coderunner');
-                $mform->setDefault('maxfilesize', '10240');
-        $mform->disabledIf('maxfilesize', 'attachments', 'eq', 0);
-
-        // Add the option to attach runtime support files, all of which are
-        // copied into the working directory when the expanded template is
-        // executed.The file context is that of the current course.
-        $options = $this->fileoptions;
-        $options['subdirs'] = false;
-        $mform->addElement('header', 'fileheader',
-                get_string('fileheader', 'qtype_coderunner'));
-        $mform->addElement('filemanager', 'datafiles',
-                get_string('datafiles', 'qtype_coderunner'), null,
-                $options);
-        $mform->addHelpButton('datafiles', 'datafiles', 'qtype_coderunner');
     }
+
 
     /**
      * Add a field for a sample answer to this problem (optional)
@@ -175,20 +126,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_coderunner'),
                 $attributes);
-        // Add a file attachment upload panel (disabled if attachments not allowed).
-        $options = $this->fileoptions;
-        $options['subdirs'] = false;
-        $mform->addElement('filemanager', 'sampleanswerattachments',
-                get_string('sampleanswerattachments', 'qtype_coderunner'), null,
-                $options);
-        $mform->addHelpButton('sampleanswerattachments', 'sampleanswerattachments', 'qtype_coderunner');
-        // Unless behat is running, hide the attachments file picker.
-        // behat barfs if it's hidden.
-        if ($CFG->prefix !== "b_") {
-            /* @var $mform MoodleQuickForm */
-            $method = method_exists($mform, 'hideIf') ? 'hideIf' : 'disabledIf';
-            $mform->$method('sampleanswerattachments', 'attachments', 'eq', 0);
-        }
         $mform->addElement('advcheckbox', 'validateonsave', null,
                 get_string('validateonsave', 'qtype_coderunner'));
         $mform->setDefault('validateonsave', false);
@@ -280,18 +217,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             }
         }
 
-        foreach (array('datafiles' => 'datafile',
-                'sampleanswerattachments' => 'samplefile') as $fileset => $filearea) {
-            $draftid = file_get_submitted_draft_itemid($fileset);
-            $options = $this->fileoptions;
-            $options['subdirs'] = false;
-
-            file_prepare_draft_area($draftid, $this->context->id,
-                    'qtype_coderunner', $filearea,
-                    empty($question->id) ? null : (int) $question->id,
-                    $options);
-            $question->$fileset = $draftid; // File manager needs this (and we need it when saving).
-        }
         return $question;
     }
 
@@ -322,14 +247,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             $errors['templateparams'] = $templatestatus['error'];
         }
 
-        if ($data['attachments']) {
-            // Check a valid regular expression was given.
-            // Use '=' as the PCRE delimiter.
-            if (@preg_match('=^' . $data['filenamesregex'] . '$=', null) === false) {
-                $errors['filenamesgroup'] = get_string('badfilenamesregex', 'qtype_coderunner');
-            }
-        }
-
         if (count($errors) == 0 && $templatestatus['istwigged']) {
             $errors = $this->validate_twigables($data, $templatestatus['renderedparams']);
         }
@@ -339,12 +256,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             if ($testresult) {
                 $errors['answer'] = $testresult;
             }
-        }
-
-        // Don't allow the teacher to require more attachments than they allow; as this would
-        // create a condition that it's impossible for the student to meet.
-        if ($data['attachments'] != -1 && $data['attachments'] < $data['attachmentsrequired'] ) {
-            $errors['attachmentsrequired']  = get_string('mustrequirefewer', 'qtype_coderunner');
         }
 
         return $errors;
@@ -421,24 +332,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
         );
         $mform->setType('templateparams', PARAM_RAW);
         $mform->addHelpButton('templateparams', 'templateparams', 'qtype_coderunner');
-    }
-
-
-    // Get a list of all available UI plugins, namely all files of the form
-    // ui_pluginname.js in the amd/src directory.
-    // Returns an associative array with a uiname => uiname entry for each
-    // available ui plugin.
-    private function get_ui_plugins() {
-        global $CFG;
-        $uiplugins = array('None' => 'None');
-        $files = scandir($CFG->dirroot . '/question/type/coderunner/amd/src');
-        foreach ($files as $file) {
-            if (substr($file, 0, 3) === 'ui_' && substr($file, -3) === '.js') {
-                $uiname = substr($file, 3, -3);
-                $uiplugins[$uiname] = ucfirst($uiname);
-            }
-        }
-        return $uiplugins;
     }
 
 
@@ -612,7 +505,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             }
         }
         $question->isnew = true;
-        $question->supportfilemanagerdraftid = $this->get_file_manager('datafiles');
 
         // Clean the question object, get inherited fields and run the sample answer.
         $qtype = new qtype_coderunner();
@@ -631,36 +523,12 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // Otherwise return a suitable error message for display in the form.
     private function validate_sample_answer($data) {
 
-        $attachmentssaver = $this->get_sample_answer_file_saver();
-        $files = $attachmentssaver ? $attachmentssaver->get_files() : array();
-        if (trim($data['answer']) === '' && count($files) == 0) {
-            return '';
-        }
-        // Check if it's a multilanguage question; if so need to determine
-        // what language to use. If there is a specific answer_language template
-        // parameter, that is used. Otherwise the default language (if specified)
-        // or the first in the list is used.
-        $acelangs = trim($data['acelang']);
-        if ($acelangs !== '' && strpos($acelangs, ',') !== false) {
-            if (empty($this->decodedparams['answer_language'])) {
-                list($languages, $answerlang) = qtype_coderunner_util::extract_languages($acelangs);
-                if ($answerlang === '') {
-                    $answerlang = $languages[0];
-                }
-            } else {
-                $answerlang = $this->decodedparams['answer_language'];
-            }
-        }
-
         try {
             $question = $this->make_question_from_form_data($data);
             $question->start_attempt();
             $response = array('answer' => $question->answer);
             if (!empty($answerlang)) {
                 $response['language'] = $answerlang;
-            }
-            if ($attachmentssaver) {
-                $response['attachments'] = $attachmentssaver;
             }
             $error = $question->validate_response($response);
             if ($error) {
@@ -680,30 +548,4 @@ class qtype_coderunner_edit_form extends question_edit_form {
             return $error;
         }
     }
-
-
-    // Return a file saver for the sample answer filemanager, if present.
-    private function get_sample_answer_file_saver() {
-        $sampleanswerdraftid = $this->get_file_manager('sampleanswerattachments');
-        $saver = null;
-        if ($sampleanswerdraftid) {
-            $saver = new question_file_saver($sampleanswerdraftid, 'qtype_coderunner', 'draft');
-        }
-        return $saver;
-    }
-
-
-    // Find the id of the filemanager element draftid with the given name.
-    private function get_file_manager($filemanagername) {
-        $mform = $this->_form;
-        $draftid = null;
-        foreach ($mform->_elements as $element) {
-            if ($element->_type == 'filemanager'
-                    && $element->_attributes['name'] === $filemanagername) {
-                $draftid = (int)$element->getValue();
-            }
-        }
-        return $draftid;
-    }
-
 }

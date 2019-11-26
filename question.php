@@ -128,67 +128,15 @@ class qtype_coderunner_question extends question_graded_automatically {
         // Check the response and return a validation error message if it's
         // faulty or an empty string otherwise.
 
-        // First check the attachments.
-        $hasattachments = array_key_exists('attachments', $response)
-            && $response['attachments'] instanceof question_response_files;
-        if ($hasattachments) {
-            $attachmentfiles = $response['attachments']->get_files();
-            $attachcount = count($attachmentfiles);
-            // Check the filetypes.
-            $invalidfiles = array();
-            $regex = $this->filenamesregex;
-            $supportfiles = $this->get_files();
-            foreach ($attachmentfiles as $file) {
-                $filename = $file->get_filename();
-                if (!$this->is_valid_filename($filename, $regex, $supportfiles)) {
-                    $invalidfiles[] = $filename;
-                }
-            }
-
-            if (count($invalidfiles) > 0) {
-                $badfilelist = implode(', ', $invalidfiles);
-                return get_string('badfiles', 'qtype_coderunner', $badfilelist);
-            }
-        } else {
-            $attachcount = 0;
-        }
-
-        if ($attachcount < $this->attachmentsrequired) {
-            return get_string('insufficientattachments', 'qtype_coderunner', $this->attachmentsrequired);
-        }
-
-        if ($attachcount == 0) { // If no attachments, require an answer.
-            $hasanswer = array_key_exists('answer', $response);
-            if (!$hasanswer || strlen($response['answer']) == 0) {
-                return get_string('answerrequired', 'qtype_coderunner');
-            } else if (strlen($response['answer']) < constants::FUNC_MIN_LENGTH) {
-                return get_string('answertooshort', 'qtype_coderunner', constants::FUNC_MIN_LENGTH);
-            }
+        $hasanswer = array_key_exists('answer', $response);
+        if (!$hasanswer || strlen($response['answer']) == 0) {
+            return get_string('answerrequired', 'qtype_coderunner');
+        } else if (strlen($response['answer']) < constants::FUNC_MIN_LENGTH) {
+            return get_string('answertooshort', 'qtype_coderunner', constants::FUNC_MIN_LENGTH);
         }
         return '';  // All good.
     }
 
-    // Return true iff the given filename is valid, meaning it matches the
-    // regex (if given), contains only alphanumerics plus '-', '_' and '.',
-    // doesn't clash with any of the support files and doesn't
-    // start with double underscore..
-    private function is_valid_filename($filename, $regex, $supportfiles) {
-        if (strpos($filename, '__') === 0) {
-            return false;  // Dunder names are reserved for runtime task.
-        }
-        if (!ctype_alnum(str_replace(array('-', '_', '.'), '', $filename))) {
-            return false;  // Filenames must be alphanumeric plus '.', '-', or '_'.
-        }
-        if (!empty($regex) && preg_match('=^' . $this->filenamesregex . '$=', $filename) !== 1) {
-            return false;  // Filename doesn't match given regex.
-        }
-        foreach (array_keys($supportfiles) as $supportfilename) {
-            if ($supportfilename == $filename) {
-                return false;  // Filename collides with a support file name.
-            }
-        }
-        return true;
-    }
 
     public function is_gradable_response(array $response) {
         // Determine if the given response has a non-empty answer and/or
@@ -229,10 +177,7 @@ class qtype_coderunner_question extends question_graded_automatically {
                         $prevresponse, $newresponse, 'answer') &&
                 question_utils::arrays_same_at_key_missing_is_blank(
                         $prevresponse, $newresponse, 'language');
-        $attachments1 = $this->get_attached_files($prevresponse);
-        $attachments2 = $this->get_attached_files($newresponse);
-        $sameattachments = $attachments1 === $attachments2;
-        return $sameanswer && $sameattachments;
+        return $sameanswer;
     }
 
 
@@ -579,23 +524,6 @@ class qtype_coderunner_question extends question_graded_automatically {
     }
 
 
-    // Return the support files for this question, namely all the files
-    // uploaded with this question itself plus all the files uploaded with the
-    // prototype. This does not include files attached to the answer.
-    // Returns an associative array mapping filenames to filecontents.
-    public function get_files() {
-        if ($this->prototypetype != 0) { // Is this a prototype question?
-            $files = array(); // Don't load the files twice.
-        } else {
-            // Load any files from the prototype.
-            $this->get_prototype();
-            $files = self::get_support_files($this->prototype, $this->prototype->questionid);
-        }
-        $files = array_merge($files, self::get_support_files($this, $this->id));  // Add in files for this question.
-        return $files;
-    }
-
-
     // Get the sandbox parameters for a run.
     public function get_sandbox_params() {
         if (isset($this->sandboxparams)) {
@@ -614,17 +542,6 @@ class qtype_coderunner_question extends question_graded_automatically {
             $this->parameters = json_decode($this->templateparams);
         }
         return $sandboxparams;
-    }
-
-
-    /**
-     * Load the prototype for this question and store in $this->prototype
-     */
-    public function get_prototype() {
-        if (!isset($this->prototype)) {
-            $context = qtype_coderunner::question_context($this);
-            $this->prototype = qtype_coderunner::get_prototype($this->coderunnertype, $context);
-        }
     }
 
 

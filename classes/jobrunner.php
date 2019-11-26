@@ -47,58 +47,30 @@ class qtype_coderunner_jobrunner {
     public function run_tests($question, $code, $attachments, $testcases, $isprecheck, $answerlanguage) {
         global $CFG;
 
-        $question->get_prototype();
-        if (empty($question->prototype)) {
-            // Missing prototype. We can't run this question.
-            $outcome = new qtype_coderunner_testing_outcome(0, 0, false);
-            $message = get_string('missingprototypewhenrunning', 'qtype_coderunner',
-                    array('crtype' => $question->coderunnertype));
-            $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_MISSING_PROTOTYPE, $message);
-            return $outcome;
-        }
-
         $this->question = $question;
         $this->code = $code;
-        $this->testcases = array_values($testcases);
+        $this->tests = $question->get_tests();
         $this->isprecheck = $isprecheck;
         $this->grader = $question->get_grader();
         $this->sandbox = $question->get_sandbox();
-        $this->files = array_merge($attachments, $question->get_files());
-        $attachedfilenames = implode(',', array_keys($attachments));
         $this->sandboxparams = $question->get_sandbox_params();
-        $this->language = $question->get_language();
 
         $this->allruns = array();
         $this->templateparams = array(
             'STUDENT_ANSWER' => $code,
-            'ESCAPED_STUDENT_ANSWER' => qtype_coderunner_escapers::python(null, $code, null), // LEGACY SUPPORT.
-            'MATLAB_ESCAPED_STUDENT_ANSWER' => qtype_coderunner_escapers::matlab(null, $code, null), // LEGACY SUPPORT.
-            'IS_PRECHECK' => $isprecheck ? "1" : "0",
-            'ANSWER_LANGUAGE' => $answerlanguage,
-            'ATTACHMENTS' => $attachedfilenames
+            'IS_PRECHECK' => $isprecheck ? "1" : "0"
          );
 
-        if ($question->get_is_combinator() and
-                ($this->has_no_stdins() || $question->allow_multiple_stdins())) {
-            $outcome = $this->run_combinator($isprecheck);
-        } else {
-            $outcome = null;
-        }
-
-        // If that failed for any reason (e.g. timeout or signal), or if the
-        // template isn't a combinator, run the tests individually. Any compilation
-        // errors or stderr output in individual tests bomb the whole test process,
-        // but otherwise we should finish with a TestingOutcome object containing
-        // a test result for each test case.
-
-        if ($outcome == null) {
-            $outcome = $this->run_tests_singly($isprecheck);
-        }
+        // TODO!
+        //$outcome = $this->run_combinator($isprecheck);
+        // TODO debug:
+        $outcome = new qtype_coderuner_testing_outcome($this->maximum_possible_mark(), count($this->testcases), $isprecheck);
+        // TODO!
 
         $this->sandbox->close();
-        if ($question->get_show_source()) {
+        /*if ($question->get_show_source()) {
             $outcome->sourcecodelist = $this->allruns;
-        }
+        }*/
         return $outcome;
     }
 
