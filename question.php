@@ -71,14 +71,12 @@ class qtype_coderunner_question extends question_graded_automatically {
             $step->set_qt_var('_mtrandseed', $seed);
         }
         $this->setup_template_params($seed);
-        if ($this->twigall) {
-            $this->twig_all();
-        }
+        $this->twig_all();
     }
 
     // Retrieve the saved random number seed and reconstruct the template
     // parameters to the state they were left after start_attempt was called.
-    // Also twig expand the rest of the question fields if $this->twigall is true.
+    // Also twig expand the rest of the question fields.
     public function apply_attempt_state(question_attempt_step $step) {
         parent::apply_attempt_state($step);
         $this->student = unserialize($step->get_qt_var('_STUDENT'));
@@ -89,10 +87,7 @@ class qtype_coderunner_question extends question_graded_automatically {
             $seed = mt_rand();
         }
         $this->setup_template_params($seed);
-
-        if ($this->twigall) {
-            $this->twig_all();
-        }
+        $this->twig_all();
     }
 
     /**
@@ -412,12 +407,13 @@ class qtype_coderunner_question extends question_graded_automatically {
         $this->answer = $this->twig_expand($this->answer);
         $this->answerpreload = $this->twig_expand($this->answerpreload);
         $this->globalextra = $this->twig_expand($this->globalextra);
+        /* TODO twig test cases??
         foreach ($this->testcases as $key => $test) {
             foreach (['testcode', 'stdin', 'expected', 'extra'] as $field) {
                 $text = $this->testcases[$key]->$field;
                 $this->testcases[$key]->$field = $this->twig_expand($text);
             }
-        }
+        }*/
     }
 
     /**
@@ -433,10 +429,9 @@ class qtype_coderunner_question extends question_graded_automatically {
             return $text;
         } else {
             $twigparams['QUESTION'] = $this;
-            if ($this->hoisttemplateparams) {
-                foreach ($this->parameters as $key => $value) {
-                    $twigparams[$key] = $value;
-                }
+            // hoist template parameters
+            foreach ($this->parameters as $key => $value) {
+                $twigparams[$key] = $value;
             }
             return qtype_coderunner_twig::render($text, $twigparams);
         }
