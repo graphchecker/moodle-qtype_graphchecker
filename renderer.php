@@ -57,81 +57,15 @@ class qtype_coderunner_renderer extends qtype_renderer {
 	} else {
 	    array_push($USER->coderunnerquestionids, $qid); // Array of active qids
 	}
-        $divid = "qtype_coderunner_problemspec$qid";
-        $params = json_decode($question->templateparams);
         $qtext = $question->format_questiontext($qa);
-        if (isset($params->programming_contest_problem) && $params->programming_contest_problem) {
-            // Special case hack for programming contest problems
-            $qtext .= "<div id='$divid'></div>";
-            $probspecfilename = isset($params->problem_spec_filename) ? $params->problem_spec_filename : '';
-            $PAGE->requires->js_call_amd('qtype_coderunner/ajaxquestionloader',
-                    'loadQuestionText', array($qid, $divid, $probspecfilename));
-        }
-        $examples = $question->example_testcases();
-        if (count($examples) > 0) {
-            $forexample = get_string('forexample', 'qtype_coderunner');
-            $qtext .= html_writer::tag('p', $forexample . ':', array('class' => 'for-example-para'));
-            $qtext .= html_writer::start_tag('div', array('class' => 'coderunner-examples'));
-            $resultcolumns = $question->result_columns();
-            $qtext .= $this->format_examples($examples, $resultcolumns);
-            $qtext .= html_writer::end_tag('div');
-        }
 
         $qtext .= html_writer::start_tag('div', array('class' => 'prompt'));
-
-        if (empty($question->penaltyregime) && $question->penaltyregime !== '0') {
-            if (intval(100 * $question->penalty) == 100 * $question->penalty) {
-                $decdigits = 0;
-            } else {
-                $decdigits = 1;
-            }
-            $penaltypercent = number_format($question->penalty * 100, $decdigits);
-            $penaltypercent2 = number_format($question->penalty * 200, $decdigits);
-            $penalties = $penaltypercent . ', ' . $penaltypercent2 . ', ...';
-        } else {
-            $penalties = $question->penaltyregime;
-        }
 
         $responsefieldname = $qa->get_qt_field_name('answer');
         $responsefieldid = 'id_' . $responsefieldname;
         $answerprompt = html_writer::tag('label',
                 get_string('answerprompt', 'qtype_coderunner'), array('class' => 'answerprompt', 'for' => $responsefieldid));
         $qtext .= $answerprompt;
-
-        if (empty($question->acelang)) {
-            $currentlanguage = $question->language;
-        } else {
-            $currentlanguage = $question->acelang;
-            if (strpos($question->acelang, ',') !== false) {
-                // Case of a multilanguage question. Add language selector dropdown.
-                list($languages, $default) = qtype_coderunner_util::extract_languages($question->acelang);
-                $selectname = $qa->get_qt_field_name('language');
-                $selectid = 'id_' . $selectname;
-                $currentlanguage = $qa->get_last_qt_var('language');
-                if (empty($currentlanguage) && $default !== '') {
-                    $currentlanguage = $default;
-                }
-                $qtext .= html_writer::start_tag('div', array('class' => 'coderunner-lang-select-div'));
-                $qtext .= html_writer::tag('label',
-                        get_string('languageselectlabel', 'qtype_coderunner'),
-                        array('for' => $selectid));
-                $qtext .= html_writer::start_tag('select',
-                        array('id' => $selectid, 'name' => $selectname,
-                              'class' => 'coderunner-lang-select', 'required' => ''));
-                if (empty($currentlanguage)) {
-                    $qtext .= html_writer::tag('option', '', array('value' => ''));
-                }
-                foreach ($languages as $lang) {
-                    $attributes = array('value' => $lang);
-                    if ($lang === $currentlanguage) {
-                        $attributes['selected'] = 'selected';
-                    }
-                    $qtext .= html_writer::tag('option', $lang, $attributes);
-                }
-                $qtext .= html_writer::end_tag('select');
-                $qtext .= html_writer::end_tag('div');
-            }
-        }
 
         $qtext .= html_writer::end_tag('div');
 
@@ -148,9 +82,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
                 'spellcheck' => 'false',
                 'rows'      => $rows,
                 'data-params' => $question->templateparams,
-                'data-globalextra' => $question->globalextra,
-                'data-lang' => ucwords($currentlanguage),
-                'data-test0' => $question->testcases ? json_encode($question->testcases[0]) : ''
+                'data-globalextra' => $question->globalextra
         );
 
         if ($options->readonly) {
@@ -189,20 +121,8 @@ class qtype_coderunner_renderer extends qtype_renderer {
             // Class and data-fieldtype are so behat can find the filemanager in both boost and clean themes.
         }
 
-        // Initialise any JavaScript UI. Default is Ace unless uiplugin is explicitly
-        // set and is neither the empty string nor the value 'none'.
-        // Thanks to Ulrich Dangel for the original implementation of the Ace code editor.
-        $uiplugin = $question->uiplugin === null ? 'ace' : strtolower($question->uiplugin);
-        if ($uiplugin !== '' && $uiplugin !== 'none') {
-            qtype_coderunner_util::load_uiplugin_js($question, $responsefieldid);
-            if (!empty($question->acelang) && strpos($question->acelang, ',') != false) {
-                // For multilanguage questions, add javascript to switch the
-                // Ace language when the user changes the selected language.
-                $PAGE->requires->js_call_amd('qtype_coderunner/multilanguagequestion', 'initLangSelector', array($responsefieldid));
-            }
-        } else {
-            $PAGE->requires->js_call_amd('qtype_coderunner/textareas', 'initQuestionTA', array($responsefieldid));
-        }
+        // Initialise the Graph UI.
+        qtype_coderunner_util::load_uiplugin_js($question, $responsefieldid);
 
         return $qtext;
     }
@@ -557,58 +477,6 @@ class qtype_coderunner_renderer extends qtype_renderer {
         return $filesrenderer->render($fm). html_writer::empty_tag(
                 'input', array('type' => 'hidden', 'name' => $qa->get_qt_field_name('attachments'),
                 'value' => $pickeroptions->itemid)) . $text;
-    }
-
-
-    /**
-     *
-     * @param array $examples The array of testcases tagged "use as example"
-     * @param array $resultcolumns the array of 2-element arrays specifying what
-     * columns should appear in the result table
-     * @return string An HTML table element displaying all the testcases.
-     */
-    private function format_examples($examples, $resultcolumns) {
-        $table = new html_table();
-        $table->attributes['class'] = 'coderunnerexamples';
-        list($numtests, $numstds, $numextras) = $this->count_bits($examples);
-        $table->head = array();
-        $showtests = $showstds = $showextras = false;
-        if ($numtests && $this->show_column('testcode', $resultcolumns)) {
-            $table->head[] = $this->column_header('testcode', $resultcolumns);
-            $showtests = true;
-        }
-        if ($numstds && $this->show_column('stdin', $resultcolumns)) {
-            $table->head[] = $this->column_header('stdin', $resultcolumns);
-            $showstds = true;
-        }
-        if ($numextras && $this->show_column('extra', $resultcolumns)) {
-            $table->head[] = $this->column_header('extra', $resultcolumns);
-            $showextras = true;
-        }
-        $table->head[] = get_string('resultcolumnheader', 'qtype_coderunner');
-
-        $tablerows = array();
-        $rowclasses = array();
-        $i = 0;
-        foreach ($examples as $example) {
-            $row = array();
-            $rowclasses[$i] = $i % 2 == 0 ? 'r0' : 'r1';
-            if ($showtests) {
-                $row[] = qtype_coderunner_util::format_cell($example->testcode);
-            }
-            if ($showstds) {
-                $row[] = qtype_coderunner_util::format_cell($example->stdin);
-            }
-            if ($showextras) {
-                $row[] = qtype_coderunner_util::format_cell($example->extra);
-            }
-            $row[] = qtype_coderunner_util::format_cell($example->expected);
-            $tablerows[] = $row;
-            $i++;
-        }
-        $table->data = $tablerows;
-        $table->rowclasses = $rowclasses;
-        return html_writer::table($table);
     }
 
 

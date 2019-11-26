@@ -379,14 +379,6 @@ class qtype_coderunner_question extends question_graded_automatically {
     }
 
 
-    // Return an array of all the use_as_example testcases.
-    public function example_testcases() {
-        return array_filter($this->testcases, function($tc) {
-                    return $tc->useasexample;
-        });
-    }
-
-
     // Twig expand all text fields of the question except the templateparam field
     // (which should have been expanded when the question was started) and
     // the template itself.
@@ -473,12 +465,6 @@ class qtype_coderunner_question extends question_graded_automatically {
         } else { // This is a precheck run.
             if ($prechecksetting == constants::PRECHECK_EMPTY) {
                 return array($this->empty_testcase());
-            } else if ($prechecksetting == constants::PRECHECK_EXAMPLES) {
-                return $this->example_testcases();
-            } else if ($prechecksetting == constants::PRECHECK_SELECTED) {
-                return $this->selected_testcases(true);
-            } else if ($prechecksetting == constants::PRECHECK_ALL) {
-                return $this->testcases;
             } else {
                 throw new coding_exception('Precheck clicked but no precheck button?!');
             }
