@@ -32,7 +32,7 @@ class qtype_coderunner_jobrunner {
     private $code = null;            // The code we're running.
     private $files = null;           // The files to be loaded into the working dir.
     private $question = null;        // The question that we're running code for.
-    private $testcases = null;       // The testcases (a subset of those in the question).
+    private $tests = null;           // The tests (a subset of those in the question).
     private $allruns = null;         // Array of the source code for all runs.
     private $precheck = null;        // True if this is a precheck run.
 
@@ -44,12 +44,13 @@ class qtype_coderunner_jobrunner {
     // $answerlanguage will be the empty string except for multilanguage questions,
     // when it is the language selected in the language drop-down menu.
     // Returns a TestingOutcome object.
-    public function run_tests($question, $code, $testcases, $isprecheck) {
+    public function run_tests($question, $answer, $tests, $isprecheck) {
         global $CFG;
 
         $this->question = $question;
-        $this->code = $code;
-        $this->tests = $question->get_tests();
+        $this->answer = $answer;
+        $this->tests = $tests;
+
         $this->isprecheck = $isprecheck;
         $this->grader = $question->get_grader();
         $this->sandbox = $question->get_sandbox();
@@ -57,39 +58,29 @@ class qtype_coderunner_jobrunner {
 
         $this->allruns = array();
         $this->templateparams = array(
-            'STUDENT_ANSWER' => $code,
+            'STUDENT_ANSWER' => $answer,
             'IS_PRECHECK' => $isprecheck ? "1" : "0"
          );
 
-        // TODO!
-        //$outcome = $this->run_combinator($isprecheck);
-        // TODO debug:
-        $outcome = new qtype_coderunner_testing_outcome($this->maximum_possible_mark(), count($this->testcases), $isprecheck);
-        // TODO!
+        $outcome = $this->run_combinator($isprecheck);
 
         $this->sandbox->close();
-        /*if ($question->get_show_source()) {
-            $outcome->sourcecodelist = $this->allruns;
-        }*/
+
         return $outcome;
     }
 
-
-    // If the template is a combinator, try running all the tests in a single
-    // go.
-    //
-    // Special template parameters are STUDENT_ANSWER, the raw submitted code,
-    // IS_PRECHECK, which is true if this is a precheck run, TESTCASES,
-    // a list of all the test cases and QUESTION, the original question object.
-    // Return the testing outcome object if successful else null.
     private function run_combinator($isprecheck) {
-        $numtests = count($this->testcases);
-        $this->templateparams['TESTCASES'] = $this->testcases;
-        $maxmark = $this->maximum_possible_mark();
-        $outcome = new qtype_coderunner_testing_outcome($maxmark, $numtests, $isprecheck);
+        global $CFG;
+
+        $numtests = count($this->tests);
+        $this->templateparams['tests'] = $this->tests;
+        $outcome = new qtype_coderunner_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
+
+        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/templates/undirected.py.twig');
+
         try {
-            $testprog = $question->twig_expand($question->template, $this->templateparams);
+            $testprog = $question->twig_expand($template, $this->templateparams);
         } catch (Exception $e) {
             $outcome->set_status(
                     qtype_coderunner_testing_outcome::STATUS_SYNTAX_ERROR,
@@ -98,8 +89,11 @@ class qtype_coderunner_jobrunner {
         }
 
         $this->allruns[] = $testprog;
-        $run = $this->sandbox->execute($testprog, $this->language,
-                null, $this->files, $this->sandboxparams);
+        $run = $this->sandbox->execute($testprog,
+            "python3",  // language
+            null,
+            [],  // files
+            $this->sandboxparams);
 
         // If it's a template grader, we pass the result to the
         // do_combinator_grading method. Otherwise we deal with syntax errors or
@@ -111,96 +105,18 @@ class qtype_coderunner_jobrunner {
             $outcome->set_status(
                     qtype_coderunner_testing_outcome::STATUS_SANDBOX_ERROR,
                     qtype_coderunner_sandbox::error_string($run));
-        } else if ($this->grader->name() === 'TemplateGrader') {
-            $outcome = $this->do_combinator_grading($run, $isprecheck);
-        } else if ($run->result === qtype_coderunner_sandbox::RESULT_COMPILATION_ERROR) {
-            $outcome->set_status(
-                    qtype_coderunner_testing_outcome::STATUS_SYNTAX_ERROR,
-                    $run->cmpinfo);
-        } else if ($run->result === qtype_coderunner_sandbox::RESULT_SUCCESS) {
-            $outputs = preg_split($this->question->get_test_splitter_re(), $run->output);
-            if (count($outputs) === $numtests) {
-                $i = 0;
-                foreach ($this->testcases as $testcase) {
-                    $outcome->add_test_result($this->grade($outputs[$i], $testcase));
-                    $i++;
-                }
-            } else {  // Error: wrong number of tests after splitting.
-                $error = get_string('brokencombinator', 'qtype_coderunner',
-                        array('numtests' => $numtests, 'numresults' => count($outputs)));
-                $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, $error);
-            }
         } else {
-            $outcome = null; // Something broke badly.
+            $outcome = $this->do_combinator_grading($run, $isprecheck);
         }
         return $outcome;
     }
 
-
-    // Run all tests one-by-one on the sandbox.
-    private function run_tests_singly($isprecheck) {
-        $maxmark = $this->maximum_possible_mark($this->testcases);
-        if ($maxmark == 0) {
-            $maxmark = 1; // Something silly is happening. Probably running a prototype with no tests.
-        }
-        $numtests = count($this->testcases);
-        $outcome = new qtype_coderunner_testing_outcome($maxmark, $numtests, $isprecheck);
-        $question = $this->question;
-        foreach ($this->testcases as $testcase) {
-            if ($this->question->iscombinatortemplate) {
-                $this->templateparams['TESTCASES'] = array($testcase);
-            } else {
-                $this->templateparams['TEST'] = $testcase;
-            }
-            try {
-                $testprog = $question->twig_expand($question->template, $this->templateparams);
-            } catch (Exception $e) {
-                $outcome->set_status(
-                        qtype_coderunner_testing_outcome::STATUS_SYNTAX_ERROR,
-                        'TEMPLATE ERROR: ' . $e->getMessage());
-                break;
-            }
-
-            $input = isset($testcase->stdin) ? $testcase->stdin : '';
-            $this->allruns[] = $testprog;
-            $run = $this->sandbox->execute($testprog, $this->language,
-                    $input, $this->files, $this->sandboxparams);
-            if ($run->error !== qtype_coderunner_sandbox::OK) {
-                $outcome->set_status(
-                    qtype_coderunner_testing_outcome::STATUS_SANDBOX_ERROR,
-                    qtype_coderunner_sandbox::error_string($run));
-                break;
-            } else if ($run->result === qtype_coderunner_sandbox::RESULT_COMPILATION_ERROR) {
-                $outcome->set_status(
-                        qtype_coderunner_testing_outcome::STATUS_SYNTAX_ERROR,
-                        $run->cmpinfo);
-                break;
-            } else if ($run->result != qtype_coderunner_sandbox::RESULT_SUCCESS) {
-                $errormessage = $this->make_error_message($run);
-                $iserror = true;
-                $outcome->add_test_result($this->grade($errormessage, $testcase, $iserror));
-                break;
-            } else {
-                $testresult = $this->grade($run->output, $testcase);
-                $aborting = false;
-                if (isset($testresult->abort) && $testresult->abort) { // Templategrader abort request?
-                    $testresult->awarded = 0;  // Mark it wrong regardless.
-                    $testresult->iscorrect = false;
-                    $aborting = true;
-                }
-                $outcome->add_test_result($testresult);
-                if ($aborting) {
-                    break;
-                }
-            }
-        }
-        return $outcome;
-    }
 
     // Grade a given test result by calling the grader.
     private function grade($output, $testcase, $isbad = false) {
         return $this->grader->grade($output, $testcase, $isbad);
     }
+
 
     /**
      * Given the result of a sandbox run with the combinator template,
@@ -262,6 +178,7 @@ class qtype_coderunner_jobrunner {
         return $outcome;
     }
 
+
     /* Return a $sep-separated string of the non-empty elements
        of the array $strings. Similar to implode except empty strings
        are ignored. */
@@ -279,19 +196,6 @@ class qtype_coderunner_jobrunner {
     }
 
 
-    // Return the maximum possible mark from the set of testcases we're running.
-    private function maximum_possible_mark() {
-        $total = 0;
-        foreach ($this->testcases as $testcase) {
-            $total += $testcase->mark;
-        }
-        if ($total == 0) {
-            $total = 1; // Something silly is happening. Probably running a prototype with no tests.
-        }
-        return $total;
-    }
-
-
     private function make_error_message($run) {
         $err = "***" . qtype_coderunner_sandbox::result_string($run->result) . "***";
         if ($run->result === qtype_coderunner_sandbox::RESULT_RUNTIME_ERROR) {
@@ -303,16 +207,6 @@ class qtype_coderunner_jobrunner {
         return $this->merge("\n", array($run->cmpinfo, $run->output, $err, $run->stderr));
     }
 
-
-    /** True IFF no testcases have nonempty stdin. */
-    private function has_no_stdins() {
-        foreach ($this->testcases as $testcase) {
-            if ($testcase->stdin != '') {
-                return false;
-            }
-        }
-        return true;
-    }
 
     // Count the number of errors in the given array of test results.
     // TODO -- figure out how to eliminate either this one or the identical

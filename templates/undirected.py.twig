@@ -1,0 +1,17 @@
+import json
+
+student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
+student_answer = json.loads(student_answer)
+
+#given_answer = """{{ QUESTION.answerpreload | e('py') }}"""
+#given_answer = json.loads(given_answer)
+
+results = []
+
+{% for test in tests %}
+result = {{ test.get_test_code() }}
+results.append(result)
+{% endfor %}
+
+print(json.dumps(results))
+

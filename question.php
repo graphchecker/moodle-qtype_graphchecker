@@ -245,13 +245,11 @@ class qtype_coderunner_question extends question_graded_automatically {
         }
         if ($gradingreqd) {
             // We haven't already graded this submission or we graded it with
-            // a different precheck setting. Get the code and the attachments
-            // from the response. The attachments is an array with keys being
-            // filenames and values being file contents.
-            $code = $response['answer'];
-            $testcases = $this->filter_testcases($isprecheck, $this->precheck);
+            // a different precheck setting.
+            $answer = $response['answer'];
+            $tests = $this->get_tests();
             $runner = new qtype_coderunner_jobrunner();
-            $testoutcome = $runner->run_tests($this, $code, $testcases, $isprecheck);
+            $testoutcome = $runner->run_tests($this, $answer, $tests, $isprecheck);
             $testoutcomeserial = serialize($testoutcome);
         }
 
@@ -368,24 +366,18 @@ class qtype_coderunner_question extends question_graded_automatically {
     }
 
 
-    // Extract and return the appropriate subset of the set of question testcases
-    // given $isprecheckrun (true iff this was a run initiated by clicking
-    // precheck) and the question's prechecksetting (0, 1, 2, 3, 4 for Disable,
-    // Empty, Examples, Selected and All respectively).
-    protected function filter_testcases($isprecheckrun, $prechecksetting) {
-        if (!$isprecheckrun) {
-            if ($prechecksetting != constants::PRECHECK_SELECTED) {
-                return $this->testcases;
-            } else {
-                return $this->selected_testcases(false);
-            }
-        } else { // This is a precheck run.
-            if ($prechecksetting == constants::PRECHECK_EMPTY) {
-                return array($this->empty_testcase());
-            } else {
-                throw new coding_exception('Precheck clicked but no precheck button?!');
-            }
+    // Returns all tests that we need to run.
+    protected function get_tests() {
+        $tests = json_decode($this->tests, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new coding_exception('Invalid JSON string for tests');
         }
+
+        foreach ($tests as $index => $test) {
+            $tests[$index] = new qtype_coderunner_test($test);
+        }
+
+        return $tests;
     }
 
 
@@ -440,12 +432,6 @@ class qtype_coderunner_question extends question_graded_automatically {
     // Get the showsource boolean.
     public function get_show_source() {
         return $this->showsource;
-    }
-
-
-    // Return whether or not the template is a combinator.
-    public function get_tests() {
-        return $this->tests;
     }
 
 
