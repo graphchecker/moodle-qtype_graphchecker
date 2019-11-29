@@ -89,11 +89,6 @@ class qtype_coderunner_jobrunner {
             return $outcome;
         }
 
-        echo("program:\n");
-        print($testprog);
-        echo("files:\n");
-        var_dump($this->get_checker_files());
-
         $this->allruns[] = $testprog;
         $run = $this->sandbox->execute($testprog,
             "python3",  // language
