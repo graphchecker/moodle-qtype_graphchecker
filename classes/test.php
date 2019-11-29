@@ -37,12 +37,10 @@ class qtype_coderunner_test {
     }
 
     private function get_parameter_string() {
-        $parameters = '';
+        $parameters = 'student_answer';
 
         foreach ($this->params as $name => $value) {
-            if ($parameters !== '') {
-                $parameters .= ', ';
-            }
+            $parameters .= ', ';
             $parameters .= $name . '=' . $value;
         }
 

@@ -74,6 +74,7 @@ class qtype_coderunner_jobrunner {
 
         $numtests = count($this->tests);
         $this->templateparams['tests'] = $this->tests;
+        $this->templateparams['checker_modules'] = $this->get_checker_modules();
         $outcome = new qtype_coderunner_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
 
@@ -88,11 +89,16 @@ class qtype_coderunner_jobrunner {
             return $outcome;
         }
 
+        echo("program:\n");
+        print($testprog);
+        echo("files:\n");
+        var_dump($this->get_checker_files());
+
         $this->allruns[] = $testprog;
         $run = $this->sandbox->execute($testprog,
             "python3",  // language
             null,
-            [],  // files
+            $this->get_checker_files(),  // files
             $this->sandboxparams);
 
         // If it's a template grader, we pass the result to the
@@ -109,6 +115,33 @@ class qtype_coderunner_jobrunner {
             $outcome = $this->do_combinator_grading($run, $isprecheck);
         }
         return $outcome;
+    }
+
+
+    private function get_checker_modules() {
+        $modules = [];
+
+        foreach ($this->tests as $test) {
+            $module = $test->package;
+            $modules[] = $module;
+        }
+
+        return array_unique($modules);
+    }
+
+
+    private function get_checker_files() {
+        global $CFG;
+
+        $filemap = [];
+
+        foreach ($this->get_checker_modules() as $module) {
+            $name = $module . '.py';
+            $full_name = $CFG->dirroot . '/question/type/coderunner/checks/undirected/' . $name;
+            $filemap[$name] = file_get_contents($full_name);
+        }
+
+        return $filemap;
     }
 
 

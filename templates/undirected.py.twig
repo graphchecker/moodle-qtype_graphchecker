@@ -1,5 +1,9 @@
 import json
 
+{% for module in checker_modules %}
+import {{ module }}
+{% endfor %}
+
 student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
 student_answer = json.loads(student_answer)
 
