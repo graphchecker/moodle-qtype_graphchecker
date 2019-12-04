@@ -238,8 +238,7 @@ class qtype_coderunner_question extends question_graded_automatically {
         if (!empty($response['_testoutcome'])) {
             $testoutcomeserial = $response['_testoutcome'];
             $testoutcome = unserialize($testoutcomeserial);
-            if ($testoutcome instanceof qtype_coderunner_testing_outcome  // Ignore legacy-format outcomes.
-                    && $testoutcome->isprecheck == $isprecheck) {
+            if ($testoutcome instanceof qtype_coderunner_testing_outcome) {
                 $gradingreqd = false;  // Already graded and with same precheck state.
             }
         }

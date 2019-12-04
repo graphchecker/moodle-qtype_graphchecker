@@ -5,18 +5,21 @@
 def vertex_count(student_answer, expected):
     count = len(student_answer['nodes'])
     if count == expected:
-        return ('', 1)
+        return {'correct': True}
     else:
-        return ('Vertex count was {0}, expected {1}'.format(count, expected), 0)
+        return {'correct': False,
+                'feedback': 'Vertex count was {0}, expected {1}'.format(count, expected)}
 
 # tests if the graph has exactly the given number of edges
 # expected: the expected number of edges
 def edge_count(student_answer, expected):
     count = len(student_answer['edges'])
     if count == expected:
-        return ('', 1)
+        return {'correct': True}
     else:
-        return ('Edge count was {0}, expected {1}'.format(count, expected), 0)
+        return {'correct': False,
+                'feedback': 'Edge count was {0}, expected {1}'.format(count, expected)}
+
 
 # tests if the student's answer has the same vertices as the given graph
 def test_vertices():

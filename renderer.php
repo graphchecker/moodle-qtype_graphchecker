@@ -168,14 +168,9 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $q = $qa->get_question();
         $outcome = unserialize($toserialised);
         if ($outcome === false) {
-            $outcome = new qtype_coderunner_testing_outcome(0, 0, false);
-            $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_UNSERIALIZE_FAILED);
+            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_UNSERIALIZE_FAILED, [], "Internal error: unserialization failed");
         }
         $resultsclass = $this->results_class($outcome);
-        $isprecheck = $outcome->is_precheck($qa);
-        if ($isprecheck) {
-            $resultsclass .= ' precheck';
-        }
 
         $fb = '';
 
@@ -203,20 +198,12 @@ class qtype_coderunner_renderer extends qtype_renderer {
         } else {
 
             // The run was successful (i.e didn't crash, but may be wrong answer). Display results.
-            if ($isprecheck) {
-                $fb .= html_writer::tag('h3', get_string('precheck_only', 'qtype_coderunner'));
-            }
-
-            if ($isprecheck && $q->precheck == constants::PRECHECK_EMPTY && !$outcome->iscombinatorgrader()) {
-                $fb .= $this->empty_precheck_status($outcome);
-            } else {
-                $fb .= $this->build_results_table($outcome, $q);
-            }
+            $fb .= $this->build_results_table($outcome, $q);
         }
 
         // Summarise the status of the response in a paragraph at the end.
         // Suppress when previous errors have already said enough.
-        if (!$outcome->has_syntax_error() && !$isprecheck &&
+        if (!$outcome->has_syntax_error() &&
              !$outcome->is_ungradable() &&
              !$outcome->run_failed()) {
 
@@ -307,33 +294,18 @@ class qtype_coderunner_renderer extends qtype_renderer {
             return $this->build_combinator_grader_feedback_summary($qa, $outcome);
         }
         $question = $qa->get_question();
-        $isprecheck = $outcome->is_precheck($qa);
         $lines = array();  // List of lines of output.
 
         $onlyhiddenfailed = false;
         if ($outcome->was_aborted()) {
             $lines[] = get_string('aborted', 'qtype_coderunner');
-        } else {
-            $hiddenerrors = $outcome->count_hidden_errors();
-            if ($outcome->get_error_count() > 0) {
-                if ($outcome->get_error_count() == $hiddenerrors) {
-                    $onlyhiddenfailed = true;
-                    $lines[] = get_string('failedhidden', 'qtype_coderunner');
-                } else if ($hiddenerrors > 0) {
-                    $lines[] = get_string('morehidden', 'qtype_coderunner');
-                }
-            }
         }
 
         if ($outcome->all_correct()) {
-            if (!$isprecheck) {
-                $lines[] = get_string('allok', 'qtype_coderunner') .
-                        "&nbsp;" . $this->feedback_image(1.0);
-            }
+            $lines[] = get_string('allok', 'qtype_coderunner') .
+                    "&nbsp;" . $this->feedback_image(1.0);
         } else {
-            if (!$isprecheck) {
-                $lines[] = get_string('noerrorsallowed', 'qtype_coderunner');
-            }
+            $lines[] = get_string('noerrorsallowed', 'qtype_coderunner');
         }
 
         return qtype_coderunner_util::make_html_para($lines);
@@ -343,10 +315,9 @@ class qtype_coderunner_renderer extends qtype_renderer {
     // A special case of the above method for use with combinator template graders
     // only.
     protected function build_combinator_grader_feedback_summary($qa, qtype_coderunner_combinator_grader_outcome $outcome) {
-        $isprecheck = $outcome->is_precheck($qa);
         $lines = array();  // List of lines of output.
 
-        if ($outcome->all_correct() && !$isprecheck) {
+        if ($outcome->all_correct()) {
             $lines[] = get_string('allok', 'qtype_coderunner') .
                     "&nbsp;" . $this->feedback_image(1.0);
         }

@@ -140,19 +140,12 @@ class qtype_coderunner_jobrunner {
     }
 
 
-    // Grade a given test result by calling the grader.
-    private function grade($output, $testcase, $isbad = false) {
-        return $this->grader->grade($output, $testcase, $isbad);
-    }
-
-
     /**
      * Given the result of a sandbox run with the combinator template,
      * build and return a testingOutcome object with a status of
      * STATUS_COMBINATOR_TEMPLATE_GRADER and attributes of prelude and/or
      * and/or testresults and/or epiloguehtml.
      *
-     * @param int $maxmark The maximum mark for this question
      * @param JSON $run The JSON-encoded output from the run.
      * @return \qtype_coderunner_testing_outcome the outcome object ready
      * for display by the renderer. This will have an actualmark and zero or more of
@@ -162,48 +155,23 @@ class qtype_coderunner_jobrunner {
      * the result table.
      */
     private function do_combinator_grading($run, $isprecheck) {
-        $outcome = new qtype_coderunner_combinator_grader_outcome($isprecheck);
         if ($run->result !== qtype_coderunner_sandbox::RESULT_SUCCESS) {
             $error = get_string('brokentemplategrader', 'qtype_coderunner',
                     array('output' => $run->cmpinfo . "\n" . $run->stderr));
-            $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, $error);
-        } else {
-            $result = json_decode($run->output);
-
-            if ($result === null || !isset($result->fraction) ||
-                    !is_numeric($result->fraction)) {
-                // Bad combinator output.
-                $error = get_string('badjsonorfraction', 'qtype_coderunner',
-                    array('output' => $run->output));
-                $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, $error);
-            } else {
-
-                // A successful combinator run (so far).
-                $fract = $result->fraction;
-                $feedback = array();
-                if (isset($result->feedback_html)) {  // Legacy combinator grader?
-                    $result->feedbackhtml = $result->feedback_html; // Change to modern version.
-                    unset($result->feedback_html);
-                }
-                foreach ($result as $key => $value) {
-                    if (!in_array($key, $outcome->allowedfields)) {
-                        $error = get_string('unknowncombinatorgraderfield', 'qtype_coderunner',
-                            array('fieldname' => $key));
-                        $outcome->set_status(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, $error);
-                        break;
-                    } else {
-                        if ($key === 'feedbackhtml' || $key === 'feedback_html') {
-                            // For compatibility with older combinator graders.
-                            $feedback['epiloguehtml'] = $result->$key;
-                        } else {
-                            $feedback[$key] = $value;
-                        }
-                    }
-                }
-                $outcome->set_mark_and_feedback($fract, $feedback);  // Further valididty checks done in here.
-            }
+            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            return $outcome;
         }
-        return $outcome;
+
+        $result = json_decode($run->output);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $error = get_string('badjsonorfraction', 'qtype_coderunner',
+                array('output' => $run->output));
+            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            return $outcome;
+        }
+
+        return new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_VALID, $result);
     }
 
 
