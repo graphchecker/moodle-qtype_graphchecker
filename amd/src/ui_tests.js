@@ -93,23 +93,55 @@ define(['jquery'], function($) {
     };
 
     TestsUi.prototype.reload = function() {
-        this.$testsPanel = $('<div/>');
+        this.$testsPanel = $('<div/>')
+            .addClass('tests-ui');
 
-        this.$activeTestsList = $('<div/>').appendTo(this.$testsPanel);
-        this.$possibleTestsList = $('<div/>').appendTo(this.$testsPanel);
+        this.$activeTestsList = $('<div/>')
+            .addClass('active-tests-list')
+            .appendTo(this.$testsPanel);
+        this.$availableTestsList = $('<div/>')
+            .addClass('available-tests-list')
+            .appendTo(this.$testsPanel);
 
         let activeTestsJson = this.$textArea.val();
         let activeTests = JSON.parse(activeTestsJson);
 
         for (let i = 0; i < activeTests.length; i++) {
             let test = activeTests[i];
-            this.createTestDiv(test).appendTo(this.$activeTestsList);
+            this.createTestContainer(test)
+                .appendTo(this.$activeTestsList);
         }
     };
 
-    TestsUi.prototype.createTestDiv = function(test) {
-        let $div = $('<div/>').html(test['package'] + '.' + test['method']);
-        return $div;
+    TestsUi.prototype.createTestContainer = function(test) {
+        let $container = $('<div/>')
+            .addClass('test-container');
+
+        let $header = $('<div/>')
+            .addClass('test-header')
+            .appendTo($container);
+
+        let $buttonGroup = $('<div/>')
+            .addClass('button-group')
+            .appendTo($header);
+
+        let $upButton = this.createButton('fa-angle-up')
+            .appendTo($buttonGroup);
+        let $downButton = this.createButton('fa-angle-down')
+            .appendTo($buttonGroup);
+
+        let $title = $('<span/>')
+            .html(test['package'] + '.' + test['method'])
+            .addClass('test-name')
+            .appendTo($header);
+
+        return $container;
+    };
+
+    TestsUi.prototype.createButton = function(iconClass) {
+        return $('<button/>')
+            .addClass('button down-button')
+            .append($('<i/>').addClass('icon fa ' + iconClass));
     };
 
     TestsUi.prototype.resize = function() {

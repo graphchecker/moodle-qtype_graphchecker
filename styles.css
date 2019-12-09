@@ -250,7 +250,7 @@ body#page-question-type-coderunner div.edit_code textarea {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    font-family: courier, monospace;
+    font-family: "Fira Mono", courier, monospace;
 }
 
 body#page-question-type-coderunner div#id_qtype_coderunner_error_div:empty {
@@ -368,8 +368,63 @@ body#page-question-type-coderunner div.testcaseexpression {
     border-top: 1px solid lightgrey;
 }
 
+/* Tests UI */
+
+body#page-question-type-coderunner .tests-ui .active-tests-list {
+    width: 400px;
+    height: 600px;
+    overflow-y: auto;
+    border: 1px solid darkgray;
+    background-color: white;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid darkgray;
+    padding: 5px;
+}
+
+/* definitions for button styling taken from atto for consistency */
+body#page-question-type-coderunner .tests-ui .test-container .test-header .button-group {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid #b3b3b3;
+    border-radius: 4px;
+    margin: 5px;
+    background: #fff;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container .test-header .button {
+    padding: 4px 9px;
+    background: none;
+    border: 0;
+    margin: 0;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container .test-header .button + .button {
+    border-left: 1px solid #ccc;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container .test-header .button:hover {
+    background-image: radial-gradient(ellipse at center,#fff 60%,#dfdfdf 100%);
+    background-color: #ebebeb;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container .test-header .button .icon {
+    padding: 0;
+    margin: 2px 0;
+}
+
+body#page-question-type-coderunner .tests-ui .test-container .test-header .test-name {
+    font-weight: bold;
+    margin-left: 10px;
+}
+
 /* Bulk tester */
 li.bulktest.coderunner.context.quiz {
     padding-left: 1.5em;
     list-style-type: none;
 }
+
