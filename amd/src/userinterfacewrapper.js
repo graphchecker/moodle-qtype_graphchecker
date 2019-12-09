@@ -87,6 +87,9 @@
  *
  * 8. A hasFocus() method that returns true if the UI element has focus.
  *
+ * 9. (Optional) A isResizable() method that returns true if the UI element can
+ *    be resized (if this method is not present, true is assumed).
+ *
  * The return value from the module define is a record with a single field
  * 'Constructor' that references the constructor (e.g. Graph, AceWrapper etc)
  *
@@ -156,11 +159,7 @@ define(['jquery'], function($) {
         this.textArea.after(this.wrapperNode);
         this.wrapperNode.hide();
         this.wrapperNode.css({
-            resize: 'vertical',
-            overflow: 'hidden',
-            minHeight: h,
             width: "100%",
-            border: "1px solid darkgrey"
         });
 
         // Record a reference to this wrapper in the text area's data attribute
@@ -273,7 +272,24 @@ define(['jquery'], function($) {
                         t.wrapperNode.append(uiInstance.getElement());
                         t.uiInstance = uiInstance;
                         t.loadFailed = false;
-                        t.checkForResize();
+                        // assume resizability if either isResizable() is not
+                        // defined, or if it returns true
+                        if (!uiInstance.isResizable || uiInstance.isResizable()) {
+                            t.wrapperNode.css({
+                                resize: 'vertical',
+                                overflow: 'hidden',
+                                minHeight: h,
+                                border: '1px solid darkgrey'
+                            });
+                            t.checkForResize();
+                        } else {
+                            t.wrapperNode.css({
+                                resize: 'none',
+                                overflow: 'auto',
+                                minHeight: 'auto',
+                                border: 'none'
+                            });
+                        }
                     }
                     t.isLoading = false;
                 });
