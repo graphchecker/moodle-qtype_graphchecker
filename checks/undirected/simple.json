@@ -1,0 +1,21 @@
+{
+    "vertex_count": {
+        "name": "Vertex count",
+        "description": "Checks if the graph has exactly the expected number of vertices.",
+        "params": [
+            "param": "expected",
+            "name": "Expected",
+            "type": "integer"
+        ]
+    },
+    "edge_count": {
+        "name": "Edge count",
+        "description": "Checks if the graph has exactly the expected number of edges.",
+        "params": [
+            "param": "expected",
+            "name": "Expected",
+            "type": "integer"
+        ]
+    }
+}
+
