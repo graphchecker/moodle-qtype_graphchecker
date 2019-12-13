@@ -370,12 +370,18 @@ body#page-question-type-coderunner div.testcaseexpression {
 
 /* Tests UI */
 
-body#page-question-type-coderunner .tests-ui .active-tests-list {
+body#page-question-type-coderunner .tests-ui .active-tests-list,
+body#page-question-type-coderunner .tests-ui .available-tests-list {
     width: 400px;
     height: 600px;
     overflow-y: auto;
     border: 1px solid darkgray;
     background-color: white;
+    display: inline-block;
+}
+
+body#page-question-type-coderunner .tests-ui .active-tests-list {
+    margin-right: 100px;
 }
 
 body#page-question-type-coderunner .tests-ui .test-container {
@@ -384,18 +390,24 @@ body#page-question-type-coderunner .tests-ui .test-container {
     padding: 5px;
 }
 
+body#page-question-type-coderunner .tests-ui .module-container {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid darkgray;
+    padding: 6px 8px;
+}
+
 /* definitions for button styling taken from atto for consistency */
-body#page-question-type-coderunner .tests-ui .test-container .test-header .button-group {
+body#page-question-type-coderunner .tests-ui .button-group {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
     border-radius: 4px;
-    margin: 5px;
+    margin: 2px;
     background: #fff;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container .test-header .button {
-    padding: 4px 9px;
+body#page-question-type-coderunner .tests-ui .button {
+    padding: 1px 6px 3px 6px;
     background: none;
     border: 0;
     margin: 0;
@@ -403,23 +415,27 @@ body#page-question-type-coderunner .tests-ui .test-container .test-header .butto
     cursor: pointer;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container .test-header .button + .button {
+body#page-question-type-coderunner .tests-ui .button + .button {
     border-left: 1px solid #ccc;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container .test-header .button:hover {
+body#page-question-type-coderunner .tests-ui .button:hover {
     background-image: radial-gradient(ellipse at center,#fff 60%,#dfdfdf 100%);
     background-color: #ebebeb;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container .test-header .button .icon {
+body#page-question-type-coderunner .tests-ui .button .icon {
     padding: 0;
     margin: 2px 0;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container .test-header .test-name {
-    font-weight: bold;
+body#page-question-type-coderunner .tests-ui .test-name {
     margin-left: 10px;
+}
+
+body#page-question-type-coderunner .tests-ui .active-tests-list .test-name,
+body#page-question-type-coderunner .tests-ui .module-name {
+    font-weight: bold;
 }
 
 /* Bulk tester */

@@ -142,10 +142,12 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('header', 'testshdr',
                     get_string('tests', 'qtype_coderunner'), '');
         $mform->setExpanded('testshdr', 1);
+        $availableTests = qtype_coderunner_test::get_available_tests();
         $mform->addElement('textarea', 'tests',
             get_string('tests', 'qtype_coderunner'),
             array(
-                  'class' => 'edit_code'
+                'class' => 'edit_code',
+                'data-available-tests' => json_encode($availableTests)
             )
         );
         $mform->addHelpButton('tests', 'tests', 'qtype_coderunner');

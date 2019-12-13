@@ -133,7 +133,7 @@ class qtype_coderunner_jobrunner {
         foreach ($this->get_checker_modules() as $module) {
             $name = $module . '.py';
             $full_name = $CFG->dirroot . '/question/type/coderunner/checks/undirected/' . $name;
-            $filemap[$name] = file_get_contents($full_name);
+            $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
         }
 
         return $filemap;
