@@ -265,7 +265,7 @@ define(['jquery'], function($) {
         let test = {
             'module': $testContainer.attr('data-module'),
             'method': $testContainer.attr('data-method'),
-            'params': []
+            'arguments': []
         };
 
         this.createActiveTestContainer(test)

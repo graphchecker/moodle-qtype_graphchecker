@@ -452,7 +452,7 @@ body#page-question-type-coderunner .tests-ui .argument-name {
 }
 
 body#page-question-type-coderunner .tests-ui .argument-value {
-    width: 120px;
+    width: 100px;
 }
 
 /* Bulk tester */

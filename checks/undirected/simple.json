@@ -1,5 +1,5 @@
 {
-    "name": "Basic checks",
+    "name": "Basic tests",
     "checks": {
         "vertex_count": {
             "name": "Vertex count",
@@ -7,12 +7,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "Expected",
-                    "type": "integer"
-                },
-                {
-                    "param": "check",
-                    "name": "Test argument",
+                    "name": "should be",
                     "type": "integer"
                 }
             ]
@@ -23,7 +18,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "Expected",
+                    "name": "should be",
                     "type": "integer"
                 }
             ]
