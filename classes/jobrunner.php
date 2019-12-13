@@ -117,7 +117,7 @@ class qtype_coderunner_jobrunner {
         $modules = [];
 
         foreach ($this->tests as $test) {
-            $module = $test->package;
+            $module = $test->module;
             $modules[] = $module;
         }
 

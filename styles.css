@@ -438,6 +438,23 @@ body#page-question-type-coderunner .tests-ui .module-name {
     font-weight: bold;
 }
 
+body#page-question-type-coderunner .tests-ui .argument-row {
+    padding-bottom: 5px;
+}
+
+body#page-question-type-coderunner .tests-ui .argument-row + .argument-row {
+    padding-top: 5px;
+}
+
+body#page-question-type-coderunner .tests-ui .argument-name {
+    padding-left: 73px;
+    padding-right: 21px;
+}
+
+body#page-question-type-coderunner .tests-ui .argument-value {
+    width: 120px;
+}
+
 /* Bulk tester */
 li.bulktest.coderunner.context.quiz {
     padding-left: 1.5em;

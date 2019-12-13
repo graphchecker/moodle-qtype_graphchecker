@@ -9,6 +9,11 @@
                     "param": "expected",
                     "name": "Expected",
                     "type": "integer"
+                },
+                {
+                    "param": "check",
+                    "name": "Test argument",
+                    "type": "integer"
                 }
             ]
         },
@@ -25,3 +30,4 @@
         }
     }
 }
+

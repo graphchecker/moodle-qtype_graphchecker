@@ -133,7 +133,7 @@ define(['jquery'], function($) {
     };
 
     TestsUi.prototype.createActiveTestContainer = function(test) {
-        let module = test['package'];  // TODO rename this field
+        let module = test['module'];
         let method = test['method'];
 
         let $container = $('<div/>')
@@ -169,6 +169,9 @@ define(['jquery'], function($) {
             .addClass('button-group float-right')
             .appendTo($header);
 
+        let $argsContainer = this.createArgsContainer(testInfo, test)
+            .appendTo($container);
+
         let $removeButton = this.createButton('fa-angle-right')
             .attr('title', 'Remove this check from the list')
             .on('click', this.removeCheck.bind(this))
@@ -176,6 +179,41 @@ define(['jquery'], function($) {
 
         return $container;
     };
+
+    TestsUi.prototype.createArgsContainer = function(testInfo, test) {
+        let params = testInfo['params'];
+        let args = test['arguments'];
+
+        let $container = $('<div/>')
+            .addClass('args-container');
+
+        for (let i = 0; i < params.length; i++) {
+            let param = params[i];
+
+            let $argumentRow = $('<div/>')
+                .addClass('argument-row')
+                .attr('data-param-name', param['name'])
+                .appendTo($container);
+
+            $('<span/>')
+                .addClass('argument-name')
+                .text(param['name'])
+                .appendTo($argumentRow);
+
+            $field = $('<input/>')
+                .addClass('argument-value')
+                .val(args[param['param']])
+                .appendTo($argumentRow);
+
+            switch (param['type']) {
+                case 'integer':
+                    $field.attr('type', 'number');
+                    break;
+            }
+        }
+
+        return $container;
+    }
 
     /**
      * Creates a module header.
@@ -225,7 +263,7 @@ define(['jquery'], function($) {
         let $testContainer = $(e.target).closest('.test-container');
 
         let test = {
-            'package': $testContainer.attr('data-module'),
+            'module': $testContainer.attr('data-module'),
             'method': $testContainer.attr('data-method'),
             'params': []
         };

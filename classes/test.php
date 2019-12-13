@@ -18,33 +18,33 @@ class qtype_coderunner_test {
      * Constructs a test from a PHP associative array.
      *
      * @param test_array An array with the following keys:
-     *   - package: the package the test methods can be found in;
-     *   - name: the method name of the test;
-     *   - params: an array of parameters for the test.
+     *   - module: the module the test methods can be found in;
+     *   - method: the method name of the test;
+     *   - arguments: an array of arguments for the test.
      */
     public function __construct($test_array) {
-        $this->package = $test_array['package'];
+        $this->module = $test_array['module'];
         $this->method = $test_array['method'];
-        $this->params = $test_array['params'];
+        $this->arguments = $test_array['arguments'];
     }
 
     /**
      * Returns the method call that executes the test.
      */
     public function get_test_code() {
-        return $this->package . '.' . $this->method .
-            '(' . $this->get_parameter_string() . ')';
+        return $this->module . '.' . $this->method .
+            '(' . $this->get_arguments_string() . ')';
     }
 
-    private function get_parameter_string() {
-        $parameters = 'student_answer';
+    private function get_arguments_string() {
+        $arguments = 'student_answer';
 
-        foreach ($this->params as $name => $value) {
-            $parameters .= ', ';
-            $parameters .= $name . '=' . $value;
+        foreach ($this->arguments as $name => $value) {
+            $arguments .= ', ';
+            $arguments .= $name . '=' . $value;
         }
 
-        return $parameters;
+        return $arguments;
     }
 
     public static function get_available_tests() {
