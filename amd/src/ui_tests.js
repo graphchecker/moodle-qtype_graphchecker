@@ -165,21 +165,32 @@ define(['jquery'], function($) {
             .addClass('test-name')
             .appendTo($header);
 
+        if (testInfo['description']) {
+            let $helpButton = this.createHelpButton(testInfo['description'])
+                .appendTo($header);
+        }
+
         let $rightButtonGroup = $('<div/>')
             .addClass('button-group float-right')
             .appendTo($header);
-
-        let $argsContainer = this.createArgsContainer(testInfo, test)
-            .appendTo($container);
 
         let $removeButton = this.createButton('fa-angle-right')
             .attr('title', 'Remove this check from the list')
             .on('click', this.removeCheck.bind(this))
             .appendTo($rightButtonGroup);
 
+        if (testInfo['params']) {
+            let $argsContainer = this.createArgsContainer(testInfo, test)
+                .appendTo($container);
+        }
+
         return $container;
     };
 
+    /**
+     * Creates a panel where the user can specify the arguments to be passed
+     * to the test. This should only be called if the test accepts parameters.
+     */
     TestsUi.prototype.createArgsContainer = function(testInfo, test) {
         let params = testInfo['params'];
         let args = test['arguments'];
@@ -301,6 +312,11 @@ define(['jquery'], function($) {
             .addClass('test-name')
             .appendTo($header);
 
+        if (test['description']) {
+            let $helpButton = this.createHelpButton(test['description'])
+                .appendTo($header);
+        }
+
         return $container;
     };
 
@@ -309,6 +325,19 @@ define(['jquery'], function($) {
             .addClass('button')
             .attr('type', 'button')
             .append($('<i/>').addClass('icon fa ' + iconClass));
+    };
+
+    TestsUi.prototype.createHelpButton = function(description) {
+        return $button = $('<a/>')
+            .addClass('btn btn-link p-0')
+            .attr('data-container', 'body')
+            .attr('data-content', '<div><p>' + description + '</p></div>')
+            .attr('data-html', 'true')
+            .attr('data-toggle', 'popover')
+            .attr('data-trigger', 'hover')
+            .append($('<i/>')
+                .addClass('icon fa fa-question-circle text-info')
+                .attr('title', 'Help'));
     };
 
     TestsUi.prototype.resize = function() {

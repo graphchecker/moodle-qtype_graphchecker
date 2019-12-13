@@ -1,5 +1,5 @@
 {
-    "name": "Basic tests",
+    "name": "Simple checks",
     "checks": {
         "vertex_count": {
             "name": "Vertex count",
@@ -22,7 +22,10 @@
                     "type": "integer"
                 }
             ]
+        },
+        "connectedness": {
+            "name": "Connectedness",
+            "description": "Checks if the graph is connected."
         }
     }
 }
-

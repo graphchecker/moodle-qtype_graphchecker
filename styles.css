@@ -455,6 +455,12 @@ body#page-question-type-coderunner .tests-ui .argument-value {
     width: 100px;
 }
 
+body#page-question-type-coderunner .tests-ui .btn-link {
+    position: relative;
+    left: 5px;
+    top: -2px;
+}
+
 /* Bulk tester */
 li.bulktest.coderunner.context.quiz {
     padding-left: 1.5em;

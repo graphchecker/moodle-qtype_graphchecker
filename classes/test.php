@@ -25,7 +25,11 @@ class qtype_coderunner_test {
     public function __construct($test_array) {
         $this->module = $test_array['module'];
         $this->method = $test_array['method'];
-        $this->arguments = $test_array['arguments'];
+        if (array_key_exists('arguments', $test_array)) {
+            $this->arguments = $test_array['arguments'];
+        } else {
+            $this->arguments = array();
+        }
     }
 
     /**

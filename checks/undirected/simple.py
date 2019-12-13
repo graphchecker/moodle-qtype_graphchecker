@@ -1,7 +1,5 @@
 # Simple tests for undirected graphs.
 
-# tests if the graph has exactly the given number of vertices
-# expected: the expected number of vertices
 def vertex_count(student_answer, expected):
     count = len(student_answer['nodes'])
     if count == expected:
@@ -10,8 +8,6 @@ def vertex_count(student_answer, expected):
         return {'correct': False,
                 'feedback': 'Vertex count was {0}, expected {1}'.format(count, expected)}
 
-# tests if the graph has exactly the given number of edges
-# expected: the expected number of edges
 def edge_count(student_answer, expected):
     count = len(student_answer['edges'])
     if count == expected:
@@ -19,6 +15,45 @@ def edge_count(student_answer, expected):
     else:
         return {'correct': False,
                 'feedback': 'Edge count was {0}, expected {1}'.format(count, expected)}
+
+def connectedness(student_answer):
+    if len(student_answer['nodes']) == 0:
+        return {'correct': True}
+
+    adj = node_adjacencies(student_answer)
+    visited = [False for i in student_answer['nodes']]
+
+    def dfs(node_id):
+        if visited[node_id]:
+            return 0
+        visited[node_id] = True
+        count = 1
+        for neighbor in adj[node_id]:
+            count += dfs(neighbor)
+        return count
+
+    num_found_nodes = dfs(0);
+
+    if num_found_nodes == len(student_answer['nodes']):
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': 'Your graph has more than one connected component'}
+
+
+# Helper methods
+
+# returns a list that contains for each vertex a list of vertices it is
+# adjacent to
+def node_adjacencies(student_answer):
+    adj = [[] for i in student_answer['nodes']]
+    for edge in student_answer['edges']:
+        adj[edge[0]].append(edge[1])
+        adj[edge[1]].append(edge[0])
+    return adj
+
+
+## TODO the following tests still need to be refactored
 
 
 # tests if the student's answer has the same vertices as the given graph
@@ -50,27 +85,3 @@ def test_all_degrees(d):
                     "(for example vertex {0} has degree {1})").format(node['id'], degree, d)
             return (result, 0)
     return ("Correct!", 1)
-
-# tests if the student's answer is a connected graph
-def test_connectedness():
-    if len(student_nodes) == 0:
-        return ("Your graph has no connected components", 0)
-
-    visited = [False for i in student_nodes]
-
-    def dfs(node_id):
-        if visited[node_id]:
-            return 0
-        visited[node_id] = True
-        count = 1
-        for neighbor in student_nodes[node_id]['adj']:
-            count += dfs(neighbor)
-        return count
-
-    num_found_nodes = dfs(0);
-
-    if num_found_nodes == len(student_nodes):
-        return ("Correct!", 1)
-    else:
-        return ("Your graph has more than one connected component", 0)
-
