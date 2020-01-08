@@ -126,9 +126,9 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_coderunner'),
                 $attributes);
-        $mform->addElement('advcheckbox', 'validateonsave', null,
-                get_string('validateonsave', 'qtype_coderunner'));
-        $mform->setDefault('validateonsave', false);
+        //$mform->addElement('advcheckbox', 'validateonsave', null,
+        //        get_string('validateonsave', 'qtype_coderunner'));
+        //$mform->setDefault('validateonsave', false);
         $mform->addHelpButton('answer', 'answer', 'qtype_coderunner');
     }
 

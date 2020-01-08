@@ -43,35 +43,33 @@ define(['jquery'], function($) {
 
     // Copy the serialised version of the HTML UI area to the TextArea.
     TestsUi.prototype.sync = function() {
-        /*var serialisation = {},
-            name,
-            empty = true;
+        let tests = [];
 
-        this.getFields().each(function() {
-            var value, type;
-            type = $(this).attr('type');
-            name = $(this).attr('name');
-            if ((type === 'checkbox' || type === 'radio') && !($(this).is(':checked'))) {
-                value = '';
-            } else {
-                value = $(this).val();
+        let $testContainers = this.$activeTestsList.children();
+        console.log($testContainers);
+        $testContainers.each(function() {
+            let $testContainer = $(this);
+            let test = {
+                'module': $testContainer.attr('data-module'),
+                'method': $testContainer.attr('data-method')
+            };
+
+            let $argRows =
+                    $testContainer.children('.args-container').children();
+            if ($argRows) {
+                let args = {};
+                $argRows.each(function() {
+                    let $argRow = $(this);
+                    let name = $argRow.attr('data-param-name');
+                    let value = $argRow.children('.argument-value').val();
+                    args[name] = value;
+                });
+                test['arguments'] = args;
             }
-            if (serialisation.hasOwnProperty(name)) {
-                serialisation[name].push(value);
-            } else {
-                serialisation[name] = [value];
-            }
-            if (value !== '') {
-                empty = false;
-            }
+            tests.push(test);
         });
-        if (empty) {
-            this.$textArea.val('');
-        } else {
-            this.$textArea.val(JSON.stringify(serialisation));
-        }*/
 
-        // TODO!
+        this.$textArea.val(JSON.stringify(tests));
     };
 
     TestsUi.prototype.getElement = function() {
@@ -189,7 +187,7 @@ define(['jquery'], function($) {
 
             let $argumentRow = $('<div/>')
                 .addClass('argument-row')
-                .attr('data-param-name', param['name'])
+                .attr('data-param-name', param['param'])
                 .appendTo($container);
 
             $('<span/>')
@@ -271,8 +269,7 @@ define(['jquery'], function($) {
         return false;
     };
 
-    TestsUi.prototype.createAvailableTestContainer =
-                            function(module, method) {
+    TestsUi.prototype.createAvailableTestContainer = function(module, method) {
         let $container = $('<div/>')
             .addClass('test-container')
             .attr('data-module', module)
