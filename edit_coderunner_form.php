@@ -150,6 +150,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
                 'data-available-tests' => json_encode($availableTests)
             )
         );
+        $mform->setDefault('tests', '[]');
         $mform->addHelpButton('tests', 'tests', 'qtype_coderunner');
     }
 
