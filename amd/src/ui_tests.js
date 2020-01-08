@@ -43,7 +43,7 @@ define(['jquery'], function($) {
 
     // Copy the serialised version of the HTML UI area to the TextArea.
     TestsUi.prototype.sync = function() {
-        var serialisation = {},
+        /*var serialisation = {},
             name,
             empty = true;
 
@@ -69,27 +69,13 @@ define(['jquery'], function($) {
             this.$textArea.val('');
         } else {
             this.$textArea.val(JSON.stringify(serialisation));
-        }
+        }*/
+
+        // TODO!
     };
 
     TestsUi.prototype.getElement = function() {
         return this.$testsPanel;
-    };
-
-    TestsUi.prototype.getFields = function() {
-        return $(this.htmlDiv).find('.coderunner-ui-element');
-    };
-
-    // Set the value of the jQuery field to the given value.
-    // If the field is a radio button or a checkbox and its name matches
-    // the given value, the checked attribute is set. Otherwise the field's
-    // val() function is called to set the value.
-    TestsUi.prototype.setField = function(field, value) {
-        if (field.attr('type') === 'checkbox' || field.attr('type') === 'radio') {
-            field.prop('checked', field.val() === value);
-        } else {
-            field.val(value);
-        }
     };
 
     TestsUi.prototype.reload = function() {
@@ -348,12 +334,10 @@ define(['jquery'], function($) {
         // TODO
     };
 
-    // Destroy the HTML UI and serialise the result into the original text area.
     TestsUi.prototype.destroy = function() {
-        // TODO
-        /*this.sync();
-        $(this.htmlDiv).remove();
-        this.htmlDiv = null;*/
+        this.sync();
+        this.$testsPanel.remove();
+        this.$testsPanel = null;
     };
 
     TestsUi.prototype.isResizable = function() {
