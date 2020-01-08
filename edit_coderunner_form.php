@@ -104,8 +104,8 @@ class qtype_coderunner_edit_form extends question_edit_form {
     public function definition_inner($mform) {
         $this->make_questiontype_panel($mform);
         $this->add_preload_answer_field($mform);
-        $this->add_sample_answer_field($mform);
         $this->add_tests_field($mform);
+        $this->add_sample_answer_field($mform);
     }
 
 
