@@ -277,9 +277,10 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_coderunner'));
 
         // The Question Type controls (a group with just a single member).
-        $types = array('Undirected graph', 'Directed graph');  // TODO
+        $types = array('Undirected graph', 'Directed graph', 'FSM', 'Petri net', 'Markov chain');  // TODO
         $typeselectorelements = array();
-        $expandedtypes = array_merge(array('Undefined' => 'Undefined'), $types);
+        //$expandedtypes = array_merge(array('Undefined' => 'Undefined'), $types);
+        $expandedtypes = $types;
         $typeselectorelements[] = $mform->createElement('select', 'coderunnertype',
                 null, $expandedtypes);
         $mform->addElement('group', 'coderunner_type_group',
