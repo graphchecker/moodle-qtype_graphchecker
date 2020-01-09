@@ -14,7 +14,7 @@ results = []
 
 {% for test in tests %}
 result = {{ test.get_test_code() }}
-result['package'] = """{{ test.package | e('py') }}"""
+result['module'] = """{{ test.module | e('py') }}"""
 result['method'] = """{{ test.method | e('py') }}"""
 results.append(result)
 {% endfor %}

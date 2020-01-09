@@ -201,7 +201,7 @@ class qtype_coderunner_testing_outcome {
         foreach ($this->testresults as $result) {
             $tablerow = array();
             $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $result->package . "." . $result->method;
+            $tablerow[] = $result->module . "." . $result->method;
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result->feedback;
             } else {
