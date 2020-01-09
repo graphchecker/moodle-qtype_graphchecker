@@ -193,15 +193,13 @@ class qtype_coderunner_testing_outcome {
      * treated as ready-to-output html. Empty columns are suppressed.
      */
     protected function build_results_table(qtype_coderunner_question $question) {
-        $canviewhidden = $this->can_view_hidden();
-
         $table = array();
         $table[] = array('iscorrect', 'Test', 'Result');
 
         foreach ($this->testresults as $result) {
             $tablerow = array();
             $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $result->module . "." . $result->method;
+            $tablerow[] = $this->get_test_name($result->module, $result->method);
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result->feedback;
             } else {
@@ -211,6 +209,23 @@ class qtype_coderunner_testing_outcome {
         }
 
         return $table;
+    }
+
+    private function get_test_name($module, $method) {
+
+        global $CFG;
+
+        // load module JSON
+        $name = $module . '.json';
+        $full_name = $CFG->dirroot . '/question/type/coderunner/checks/undirected/' . $name;
+        $module_json = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
+        $module_info = json_decode($module_json, true);
+
+        if (array_key_exists($method, $module_info['checks'])) {
+            return $module_info['checks'][$method]['name'];
+        }
+
+        return $module . '.' . $method . '()';
     }
 
 
