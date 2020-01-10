@@ -1,0 +1,64 @@
+{
+    "name": "igraph",
+    "checks": {
+        "clique_number": {
+            "name": "Clique number",
+            "description": "Checks if the clique number (size of the largest clique) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "diameter": {
+            "name": "Diameter",
+            "description": "Checks if the diameter (length of the longest path) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "girth": {
+            "name": "Girth",
+            "description": "Checks if the girth (length of the shortest cycle) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "independence_number": {
+            "name": "Independence number",
+            "description": "Checks if the independence number (size of the largest independent set) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "isomorphism": {
+            "name": "Isomorphism",
+            "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices)."
+        },
+        "radius": {
+            "name": "Radius",
+            "description": "Checks if the radius (minimum eccentricity) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        }
+    }
+}

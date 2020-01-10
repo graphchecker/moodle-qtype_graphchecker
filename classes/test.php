@@ -41,7 +41,7 @@ class qtype_coderunner_test {
     }
 
     private function get_arguments_string() {
-        $arguments = 'student_answer';
+        $arguments = 'student_answer, sample_answer, preload_answer';
 
         foreach ($this->arguments as $name => $value) {
             $arguments .= ', ';
