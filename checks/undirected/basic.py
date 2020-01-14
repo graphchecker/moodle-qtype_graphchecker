@@ -4,10 +4,12 @@ import igraph
 
 # helper methods
 def _to_igraph(graph):
-    with open('tmpfile.edges', 'w') as tmpfile:
-        for edge in graph['edges']:
-            tmpfile.write(str(edge[0]) + ' ' + str(edge[1]) + '\n')
-    return igraph.Graph.Read_Edgelist('tmpfile.edges', False)
+    g = igraph.Graph()
+    for vertex in graph['nodes']:
+        g.add_vertex(name=vertex[0])
+    for edge in graph['edges']:
+        g.add_edge(edge[0], edge[1], label=edge[2])
+    return g
 
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,
@@ -24,9 +26,11 @@ def _make_integer_checker(method_name, readable_name):
 
 clique_number = _make_integer_checker('clique_number', 'Clique number')
 diameter = _make_integer_checker('diameter', 'Diameter')
+edge_count = _make_integer_checker('ecount', 'Edge count')
 girth = _make_integer_checker('girth', 'Girth')
 independence_number = _make_integer_checker('independence_number', 'Independence number')
 radius = _make_integer_checker('radius', 'Radius')
+vertex_count = _make_integer_checker('vcount', 'Vertex count')
 
 def isomorphism(student_answer, sample_answer, preload_answer):
     g1 = _to_igraph(student_answer)

@@ -1,5 +1,5 @@
 {
-    "name": "igraph",
+    "name": "Graph properties",
     "checks": {
         "clique_number": {
             "name": "Clique number",
@@ -15,6 +15,17 @@
         "diameter": {
             "name": "Diameter",
             "description": "Checks if the diameter (length of the longest path) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "edge_count": {
+            "name": "Edge count",
+            "description": "Checks if the graph has the given number of edges.",
             "params": [
                 {
                     "param": "expected",
@@ -52,6 +63,17 @@
         "radius": {
             "name": "Radius",
             "description": "Checks if the radius (minimum eccentricity) is equal to the given value.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                }
+            ]
+        },
+        "vertex_count": {
+            "name": "Vertex count",
+            "description": "Checks if the graph has the given number of vertices.",
             "params": [
                 {
                     "param": "expected",
