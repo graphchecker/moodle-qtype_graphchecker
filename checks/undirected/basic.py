@@ -41,3 +41,14 @@ def isomorphism(student_answer, sample_answer, preload_answer):
         return {'correct': False,
                 'feedback': 'Your graph was not isomorphic to the given answer'}
 
+def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
+    g = _to_igraph(student_answer)
+    for v in g.vs:
+        if v.degree() != expected:
+            v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
+            return {'correct': False,
+                    'feedback': ('All vertices should have degree {0}, ' +
+                        'but {1} has degree {2}').format(
+                        expected, v_name, v.degree())}
+    return {'correct': True}
+

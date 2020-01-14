@@ -81,6 +81,17 @@
                     "type": "integer"
                 }
             ]
+        },
+        "vertex_degrees": {
+            "name": "Vertex degrees",
+            "description": "Checks if each vertex in the graph has the given degree.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should all be",
+                    "type": "integer"
+                }
+            ]
         }
     }
 }
