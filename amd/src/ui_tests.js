@@ -195,14 +195,24 @@ define(['jquery'], function($) {
                 .text(param['name'])
                 .appendTo($argumentRow);
 
+            let value = args[param['param']];
+            if (!value) {
+                value = param['default'];
+            }
             $field = $('<input/>')
                 .addClass('argument-value')
-                .val(args[param['param']])
+                .val(value)
                 .appendTo($argumentRow);
 
             switch (param['type']) {
                 case 'integer':
                     $field.attr('type', 'number');
+                    if (param.hasOwnProperty('min')) {
+                        $field.attr('min', param['min']);
+                    }
+                    if (param.hasOwnProperty('max')) {
+                        $field.attr('max', param['max']);
+                    }
                     break;
             }
         }

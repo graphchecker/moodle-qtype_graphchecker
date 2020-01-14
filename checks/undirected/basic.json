@@ -8,7 +8,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -19,7 +21,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -30,7 +34,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -41,7 +47,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 3,
+                    "min": 3
                 }
             ]
         },
@@ -52,7 +60,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -67,7 +77,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -78,7 +90,9 @@
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         },
@@ -89,7 +103,9 @@
                 {
                     "param": "expected",
                     "name": "should all be",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
                 }
             ]
         }
