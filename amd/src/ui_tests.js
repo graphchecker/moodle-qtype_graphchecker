@@ -46,7 +46,6 @@ define(['jquery'], function($) {
         let tests = [];
 
         let $testContainers = this.$activeTestsList.children();
-        console.log($testContainers);
         $testContainers.each(function() {
             let $testContainer = $(this);
             let test = {
@@ -83,9 +82,15 @@ define(['jquery'], function($) {
         this.$activeTestsList = $('<div/>')
             .addClass('active-tests-list')
             .appendTo(this.$testsPanel);
-        this.$availableTestsList = $('<div/>')
-            .addClass('available-tests-list')
+        this.$backdrop = $('<div/>')
+            .addClass('backdrop')
+            .css('display', 'none')
+            .on('click', this.hideAddTestDialog.bind(this))
             .appendTo(this.$testsPanel);
+        this.$availableTestsList = $('<div/>')
+            .addClass('available-tests-list');
+        this.$dialog = this.createDialog('Add test', this.$availableTestsList)
+            .appendTo(this.$backdrop);
 
         let activeTestsJson = this.$textArea.val();
         let activeTests = JSON.parse(activeTestsJson);
@@ -114,7 +119,29 @@ define(['jquery'], function($) {
                 }
             }
         }
+
+        this.$addTestButton = $('<button/>')
+            .addClass('btn btn-primary')
+            .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
+            .append('Add test')
+            .on('click', this.showAddTestDialog.bind(this))
+            .appendTo(this.$testsPanel);
     };
+
+    TestsUi.prototype.showAddTestDialog = function(test) {
+        this.$backdrop.css('display', 'block')
+            .addClass('visible');
+        return false;
+    }
+
+    TestsUi.prototype.hideAddTestDialog = function(test) {
+        this.$backdrop.removeClass('visible');
+
+        // hide the element only after the CSS transition has finished
+        setTimeout(function() {
+            this.$backdrop.css('display', 'none');
+        }.bind(this), 500);
+    }
 
     TestsUi.prototype.createActiveTestContainer = function(test) {
         let module = test['module'];
@@ -158,7 +185,7 @@ define(['jquery'], function($) {
             .addClass('button-group float-right')
             .appendTo($header);
 
-        let $removeButton = this.createButton('fa-angle-right')
+        let $removeButton = this.createButton('fa-trash')
             .attr('title', 'Remove this check from the list')
             .on('click', this.removeCheck.bind(this))
             .appendTo($rightButtonGroup);
@@ -260,7 +287,13 @@ define(['jquery'], function($) {
 
     TestsUi.prototype.removeCheck = function(e) {
         let $testContainer = $(e.target).closest('.test-container');
-        $testContainer.remove();
+        $testContainer.slideUp();
+
+        // remove it after the slideUp is done
+        setTimeout(function() {
+            $testContainer.remove();
+        }.bind(this), 500);
+        
         return false;
     };
 
@@ -274,7 +307,11 @@ define(['jquery'], function($) {
         };
 
         this.createActiveTestContainer(test)
-            .appendTo($('.active-tests-list'));
+            .appendTo($('.active-tests-list'))
+            .hide()
+            .slideDown();
+
+        hideAddTestDialog();
 
         return false;
     };
@@ -293,7 +330,7 @@ define(['jquery'], function($) {
             .addClass('button-group')
             .appendTo($header);
 
-        let $leftButton = this.createButton('fa-angle-left')
+        let $addButton = this.createButton('fa-plus')
             .attr('title', 'Add this check to the list')
             .on('click', this.addCheck.bind(this))
             .appendTo($buttonGroup);
@@ -311,6 +348,17 @@ define(['jquery'], function($) {
         }
 
         return $container;
+    };
+
+    TestsUi.prototype.createDialog = function(title, content) {
+        return $('<div/>')
+            .addClass('dialog')
+            .append($('<div/>')
+                .addClass('dialog-header')
+                .html(title))
+            .append($('<div/>')
+                .addClass('dialog-body')
+                .append(content));
     };
 
     TestsUi.prototype.createButton = function(iconClass) {
