@@ -360,7 +360,10 @@ define(['jquery'], function($) {
                 .html(title))
             .append($('<div/>')
                 .addClass('dialog-body')
-                .append(content));
+                .append(content))
+            .on('click', function() {
+                return false;  // avoid bubbling to the backdrop
+            });
     };
 
     TestsUi.prototype.createButton = function(iconClass) {
