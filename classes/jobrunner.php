@@ -78,7 +78,7 @@ class qtype_coderunner_jobrunner {
         $outcome = new qtype_coderunner_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
 
-        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/undirected/template.py.twig');
+        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/' . $this->question->coderunnertype . '/template.py.twig');
 
         try {
             $testprog = $question->twig_expand($template, $this->templateparams);
@@ -132,7 +132,7 @@ class qtype_coderunner_jobrunner {
 
         foreach ($this->get_checker_modules() as $module) {
             $name = $module . '.py';
-            $full_name = $CFG->dirroot . '/question/type/coderunner/checks/undirected/' . $name;
+            $full_name = $CFG->dirroot . '/question/type/coderunner/checks/' . $this->question->coderunnertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
         }
 

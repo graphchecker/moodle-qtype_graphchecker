@@ -199,7 +199,7 @@ class qtype_coderunner_testing_outcome {
         foreach ($this->testresults as $result) {
             $tablerow = array();
             $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $this->get_test_name($result->module, $result->method);
+            $tablerow[] = $this->get_test_name($question->coderunnertype, $result->module, $result->method);
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result->feedback;
             } else {
@@ -211,13 +211,13 @@ class qtype_coderunner_testing_outcome {
         return $table;
     }
 
-    private function get_test_name($module, $method) {
+    private function get_test_name($answertype, $module, $method) {
 
         global $CFG;
 
         // load module JSON
         $name = $module . '.json';
-        $full_name = $CFG->dirroot . '/question/type/coderunner/checks/undirected/' . $name;
+        $full_name = $CFG->dirroot . '/question/type/coderunner/checks/' . $answertype . '/' . $name;
         $module_json = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
         $module_info = json_decode($module_json, true);
 

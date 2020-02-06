@@ -142,7 +142,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('header', 'testshdr',
                     get_string('tests', 'qtype_coderunner'), '');
         $mform->setExpanded('testshdr', 1);
-        $availableTests = qtype_coderunner_test::get_available_tests();
+        $availableTests = qtype_coderunner_test::get_available_tests($this->question->options->coderunnertype);
         $mform->addElement('textarea', 'tests',
             get_string('tests', 'qtype_coderunner'),
             array(
@@ -278,12 +278,10 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_coderunner'));
 
         // The Question Type controls (a group with just a single member).
-        $types = array('Undirected graph', 'Directed graph', 'FSM', 'Petri net', 'Markov chain');  // TODO
+        $types = $this->get_types_array();
         $typeselectorelements = array();
-        //$expandedtypes = array_merge(array('Undefined' => 'Undefined'), $types);
-        $expandedtypes = $types;
         $typeselectorelements[] = $mform->createElement('select', 'coderunnertype',
-                null, $expandedtypes);
+                null, $types);
         $mform->addElement('group', 'coderunner_type_group',
                 get_string('coderunnertype', 'qtype_coderunner'), $typeselectorelements, null, false);
         $mform->addHelpButton('coderunner_type_group', 'coderunnertype', 'qtype_coderunner');
@@ -336,6 +334,30 @@ class qtype_coderunner_edit_form extends question_edit_form {
         );
         $mform->setType('templateparams', PARAM_RAW);
         $mform->addHelpButton('templateparams', 'templateparams', 'qtype_coderunner');
+    }
+
+    /**
+     * Returns an array of key-value pairs, containing a list of available
+     * answer types.
+     *
+     * The keys are the internal names, while the values are the human-readable
+     * names of the answer types.
+     */
+    private function get_types_array() {
+        global $CFG;
+        $json = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/types.json');
+        $types = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Invalid JSON types file");
+        }
+
+        $result = [];
+        foreach ($types as $key => $type) {
+            $result[$key] = $type["name"];
+        }
+
+        return $result;
     }
 
 

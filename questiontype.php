@@ -60,7 +60,7 @@ class qtype_coderunner extends question_type {
 
     public function extra_question_fields() {
         return array('question_coderunner_options',
-            'coderunnertype',
+            'coderunnertype',  // answer type
             'precheck',
             'showsource',
             'answerpreload',

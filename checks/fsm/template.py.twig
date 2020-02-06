@@ -1,0 +1,34 @@
+import json
+import sys
+
+{% for module in checker_modules %}
+import {{ module }}
+{% endfor %}
+
+
+student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
+student_answer = json.loads(student_answer)
+
+sample_answer = """{{ QUESTION.answer | e('py') }}"""
+if sample_answer == '':
+    sample_answer = None
+else:
+    sample_answer = json.loads(sample_answer)
+
+preload_answer = """{{ QUESTION.answerpreload | e('py') }}"""
+if preload_answer == '':
+    preload_answer = None
+else:
+    preload_answer = json.loads(preload_answer)
+
+results = []
+
+{% for test in tests %}
+result = {{ test.get_test_code() }}
+result['module'] = """{{ test.module | e('py') }}"""
+result['method'] = """{{ test.method | e('py') }}"""
+results.append(result)
+{% endfor %}
+
+print(json.dumps(results))
+

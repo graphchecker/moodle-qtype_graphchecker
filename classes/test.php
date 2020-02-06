@@ -51,12 +51,12 @@ class qtype_coderunner_test {
         return $arguments;
     }
 
-    public static function get_available_tests() {
+    public static function get_available_tests($answertype) {
         global $CFG;
 
         $modules = array();
 
-        $checksDir = $CFG->dirroot . '/question/type/coderunner/checks/undirected';
+        $checksDir = $CFG->dirroot . '/question/type/coderunner/checks/' . $answertype;
         $checkFiles = scandir($checksDir);
         foreach ($checkFiles as $file) {
             $path = $checksDir . '/' . $file;

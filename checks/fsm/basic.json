@@ -1,9 +1,9 @@
 {
     "name": "Graph properties",
     "checks": {
-        "transition_count": {
-            "name": "Transition count",
-            "description": "Checks if the FSM has the given number of transitions.",
+        "state_count": {
+            "name": "State count",
+            "description": "Checks if the graph has the given number of states.",
             "params": [
                 {
                     "param": "expected",
@@ -14,9 +14,9 @@
                 }
             ]
         },
-        "state_count": {
-            "name": "State count",
-            "description": "Checks if the graph has the given number of states.",
+        "transition_count": {
+            "name": "Transition count",
+            "description": "Checks if the FSM has the given number of transitions.",
             "params": [
                 {
                     "param": "expected",
