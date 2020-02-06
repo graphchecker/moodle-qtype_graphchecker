@@ -256,6 +256,7 @@ define(['jquery'], function($) {
                             .text(option)
                             .appendTo($field);
                     }
+                    $field.val(value);
                     break;
                 default:
                     console.error('Unknown type ' + param['type']);
