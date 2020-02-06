@@ -81,7 +81,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
                 'id'    => $responsefieldid,
                 'spellcheck' => 'false',
                 'rows'      => $rows,
-                'data-params' => $question->templateparams,
+                'data-params' => $question->get_ui_params(),
                 'data-globalextra' => $question->globalextra
         );
 

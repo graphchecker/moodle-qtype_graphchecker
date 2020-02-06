@@ -245,15 +245,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             $errors['coderunner_precheck_group'] = get_string('precheckingemptyset', 'qtype_coderunner');
         }
 
-        $templatestatus = $this->validate_template_params($data);
-        if ($templatestatus['error']) {
-            $errors['templateparams'] = $templatestatus['error'];
-        }
-
-        if (count($errors) == 0 && $templatestatus['istwigged']) {
-            $errors = $this->validate_twigables($data, $templatestatus['renderedparams']);
-        }
-
         if (count($errors) == 0 && !empty($data['validateonsave'])) {
             $testresult = $this->validate_sample_answer($data);
             if ($testresult) {
@@ -283,7 +274,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $typeselectorelements[] = $mform->createElement('select', 'coderunnertype',
                 null, $types);
         $mform->addElement('group', 'coderunner_type_group',
-                get_string('coderunnertype', 'qtype_coderunner'), $typeselectorelements, null, false);
+                'Answer type', $typeselectorelements, null, false);
         $mform->addHelpButton('coderunner_type_group', 'coderunnertype', 'qtype_coderunner');
 
         // Precheck control (a group with only one element).
@@ -323,17 +314,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
                 $markingelements, null, false);
         $mform->setDefault('allornothing', true);
         $mform->addHelpButton('markinggroup', 'markinggroup', 'qtype_coderunner');
-
-        // Template params.
-        $mform->addElement('textarea', 'templateparams',
-            get_string('templateparams', 'qtype_coderunner'),
-            array('rows' => self::TEMPLATE_PARAM_ROWS,
-                  'class' => 'edit_code',
-                  'data-lang' => '' // Don't syntax colour template params.
-            )
-        );
-        $mform->setType('templateparams', PARAM_RAW);
-        $mform->addHelpButton('templateparams', 'templateparams', 'qtype_coderunner');
     }
 
     /**
@@ -415,103 +395,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
             $errors["testcode[0]"] = get_string('atleastonetest', 'qtype_coderunner');
         } else if ($numnonemptytests != 0 && $numnonemptytests != $count) {
             $errors["testcode[0]"] = get_string('allornone', 'qtype_coderunner');
-        }
-        return $errors;
-    }
-
-
-    // Check the templateparameters value, if given. Return value is
-    // an associative array with an error message 'error', a boolean
-    // 'istwigged' and a string 'renderedparams'.  istwigged is true if
-    // twigging the template parameters changed them. 'renderedparams' is
-    // the result of twig expanding the params.
-    // Error is the empty string if the template parameters are OK.
-    // As a side effect, $this->renderedparams is the result of twig expanding
-    // the params and $this->decodedparams is the json decoded template parameters
-    // as an associative array.
-    private function validate_template_params($data) {
-        global $USER;
-        $errormessage = '';
-        $istwiggedparams = false;
-        $this->renderedparams = '';
-        $this->decodedparams = array();
-        if ($data['templateparams'] != '') {
-            // Try Twigging the template params to make sure they parse.
-            $ok = true;
-            $json = $data['templateparams'];
-            try {
-                $this->renderedparams = qtype_coderunner_twig::render($json);
-                if (str_replace($this->renderedparams, "\r", '') !==
-                        str_replace($json, "\r", '')) {
-                    // Twig loses '\r' chars, so must strip them before checking.
-                    $istwiggedparams = true; //Twigging the template parameters changed them.
-                }
-            } catch (Exception $ex) {
-                $errormessage = $ex->getMessage();
-                $ok = false;
-            }
-            if ($ok) {
-                $this->decodedparams = json_decode($this->renderedparams, true);
-                if ($this->decodedparams === null) {
-                    if ($this->decodedparams) {
-                        $badjsonhtml = str_replace("\n", '<br>', $this->renderedparams);
-                        $errormessage = get_string('badtemplateparamsaftertwig',
-                                'qtype_coderunner', $badjsonhtml);
-                    } else {
-                        $errormessage = get_string('badtemplateparams', 'qtype_coderunner');
-                    }
-                }
-            }
-
-        }
-        return array('error' => $errormessage,
-                    'istwigged' => $istwiggedparams,
-                    'renderedparams' => $this->renderedparams);
-    }
-
-
-    // If the template parameters contain twig code, in which case the
-    // other question fields will need twig expansion, check for twig errors
-    // in all other fields. Return value is an associative array mapping from
-    // form fields to error messages.
-    private function validate_twigables($data, $renderedparams) {
-        $errors = array();
-        if (!empty($renderedparams)) {
-            $parameters = json_decode($renderedparams, true);
-        } else {
-            $parameters = array();
-        }
-
-        // Try twig expanding everything (see question::twig_all), with strict_variables true.
-        foreach (['questiontext', 'answer', 'answerpreload', 'globalextra'] as $field) {
-            $text = $data[$field];
-            if (is_array($text)) {
-                $text = $text['text'];
-            }
-            try {
-                qtype_coderunner_twig::render($text, $parameters, true);
-            } catch (Twig_Error $ex) {
-                $errors[$field] = get_string('twigerror', 'qtype_coderunner',
-                        $ex->getMessage());
-            }
-        }
-
-        // Now all test cases.
-        if (!empty($data['testcode'])) {
-            $num = max(count($data['testcode']), count($data['stdin']),
-                    count($data['expected']), count($data['extra']));
-
-            for ($i = 0; $i < $num; $i++) {
-                foreach (['testcode', 'stdin', 'expected', 'extra'] as $fieldname) {
-                    $text = $data[$fieldname][$i];
-                    try {
-                        qtype_coderunner_twig::render($text, $parameters, true);
-                    } catch (Twig_Error $ex) {
-                        $errors["testcode[$i]"] = get_string('twigerrorintest',
-                                'qtype_coderunner', $ex->getMessage());
-                    }
-                }
-            }
         }
         return $errors;
     }
