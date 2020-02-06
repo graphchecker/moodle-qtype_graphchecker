@@ -78,7 +78,7 @@ class qtype_coderunner_jobrunner {
         $outcome = new qtype_coderunner_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
 
-        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/templates/undirected.py.twig');
+        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/undirected/template.py.twig');
 
         try {
             $testprog = $question->twig_expand($template, $this->templateparams);
