@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Undirected graph",
+        "checks_dir_name": "undirected",
+        "ui_plugin": "graph",
+        "ui_params": {
+            "isdirected": false,
+            "isfsm": false
+        }
+    },
+    {
+        "name": "Directed graph",
+        "checks_dir_name": "directed",
+        "ui_plugin": "graph",
+        "ui_params": {
+            "isdirected": true,
+            "isfsm": false
+        }
+    },
+    {
+        "name": "Finite state machine",
+        "checks_dir_name": "fsm",
+        "ui_plugin": "graph",
+        "ui_params": {
+            "isdirected": true,
+            "isfsm": true
+        }
+    }
+]
+
