@@ -45,10 +45,19 @@ class qtype_coderunner_test {
 
         foreach ($this->arguments as $name => $value) {
             $arguments .= ', ';
-            $arguments .= $name . '=' . $value;
+            $arguments .= $name . '=' . $this->make_python_string($value);
         }
 
         return $arguments;
+    }
+
+    /**
+     * Given a value, produces an (properly-escaped) Python string containing
+     * that value.
+     */
+    private function make_python_string($value) {
+        $escaped = str_replace("'", "\'", $value);
+        return "'" . $escaped . "'";
     }
 
     public static function get_available_tests($answertype) {

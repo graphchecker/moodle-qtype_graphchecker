@@ -16,7 +16,7 @@ def _make_integer_checker(method_name, readable_name):
         expected):
         g = _to_igraph(student_answer)
         actual = getattr(g, method_name)()
-        if actual == expected:
+        if actual == int(expected):
             return {'correct': True}
         else:
             return {'correct': False,

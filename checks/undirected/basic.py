@@ -16,7 +16,7 @@ def _make_integer_checker(method_name, readable_name):
         expected):
         g = _to_igraph(student_answer)
         actual = getattr(g, method_name)()
-        if actual == expected:
+        if actual == int(expected):
             return {'correct': True}
         else:
             return {'correct': False,
@@ -44,7 +44,7 @@ def isomorphism(student_answer, sample_answer, preload_answer):
 def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
     g = _to_igraph(student_answer)
     for v in g.vs:
-        if v.degree() != expected:
+        if v.degree() != int(expected):
             v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
             return {'correct': False,
                     'feedback': ('All vertices should have degree {0}, ' +

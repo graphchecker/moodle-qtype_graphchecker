@@ -1,0 +1,22 @@
+{
+    "name": "FSM checks",
+    "checks": {
+        "string_acceptance": {
+            "name": "String acceptance",
+            "description": "Checks if the FSM accepts a certain string.",
+            "params": [
+                {
+                    "param": "input_string",
+                    "name": "input string",
+                    "type": "string"
+                },
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "choice",
+                    "options": ["accepted", "rejected"]
+                }
+            ]
+        }
+    }
+}
