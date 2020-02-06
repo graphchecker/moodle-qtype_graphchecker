@@ -1,10 +1,10 @@
-# Tests for undirected graphs using igraph.
+# Tests for directed graphs using igraph.
 
 import igraph
 
 # helper methods
 def _to_igraph(graph):
-    g = igraph.Graph(directed=False)
+    g = igraph.Graph(directed=True)
     for vertex in graph['nodes']:
         g.add_vertex(name=vertex[0])
     for edge in graph['edges']:
@@ -41,14 +41,25 @@ def isomorphism(student_answer, sample_answer, preload_answer):
         return {'correct': False,
                 'feedback': 'Your graph was not isomorphic to the given answer'}
 
-def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
+def vertex_degrees(student_answer, sample_answer, preload_answer, degree_type, expected):
     g = _to_igraph(student_answer)
+
+    if degree_type == "in":
+        mode = igraph.IN
+        mode_name = "indegree"
+    elif degree_type == "out":
+        mode = igraph.OUT
+        mode_name = "outdegree"
+    else:
+        mode = igraph.ALL
+        mode_name = "total degree"
+
     for v in g.vs:
-        if v.degree() != expected:
+        if v.degree(mode=mode) != expected:
             v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
             return {'correct': False,
-                    'feedback': ('All vertices should have degree {0}, ' +
-                        'but {1} has degree {2}').format(
-                        expected, v_name, v.degree())}
+                    'feedback': ('All vertices should have {0} {1}, ' +
+                        'but {2} has {0} {3}').format(
+                        mode_name, expected, v_name, v.degree())}
     return {'correct': True}
 

@@ -228,14 +228,14 @@ define(['jquery'], function($) {
             if (!value) {
                 value = param['default'];
             }
-            $field = $('<input/>')
-                .addClass('argument-value')
-                .val(value)
-                .appendTo($argumentRow);
 
             switch (param['type']) {
                 case 'integer':
-                    $field.attr('type', 'number');
+                    $field = $('<input/>')
+                        .addClass('argument-value')
+                        .attr('type', 'number')
+                        .val(value)
+                        .appendTo($argumentRow);
                     if (param.hasOwnProperty('min')) {
                         $field.attr('min', param['min']);
                     }
@@ -243,6 +243,22 @@ define(['jquery'], function($) {
                         $field.attr('max', param['max']);
                     }
                     break;
+                case 'choice':
+                    $field = $('<select/>')
+                        .addClass('argument-value')
+                        .appendTo($argumentRow);
+                    if (!param.hasOwnProperty('options')) {
+                        console.error('No options provided for choice parameter');
+                        break;
+                    }
+                    for (let option of options) {
+                        $('<option/>')
+                            .text(option)
+                            .appendTo($field);
+                    }
+                    break;
+                default:
+                    console.error('Unknown type ' + param['type']);
             }
         }
 
