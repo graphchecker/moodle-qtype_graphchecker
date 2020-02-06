@@ -251,7 +251,7 @@ define(['jquery'], function($) {
                         console.error('No options provided for choice parameter');
                         break;
                     }
-                    for (let option of options) {
+                    for (let option of param['options']) {
                         $('<option/>')
                             .text(option)
                             .appendTo($field);

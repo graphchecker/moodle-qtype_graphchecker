@@ -44,15 +44,12 @@ def isomorphism(student_answer, sample_answer, preload_answer):
 def vertex_degrees(student_answer, sample_answer, preload_answer, degree_type, expected):
     g = _to_igraph(student_answer)
 
-    if degree_type == "in":
+    if degree_type == "indegree":
         mode = igraph.IN
-        mode_name = "indegree"
-    elif degree_type == "out":
+    elif degree_type == "outdegree":
         mode = igraph.OUT
-        mode_name = "outdegree"
     else:
         mode = igraph.ALL
-        mode_name = "total degree"
 
     for v in g.vs:
         if v.degree(mode=mode) != expected:
@@ -60,6 +57,6 @@ def vertex_degrees(student_answer, sample_answer, preload_answer, degree_type, e
             return {'correct': False,
                     'feedback': ('All vertices should have {0} {1}, ' +
                         'but {2} has {0} {3}').format(
-                        mode_name, expected, v_name, v.degree())}
+                        degree_type, expected, v_name, v.degree())}
     return {'correct': True}
 

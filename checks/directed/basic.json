@@ -101,17 +101,17 @@
             "description": "Checks if each vertex in the graph has the given degree.",
             "params": [
                 {
-                    "param": "degree_type",
-                    "name": "type",
-                    "type": "choice",
-                    "options": ["in", "out", "total"]
-                },
-                {
                     "param": "expected",
                     "name": "should all be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                },
+                {
+                    "param": "degree_type",
+                    "name": "type",
+                    "type": "choice",
+                    "options": ["indegree", "outdegree", "total degree"]
                 }
             ]
         }
