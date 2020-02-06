@@ -243,6 +243,12 @@ define(['jquery'], function($) {
                         $field.attr('max', param['max']);
                     }
                     break;
+                case 'string':
+                    $field = $('<input/>')
+                        .addClass('argument-value')
+                        .val(value)
+                        .appendTo($argumentRow);
+                    break;
                 case 'choice':
                     $field = $('<select/>')
                         .addClass('argument-value')
