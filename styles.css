@@ -390,6 +390,7 @@ body#page-question-type-coderunner .tests-ui .backdrop {
     transition: opacity .5s;
     z-index: 2000;
     background-color: rgba(0, 0, 0, 0.3);
+    overflow-y: scroll;
 }
 
 body#page-question-type-coderunner .tests-ui .backdrop.visible {
@@ -493,6 +494,10 @@ body#page-question-type-coderunner .tests-ui .dialog-header {
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
     margin-bottom: 20px;
+}
+
+body#page-question-type-coderunner.unscrollable {
+    overflow-y: hidden;
 }
 
 /* Bulk tester */

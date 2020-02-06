@@ -131,11 +131,13 @@ define(['jquery'], function($) {
     TestsUi.prototype.showAddTestDialog = function(test) {
         this.$backdrop.css('display', 'block')
             .addClass('visible');
+        $('body').addClass('unscrollable');
         return false;
     }
 
     TestsUi.prototype.hideAddTestDialog = function(test) {
         this.$backdrop.removeClass('visible');
+        $('body').removeClass('unscrollable');
 
         // hide the element only after the CSS transition has finished
         setTimeout(function() {
