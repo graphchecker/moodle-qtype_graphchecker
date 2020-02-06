@@ -313,7 +313,7 @@ define(['jquery'], function($) {
             .hide()
             .slideDown();
 
-        hideAddTestDialog();
+        this.hideAddTestDialog();
 
         return false;
     };
