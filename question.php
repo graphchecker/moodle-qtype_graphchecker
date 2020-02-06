@@ -415,7 +415,7 @@ class qtype_coderunner_question extends question_graded_automatically {
      * Returns a JSON string to be handed to the UI plugin, corresponding to
      * the answer type of this question.
      */
-    public function get_ui_params() {
+    public static function get_ui_params($type) {
         global $CFG;
         $json = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/types.json');
         $types = json_decode($json, true);
@@ -423,7 +423,7 @@ class qtype_coderunner_question extends question_graded_automatically {
             throw new Exception("Invalid JSON types file");
         }
 
-        return json_encode($types[$this-coderunnertype]["ui_params"]);
+        return json_encode($types[$type]["ui_params"]);
     }
 
 
