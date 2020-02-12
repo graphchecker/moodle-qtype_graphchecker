@@ -104,37 +104,7 @@ class qtype_coderunner extends question_type {
 
         parent::save_question_options($question);
 
-        // TODO [ws] the following is unnecessary I think?
-        // Lastly, save any datafiles (support files + sample answer files).
-        if ($USER->id) {
-            // The id check is a hack to deal with phpunit initialisation, when no user exists.
-            foreach (array('datafiles' => 'datafile',
-                'sampleanswerattachments' => 'samplefile') as $fileset => $filearea) {
-                if (isset($question->$fileset)) {
-                    file_save_draft_area_files($question->$fileset, $question->context->id,
-                        'qtype_coderunner', $filearea, (int) $question->id, $this->fileoptions);
-                }
-            }
-        }
-
         return true;
-    }
-
-
-    // TODO [ws] is this needed?
-    /**
-     * Move all the files belonging to this question from one context to another.
-     * Override superclass implementation to handle the extra data files
-     * we have in CodeRunner questions.
-     * @param int $questionid the question being moved.
-     * @param int $oldcontextid the context it is moving from.
-     * @param int $newcontextid the context it is moving to.
-     */
-    public function move_files($questionid, $oldcontextid, $newcontextid) {
-        parent::move_files($questionid, $oldcontextid, $newcontextid);
-        $fs = get_file_storage();
-        $fs->move_area_files_to_new_context($oldcontextid,
-                $newcontextid, 'qtype_coderunner', 'datafile', $questionid);
     }
 
 
