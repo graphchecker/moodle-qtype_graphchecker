@@ -27,7 +27,6 @@ require_once($CFG->dirroot . '/question/type/coderunner/questiontype.php');
 // The qtype_coderunner_jobrunner class contains all code concerned with running a question
 // in the sandbox and grading the result.
 class qtype_coderunner_jobrunner {
-    private $grader = null;          // The grader instance, if it's NOT a custom one.
     private $sandbox = null;         // The sandbox we're using.
     private $code = null;            // The code we're running.
     private $files = null;           // The files to be loaded into the working dir.
@@ -52,7 +51,6 @@ class qtype_coderunner_jobrunner {
         $this->tests = $tests;
 
         $this->isprecheck = $isprecheck;
-        $this->grader = $question->get_grader();
         $this->sandbox = $question->get_sandbox();
         $this->sandboxparams = $question->get_sandbox_params();
 

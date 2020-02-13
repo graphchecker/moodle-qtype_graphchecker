@@ -462,18 +462,6 @@ class qtype_coderunner_question extends question_graded_automatically {
     }
 
 
-    // Get an instance of the grader to be used to grade this question.
-    public function get_grader() {
-        global $CFG;
-        $grader = constants::DEFAULT_GRADER; // TODO [ws] figure out if this is necessary
-        $graders = qtype_coderunner_grader::available_graders();
-        $graderclass = $graders[$grader];
-
-        $graderinstance = new $graderclass();
-        return $graderinstance;
-    }
-
-
     // Get the sandbox parameters for a run.
     public function get_sandbox_params() {
         if (isset($this->sandboxparams)) {
