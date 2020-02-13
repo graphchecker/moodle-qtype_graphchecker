@@ -27,6 +27,7 @@ global $CFG;
 use qtype_coderunner\constants;
 
 class qtype_coderunner_util {
+
     /*
      * Load/initialise the graph UI plugin.
      * $textareaid is the id of the textarea that the UI plugin is to manage.
@@ -36,17 +37,6 @@ class qtype_coderunner_util {
         $params = array('graph', $textareaid);
         $PAGE->requires->js_call_amd('qtype_coderunner/userinterfacewrapper', 'newUiWrapper', $params);
     }
-
-
-    // Load the ace scripts.
-    public static function load_ace() {
-        global $PAGE;
-        $plugindirrel = '/question/type/coderunner';
-        $PAGE->requires->js($plugindirrel . '/ace/ace.js');
-        $PAGE->requires->js($plugindirrel . '/ace/ext-language_tools.js');
-        $PAGE->requires->js($plugindirrel . '/ace/ext-modelist.js');
-    }
-
 
     // A utility method used for iterating over multibyte (utf-8) strings
     // in php. Taken from https://stackoverflow.com/questions/3666306/how-to-iterate-utf-8-string-in-php
@@ -192,54 +182,6 @@ class qtype_coderunner_util {
         }
         return $para;
     }
-
-    /**
-     * Convert the extended JSON syntax allowed for template parameters to
-     * true JSON by converting the triple-quoted JSON extension to
-     * standard JSON strings with escaped double quotes and embedded newlines.
-     * No longer in use, but retained for possible future use.
-     */
-    public static function normalise_json($json) {
-        $stdjson = preg_replace_callback('/"""(.*?)"""/s',
-                function ($matches) {
-                    return '"' . str_replace(array('"', "\n", "\r"), array('\"', '\n', ''), $matches[1]) . '"';
-                },
-                $json);
-        return $stdjson;
-    }
-
-    /**
-     * Parse the ace-language field to obtain the list of languages to be
-     * accepted and the default language to use.
-     * @param string $acelangstring the contents of the 'Ace language' field
-     *  in the authoring form
-     * @return a 2-element array consisting of the list of languages and the
-     *  default language (if given) or an empty string (otherwise).
-     * If more than one language is specified as a default, i.e. has a trailing
-     * '*' appended, the function returns FALSE.
-     */
-    public static function extract_languages($acelangstring) {
-        $langs = preg_split('/ *, */', $acelangstring);
-        $filteredlangs = array();
-        $defaultlang = '';
-        foreach ($langs as $lang) {
-            $lang = trim($lang);
-            if ($lang === '') {
-                continue;
-            }
-            if ($lang[strlen($lang) - 1] === '*') {
-                $lang = substr($lang, 0, strlen($lang) - 1);
-                if ($defaultlang !== '') {
-                    return false;
-                } else {
-                    $defaultlang = $lang;
-                }
-            }
-            $filteredlangs[] = $lang;
-        }
-        return array($filteredlangs, $defaultlang);
-    }
-
 
     /** Function to merge the JSON template parameters from the
      *  the prototype with the child's template params. The prototype can

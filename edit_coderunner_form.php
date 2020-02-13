@@ -73,16 +73,8 @@ class qtype_coderunner_edit_form extends question_edit_form {
                 $this->twiggedparams = '';
             }
         }
-        if (!empty($this->question->options->language)) {
-            $this->lang = $this->acelang = $this->question->options->language;
-        } else {
-            $this->lang = $this->acelang = '';
-        }
-        if (!empty($this->question->options->acelang)) {
-            $this->acelang = $this->question->options->acelang;
-        }
+
         $this->make_error_div($mform);
-        qtype_coderunner_util::load_ace();
 
         $PAGE->requires->js_call_amd('qtype_coderunner/textareas', 'setupAllTAs');
 
@@ -235,13 +227,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
 
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if ($data['coderunnertype'] == 'Undefined') {
-            $errors['coderunner_type_group'] = get_string('questiontype_required', 'qtype_coderunner');
-        }
-
-        if ($data['precheck'] == constants::PRECHECK_EXAMPLES && $this->num_examples($data) === 0) {
-            $errors['coderunner_precheck_group'] = get_string('precheckingemptyset', 'qtype_coderunner');
-        }
 
         if (count($errors) == 0 && !empty($data['validateonsave'])) {
             $testresult = $this->validate_sample_answer($data);
@@ -342,62 +327,6 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // UTILITY FUNCTIONS.
     // =================.
 
-    // True iff the given name is valid for a new type, i.e., it's not in use
-    // in the current context (Currently only a single global context is
-    // implemented).
-    private function is_valid_new_type($typename) {
-        list($langs, $types) = $this->get_languages_and_types();
-        return !array_key_exists($typename, $types);
-    }
-
-
-    /**
-     * Return a count of the number of test cases set as examples.
-     * @param array $data data from the form
-     */
-    private function num_examples($data) {
-        return isset($data['useasexample']) ? count($data['useasexample']) : 0;
-    }
-
-    // Validate the test cases.
-    private function validate_test_cases($data) {
-        $errors = array(); // Return value.
-        $testcodes = $data['testcode'];
-        $stdins = $data['stdin'];
-        $expecteds = $data['expected'];
-        $marks = $data['mark'];
-        $count = 0;
-        $numnonemptytests = 0;
-        $num = max(count($testcodes), count($stdins), count($expecteds));
-        for ($i = 0; $i < $num; $i++) {
-            $testcode = trim($testcodes[$i]);
-            if ($testcode != '') {
-                $numnonemptytests++;
-            }
-            $stdin = trim($stdins[$i]);
-            $expected = trim($expecteds[$i]);
-            if ($testcode !== '' || $stdin != '' || $expected !== '') {
-                $count++;
-                $mark = trim($marks[$i]);
-                if ($mark != '') {
-                    if (!is_numeric($mark)) {
-                        $errors["testcode[$i]"] = get_string('nonnumericmark', 'qtype_coderunner');
-                    } else if (floatval($mark) <= 0) {
-                        $errors["testcode[$i]"] = get_string('negativeorzeromark', 'qtype_coderunner');
-                    }
-                }
-            }
-        }
-
-        if ($count == 0) {
-            $errors["testcode[0]"] = get_string('atleastonetest', 'qtype_coderunner');
-        } else if ($numnonemptytests != 0 && $numnonemptytests != $count) {
-            $errors["testcode[0]"] = get_string('allornone', 'qtype_coderunner');
-        }
-        return $errors;
-    }
-
-
     private function make_question_from_form_data($data) {
         // Construct a question object containing all the fields from $data.
         // Used in data pre-processing and when validating a question.
@@ -456,3 +385,4 @@ class qtype_coderunner_edit_form extends question_edit_form {
         }
     }
 }
+
