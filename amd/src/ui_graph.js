@@ -43,14 +43,14 @@
  * the author editing page and by the student question submission page.
  *
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2015, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 
-define(['jquery', 'qtype_coderunner/graphutil', 'qtype_coderunner/graphelements'], function($, util, elements) {
+define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'], function($, util, elements) {
 
     /***********************************************************************
      *
@@ -70,7 +70,7 @@ define(['jquery', 'qtype_coderunner/graphutil', 'qtype_coderunner/graphelements'
         this.canvas = $(document.createElement("canvas"));
         this.canvas.attr({
             id:         canvasId,
-            class:      "coderunner_graphcanvas",
+            class:      "graphchecker_graphcanvas",
             tabindex:   1 // So canvas can get focus.
         });
         this.canvas.css({'background-color': 'white'});
@@ -110,7 +110,7 @@ define(['jquery', 'qtype_coderunner/graphutil', 'qtype_coderunner/graphelements'
 
     /***********************************************************************
      *
-     *  This is the ui component for a graph-drawing coderunner question.
+     *  This is the ui component for a graph-drawing graphchecker question.
      *
      ***********************************************************************/
 
@@ -147,7 +147,7 @@ define(['jquery', 'qtype_coderunner/graphutil', 'qtype_coderunner/graphelements'
         } else {
             require(['core/str'], function(str) {
                 // Get help text via AJAX.
-                var helpPresent = str.get_string('graphhelp', 'qtype_coderunner');
+                var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
                 $.when(helpPresent).done(function(graphhelp) {
                     save_this.helpText = graphhelp;
                 });

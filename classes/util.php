@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Utility routines for qtype_coderunner
+ * Utility routines for qtype_graphchecker
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -24,9 +24,9 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
-class qtype_coderunner_util {
+class qtype_graphchecker_util {
 
     /*
      * Load/initialise the graph UI plugin.
@@ -35,7 +35,7 @@ class qtype_coderunner_util {
     public static function load_uiplugin_js($question, $textareaid) {
         global $CFG, $PAGE;
         $params = array('graph', $textareaid);
-        $PAGE->requires->js_call_amd('qtype_coderunner/userinterfacewrapper', 'newUiWrapper', $params);
+        $PAGE->requires->js_call_amd('qtype_graphchecker/userinterfacewrapper', 'newUiWrapper', $params);
     }
 
 

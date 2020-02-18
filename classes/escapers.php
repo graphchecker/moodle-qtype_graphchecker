@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 // This class wraps the various escaper functions required by Twig.
-class qtype_coderunner_escapers {
+class qtype_graphchecker_escapers {
 
     /**
      * An escaper for user with Python triple-doublequote delimiters. Escapes only
@@ -38,38 +38,6 @@ class qtype_coderunner_escapers {
      */
     public static function python($environ, $s, $charset) {
         return str_replace('"', '\"', str_replace('\\', '\\\\', $s));
-    }
-
-    /**
-     * An escaper for use with Matlab. Since Matlab has quirky string syntax,
-     * this escaper should only be used to produce a string to pass as a parameter
-     * to sprintf.
-     * @param type $environ   The Twig environment (currently ignored)
-     * @param type $s         The string to convert
-     * @param type $charset   The charset (currenly ignored)
-     * @return type
-     */
-    public static function matlab($environ, $s, $charset) {
-        return str_replace(
-                    array("'",  "\n", "\r", '%'),
-                    array("''", '\\n',  '',  '%%'),
-                    str_replace('\\n', '\\\\n', $s));
-    }
-
-
-    /**
-     * An escaper for use with Java or C. Implements all the standard single char
-     * character escapes in Java (though not all the C ones).
-     * @param type $environ   The Twig environment (currently ignored)
-     * @param type $s         The string to convert
-     * @param type $charset   The charset (currenly ignored)
-     * @return type
-     */
-    public static function java($environ, $s, $charset) {
-        return str_replace(
-                    array("'",    '"',  "\n",  "\r",   "\t",  "\f",  "\b"),
-                    array("\\'", '\\"', "\\n", "\\r", "\\t", "\\f", "\\b"),
-                    str_replace("\\", "\\\\", $s));
     }
 }
 

@@ -22,11 +22,11 @@
 
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/question/type/coderunner/questiontype.php');
+require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 
-// The qtype_coderunner_jobrunner class contains all code concerned with running a question
+// The qtype_graphchecker_jobrunner class contains all code concerned with running a question
 // in the sandbox and grading the result.
-class qtype_coderunner_jobrunner {
+class qtype_graphchecker_jobrunner {
     private $sandbox = null;         // The sandbox we're using.
     private $code = null;            // The code we're running.
     private $files = null;           // The files to be loaded into the working dir.
@@ -73,17 +73,17 @@ class qtype_coderunner_jobrunner {
         $numtests = count($this->tests);
         $this->templateparams['tests'] = $this->tests;
         $this->templateparams['checker_modules'] = $this->get_checker_modules();
-        $outcome = new qtype_coderunner_testing_outcome(1, $numtests, $isprecheck);
+        $outcome = new qtype_graphchecker_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
 
-        $template = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/' . $this->question->coderunnertype . '/template.py.twig');
+        $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->coderunnertype . '/template.py.twig');
 
         try {
             $testprog = $question->twig_expand($template, $this->templateparams);
         } catch (Exception $e) {
             $outcome->set_status(
-                    qtype_coderunner_testing_outcome::STATUS_SYNTAX_ERROR,
-                    get_string('templateerror', 'qtype_coderunner') . ': ' . $e->getMessage());
+                    qtype_graphchecker_testing_outcome::STATUS_SYNTAX_ERROR,
+                    get_string('templateerror', 'qtype_graphchecker') . ': ' . $e->getMessage());
             return $outcome;
         }
 
@@ -100,10 +100,10 @@ class qtype_coderunner_jobrunner {
         // In all other cases (runtime error etc) we give up
         // on the combinator.
 
-        if ($run->error !== qtype_coderunner_sandbox::OK) {
+        if ($run->error !== qtype_graphchecker_sandbox::OK) {
             $outcome->set_status(
-                    qtype_coderunner_testing_outcome::STATUS_SANDBOX_ERROR,
-                    qtype_coderunner_sandbox::error_string($run));
+                    qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
+                    qtype_graphchecker_sandbox::error_string($run));
         } else {
             $outcome = $this->do_combinator_grading($run, $isprecheck);
         }
@@ -130,7 +130,7 @@ class qtype_coderunner_jobrunner {
 
         foreach ($this->get_checker_modules() as $module) {
             $name = $module . '.py';
-            $full_name = $CFG->dirroot . '/question/type/coderunner/checks/' . $this->question->coderunnertype . '/' . $name;
+            $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->coderunnertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
         }
 
@@ -145,7 +145,7 @@ class qtype_coderunner_jobrunner {
      * and/or testresults and/or epiloguehtml.
      *
      * @param JSON $run The JSON-encoded output from the run.
-     * @return \qtype_coderunner_testing_outcome the outcome object ready
+     * @return \qtype_graphchecker_testing_outcome the outcome object ready
      * for display by the renderer. This will have an actualmark and zero or more of
      * prologuehtml, testresults and epiloguehtml. The last three are: some
      * html for display before the result table, the test results table (an
@@ -153,23 +153,23 @@ class qtype_coderunner_jobrunner {
      * the result table.
      */
     private function do_combinator_grading($run, $isprecheck) {
-        if ($run->result !== qtype_coderunner_sandbox::RESULT_SUCCESS) {
-            $error = get_string('brokentemplategrader', 'qtype_coderunner',
+        if ($run->result !== qtype_graphchecker_sandbox::RESULT_SUCCESS) {
+            $error = get_string('brokentemplategrader', 'qtype_graphchecker',
                     array('output' => $run->cmpinfo . "\n" . $run->stderr));
-            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
             return $outcome;
         }
 
         $result = json_decode($run->output);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $error = get_string('badjsonorfraction', 'qtype_coderunner',
+            $error = get_string('badjsonorfraction', 'qtype_graphchecker',
                 array('output' => $run->output));
-            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
             return $outcome;
         }
 
-        return new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_VALID, $result);
+        return new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_VALID, $result);
     }
 
 
@@ -191,8 +191,8 @@ class qtype_coderunner_jobrunner {
 
 
     private function make_error_message($run) {
-        $err = "***" . qtype_coderunner_sandbox::result_string($run->result) . "***";
-        if ($run->result === qtype_coderunner_sandbox::RESULT_RUNTIME_ERROR) {
+        $err = "***" . qtype_graphchecker_sandbox::result_string($run->result) . "***";
+        if ($run->result === qtype_graphchecker_sandbox::RESULT_RUNTIME_ERROR) {
             $sig = $run->signal;
             if ($sig) {
                 $err .= " (signal $sig)";

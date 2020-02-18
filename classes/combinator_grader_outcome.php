@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Defines a subclass of the normal coderunner testing_outcome for use when
+/** Defines a subclass of the normal graphchecker testing_outcome for use when
  * a combinator template grader is used.
  *
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2013, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 defined('MOODLE_INTERNAL') || die();
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
-class qtype_coderunner_combinator_grader_outcome extends qtype_coderunner_testing_outcome {
+class qtype_graphchecker_combinator_grader_outcome extends qtype_graphchecker_testing_outcome {
 
     // A list of the allowed attributes in the combinator template grader return value.
     public $allowedfields = array('fraction', 'prologuehtml', 'testresults', 'epiloguehtml',
@@ -117,10 +117,10 @@ class qtype_coderunner_combinator_grader_outcome extends qtype_coderunner_testin
      * table cell is wrapped in an html_wrapper object to prevent further
      * processing by the renderer.
      * @global type $COURSE the current COURSE (if there is one)
-     * @param qtype_coderunner_question $q The question being rendered (ignored)
+     * @param qtype_graphchecker_question $q The question being rendered (ignored)
      * @return A table of test results. See the parent class for details.
      */
-    public function get_test_results(qtype_coderunner_question $q) {
+    public function get_test_results(qtype_graphchecker_question $q) {
         if (empty($this->testresults) || $this->can_view_hidden()) {
             return $this->format_table($this->testresults);
         } else {
@@ -153,7 +153,7 @@ class qtype_coderunner_combinator_grader_outcome extends qtype_coderunner_testin
                     } else {
                         // Non-control columns are either '%s' or '%h' format.
                         if ($formats[$formatindex++] === '%h') {
-                            $newrow[] = new qtype_coderunner_html_wrapper($cell);
+                            $newrow[] = new qtype_graphchecker_html_wrapper($cell);
                         } else {
                             $newrow[] = $cell;
                         }
@@ -193,13 +193,13 @@ class qtype_coderunner_combinator_grader_outcome extends qtype_coderunner_testin
             }
             $blah = count($this->columnformats);
             if (count($this->columnformats) !== $numcols) {
-                $error = get_string('wrongnumberofformats', 'qtype_coderunner',
+                $error = get_string('wrongnumberofformats', 'qtype_graphchecker',
                         array('expected' => $numcols, 'got' => count($this->columnformats)));
                 $this->set_status(self::STATUS_BAD_COMBINATOR, $error);
             } else {
                 foreach ($this->columnformats as $format) {
                     if ($format !== '%s' && $format !== '%h') {
-                        $error = get_string('illegalformat', 'qtype_coderunner',
+                        $error = get_string('illegalformat', 'qtype_graphchecker',
                             array('format' => $format));
                         $this->set_status(self::STATUS_BAD_COMBINATOR, $error);
                         break;

@@ -30,14 +30,14 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/behaviour/adaptive/behaviour.php');
 require_once($CFG->dirroot . '/question/engine/questionattemptstep.php');
 require_once($CFG->dirroot . '/question/behaviour/adaptive_adapted_for_coderunner/behaviour.php');
-require_once($CFG->dirroot . '/question/type/coderunner/questiontype.php');
+require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
 /**
  * Represents a 'CodeRunner' question.
  */
-class qtype_coderunner_question extends question_graded_automatically {
+class qtype_graphchecker_question extends question_graded_automatically {
 
     public $testcases = null; // Array of testcases.
 
@@ -127,9 +127,9 @@ class qtype_coderunner_question extends question_graded_automatically {
 
         $hasanswer = array_key_exists('answer', $response);
         if (!$hasanswer || strlen($response['answer']) == 0) {
-            return get_string('answerrequired', 'qtype_coderunner');
+            return get_string('answerrequired', 'qtype_graphchecker');
         } else if (strlen($response['answer']) < constants::FUNC_MIN_LENGTH) {
-            return get_string('answertooshort', 'qtype_coderunner', constants::FUNC_MIN_LENGTH);
+            return get_string('answertooshort', 'qtype_graphchecker', constants::FUNC_MIN_LENGTH);
         }
         return '';  // All good.
     }
@@ -155,7 +155,7 @@ class qtype_coderunner_question extends question_graded_automatically {
         if ($error) {
             return $error;
         } else {
-            return get_string('unknownerror', 'qtype_coderunner');
+            return get_string('unknownerror', 'qtype_graphchecker');
         }
     }
 
@@ -226,7 +226,7 @@ class qtype_coderunner_question extends question_graded_automatically {
      * student clicked the precheck button
      * @return 3-element array of the mark (0 - 1), the question_state (
      * gradedright, gradedwrong, gradedpartial, invalid) and the full
-     * qtype_coderunner_testing_outcome object to be cached. The invalid
+     * qtype_graphchecker_testing_outcome object to be cached. The invalid
      * state is used when a sandbox error occurs.
      * @throws coding_exception
      */
@@ -238,7 +238,7 @@ class qtype_coderunner_question extends question_graded_automatically {
         if (!empty($response['_testoutcome'])) {
             $testoutcomeserial = $response['_testoutcome'];
             $testoutcome = unserialize($testoutcomeserial);
-            if ($testoutcome instanceof qtype_coderunner_testing_outcome) {
+            if ($testoutcome instanceof qtype_graphchecker_testing_outcome) {
                 $gradingreqd = false;  // Already graded and with same precheck state.
             }
         }
@@ -247,7 +247,7 @@ class qtype_coderunner_question extends question_graded_automatically {
             // a different precheck setting.
             $answer = $response['answer'];
             $tests = $this->get_tests();
-            $runner = new qtype_coderunner_jobrunner();
+            $runner = new qtype_graphchecker_jobrunner();
             $testoutcome = $runner->run_tests($this, $answer, $tests, $isprecheck);
             $testoutcomeserial = serialize($testoutcome);
         }
@@ -283,10 +283,10 @@ class qtype_coderunner_question extends question_graded_automatically {
             // Use default column headers, equivalent to json_decode of (in English):
             // '[["Test", "testcode"], ["Input", "stdin"], ["Expected", "expected"], ["Got", "got"]]'.
             $resultcolumns = array(
-                array(get_string('testcolhdr', 'qtype_coderunner'), 'testcode'),
-                array(get_string('inputcolhdr', 'qtype_coderunner'), 'stdin'),
-                array(get_string('expectedcolhdr', 'qtype_coderunner'), 'expected'),
-                array(get_string('gotcolhdr', 'qtype_coderunner'), 'got'),
+                array(get_string('testcolhdr', 'qtype_graphchecker'), 'testcode'),
+                array(get_string('inputcolhdr', 'qtype_graphchecker'), 'stdin'),
+                array(get_string('expectedcolhdr', 'qtype_graphchecker'), 'expected'),
+                array(get_string('gotcolhdr', 'qtype_graphchecker'), 'got'),
             );
         }
         return $resultcolumns;
@@ -339,7 +339,7 @@ class qtype_coderunner_question extends question_graded_automatically {
             foreach ($this->parameters as $key => $value) {
                 $twigparams[$key] = $value;
             }
-            return qtype_coderunner_twig::render($text, $twigparams);
+            return qtype_graphchecker_twig::render($text, $twigparams);
         }
     }
 
@@ -354,10 +354,10 @@ class qtype_coderunner_question extends question_graded_automatically {
         if (!isset($this->templateparams)) {
             $this->templateparams = '';
         }
-        $ournewtemplateparams = qtype_coderunner_twig::render($this->templateparams);
+        $ournewtemplateparams = qtype_graphchecker_twig::render($this->templateparams);
         if (isset($this->prototypetemplateparams)) {
-            $prototypenewtemplateparams = qtype_coderunner_twig::render($this->prototypetemplateparams);
-            $this->templateparams = qtype_coderunner_util::merge_json($prototypenewtemplateparams, $ournewtemplateparams);
+            $prototypenewtemplateparams = qtype_graphchecker_twig::render($this->prototypetemplateparams);
+            $this->templateparams = qtype_graphchecker_util::merge_json($prototypenewtemplateparams, $ournewtemplateparams);
         } else {
             // Missing prototype?
             $this->templateparams = $ournewtemplateparams;
@@ -373,7 +373,7 @@ class qtype_coderunner_question extends question_graded_automatically {
         }
 
         foreach ($tests as $index => $test) {
-            $tests[$index] = new qtype_coderunner_test($test);
+            $tests[$index] = new qtype_graphchecker_test($test);
         }
 
         return $tests;
@@ -417,7 +417,7 @@ class qtype_coderunner_question extends question_graded_automatically {
      */
     public static function get_ui_params($type) {
         global $CFG;
-        $json = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/types.json');
+        $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
         $types = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception("Invalid JSON types file");
@@ -453,9 +453,9 @@ class qtype_coderunner_question extends question_graded_automatically {
     // Return an instance of the sandbox to be used to run code for this question.
     public function get_sandbox() {
         global $CFG;
-        $sandboxinstance = qtype_coderunner_sandbox::get_best_sandbox('python3'); // TODO [ws] I just replaced the language by python3 here, but that should be done in a better way
+        $sandboxinstance = qtype_graphchecker_sandbox::get_best_sandbox('python3');
         if ($sandboxinstance === null) {
-            throw new qtype_coderunner_exception("Language {$this->language} is not available on this system");
+            throw new qtype_graphchecker_exception("Language {$this->language} is not available on this system");
         }
 
         return $sandboxinstance;

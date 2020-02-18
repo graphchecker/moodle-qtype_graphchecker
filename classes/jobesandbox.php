@@ -28,7 +28,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class qtype_coderunner_jobesandbox extends qtype_coderunner_sandbox {
+class qtype_graphchecker_jobesandbox extends qtype_graphchecker_sandbox {
 
     const DEBUGGING = 0;
     const HTTP_GET = 1;
@@ -61,9 +61,9 @@ class qtype_coderunner_jobesandbox extends qtype_coderunner_sandbox {
     // refusing requests or misconfigured. The actual HTTP returncode and response
     // are left in $httpcode and $response resp.
     public function __construct() {
-        qtype_coderunner_sandbox::__construct();
-        $this->jobeserver = get_config('qtype_coderunner', 'jobe_host');
-        $this->apikey = get_config('qtype_coderunner', 'jobe_apikey');
+        qtype_graphchecker_sandbox::__construct();
+        $this->jobeserver = get_config('qtype_graphchecker', 'jobe_host');
+        $this->apikey = get_config('qtype_graphchecker', 'jobe_apikey');
 
         list($this->httpcode, $this->response) = $this->http_request(
                 'languages', self::HTTP_GET);

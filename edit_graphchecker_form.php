@@ -26,15 +26,15 @@ defined('MOODLE_INTERNAL') || die();
  * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require_once($CFG->dirroot . '/question/type/coderunner/questiontype.php');
-require_once($CFG->dirroot . '/question/type/coderunner/question.php');
+require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
+require_once($CFG->dirroot . '/question/type/graphchecker/question.php');
 
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
 /**
  * CodeRunner editing form definition.
  */
-class qtype_coderunner_edit_form extends question_edit_form {
+class qtype_graphchecker_edit_form extends question_edit_form {
 
     const NUM_TESTCASES_START = 5;  // Num empty test cases with new questions.
     const NUM_TESTCASES_ADD = 3;    // Extra empty test cases to add.
@@ -44,7 +44,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
     const RESULT_COLUMNS_SIZE = 80; // The size of the resultcolumns field.
 
     public function qtype() {
-        return 'coderunner';
+        return 'graphchecker';
     }
 
 
@@ -66,7 +66,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         if (!empty($this->question->options->mergedtemplateparams)) {
             $this->mergedtemplateparams = $this->question->options->mergedtemplateparams;
             try {
-                $this->twiggedparams = qtype_coderunner_twig::render($this->mergedtemplateparams);
+                $this->twiggedparams = qtype_graphchecker_twig::render($this->mergedtemplateparams);
             } catch (Exception $ex) {
                 // If the params are broken, don't use them.
                 // Code checker won't accept an empty catch.
@@ -76,15 +76,15 @@ class qtype_coderunner_edit_form extends question_edit_form {
 
         $this->make_error_div($mform);
 
-        $PAGE->requires->js_call_amd('qtype_coderunner/textareas', 'setupAllTAs');
+        $PAGE->requires->js_call_amd('qtype_graphchecker/textareas', 'setupAllTAs');
 
         // Define the parameters required by the JS initEditForm amd module.
         $strings = array();
         foreach (self::author_edit_keys() as $key) {
-            $strings[$key] = get_string($key, 'qtype_coderunner');
+            $strings[$key] = get_string($key, 'qtype_graphchecker');
         }
 
-        $PAGE->requires->js_call_amd('qtype_coderunner/authorform', 'initEditForm',
+        $PAGE->requires->js_call_amd('qtype_graphchecker/authorform', 'initEditForm',
                 array($strings));
 
         parent::definition($mform);  // The superclass adds the "General" stuff.
@@ -108,19 +108,19 @@ class qtype_coderunner_edit_form extends question_edit_form {
     protected function add_sample_answer_field($mform) {
         global $CFG;
         $mform->addElement('header', 'answerhdr',
-                    get_string('answer', 'qtype_coderunner'), '');
+                    get_string('answer', 'qtype_graphchecker'), '');
         $mform->setExpanded('answerhdr', 1);
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_coderunner_question::get_ui_params($this->question->options->coderunnertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->coderunnertype));
         $mform->addElement('textarea', 'answer',
-                get_string('answer', 'qtype_coderunner'),
+                get_string('answer', 'qtype_graphchecker'),
                 $attributes);
         //$mform->addElement('advcheckbox', 'validateonsave', null,
-        //        get_string('validateonsave', 'qtype_coderunner'));
+        //        get_string('validateonsave', 'qtype_graphchecker'));
         //$mform->setDefault('validateonsave', false);
-        $mform->addHelpButton('answer', 'answer', 'qtype_coderunner');
+        $mform->addHelpButton('answer', 'answer', 'qtype_graphchecker');
     }
 
 
@@ -131,18 +131,18 @@ class qtype_coderunner_edit_form extends question_edit_form {
     protected function add_tests_field($mform) {
         global $CFG;
         $mform->addElement('header', 'testshdr',
-                    get_string('tests', 'qtype_coderunner'), '');
+                    get_string('tests', 'qtype_graphchecker'), '');
         $mform->setExpanded('testshdr', 1);
-        $availableTests = qtype_coderunner_test::get_available_tests($this->question->options->coderunnertype);
+        $availableTests = qtype_graphchecker_test::get_available_tests($this->question->options->coderunnertype);
         $mform->addElement('textarea', 'tests',
-            get_string('tests', 'qtype_coderunner'),
+            get_string('tests', 'qtype_graphchecker'),
             array(
                 'class' => 'edit_code',
                 'data-available-tests' => json_encode($availableTests)
             )
         );
         $mform->setDefault('tests', '[]');
-        $mform->addHelpButton('tests', 'tests', 'qtype_coderunner');
+        $mform->addHelpButton('tests', 'tests', 'qtype_graphchecker');
     }
 
     /**
@@ -151,17 +151,17 @@ class qtype_coderunner_edit_form extends question_edit_form {
      */
     protected function add_preload_answer_field($mform) {
         $mform->addElement('header', 'answerpreloadhdr',
-                    get_string('answerpreload', 'qtype_coderunner'), '');
+                    get_string('answerpreload', 'qtype_graphchecker'), '');
         $expanded = !empty($this->question->options->answerpreload);
         $mform->setExpanded('answerpreloadhdr', $expanded);
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_coderunner_question::get_ui_params($this->question->options->coderunnertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->coderunnertype));
         $mform->addElement('textarea', 'answerpreload',
-                get_string('answerpreload', 'qtype_coderunner'),
+                get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
-        $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_coderunner');
+        $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
     }
 
 
@@ -241,15 +241,15 @@ class qtype_coderunner_edit_form extends question_edit_form {
     // FUNCTIONS TO BUILD PARTS OF THE MAIN FORM
     // =========================================.
 
-    // Create an empty div with id id_qtype_coderunner_error_div for use by
+    // Create an empty div with id id_qtype_graphchecker_error_div for use by
     // JavaScript error handling code.
     private function make_error_div($mform) {
-        $mform->addElement('html', "<div id='id_qtype_coderunner_error_div' class='qtype_coderunner_error_message'></div>");
+        $mform->addElement('html', "<div id='id_qtype_graphchecker_error_div' class='qtype_graphchecker_error_message'></div>");
     }
 
     // Add to the supplied $mform the panel "Coderunner question type".
     private function make_questiontype_panel($mform) {
-        $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_coderunner'));
+        $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_graphchecker'));
 
         // The Question Type controls (a group with just a single member).
         $types = $this->get_types_array();
@@ -258,45 +258,45 @@ class qtype_coderunner_edit_form extends question_edit_form {
                 null, $types);
         $mform->addElement('group', 'coderunner_type_group',
                 'Answer type', $typeselectorelements, null, false);
-        $mform->addHelpButton('coderunner_type_group', 'coderunnertype', 'qtype_coderunner');
+        $mform->addHelpButton('coderunner_type_group', 'coderunnertype', 'qtype_graphchecker');
 
         // Precheck control (a group with only one element).
         $precheckelements = array();
         $precheckvalues = array(
-            constants::PRECHECK_DISABLED => get_string('precheck_disabled', 'qtype_coderunner'),
-            constants::PRECHECK_EMPTY    => get_string('precheck_empty', 'qtype_coderunner'),
-            constants::PRECHECK_EXAMPLES => get_string('precheck_examples', 'qtype_coderunner'),
-            constants::PRECHECK_SELECTED => get_string('precheck_selected', 'qtype_coderunner'),
-            constants::PRECHECK_ALL      => get_string('precheck_all', 'qtype_coderunner')
+            constants::PRECHECK_DISABLED => get_string('precheck_disabled', 'qtype_graphchecker'),
+            constants::PRECHECK_EMPTY    => get_string('precheck_empty', 'qtype_graphchecker'),
+            constants::PRECHECK_EXAMPLES => get_string('precheck_examples', 'qtype_graphchecker'),
+            constants::PRECHECK_SELECTED => get_string('precheck_selected', 'qtype_graphchecker'),
+            constants::PRECHECK_ALL      => get_string('precheck_all', 'qtype_graphchecker')
         );
         $precheckelements[] = $mform->createElement('select', 'precheck', null, $precheckvalues);
-        $mform->addElement('group', 'coderunner_precheck_group',
-                get_string('precheck', 'qtype_coderunner'), $precheckelements, null, false);
-        $mform->addHelpButton('coderunner_precheck_group', 'precheck', 'qtype_coderunner');
+        $mform->addElement('group', 'graphchecker_precheck_group',
+                get_string('precheck', 'qtype_graphchecker'), $precheckelements, null, false);
+        $mform->addHelpButton('graphchecker_precheck_group', 'precheck', 'qtype_graphchecker');
 
         // Feedback control (a group with only one element).
         $feedbackelements = array();
         $feedbackvalues = array(
-            constants::FEEDBACK_USE_QUIZ => get_string('feedback_quiz', 'qtype_coderunner'),
-            constants::FEEDBACK_SHOW    => get_string('feedback_show', 'qtype_coderunner'),
-            constants::FEEDBACK_HIDE => get_string('feedback_hide', 'qtype_coderunner'),
+            constants::FEEDBACK_USE_QUIZ => get_string('feedback_quiz', 'qtype_graphchecker'),
+            constants::FEEDBACK_SHOW    => get_string('feedback_show', 'qtype_graphchecker'),
+            constants::FEEDBACK_HIDE => get_string('feedback_hide', 'qtype_graphchecker'),
         );
 
         $feedbackelements[] = $mform->createElement('select', 'displayfeedback', null, $feedbackvalues);
-        $mform->addElement('group', 'coderunner_feedback_group',
-                get_string('feedback', 'qtype_coderunner'), $feedbackelements, null, false);
-        $mform->addHelpButton('coderunner_feedback_group', 'feedback', 'qtype_coderunner');
+        $mform->addElement('group', 'graphchecker_feedback_group',
+                get_string('feedback', 'qtype_graphchecker'), $feedbackelements, null, false);
+        $mform->addHelpButton('graphchecker_feedback_group', 'feedback', 'qtype_graphchecker');
         $mform->setDefault('displayfeedback', constants::FEEDBACK_SHOW);
         $mform->setType('displayfeedback', PARAM_INT);
 
         // Marking controls.
         $markingelements = array();
         $markingelements[] = $mform->createElement('advcheckbox', 'allornothing', null,
-                get_string('allornothing', 'qtype_coderunner'));
-        $mform->addElement('group', 'markinggroup', get_string('markinggroup', 'qtype_coderunner'),
+                get_string('allornothing', 'qtype_graphchecker'));
+        $mform->addElement('group', 'markinggroup', get_string('markinggroup', 'qtype_graphchecker'),
                 $markingelements, null, false);
         $mform->setDefault('allornothing', true);
-        $mform->addHelpButton('markinggroup', 'markinggroup', 'qtype_coderunner');
+        $mform->addHelpButton('markinggroup', 'markinggroup', 'qtype_graphchecker');
     }
 
     /**
@@ -308,7 +308,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
      */
     private function get_types_array() {
         global $CFG;
-        $json = file_get_contents($CFG->dirroot . '/question/type/coderunner/checks/types.json');
+        $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
         $types = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -331,7 +331,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         // Construct a question object containing all the fields from $data.
         // Used in data pre-processing and when validating a question.
         global $DB;
-        $question = new qtype_coderunner_question();
+        $question = new qtype_graphchecker_question();
         foreach ($data as $key => $value) {
             if ($key === 'questiontext' || $key === 'generalfeedback') {
                 // Question text and general feedback are associative arrays.
@@ -343,7 +343,7 @@ class qtype_coderunner_edit_form extends question_edit_form {
         $question->isnew = true;
 
         // Clean the question object, get inherited fields and run the sample answer.
-        $qtype = new qtype_coderunner();
+        $qtype = new qtype_graphchecker();
         $qtype->clean_question_form($question, true);
         $questiontype = $question->coderunnertype;
         list($category) = explode(',', $question->category);

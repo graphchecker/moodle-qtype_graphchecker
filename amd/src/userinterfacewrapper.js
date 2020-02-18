@@ -7,7 +7,7 @@
  * wrapper.
  *
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2015, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
@@ -214,8 +214,8 @@ define(['jquery'], function($) {
             require(['core/str'], function(str) {
                 // Get langString text via AJAX
                 var
-                    s = str.get_string(langString, 'qtype_coderunner'),
-                    fallback = str.get_string('ui_fallback', 'qtype_coderunner');
+                    s = str.get_string(langString, 'qtype_graphchecker'),
+                    fallback = str.get_string('ui_fallback', 'qtype_graphchecker');
                 $.when(s, fallback).done(function(s, fallback) {
                     errorDiv.html(s + '<br>' + fallback);
                 });
@@ -245,7 +245,7 @@ define(['jquery'], function($) {
             this.uiInstance = null;
         } else {
             this.isLoading = true;
-            require(['qtype_coderunner/ui_' + this.uiname],
+            require(['qtype_graphchecker/ui_' + this.uiname],
                 function(ui) {
                     var uiInstance,loadFailDiv, jqLoadFailDiv, h, w;
 

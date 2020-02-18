@@ -28,7 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 
-class qtype_coderunner_ideonesandbox extends qtype_coderunner_sandbox {
+class qtype_graphchecker_ideonesandbox extends qtype_graphchecker_sandbox {
 
     private $client = null;       // The soap client referencing ideone.com.
     private $langserror = null;   // The error attribute from the last call to getLanguages.
@@ -44,14 +44,14 @@ class qtype_coderunner_ideonesandbox extends qtype_coderunner_sandbox {
 
     public function __construct($user=null, $pass=null) {
         if ($user == null) {
-            $user = get_config('qtype_coderunner', 'ideone_user');
+            $user = get_config('qtype_graphchecker', 'ideone_user');
         }
 
         if ($pass == null) {
-            $pass = get_config('qtype_coderunner', 'ideone_password');
+            $pass = get_config('qtype_graphchecker', 'ideone_password');
         }
 
-        qtype_coderunner_sandbox::__construct($user, $pass);
+        qtype_graphchecker_sandbox::__construct($user, $pass);
 
         // A map from Ideone language names (regular expressions) to their
         // local short name, where appropriate.
@@ -98,7 +98,7 @@ class qtype_coderunner_ideonesandbox extends qtype_coderunner_sandbox {
     }
 
 
-    /** Main interface function for use by coderunner but not part of ideone API.
+    /** Main interface function for use by graphchecker but not part of ideone API.
      *  Executes the given source code in the given language with the given
      *  input and returns an object with fields error, result, signal, cmpinfo, stderr, output.
      * @param string $sourcecode The source file to compile and run
@@ -128,7 +128,7 @@ class qtype_coderunner_ideonesandbox extends qtype_coderunner_sandbox {
     public function execute($sourcecode, $language, $input, $files=null, $params=null) {
         $language = strtolower($language);
         if (!in_array($language, $this->get_languages()->languages)) {
-            throw new qtype_coderunner_exception('Executing an unsupported language in sandbox');
+            throw new qtype_graphchecker_exception('Executing an unsupported language in sandbox');
         }
         if ($input !== '' && substr($input, -1) != "\n") {
             $input .= "\n";  // Force newline on the end if necessary.
@@ -154,7 +154,7 @@ class qtype_coderunner_ideonesandbox extends qtype_coderunner_sandbox {
             }
 
             if ($count >= self::MAX_NUM_POLLS) {
-                throw new qtype_coderunner_exception("Timed out waiting for sandbox");
+                throw new qtype_graphchecker_exception("Timed out waiting for sandbox");
             }
 
             if ($state->error !== self::OK ||

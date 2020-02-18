@@ -25,40 +25,40 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$settings->add(new admin_setting_heading('codeRunnersettings',
-        get_string('coderunnersettings', 'qtype_coderunner'), ''));
+$settings->add(new admin_setting_heading('graphcheckersettings',
+        get_string('graphcheckersettings', 'qtype_graphchecker'), ''));
 
-$sandboxes = qtype_coderunner_sandbox::available_sandboxes();
+$sandboxes = qtype_graphchecker_sandbox::available_sandboxes();
 foreach ($sandboxes as $sandbox => $classname) {
     $settings->add(new admin_setting_configcheckbox(
-        "qtype_coderunner/{$sandbox}_enabled",
-        get_string('enable', 'qtype_coderunner') . ' ' .$sandbox,
-        get_string('enable_sandbox_desc', 'qtype_coderunner'),
+        "qtype_graphchecker/{$sandbox}_enabled",
+        get_string('enable', 'qtype_graphchecker') . ' ' .$sandbox,
+        get_string('enable_sandbox_desc', 'qtype_graphchecker'),
         $sandbox === 'jobesandbox')  // Only jobesandbox is enabled by default.
     );
 }
 
 $settings->add(new admin_setting_configtext(
-        "qtype_coderunner/jobe_host",
-        get_string('jobe_host', 'qtype_coderunner'),
-        get_string('jobe_host_desc', 'qtype_coderunner'),
+        "qtype_graphchecker/jobe_host",
+        get_string('jobe_host', 'qtype_graphchecker'),
+        get_string('jobe_host_desc', 'qtype_graphchecker'),
         'jobe2.cosc.canterbury.ac.nz'));
 
 $settings->add(new admin_setting_configtext(
-        "qtype_coderunner/jobe_apikey",
-        get_string('jobe_apikey', 'qtype_coderunner'),
-        get_string('jobe_apikey_desc', 'qtype_coderunner'),
+        "qtype_graphchecker/jobe_apikey",
+        get_string('jobe_apikey', 'qtype_graphchecker'),
+        get_string('jobe_apikey_desc', 'qtype_graphchecker'),
         '2AAA7A5415B4A9B394B54BF1D2E9D'
         ));
 
 $settings->add(new admin_setting_configtext(
-        "qtype_coderunner/ideone_user",
-        get_string('ideone_user', 'qtype_coderunner'),
-        get_string('ideone_user_desc', 'qtype_coderunner'),
+        "qtype_graphchecker/ideone_user",
+        get_string('ideone_user', 'qtype_graphchecker'),
+        get_string('ideone_user_desc', 'qtype_graphchecker'),
         ''));
 
 $settings->add(new admin_setting_configtext(
-        "qtype_coderunner/ideone_password",
-        get_string('ideone_pass', 'qtype_coderunner'),
-        get_string('ideone_pass_desc', 'qtype_coderunner'),
+        "qtype_graphchecker/ideone_password",
+        get_string('ideone_pass', 'qtype_graphchecker'),
+        get_string('ideone_pass_desc', 'qtype_graphchecker'),
         ''));

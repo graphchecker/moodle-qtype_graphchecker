@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library routines for qtype_coderunner
+ * Library routines for qtype_graphchecker
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 
-/* The class for exceptions thrown in the coderunner plugin */
-class qtype_coderunner_exception extends moodle_exception {
+/* The class for exceptions thrown in the graphchecker plugin */
+class qtype_graphchecker_exception extends moodle_exception {
     /**
      * @param string $errorcode exception description identifier
      * @param mixed $debuginfo debugging data to display
      */
     public function __construct($errorcode, $a=null, $debuginfo=null) {
-        parent::__construct($errorcode, 'qtype_coderunner', '', $a, $debuginfo);
+        parent::__construct($errorcode, 'qtype_graphchecker', '', $a, $debuginfo);
     }
 }

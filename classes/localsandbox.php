@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A LocalSandbox is a subclass of the base qtype_coderunner_sandbox class,
+/** A LocalSandbox is a subclass of the base qtype_graphchecker_sandbox class,
  *  representing a sandbox that runs on the local server, performing compilation locally,
  *  caching compiled files, and processing the entire submission in a single
  *  call, rather than queueing the task for asynchronous procesing or
@@ -29,7 +29,7 @@
 
 /**
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2012, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -44,7 +44,7 @@ global $CFG;
  *
  ******************************************************************/
 
-abstract class qtype_coderunner_localsandbox extends qtype_coderunner_sandbox {
+abstract class qtype_graphchecker_localsandbox extends qtype_graphchecker_sandbox {
 
     const SOURCE_FILE_NAME = 'sourcefile';
 
@@ -64,7 +64,7 @@ abstract class qtype_coderunner_localsandbox extends qtype_coderunner_sandbox {
     protected $workdir = null;      // The current temporary working directory.
 
     public function __construct($user=null, $pass=null) {
-        qtype_coderunner_sandbox::__construct($user, $pass);
+        qtype_graphchecker_sandbox::__construct($user, $pass);
     }
 
 
@@ -150,7 +150,7 @@ abstract class qtype_coderunner_localsandbox extends qtype_coderunner_sandbox {
     // Set up a temporary working directory and copy the current set of
     // files into it.
     private function make_directory() {
-        $this->workdir = tempnam("/tmp", "coderunner_");
+        $this->workdir = tempnam("/tmp", "graphchecker_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             throw new coding_exception("localsandbox: error making temp directory (race error?)");
         }
@@ -228,8 +228,8 @@ abstract class qtype_coderunner_localsandbox extends qtype_coderunner_sandbox {
      * a non-empty value in the event of a compiler error. Otherwise leave
      * the output object file in the current working directory for use by
      * run_in_sandbox.
-     * @return qtype_coderunner_sandbox::ok if run succeeds in the sense
-     * of nothing going terribly wrong or qtype_coderunner_sandbox::UNKNOWN_SERVER_ERROR
+     * @return qtype_graphchecker_sandbox::ok if run succeeds in the sense
+     * of nothing going terribly wrong or qtype_graphchecker_sandbox::UNKNOWN_SERVER_ERROR
      * otherwise.
      */
     protected abstract function compile();
@@ -241,8 +241,8 @@ abstract class qtype_coderunner_localsandbox extends qtype_coderunner_sandbox {
      * must already have been performed with the compiler output left in
      * $this->cmpinfo (non-empty is taken as a compiler error) and the object
      * code in a location defined by the subclass.
-     * @return qtype_coderunner_sandbox::ok if run succeeds in the sense
-     * of nothing going terribly wrong or qtype_coderunner_sandbox::UNKNOWN_SERVER_ERROR
+     * @return qtype_graphchecker_sandbox::ok if run succeeds in the sense
+     * of nothing going terribly wrong or qtype_graphchecker_sandbox::UNKNOWN_SERVER_ERROR
      * otherwise.
      */
     protected abstract function run_in_sandbox();

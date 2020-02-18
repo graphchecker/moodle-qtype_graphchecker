@@ -12,7 +12,7 @@ defined('MOODLE_INTERNAL') || die();
  * <package>.<method>(<params>)
  * ```
  */
-class qtype_coderunner_test {
+class qtype_graphchecker_test {
 
     /**
      * Constructs a test from a PHP associative array.
@@ -65,7 +65,7 @@ class qtype_coderunner_test {
 
         $modules = array();
 
-        $checksDir = $CFG->dirroot . '/question/type/coderunner/checks/' . $answertype;
+        $checksDir = $CFG->dirroot . '/question/type/graphchecker/checks/' . $answertype;
         $checkFiles = scandir($checksDir);
         foreach ($checkFiles as $file) {
             $path = $checksDir . '/' . $file;

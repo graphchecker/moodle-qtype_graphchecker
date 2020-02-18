@@ -49,9 +49,9 @@ require_once($CFG->dirroot . '/question/engine/bank.php');
 require_once($CFG->dirroot . '/lib/questionlib.php');
 
 /**
- * qtype_coderunner extends the base question_type to coderunner-specific functionality.
+ * qtype_graphchecker extends the base question_type to graphchecker-specific functionality.
  */
-class qtype_coderunner extends question_type {
+class qtype_graphchecker extends question_type {
 
     public function can_analyse_responses() {
         return false;
@@ -59,7 +59,7 @@ class qtype_coderunner extends question_type {
 
 
     public function extra_question_fields() {
-        return array('question_coderunner_options',
+        return array('question_graphchecker_options',
             'coderunnertype',  // answer type
             'precheck',
             'showsource',
@@ -113,7 +113,7 @@ class qtype_coderunner extends question_type {
     // The various fields are initialised from the prototype, then overridden
     // by any non-null values in the specific question.
     //
-    // As a special case, required by edit_coderunner_form, an option
+    // As a special case, required by edit_graphchecker_form, an option
     // 'mergedtemplateparams' is set by merging the prototype question's
     // template parameters with the given question's template parameters,
     // with the caveat that template parameters with embedded twig code that
@@ -132,7 +132,7 @@ class qtype_coderunner extends question_type {
     /**
      * Get the context for a question.
      *
-     * @param stdClass $question a row from either the question or question_coderunner_options tables.
+     * @param stdClass $question a row from either the question or question_graphchecker_options tables.
      * @return context the corresponding context id.
      */
     public static function question_context($question) {
@@ -142,7 +142,7 @@ class qtype_coderunner extends question_type {
     /**
      * Get the context id for a question.
      *
-     * @param stdClass $question a row from either the question or question_coderunner_options tables.
+     * @param stdClass $question a row from either the question or question_graphchecker_options tables.
      * @return int the corresponding context id.
      */
     public static function question_contextid($question) {
@@ -180,7 +180,7 @@ class qtype_coderunner extends question_type {
      */
     public function attachments_required_options() {
         return array(
-            0 => get_string('attachmentsoptional', 'qtype_coderunner'),
+            0 => get_string('attachmentsoptional', 'qtype_graphchecker'),
             1 => '1',
             2 => '2',
             3 => '3'

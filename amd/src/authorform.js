@@ -17,16 +17,16 @@
  * JavaScript for handling UI actions in the question authoring form.
  *
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2015, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_coderunner/userinterfacewrapper'], function($, ui) {
+define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
     // Set up the author edit form UI plugins and event handlers.
     // The strings parameter is an associative array containing a subset of
-    // the strings extracted from lang/xx/qtype_coderunner.php.
+    // the strings extracted from lang/xx/qtype_graphchecker.php.
     // The template parameters and Ace language are passed to each
     // text area from PHP by setting its data-params and
     // data-lang attributes.

@@ -25,9 +25,9 @@
 
 
 defined('MOODLE_INTERNAL') || die();
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
-class qtype_coderunner_testing_outcome {
+class qtype_graphchecker_testing_outcome {
     const STATUS_VALID = 1;         // A full set of test results is returned.
     const STATUS_SYNTAX_ERROR = 2;  // The code (on any one test) didn't compile.
     const STATUS_BAD_COMBINATOR = 3; // A combinator template yielded an invalid result.
@@ -112,18 +112,18 @@ class qtype_coderunner_testing_outcome {
         if ($this->invalid()) {
             return html_writer::tag('pre', $this->errormessage);
         } else if ($this->run_failed()) {
-            return get_string('run_failed', 'qtype_coderunner');
+            return get_string('run_failed', 'qtype_graphchecker');
         } else if ($this->has_syntax_error()) {
-            return get_string('syntax_errors', 'qtype_coderunner') . html_writer::tag('pre', $this->errormessage);
+            return get_string('syntax_errors', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if ($this->combinator_error()) {
-            return get_string('badquestion', 'qtype_coderunner') . html_writer::tag('pre', $this->errormessage);
+            return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if (!$this->iscombinatorgrader()) {  // Combinator grader results table can't be used.
             $numerrors = 0;
             $failures = new html_table();
-            $failures->attributes['class'] = 'coderunner-test-results';
-            $failures->head = array(get_string('testcolhdr', 'qtype_coderunner'),
-                get_string('expectedcolhdr', 'qtype_coderunner'),
-                get_string('gotcolhdr', 'qtype_coderunner'));
+            $failures->attributes['class'] = 'graphchecker-test-results';
+            $failures->head = array(get_string('testcolhdr', 'qtype_graphchecker'),
+                get_string('expectedcolhdr', 'qtype_graphchecker'),
+                get_string('gotcolhdr', 'qtype_graphchecker'));
             $failures->data = array();
             $failures->rowclasses = array();
 
@@ -134,7 +134,7 @@ class qtype_coderunner_testing_outcome {
                     if (isset($testresult->expected) && isset($testresult->got)) {
                         $failures->data[] = array(
                             html_writer::link('#id_testcode_' . $rownum,
-                                    get_string('testcase', 'qtype_coderunner', $rownum + 1) .
+                                    get_string('testcase', 'qtype_graphchecker', $rownum + 1) .
                                         html_writer::empty_tag('br') . s($testresult->testcode)),
                             html_writer::link('#id_expected_' . $rownum, html_writer::tag('pre', s($testresult->expected),
                                     array('id' => 'id_fail_expected_' . $rownum))),
@@ -143,27 +143,27 @@ class qtype_coderunner_testing_outcome {
                                     'type' => 'button',  // To suppress form submission.
                                     'class' => 'replaceexpectedwithgot')),
                         );
-                        $failures->rowclasses[] = 'coderunner-failed-test failrow_' . $rownum;
+                        $failures->rowclasses[] = 'graphchecker-failed-test failrow_' . $rownum;
                     }
                 }
             }
-            $message = get_string('failedntests', 'qtype_coderunner', array(
+            $message = get_string('failedntests', 'qtype_graphchecker', array(
                 'numerrors' => $numerrors));
             if ($failures->data) {
-                $message .= html_writer::table($failures) . get_string('replaceexpectedwithgot', 'qtype_coderunner');
+                $message .= html_writer::table($failures) . get_string('replaceexpectedwithgot', 'qtype_graphchecker');
             } else {
-                $message .= get_string('failedtesting', 'qtype_coderunner');
+                $message .= get_string('failedtesting', 'qtype_graphchecker');
             }
         } else {
-            $message = get_string('failedtesting', 'qtype_coderunner');
+            $message = get_string('failedtesting', 'qtype_graphchecker');
         }
-        return $message . html_writer::empty_tag('br') . get_string('howtogetmore', 'qtype_coderunner');
+        return $message . html_writer::empty_tag('br') . get_string('howtogetmore', 'qtype_graphchecker');
     }
 
     /**
      *
      * @global type $COURSE
-     * @param qtype_coderunner $question
+     * @param qtype_graphchecker $question
      * @return a table of test results.
      * The test result table is an array of table rows (each an array).
      * The first row is a header row, containing strings like 'Test', 'Expected',
@@ -192,14 +192,14 @@ class qtype_coderunner_testing_outcome {
      * specifier is '%h' denoting that the result object field value should be
      * treated as ready-to-output html. Empty columns are suppressed.
      */
-    protected function build_results_table(qtype_coderunner_question $question) {
+    protected function build_results_table(qtype_graphchecker_question $question) {
         $table = array();
         $table[] = array('iscorrect', 'Test', 'Result');
 
         foreach ($this->testresults as $result) {
             $tablerow = array();
             $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $this->get_test_name($question->coderunnertype, $result->module, $result->method);
+            $tablerow[] = $this->get_test_name($question->graphcheckertype, $result->module, $result->method);
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result->feedback;
             } else {
@@ -217,7 +217,7 @@ class qtype_coderunner_testing_outcome {
 
         // load module JSON
         $name = $module . '.json';
-        $full_name = $CFG->dirroot . '/question/type/coderunner/checks/' . $answertype . '/' . $name;
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $answertype . '/' . $name;
         $module_json = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
         $module_info = json_decode($module_json, true);
 
@@ -283,9 +283,9 @@ class qtype_coderunner_testing_outcome {
      */
     protected static function make_error_html($expected, $got) {
         $table = new html_table();
-        $table->attributes['class'] = 'coderunner-test-results';
-        $table->head = array(get_string('expectedcolhdr', 'qtype_coderunner'),
-                             get_string('gotcolhdr', 'qtype_coderunner'));
+        $table->attributes['class'] = 'graphchecker-test-results';
+        $table->head = array(get_string('expectedcolhdr', 'qtype_graphchecker'),
+                             get_string('gotcolhdr', 'qtype_graphchecker'));
         $table->data = array(array(html_writer::tag('pre', s($expected)), html_writer::tag('pre', s($got))));
         return html_writer::table($table);
     }
@@ -312,7 +312,7 @@ class qtype_coderunner_testing_outcome {
     // Getter methods for use by renderer.
     // ==================================.
 
-    public function get_test_results(qtype_coderunner_question $q) {
+    public function get_test_results(qtype_graphchecker_question $q) {
         return $this->build_results_table($q);
     }
 

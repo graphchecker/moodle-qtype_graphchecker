@@ -15,7 +15,7 @@
 // along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   qtype_coderunner
+ * @package   qtype_graphchecker
  * @copyright Richard Lobb, The University of Canterbury, New Zealand.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

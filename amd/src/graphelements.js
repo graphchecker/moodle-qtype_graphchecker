@@ -45,7 +45,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_coderunner/graphutil'], function(util) {
+define(['qtype_graphchecker/graphutil'], function(util) {
 
     /***********************************************************************
      *

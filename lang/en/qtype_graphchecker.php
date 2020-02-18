@@ -15,9 +15,9 @@
 // along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'qtype_coderunner', language 'en', branch 'MOODLE_20_STABLE'
+ * Strings for component 'qtype_graphchecker', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package   qtype_coderunner
+ * @package   qtype_graphchecker
  * @copyright Richard Lobb 2012
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

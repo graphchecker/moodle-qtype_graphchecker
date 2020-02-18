@@ -30,20 +30,20 @@
 defined('MOODLE_INTERNAL') || die();
 
 
-class qtype_coderunner_test_result {
+class qtype_graphchecker_test_result {
 
     public function __construct($testcase, $iscorrect, $awardedmark, $got) {
         // Flatten testcase into this, tidying up text fields.
         foreach (get_object_vars($testcase) as $key => $value) {
             if (in_array($key, array('expected', 'testcode', 'stdin', 'extra'))) {
-                $this->$key = qtype_coderunner_util::tidy($value);
+                $this->$key = qtype_graphchecker_util::tidy($value);
             } else {
                 $this->$key = $value;
             }
         }
         $this->iscorrect = $iscorrect;
         $this->awarded = $awardedmark;
-        $this->got = qtype_coderunner_util::tidy($got);
+        $this->got = qtype_graphchecker_util::tidy($got);
 
     }
 

@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 
-class qtype_coderunner_html_wrapper {
+class qtype_graphchecker_html_wrapper {
 
     public function __construct($html) {
         $this->html = $html;

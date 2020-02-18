@@ -24,17 +24,17 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-use qtype_coderunner\constants;
+use qtype_graphchecker\constants;
 
 /**
- * Subclass for generating the bits of output specific to coderunner questions.
+ * Subclass for generating the bits of output specific to graphchecker questions.
  *
  * @copyright  Richard Lobb, University of Canterbury.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
-class qtype_coderunner_renderer extends qtype_renderer {
+class qtype_graphchecker_renderer extends qtype_renderer {
 
     /**
      * Generate the display of the formulation part of the question. This is the
@@ -52,10 +52,10 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
         $question = $qa->get_question();
         $qid = $question->id;
-	if (empty($USER->coderunnerquestionids)) {
-            $USER->coderunnerquestionids = array($qid);  // Record in case of AJAX request
+	if (empty($USER->graphcheckerquestionids)) {
+            $USER->graphcheckerquestionids = array($qid);  // Record in case of AJAX request
 	} else {
-	    array_push($USER->coderunnerquestionids, $qid); // Array of active qids
+	    array_push($USER->graphcheckerquestionids, $qid); // Array of active qids
 	}
         $qtext = $question->format_questiontext($qa);
 
@@ -64,7 +64,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $responsefieldname = $qa->get_qt_field_name('answer');
         $responsefieldid = 'id_' . $responsefieldname;
         $answerprompt = html_writer::tag('label',
-                get_string('answerprompt', 'qtype_coderunner'), array('class' => 'answerprompt', 'for' => $responsefieldid));
+                get_string('answerprompt', 'qtype_graphchecker'), array('class' => 'answerprompt', 'for' => $responsefieldid));
         $qtext .= $answerprompt;
 
         $qtext .= html_writer::end_tag('div');
@@ -76,12 +76,12 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
         $rows = isset($question->answerboxlines) ? $question->answerboxlines : 18;
         $taattributes = array(
-                'class' => 'coderunner-answer edit_code',
+                'class' => 'graphchecker-answer edit_code',
                 'name'  => $responsefieldname,
                 'id'    => $responsefieldid,
                 'spellcheck' => 'false',
                 'rows'      => $rows,
-                'data-params' => qtype_coderunner_question::get_ui_params($question->coderunnertype),
+                'data-params' => qtype_graphchecker_question::get_ui_params($question->coderunnertype),
                 'data-globalextra' => $question->globalextra
         );
 
@@ -122,7 +122,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         }
 
         // Initialise the Graph UI.
-        qtype_coderunner_util::load_uiplugin_js($question, $responsefieldid);
+        qtype_graphchecker_util::load_uiplugin_js($question, $responsefieldid);
 
         return $qtext;
     }
@@ -168,7 +168,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $q = $qa->get_question();
         $outcome = unserialize($toserialised);
         if ($outcome === false) {
-            $outcome = new qtype_coderunner_testing_outcome(qtype_coderunner_testing_outcome::STATUS_UNSERIALIZE_FAILED, [], "Internal error: unserialization failed");
+            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_UNSERIALIZE_FAILED, [], "Internal error: unserialization failed");
         }
         $resultsclass = $this->results_class($outcome);
 
@@ -180,18 +180,18 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
         $fb .= html_writer::start_tag('div', array('class' => $resultsclass));
         if ($outcome->invalid()) {
-            $fb .= html_writer::tag('h5', get_string('unserializefailed', 'qtype_coderunner'),
+            $fb .= html_writer::tag('h5', get_string('unserializefailed', 'qtype_graphchecker'),
                     array('class' => 'run_failed_error'));
         } else if ($outcome->run_failed()) {
-            $fb .= html_writer::tag('h5', get_string('run_failed', 'qtype_coderunner'));;
+            $fb .= html_writer::tag('h5', get_string('run_failed', 'qtype_graphchecker'));;
             $fb .= html_writer::tag('p', s($outcome->errormessage),
                     array('class' => 'run_failed_error'));
         } else if ($outcome->has_syntax_error()) {
-            $fb .= html_writer::tag('h5', get_string('syntax_errors', 'qtype_coderunner'));
+            $fb .= html_writer::tag('h5', get_string('syntax_errors', 'qtype_graphchecker'));
             $fb .= html_writer::tag('pre', s($outcome->errormessage),
                     array('class' => 'pre_syntax_error'));
         } else if ($outcome->combinator_error()) {
-            $fb .= html_writer::tag('h5', get_string('badquestion', 'qtype_coderunner'));
+            $fb .= html_writer::tag('h5', get_string('badquestion', 'qtype_graphchecker'));
             $fb .= html_writer::tag('pre', s($outcome->errormessage),
                     array('class' => 'pre_question_error'));
 
@@ -216,18 +216,18 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
     /**
      * Return html to display the status of an empty precheck run.
-     * @param qtype_coderunner_testing_outcome $outcome the results from the test
+     * @param qtype_graphchecker_testing_outcome $outcome the results from the test
      * Must be a standard testing outcome, not a combinator grader outcome.
      * @return html string describing the outcome
      */
     protected function empty_precheck_status($outcome) {
         $output = $outcome->get_raw_output();
         if (!empty($output)) {
-            $fb = html_writer::tag('p', get_string('bademptyprecheck', 'qtype_coderunner'));
-            $fb .= html_writer::tag('pre', qtype_coderunner_util::format_cell($output),
+            $fb = html_writer::tag('p', get_string('bademptyprecheck', 'qtype_graphchecker'));
+            $fb .= html_writer::tag('pre', qtype_graphchecker_util::format_cell($output),
                     array('class' => 'bad_empty_precheck'));
         } else {
-            $fb = html_writer::tag('p', get_string('goodemptyprecheck', 'qtype_coderunner'),
+            $fb = html_writer::tag('p', get_string('goodemptyprecheck', 'qtype_graphchecker'),
                     array('class' => 'good_empty_precheck'));
         }
         return $fb;
@@ -236,12 +236,12 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
     // Generate the main feedback, consisting of (in order) any prologuehtml,
     // a table of results and any epiloguehtml.
-    protected function build_results_table($outcome, qtype_coderunner_question $question) {
+    protected function build_results_table($outcome, qtype_graphchecker_question $question) {
         $fb = $outcome->get_prologue();
         $testresults = $outcome->get_test_results($question);
         if (is_array($testresults) && count($testresults) > 0) {
             $table = new html_table();
-            $table->attributes['class'] = 'coderunner-test-results';
+            $table->attributes['class'] = 'graphchecker-test-results';
             $headers = $testresults[0];
             foreach ($headers as $header) {
                 if (strtolower($header) != 'ishidden') {
@@ -265,10 +265,10 @@ class qtype_coderunner_renderer extends qtype_renderer {
                         if ($cell) { // Anything other than zero or false means hidden.
                             $rowclass .= ' hidden-test';
                         }
-                    } else if ($cell instanceof qtype_coderunner_html_wrapper) {
+                    } else if ($cell instanceof qtype_graphchecker_html_wrapper) {
                         $tablerow[] = $cell->value();  // It's already HTML.
                     } else {
-                        $tablerow[] = qtype_coderunner_util::format_cell($cell);
+                        $tablerow[] = qtype_graphchecker_util::format_cell($cell);
                     }
                     $j++;
                 }
@@ -288,7 +288,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
     // Compute the HTML feedback summary for this test outcome.
     // Should not be called if there were any syntax or sandbox errors.
-    protected function build_feedback_summary(question_attempt $qa, qtype_coderunner_testing_outcome $outcome) {
+    protected function build_feedback_summary(question_attempt $qa, qtype_graphchecker_testing_outcome $outcome) {
         if ($outcome->iscombinatorgrader()) {
             // Simplified special case.
             return $this->build_combinator_grader_feedback_summary($qa, $outcome);
@@ -298,31 +298,31 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
         $onlyhiddenfailed = false;
         if ($outcome->was_aborted()) {
-            $lines[] = get_string('aborted', 'qtype_coderunner');
+            $lines[] = get_string('aborted', 'qtype_graphchecker');
         }
 
         if ($outcome->all_correct()) {
-            $lines[] = get_string('allok', 'qtype_coderunner') .
+            $lines[] = get_string('allok', 'qtype_graphchecker') .
                     "&nbsp;" . $this->feedback_image(1.0);
         } else {
-            $lines[] = get_string('noerrorsallowed', 'qtype_coderunner');
+            $lines[] = get_string('noerrorsallowed', 'qtype_graphchecker');
         }
 
-        return qtype_coderunner_util::make_html_para($lines);
+        return qtype_graphchecker_util::make_html_para($lines);
     }
 
 
     // A special case of the above method for use with combinator template graders
     // only.
-    protected function build_combinator_grader_feedback_summary($qa, qtype_coderunner_combinator_grader_outcome $outcome) {
+    protected function build_combinator_grader_feedback_summary($qa, qtype_graphchecker_combinator_grader_outcome $outcome) {
         $lines = array();  // List of lines of output.
 
         if ($outcome->all_correct()) {
-            $lines[] = get_string('allok', 'qtype_coderunner') .
+            $lines[] = get_string('allok', 'qtype_graphchecker') .
                     "&nbsp;" . $this->feedback_image(1.0);
         }
 
-        return qtype_coderunner_util::make_html_para($lines);
+        return qtype_graphchecker_util::make_html_para($lines);
     }
 
 
@@ -332,7 +332,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $html = '';
         $sourcecodelist = $outcome->get_sourcecode_list();
         if ($sourcecodelist && count($sourcecodelist) > 0) {
-            $heading = get_string('sourcecodeallruns', 'qtype_coderunner');
+            $heading = get_string('sourcecodeallruns', 'qtype_graphchecker');
             $html = html_writer::start_tag('div', array('class' => 'debugging'));
             $html .= html_writer::tag('h3', $heading);
             $i = 1;
@@ -359,12 +359,12 @@ class qtype_coderunner_renderer extends qtype_renderer {
         $answer = $question->answer;
         $fieldname = $qa->get_qt_field_name('sampleanswer');
         $fieldid = 'id_' . $fieldname;
-        $heading = get_string('asolutionis', 'qtype_coderunner');
+        $heading = get_string('asolutionis', 'qtype_graphchecker');
         $html = html_writer::start_tag('div', array('class' => 'sample code'));
         $html .= html_writer::tag('h4', $heading);
         $rows = min(18, substr_count($answer, "\n"));
         $taattributes = array(
-                'class' => 'coderunner-sample-answer edit_code',
+                'class' => 'graphchecker-sample-answer edit_code',
                 'name'  => $fieldname,
                 'id'    => $fieldid,
                 'spellcheck' => 'false',
@@ -374,7 +374,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
         $html .= html_writer::tag('textarea', s($answer), $taattributes);
         $html .= html_writer::end_tag('div');
-        qtype_coderunner_util::load_uiplugin_js($question, $fieldid);
+        qtype_graphchecker_util::load_uiplugin_js($question, $fieldid);
         return $html;
     }
 
@@ -427,7 +427,7 @@ class qtype_coderunner_renderer extends qtype_renderer {
         if (!empty($question->filenamesexplain)) {
                 $text = $question->filenamesexplain;
         } else if (!empty($question->filenamesregex)) {
-            $text = html_writer::tag('p', get_string('allowedfilenamesregex', 'qtype_coderunner')
+            $text = html_writer::tag('p', get_string('allowedfilenamesregex', 'qtype_graphchecker')
                     . ': ' . $question->filenamesregex);
         }
 
@@ -494,16 +494,16 @@ class qtype_coderunner_renderer extends qtype_renderer {
 
     /**
      *
-     * @param qtype_coderunner_testing_outcome $outcome
+     * @param qtype_graphchecker_testing_outcome $outcome
      * @return string the CSS class for the given testing outcome
      */
     protected function results_class($outcome) {
         if ($outcome->all_correct()) {
-            $resultsclass = "coderunner-test-results good";
+            $resultsclass = "graphchecker-test-results good";
         } else if ($outcome->mark_as_fraction() == 0) {
-            $resultsclass = "coderunner-test-results bad";
+            $resultsclass = "graphchecker-test-results bad";
         } else {
-            $resultsclass = 'coderunner-test-results partial';
+            $resultsclass = 'graphchecker-test-results partial';
         }
         return $resultsclass;
     }
@@ -527,16 +527,16 @@ class qtype_coderunner_renderer extends qtype_renderer {
             'type' => 'button',
             'id' => $buttonid,
             'name' => $buttonid,
-            'value' => get_string('reset', 'qtype_coderunner'),
+            'value' => get_string('reset', 'qtype_graphchecker'),
             'class' => 'answer_reset_btn',
             'data-reload-text' => $preload);
         $html = html_writer::empty_tag('input', $attributes);
 
-        $PAGE->requires->js_call_amd('qtype_coderunner/resetbutton',
+        $PAGE->requires->js_call_amd('qtype_graphchecker/resetbutton',
             'initResetButton',
             array($buttonid,
                   $responsefieldid,
-                  get_string('confirmreset', 'qtype_coderunner')
+                  get_string('confirmreset', 'qtype_graphchecker')
             )
         );
 

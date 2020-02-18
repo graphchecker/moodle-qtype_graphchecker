@@ -25,7 +25,7 @@
 
 /**
  * @package    qtype
- * @subpackage coderunner
+ * @subpackage graphchecker
  * @copyright  Richard Lobb, 2012, The University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -37,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-abstract class qtype_coderunner_sandbox {
+abstract class qtype_graphchecker_sandbox {
     protected $user;     // Username supplied when constructing.
     protected $password; // Password supplied when constructing.
     protected $authenticationerror;
@@ -108,7 +108,7 @@ abstract class qtype_coderunner_sandbox {
     public static function get_instance($sandboxextname) {
         $boxes = self::available_sandboxes();
         if (array_key_exists($sandboxextname, $boxes) &&
-                get_config('qtype_coderunner', $sandboxextname . '_enabled')) {
+                get_config('qtype_graphchecker', $sandboxextname . '_enabled')) {
             $classname = $boxes[$sandboxextname];
             $filename = self::get_filename($sandboxextname);
             require_once("$filename");
@@ -145,7 +145,7 @@ abstract class qtype_coderunner_sandbox {
                     $pseudorunobj = new stdClass();
                     $pseudorunobj->error = $langs->error;
                     $errorstring = $sb->error_string($pseudorunobj);
-                    throw new qtype_coderunner_exception('sandboxerror',
+                    throw new qtype_graphchecker_exception('sandboxerror',
                             array('sandbox' => $extname, 'message' => $errorstring));
                 }
             }
@@ -158,12 +158,12 @@ abstract class qtype_coderunner_sandbox {
      * A list of available standboxes. Keys are the externally known sandbox names
      * as they appear in the exported questions, values are the associated
      * class names. File names are the same as the class names with the
-     * leading qtype_coderunner and all underscores removed.
+     * leading qtype_graphchecker and all underscores removed.
      * @return array
      */
     public static function available_sandboxes() {
-        return array('jobesandbox'      => 'qtype_coderunner_jobesandbox',
-                     'ideonesandbox'    => 'qtype_coderunner_ideonesandbox'
+        return array('jobesandbox'      => 'qtype_graphchecker_jobesandbox',
+                     'ideonesandbox'    => 'qtype_graphchecker_ideonesandbox'
                 );
 
     }
@@ -176,7 +176,7 @@ abstract class qtype_coderunner_sandbox {
     public static function get_filename($extsandboxname) {
         $boxes = self::available_sandboxes();
         $classname = $boxes[$extsandboxname];
-        return str_replace('_', '', str_replace('qtype_coderunner_', '', $classname)) . '.php';
+        return str_replace('_', '', str_replace('qtype_graphchecker_', '', $classname)) . '.php';
     }
 
     /**
@@ -203,11 +203,11 @@ abstract class qtype_coderunner_sandbox {
             throw new coding_exception("Bad call to sandbox.errorString");
         }
         if ($errorcode != self::JOBE_400_ERROR || !isset($runresult->stderr)) {
-            return get_string($errorstrings[$errorcode], 'qtype_coderunner');
+            return get_string($errorstrings[$errorcode], 'qtype_graphchecker');
         } else {
             // Special case for JOBE_400 error. Include HTTP error message in
             // the returned error.
-            $message = get_string('errorstring-jobe400', 'qtype_coderunner');
+            $message = get_string('errorstring-jobe400', 'qtype_graphchecker');
             $message .= $runresult->stderr;
             return $message;
         }
@@ -232,7 +232,7 @@ abstract class qtype_coderunner_sandbox {
         if (!isset($resultstrings[$resultcode])) {
             throw new coding_exception("Bad call to sandbox.resultString");
         }
-        return get_string($resultstrings[$resultcode], 'qtype_coderunner');
+        return get_string($resultstrings[$resultcode], 'qtype_graphchecker');
     }
 
 

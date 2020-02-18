@@ -20,12 +20,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
-require_once $CFG->dirroot . '/question/type/coderunner/vendor/autoload.php';
-require_once $CFG->dirroot . '/question/type/coderunner/classes/twigmacros.php';
+require_once $CFG->dirroot . '/question/type/graphchecker/vendor/autoload.php';
 
 
 // Class that provides a singleton instance of the twig environment.
-class qtype_coderunner_twig {
+class qtype_graphchecker_twig {
     private static $twigenvironments = array(true => null, false => null);
 
     // Set up a twig loader and the twig environment. Return the
@@ -34,8 +33,7 @@ class qtype_coderunner_twig {
     private static function get_twig_environment($isstrict=false, $isdebug=false) {
         if (self::$twigenvironments[$isstrict] === null) {
             // On the first call, build the required environment.
-            $macros = qtype_coderunner_twigmacros::macros();
-            $twigloader = new \Twig\Loader\ArrayLoader($macros);
+            $twigloader = new \Twig\Loader\ArrayLoader();
             $twigoptions = array(
                 'cache' => false,
                 'optimisations' => 0,
@@ -46,9 +44,9 @@ class qtype_coderunner_twig {
             if ($isdebug) {
                 $twig->addExtension(new Twig_Extension_Debug());
             }
-            $newrandom = new \Twig\TwigFunction('random', 'qtype_coderunner_random',
+            $newrandom = new \Twig\TwigFunction('random', 'qtype_graphchecker_random',
                 array('needs_environment' => true));
-            $setrandomseed = new \Twig\TwigFunction('set_random_seed', 'qtype_coderunner_set_random_seed',
+            $setrandomseed = new \Twig\TwigFunction('set_random_seed', 'qtype_graphchecker_set_random_seed',
                 array('needs_environment' => true));
             $twig->addFunction($newrandom);
             $twig->addFunction($setrandomseed);
@@ -56,12 +54,7 @@ class qtype_coderunner_twig {
             self::$twigenvironments[$isstrict] = $twig;
 
             $twigcore = $twig->getExtension('core');
-            $twigcore->setEscaper('py', 'qtype_coderunner_escapers::python');
-            $twigcore->setEscaper('python', 'qtype_coderunner_escapers::python');
-            $twigcore->setEscaper('c',  'qtype_coderunner_escapers::java');
-            $twigcore->setEscaper('java', 'qtype_coderunner_escapers::java');
-            $twigcore->setEscaper('ml', 'qtype_coderunner_escapers::matlab');
-            $twigcore->setEscaper('matlab', 'qtype_coderunner_escapers::matlab');
+            $twigcore->setEscaper('py', 'qtype_graphchecker_escapers::python');
         }
         return self::$twigenvironments[$isstrict];
     }
@@ -73,8 +66,8 @@ class qtype_coderunner_twig {
     // Any Twig exceptions raised must be caught higher up.
     public static function render($s, $parameters=array(), $isstrict=false) {
         global $USER;
-        $twig = qtype_coderunner_twig::get_twig_environment($isstrict);
-        $parameters['STUDENT'] = new qtype_coderunner_student($USER);
+        $twig = qtype_graphchecker_twig::get_twig_environment($isstrict);
+        $parameters['STUDENT'] = new qtype_graphchecker_student($USER);
         $template = $twig->createTemplate($s);
         $renderedstring = $template->render($parameters);
         return $renderedstring;
@@ -95,7 +88,7 @@ class qtype_coderunner_twig {
  *
  * @return mixed A random value from the given sequence
  */
-function qtype_coderunner_random(Twig_Environment $env, $values = null)
+function qtype_graphchecker_random(Twig_Environment $env, $values = null)
 {
     if (null === $values) {
         return mt_rand();
@@ -149,7 +142,7 @@ function qtype_coderunner_random(Twig_Environment $env, $values = null)
  *  seed to the given value.
  *  @return '' The empty string
  */
-function qtype_coderunner_set_random_seed(Twig_Environment $env, $seed)
+function qtype_graphchecker_set_random_seed(Twig_Environment $env, $seed)
 {
     mt_srand($seed);
     return '';
