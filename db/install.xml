@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="question/type/coderunner/db" VERSION="20191118" COMMENT="XMLDB file for Moodle question/type/coderunner"
+<XMLDB PATH="question/type/graphchecker/db" VERSION="20191118" COMMENT="XMLDB file for Moodle question/type/graphchecker"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="question_coderunner_options" COMMENT="Extension of the coderunner question table">
+    <TABLE NAME="question_graphchecker_options" COMMENT="Extension of the graphchecker question table">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Every home should have one"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The question this option applies to"/>
