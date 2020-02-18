@@ -1,175 +1,175 @@
 /* Question and results page */
 
-.que.coderunner div.coderunner-examples,
-.que.coderunner div.coderunner-test-results {
+.que.graphchecker div.graphchecker-examples,
+.que.graphchecker div.graphchecker-test-results {
     width: 100%;
     overflow-x: auto;
     box-sizing: border-box;
 }
 
-#page-question-type-coderunner table.coderunner-test-results td,
-#page-question-type-coderunner table.coderunner-test-results th,
-.que.coderunner table.coderunner-test-results td,
-.que.coderunner table.coderunnerexamples td,
-.que.coderunner textarea.edit_code {
+#page-question-type-graphchecker table.graphchecker-test-results td,
+#page-question-type-graphchecker table.graphchecker-test-results th,
+.que.graphchecker table.graphchecker-test-results td,
+.que.graphchecker table.graphcheckerexamples td,
+.que.graphchecker textarea.edit_code {
     font-family:courier,monospace;
     vertical-align: top;
 }
 
-.que.coderunner textarea.edit_code {
+.que.graphchecker textarea.edit_code {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
 }
 
-.que.coderunner div.coderunnerexamples {
+.que.graphchecker div.graphcheckerexamples {
     padding-bottom: 10px;
 }
 
-#page-question-type-coderunner div.ui_wrapper,
-.que.coderunner div.ui_wrapper {
+#page-question-type-graphchecker div.ui_wrapper,
+.que.graphchecker div.ui_wrapper {
     max-width: 100%;
     box-sizing: border-box;
     background-color: #F0F0F0;
 }
 
-.que.coderunner .ace_editor,
-body#page-question-type-coderunner .ace_editor {
+.que.graphchecker .ace_editor,
+body#page-question-type-graphchecker .ace_editor {
     font-size: 100%;
     line-height: 18px;
 }
 
-.que.coderunner p.for-example-para {
+.que.graphchecker p.for-example-para {
     font-weight: bold;
 }
 
-.que.coderunner div.coderunner-test-results {
+.que.graphchecker div.graphchecker-test-results {
     padding: 0.5em;
 }
 
-.que.coderunner label.answerprompt {
+.que.graphchecker label.answerprompt {
     font-weight: bold;
 }
 
-.que.coderunner div.prompt {
+.que.graphchecker div.prompt {
     margin-top: 20px;
     margin-bottom: 7px;
 }
 
-.que.coderunner div.coderunner-lang-select-div {
+.que.graphchecker div.graphchecker-lang-select-div {
     padding-top: 10px;
     padding-bottom: 3px;
 }
 
-.que.coderunner select.coderunner-lang-select {
+.que.graphchecker select.graphchecker-lang-select {
     margin: 0px 0px 0px 10px;
     padding: 1px 5px 1px 5px;
 }
 
-.que.coderunner input.answer_reset_btn {
+.que.graphchecker input.answer_reset_btn {
     margin-bottom: 5px;
 }
 
-#page-question-type-coderunner table.coderunner-test-results td,
-#page-question-type-coderunner table.coderunner-test-results th,
-.que.coderunner table.coderunner-test-results td,
-.que.coderunner table.coderunner-test-results th,
-.que.coderunner table.coderunnerexamples td,
-.que.coderunner table.coderunnerexamples th {
+#page-question-type-graphchecker table.graphchecker-test-results td,
+#page-question-type-graphchecker table.graphchecker-test-results th,
+.que.graphchecker table.graphchecker-test-results td,
+.que.graphchecker table.graphchecker-test-results th,
+.que.graphchecker table.graphcheckerexamples td,
+.que.graphchecker table.graphcheckerexamples th {
     border: 1px solid #B0B0B0;
     padding: 0.4em;
 }
 
-#page-question-type-coderunner table.coderunner-test-results .header,
-.que.coderunner table.coderunner-test-results .header,
-.que.coderunner table.coderunnerexamples .header {
+#page-question-type-graphchecker table.graphchecker-test-results .header,
+.que.graphchecker table.graphchecker-test-results .header,
+.que.graphchecker table.graphcheckerexamples .header {
     text-align: left;
     background-color: #F8F8FF;
 }
 
-.que.coderunner table.coderunner-test-results tr.hidden-test {
+.que.graphchecker table.graphchecker-test-results tr.hidden-test {
     opacity: 0.5;
 }
 
-#page-question-type-coderunner table.coderunner-test-results {
+#page-question-type-graphchecker table.graphchecker-test-results {
     margin-top: 0.5em;
     margin-bottom: 0 em;
 }
 
-.que.coderunner table.coderunner-test-results,
-.que.coderunner table.coderunnerexamples {
+.que.graphchecker table.graphchecker-test-results,
+.que.graphchecker table.graphcheckerexamples {
     margin-bottom: 1em;
 }
 
-#page-question-type-coderunner div.coderunner-test-results td:last-child,
-#page-question-type-coderunner div.coderunner-test-results td:first-child
-.que.coderunner div.coderunner-test-results td:last-child,
-.que.coderunner div.coderunner-test-results td:first-child {
+#page-question-type-graphchecker div.graphchecker-test-results td:last-child,
+#page-question-type-graphchecker div.graphchecker-test-results td:first-child
+.que.graphchecker div.graphchecker-test-results td:last-child,
+.que.graphchecker div.graphchecker-test-results td:first-child {
     min-width: 16px;
 }
 
-.que.coderunner textarea.coderunner-answer[cols] {
+.que.graphchecker textarea.graphchecker-answer[cols] {
     max-width: 100%;
     width: auto;
     line-height: 18px;
 }
 
-.que.coderunner div.coderunner-test-results {
+.que.graphchecker div.graphchecker-test-results {
     color: black;
 }
 
-.que.coderunner div.precheck h3 {
+.que.graphchecker div.precheck h3 {
     margin: 3px 0;
     font-size: 24px;
     color: #333;
 }
 
-.que.coderunner pre.tablecell {
+.que.graphchecker pre.tablecell {
     background-color: inherit;
     border: none;
     padding: 0px;
     white-space: pre;
 }
 
-.que.coderunner div.coderunner-test-results pre,
-.que.coderunner div.coderunner-examples pre {
+.que.graphchecker div.graphchecker-test-results pre,
+.que.graphchecker div.graphchecker-examples pre {
     margin-bottom: 0px;
 }
 
-.que.coderunner div.coderunner-test-results.good,
-#page-question-type-coderunner tr.coderunner-failed-test.fixed {
+.que.graphchecker div.graphchecker-test-results.good,
+#page-question-type-graphchecker tr.graphchecker-failed-test.fixed {
     background-color: #AAFFAA;
 }
 
-.que.coderunner div.coderunner-test-results.good.precheck {
+.que.graphchecker div.graphchecker-test-results.good.precheck {
     background: repeating-linear-gradient(0deg, #FFFFFF, #FFFFFF 8px, #f8f1f9 8px, #f8f1f9 16px);
 }
 
-.que.coderunner div.coderunner-test-results.bad,
-.que.coderunner div.pre_syntax_error,
-.que.coderunner div.pre_question_error {
+.que.graphchecker div.graphchecker-test-results.bad,
+.que.graphchecker div.pre_syntax_error,
+.que.graphchecker div.pre_question_error {
     background-color: #FFAAAA;
 }
 
-.que.coderunner div.coderunner-test-results.bad.precheck,
-.que.coderunner pre.pre_syntax_error .precheck {
+.que.graphchecker div.graphchecker-test-results.bad.precheck,
+.que.graphchecker pre.pre_syntax_error .precheck {
     background: repeating-linear-gradient(0deg, #FFDDDD, #FFDDDD 8px, #FFEEEE 8px, #FFEEEE 16px);
 }
 
-.que.coderunner pre.pre_syntax_error,
-.que.coderunner div.pre_question_error {
+.que.graphchecker pre.pre_syntax_error,
+.que.graphchecker div.pre_question_error {
     border: none;
 }
 
-div.coderunner-test-results.partial {
+div.graphchecker-test-results.partial {
     background-color: #FFF3BF;
 }
 
-.que.coderunner span.answerprompt {
+.que.graphchecker span.answerprompt {
     font-weight: bold;
 }
 
-.que.coderunner span.penaltyregime {
+.que.graphchecker span.penaltyregime {
     padding-left: 0.6em;
 }
 
@@ -178,46 +178,46 @@ div.coderunner-test-results.partial {
    but the background colour of del elements is toggled by the
    Show/Hide differences button.
 */
-.que.coderunner div.coderunner-test-results del {
+.que.graphchecker div.graphchecker-test-results del {
     text-decoration: none;
     background-color: #E0E000;
 }
 
 /* Add lines I seem to have somehow overridden in styles.php */
-.que.coderunner tr.r0 td {
+.que.graphchecker tr.r0 td {
     background-color:#F5F5F5
 }
 
-.que.coderunner tr.r1 td {
+.que.graphchecker tr.r1 td {
     background-color:#E5E5E5
 }
 
-.que.coderunner div.im-controls p.penaltyregime {
+.que.graphchecker div.im-controls p.penaltyregime {
     display: inline;
     float: right;
 }
 
-.que.coderunner .ace_wrapper {
+.que.graphchecker .ace_wrapper {
     border: 1px solid #d9edf7;
 }
 
-.que.coderunner .ace_gutter-cell {
+.que.graphchecker .ace_gutter-cell {
     border-right: solid 1px #000000;
 }
 
-.que.coderunner .ace_fold-widget {
+.que.graphchecker .ace_fold-widget {
     background-color: transparent;
     background-image: none;
     border: none;
 }
 
-.que.coderunner .ace_fold-widget:hover {
+.que.graphchecker .ace_fold-widget:hover {
     border: 1px solid gray;
     margin-top: 1px;
 }
 
 /* expand */
-.que.coderunner .ace_fold-widget.ace_closed::before {
+.que.graphchecker .ace_fold-widget.ace_closed::before {
     content: '►';
     color: gray;
     font-size: 80%;
@@ -226,19 +226,19 @@ div.coderunner-test-results.partial {
 }
 
 /* collapse */
-.que.coderunner .ace_fold-widget.ace_open::before {
+.que.graphchecker .ace_fold-widget.ace_open::before {
     content: '▼';
     color: gray;
     font-size: 60%;
     margin: 0 2px;
 }
 
-.que.coderunner .ace_line .ace_fold {
+.que.graphchecker .ace_line .ace_fold {
     padding-right: 1px;
     line-height: 9px;
 }
 
-.que.coderunner .ace_line .ace_fold::before {
+.que.graphchecker .ace_line .ace_fold::before {
     background-image: none;
     content: '←→';
     float: right;
@@ -246,18 +246,18 @@ div.coderunner-test-results.partial {
 }
 
 /* Editing form. */
-body#page-question-type-coderunner div.edit_code textarea {
+body#page-question-type-graphchecker div.edit_code textarea {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     font-family: "Fira Mono", courier, monospace;
 }
 
-body#page-question-type-coderunner div#id_qtype_coderunner_error_div:empty {
+body#page-question-type-graphchecker div#id_qtype_graphchecker_error_div:empty {
     display: none;
 }
 
-body#page-question-type-coderunner div#id_qtype_coderunner_error_div {
+body#page-question-type-graphchecker div#id_qtype_graphchecker_error_div {
     font-size: 120%;
     font-weight: bold;
     color: red;
@@ -265,16 +265,16 @@ body#page-question-type-coderunner div#id_qtype_coderunner_error_div {
     padding: 4px;
 }
 
-body#page-question-type-coderunner textarea#id_templateparams {
+body#page-question-type-graphchecker textarea#id_templateparams {
     resize: both;
 }
 
-body#page-question-type-coderunner .ace_wrapper {
+body#page-question-type-graphchecker .ace_wrapper {
     border: 1px solid #bbb;
 }
 
-body#page-question-type-coderunner div[id^=fitem_id_],
-body#page-question-type-coderunner div[id^=fgroup_id_] {
+body#page-question-type-graphchecker div[id^=fitem_id_],
+body#page-question-type-graphchecker div[id^=fgroup_id_] {
     background: #EEE;
     margin-bottom: 0;
     margin-top: 0;
@@ -286,92 +286,92 @@ body#page-question-type-coderunner div[id^=fgroup_id_] {
     overflow: visible;
 }
 
-body#page-question-type-coderunner label[for^=id_useasexample],
-body#page-question-type-coderunner label[for^=id_hiderestiffail],
-body#page-question-type-coderunner label.form-check
+body#page-question-type-graphchecker label[for^=id_useasexample],
+body#page-question-type-graphchecker label[for^=id_hiderestiffail],
+body#page-question-type-graphchecker label.form-check
 {
     padding: 5px;
     border: 1px solid lightgray;
 }
 
-body#page-question-type-coderunner p.question-type-details-header {
+body#page-question-type-graphchecker p.question-type-details-header {
     font-size: 130%;
     padding-botton: 10px;
 }
 
-body#page-question-type-coderunner div[id^=fgroup_id_][id*=show_columns]
+body#page-question-type-graphchecker div[id^=fgroup_id_][id*=show_columns]
         .felement span {
     margin-right: 2em;
 }
 
-body#page-question-type-coderunner div[id^=fgroup_id_][id*=show_columns] {
+body#page-question-type-graphchecker div[id^=fgroup_id_][id*=show_columns] {
     padding-top: 16px;
     padding-bottom: 16px;
 }
 
-body#page-question-type-coderunner select#id_coderunner_type {
+body#page-question-type-graphchecker select#id_graphchecker_type {
     margin-right:2em;
 }
 
-body#page-question-type-coderunner div[id^=fitem_id_testcode]:not(:first-of-type) {
+body#page-question-type-graphchecker div[id^=fitem_id_testcode]:not(:first-of-type) {
     margin-top: 14px;
     border: 1px solid #BBB;
     border-bottom: 0;
     padding-top: 8px;
 }
 
-body#page-question-type-coderunner div[id=fitem_id_addanswers] {
+body#page-question-type-graphchecker div[id=fitem_id_addanswers] {
     margin-top: 14px;
     border: 1px solid #BBB;
     padding-top: 8px;
 }
 
-body#page-question-type-coderunner input[name="usecurrentcat"] {
+body#page-question-type-graphchecker input[name="usecurrentcat"] {
     margin-right: 1px;
     margin-left: 2em;
 }
 
-body#page-question-type-coderunner input[type="checkbox"]+label {
+body#page-question-type-graphchecker input[type="checkbox"]+label {
     margin-right: 1em;
 }
 
-body#page-question-type-coderunner textarea.edit_code {
+body#page-question-type-graphchecker textarea.edit_code {
     width: 100%;
     box-sizing: border-box;
     font-family: courier, monospace;
 }
 
-body#page-question-type-coderunner textarea.uiloadfailed {
+body#page-question-type-graphchecker textarea.uiloadfailed {
     border: 6px solid orange;
 }
 
-body#page-question-type-coderunner div.uiloadfailed {
+body#page-question-type-graphchecker div.uiloadfailed {
     background-color: orange;
     padding-after: 0px;
     padding-left: 10px;
 }
 
-body#page-question-type-coderunner input.testcasemark,
-body#page-question-type-coderunner input.coderunner_answerbox_size,
-body#page-question-type-coderunner input#id_cputimelimitsecs,
-body#page-question-type-coderunner input#id_memlimitmb {
+body#page-question-type-graphchecker input.testcasemark,
+body#page-question-type-graphchecker input.graphchecker_answerbox_size,
+body#page-question-type-graphchecker input#id_cputimelimitsecs,
+body#page-question-type-graphchecker input#id_memlimitmb {
     width: auto;
 }
 
-body#page-question-type-coderunner label+select,
-body#page-question-type-coderunner label+input {
+body#page-question-type-graphchecker label+select,
+body#page-question-type-graphchecker label+input {
     margin-right: 1em;
 }
 
-body#page-question-type-coderunner div.testcaseexpression {
+body#page-question-type-graphchecker div.testcaseexpression {
     padding-top: 10px;
     border-top: 1px solid lightgrey;
 }
 
 /* Tests UI */
 
-body#page-question-type-coderunner .tests-ui .active-tests-list,
-body#page-question-type-coderunner .tests-ui .available-tests-list {
+body#page-question-type-graphchecker .tests-ui .active-tests-list,
+body#page-question-type-graphchecker .tests-ui .available-tests-list {
     width: 100%;
     max-width: 550px;
     overflow-y: auto;
@@ -380,7 +380,7 @@ body#page-question-type-coderunner .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
-body#page-question-type-coderunner .tests-ui .backdrop {
+body#page-question-type-graphchecker .tests-ui .backdrop {
     position: fixed;
     left: 0px;
     right: 0px;
@@ -393,29 +393,29 @@ body#page-question-type-coderunner .tests-ui .backdrop {
     overflow-y: scroll;
 }
 
-body#page-question-type-coderunner .tests-ui .backdrop.visible {
+body#page-question-type-graphchecker .tests-ui .backdrop.visible {
     opacity: 1;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container {
+body#page-question-type-graphchecker .tests-ui .test-container {
     background-color: #f2f2f2;
     border-bottom: 1px solid darkgray;
     padding: 5px;
 }
 
-body#page-question-type-coderunner .tests-ui .test-container:last-child {
+body#page-question-type-graphchecker .tests-ui .test-container:last-child {
     background-color: #f2f2f2;
     border-bottom: 0px;
 }
 
-body#page-question-type-coderunner .tests-ui .module-container {
+body#page-question-type-graphchecker .tests-ui .module-container {
     background-color: #f0f0f0;
     border-bottom: 1px solid darkgray;
     padding: 6px 8px;
 }
 
 /* definitions for button styling taken from atto for consistency */
-body#page-question-type-coderunner .tests-ui .button-group {
+body#page-question-type-graphchecker .tests-ui .button-group {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
@@ -424,7 +424,7 @@ body#page-question-type-coderunner .tests-ui .button-group {
     background: #fff;
 }
 
-body#page-question-type-coderunner .tests-ui .button {
+body#page-question-type-graphchecker .tests-ui .button {
     padding: 1px 6px 3px 6px;
     background: none;
     border: 0;
@@ -433,53 +433,53 @@ body#page-question-type-coderunner .tests-ui .button {
     cursor: pointer;
 }
 
-body#page-question-type-coderunner .tests-ui .button + .button {
+body#page-question-type-graphchecker .tests-ui .button + .button {
     border-left: 1px solid #ccc;
 }
 
-body#page-question-type-coderunner .tests-ui .button:hover {
+body#page-question-type-graphchecker .tests-ui .button:hover {
     background-image: radial-gradient(ellipse at center,#fff 60%,#dfdfdf 100%);
     background-color: #ebebeb;
 }
 
-body#page-question-type-coderunner .tests-ui .button .icon {
+body#page-question-type-graphchecker .tests-ui .button .icon {
     padding: 0;
     margin: 2px 0;
 }
 
-body#page-question-type-coderunner .tests-ui .test-name {
+body#page-question-type-graphchecker .tests-ui .test-name {
     margin-left: 10px;
 }
 
-body#page-question-type-coderunner .tests-ui .active-tests-list .test-name,
-body#page-question-type-coderunner .tests-ui .module-name {
+body#page-question-type-graphchecker .tests-ui .active-tests-list .test-name,
+body#page-question-type-graphchecker .tests-ui .module-name {
     font-weight: bold;
 }
 
-body#page-question-type-coderunner .tests-ui .argument-row {
+body#page-question-type-graphchecker .tests-ui .argument-row {
     padding-bottom: 5px;
 }
 
-body#page-question-type-coderunner .tests-ui .argument-row + .argument-row {
+body#page-question-type-graphchecker .tests-ui .argument-row + .argument-row {
     padding-top: 5px;
 }
 
-body#page-question-type-coderunner .tests-ui .argument-name {
+body#page-question-type-graphchecker .tests-ui .argument-name {
     padding-left: 73px;
     padding-right: 21px;
 }
 
-body#page-question-type-coderunner .tests-ui .argument-value {
+body#page-question-type-graphchecker .tests-ui .argument-value {
     width: 140px;
 }
 
-body#page-question-type-coderunner .tests-ui .btn-link {
+body#page-question-type-graphchecker .tests-ui .btn-link {
     position: relative;
     left: 5px;
     top: -2px;
 }
 
-body#page-question-type-coderunner .tests-ui .dialog {
+body#page-question-type-graphchecker .tests-ui .dialog {
     max-width: 550px;
     margin: auto;
     margin-top: 50px;
@@ -489,19 +489,19 @@ body#page-question-type-coderunner .tests-ui .dialog {
     box-shadow: 0px 7px 25px rgba(0, 0, 0, 0.3);
 }
 
-body#page-question-type-coderunner .tests-ui .dialog-header {
+body#page-question-type-graphchecker .tests-ui .dialog-header {
     font-size: 24px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
     margin-bottom: 20px;
 }
 
-body#page-question-type-coderunner.unscrollable {
+body#page-question-type-graphchecker.unscrollable {
     overflow-y: hidden;
 }
 
 /* Bulk tester */
-li.bulktest.coderunner.context.quiz {
+li.bulktest.graphchecker.context.quiz {
     padding-left: 1.5em;
     list-style-type: none;
 }
