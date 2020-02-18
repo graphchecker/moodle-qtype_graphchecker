@@ -16,7 +16,7 @@
 
 /**
  * AJAX script to return a JSON-encoded row of the options for the specified
- * question type by looking up the prototype in the question_graphchecker_options
+ * question type by looking up the prototype in the question_graphchecker_opts
  * table. Fields 'success' and 'error' are added for validation checking by
  * the caller.
  *

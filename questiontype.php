@@ -59,7 +59,7 @@ class qtype_graphchecker extends question_type {
 
 
     public function extra_question_fields() {
-        return array('question_graphchecker_options',
+        return array('question_graphchecker_opts',
             'coderunnertype',  // answer type
             'precheck',
             'showsource',
@@ -132,7 +132,7 @@ class qtype_graphchecker extends question_type {
     /**
      * Get the context for a question.
      *
-     * @param stdClass $question a row from either the question or question_graphchecker_options tables.
+     * @param stdClass $question a row from either the question or question_graphchecker_opts tables.
      * @return context the corresponding context id.
      */
     public static function question_context($question) {
@@ -142,7 +142,7 @@ class qtype_graphchecker extends question_type {
     /**
      * Get the context id for a question.
      *
-     * @param stdClass $question a row from either the question or question_graphchecker_options tables.
+     * @param stdClass $question a row from either the question or question_graphchecker_opts tables.
      * @return int the corresponding context id.
      */
     public static function question_contextid($question) {

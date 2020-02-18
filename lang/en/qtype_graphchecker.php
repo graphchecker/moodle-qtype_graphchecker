@@ -103,7 +103,7 @@ $string['coderunner_install_testsuite_noanswer'] = 'Questions without sample ans
 $string['coderunner_help'] = 'In response to a question, which is a specification for a program fragment, function or whole program, the respondent enters source code in a specified computer language that satisfies the specification.';
 $string['coderunner_link'] = 'question/type/coderunner';
 $string['coderunner_question_type'] = 'CodeRunner question type: ';
-$string['coderunnersettings'] = 'CodeRunner settings';
+$string['coderunnersettings'] = 'GraphChecker settings';
 $string['coderunnersummary'] = 'Answer is program code that is executed in the context of a set of test cases to determine its correctness.';
 $string['coderunnertype'] = 'Question type';
 $string['coderunnertype_help'] = 'Select the programming language and question type. Once a type has been selected, details can be seen in the Question type details panel below.';
@@ -350,15 +350,15 @@ $string['overallresult'] = 'Overall result';
 $string['passes'] = 'passes';
 
 $string['pass'] = 'Pass';
-$string['pluginname'] = 'CodeRunner';
-$string['pluginnameadding'] = 'Adding a CodeRunner question';
-$string['pluginnameediting'] = 'Editing a CodeRunner question';
-$string['pluginnamesummary'] = 'CodeRunner: runs student-submitted code in a sandbox';
+$string['pluginname'] = 'GraphChecker';
+$string['pluginnameadding'] = 'Adding a GraphChecker question';
+$string['pluginnameediting'] = 'Editing a GraphChecker question';
+$string['pluginnamesummary'] = 'GraphChecker: allows students to draw graphs, which are graded automatically';
 $string['pluginname_help'] = 'Use the \'Question type\' combo box to select the
 computer language and question type that will be used to run the student\'s submission.
 Specify the problem that the student must write code for, then define
 a set of tests to be run on the student\'s submission';
-$string['pluginname_link'] = 'question/type/coderunner';
+$string['pluginname_link'] = 'question/type/graphchecker';
 $string['precheck'] = 'Precheck';
 $string['precheck_disabled'] = 'Disabled';
 $string['precheck_empty'] = 'Empty';
@@ -390,7 +390,7 @@ Twig parameter {{ IS_PRECHECK }}, which is "1" during precheck runs and
 "0" otherwise.';
 $string['precheck_only'] = 'Precheck only';
 $string['precheckingemptyset'] = 'Prechecking examples, but there aren\'t any!';
-$string['privacy:metadata'] = 'The CodeRunner question type plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The GraphChecker question type plugin does not store any personal data.';
 $string['proceed_at_own_risk'] = 'Editing a built-in question prototype?! Proceed at your own risk!';
 $string['prototypecontrols'] = 'Prototyping';
 $string['prototypeusage'] = 'CodeRunner question prototype usage for course {$a}';
@@ -811,7 +811,7 @@ the \'Customise\' checkbox.
 If the template-debugging checkbox is clicked, the program generated
 for each testcase will be displayed in the output.';
 $string['questiontype_required'] = 'You must select the type of question';
-$string['qWrongBehaviour'] = 'Please use Adaptive Behaviour for all CodeRunner questions, or there can be massive performance hits. For example, all questions on a page will need to be regraded when the page is re-displayed.';
+$string['qWrongBehaviour'] = 'Please use Adaptive Behaviour for all GraphChecker questions, or there can be massive performance hits. For example, all questions on a page will need to be regraded when the page is re-displayed.';
 
 $string['regexgrader'] = 'Regular expression';
 $string['replacedollarscount'] = 'This category contains {$a} CodeRunner questions.';
