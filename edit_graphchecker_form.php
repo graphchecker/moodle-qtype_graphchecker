@@ -94,7 +94,15 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     // Defines the bit of the CodeRunner question edit form after the "General"
     // section and before the footer stuff.
     public function definition_inner($mform) {
-        $this->make_questiontype_panel($mform);
+        // The Question Type controls (a group with just a single member).
+        $types = $this->get_types_array();
+        $typeselectorelements = array();
+        $typeselectorelements[] = $mform->createElement('select', 'answertype',
+                null, $types);
+        $mform->addElement('group', 'coderunner_type_group',
+                get_string('answertype', 'qtype_graphchecker'), $typeselectorelements, null, false);
+        $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
+
         $this->add_preload_answer_field($mform);
         $this->add_tests_field($mform);
         $this->add_sample_answer_field($mform);
@@ -162,12 +170,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
-    }
-
-
-    // A list of the allowed values of the DB 'display' field for each testcase.
-    protected function displayoptions() {
-        return array('SHOW', 'HIDE', 'HIDE_IF_FAIL', 'HIDE_IF_SUCCEED');
     }
 
 
@@ -245,58 +247,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     // JavaScript error handling code.
     private function make_error_div($mform) {
         $mform->addElement('html', "<div id='id_qtype_graphchecker_error_div' class='qtype_graphchecker_error_message'></div>");
-    }
-
-    // Add to the supplied $mform the panel "Coderunner question type".
-    private function make_questiontype_panel($mform) {
-        $mform->addElement('header', 'questiontypeheader', get_string('type_header', 'qtype_graphchecker'));
-
-        // The Question Type controls (a group with just a single member).
-        $types = $this->get_types_array();
-        $typeselectorelements = array();
-        $typeselectorelements[] = $mform->createElement('select', 'coderunnertype',
-                null, $types);
-        $mform->addElement('group', 'coderunner_type_group',
-                'Answer type', $typeselectorelements, null, false);
-        $mform->addHelpButton('coderunner_type_group', 'coderunnertype', 'qtype_graphchecker');
-
-        // Precheck control (a group with only one element).
-        $precheckelements = array();
-        $precheckvalues = array(
-            constants::PRECHECK_DISABLED => get_string('precheck_disabled', 'qtype_graphchecker'),
-            constants::PRECHECK_EMPTY    => get_string('precheck_empty', 'qtype_graphchecker'),
-            constants::PRECHECK_EXAMPLES => get_string('precheck_examples', 'qtype_graphchecker'),
-            constants::PRECHECK_SELECTED => get_string('precheck_selected', 'qtype_graphchecker'),
-            constants::PRECHECK_ALL      => get_string('precheck_all', 'qtype_graphchecker')
-        );
-        $precheckelements[] = $mform->createElement('select', 'precheck', null, $precheckvalues);
-        $mform->addElement('group', 'graphchecker_precheck_group',
-                get_string('precheck', 'qtype_graphchecker'), $precheckelements, null, false);
-        $mform->addHelpButton('graphchecker_precheck_group', 'precheck', 'qtype_graphchecker');
-
-        // Feedback control (a group with only one element).
-        $feedbackelements = array();
-        $feedbackvalues = array(
-            constants::FEEDBACK_USE_QUIZ => get_string('feedback_quiz', 'qtype_graphchecker'),
-            constants::FEEDBACK_SHOW    => get_string('feedback_show', 'qtype_graphchecker'),
-            constants::FEEDBACK_HIDE => get_string('feedback_hide', 'qtype_graphchecker'),
-        );
-
-        $feedbackelements[] = $mform->createElement('select', 'displayfeedback', null, $feedbackvalues);
-        $mform->addElement('group', 'graphchecker_feedback_group',
-                get_string('feedback', 'qtype_graphchecker'), $feedbackelements, null, false);
-        $mform->addHelpButton('graphchecker_feedback_group', 'feedback', 'qtype_graphchecker');
-        $mform->setDefault('displayfeedback', constants::FEEDBACK_SHOW);
-        $mform->setType('displayfeedback', PARAM_INT);
-
-        // Marking controls.
-        $markingelements = array();
-        $markingelements[] = $mform->createElement('advcheckbox', 'allornothing', null,
-                get_string('allornothing', 'qtype_graphchecker'));
-        $mform->addElement('group', 'markinggroup', get_string('markinggroup', 'qtype_graphchecker'),
-                $markingelements, null, false);
-        $mform->setDefault('allornothing', true);
-        $mform->addHelpButton('markinggroup', 'markinggroup', 'qtype_graphchecker');
     }
 
     /**

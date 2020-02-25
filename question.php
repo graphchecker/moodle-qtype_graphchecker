@@ -272,27 +272,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    /**
-     * @return an array of result column specifiers, each being a 2-element
-     *  array of a column header and the testcase field to be displayed
-     */
-    public function result_columns() {
-        if (isset($this->resultcolumns) && $this->resultcolumns) {
-            $resultcolumns = json_decode($this->resultcolumns);
-        } else {
-            // Use default column headers, equivalent to json_decode of (in English):
-            // '[["Test", "testcode"], ["Input", "stdin"], ["Expected", "expected"], ["Got", "got"]]'.
-            $resultcolumns = array(
-                array(get_string('testcolhdr', 'qtype_graphchecker'), 'testcode'),
-                array(get_string('inputcolhdr', 'qtype_graphchecker'), 'stdin'),
-                array(get_string('expectedcolhdr', 'qtype_graphchecker'), 'expected'),
-                array(get_string('gotcolhdr', 'qtype_graphchecker'), 'got'),
-            );
-        }
-        return $resultcolumns;
-    }
-
-
     // Twig expand all text fields of the question except the templateparam field
     // (which should have been expanded when the question was started) and
     // the template itself.
