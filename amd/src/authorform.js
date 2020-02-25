@@ -31,12 +31,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     // text area from PHP by setting its data-params and
     // data-lang attributes.
     function initEditForm(strings) {
-        let $typeCombo = $('#id_answertype'),
-            $preloadHdr = $('#id_answerpreloadhdr'),
-            $courseId = $('input[name="courseid"]').prop('value'),
-            $precheck = $('select#id_precheck'),
+        let $sampleAnswerField = $('textarea#id_answer'),
             $preloadField = $('textarea#id_answerpreload'),
-            $sampleAnswerField = $('textarea#id_answer'),
             $testsField = $('textarea#id_tests');
 
         // Set up the UI controller for the textarea whose name is
@@ -57,22 +53,9 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         // Set the correct Ui controller on both the sample answer and the answer preload.
         function setUis() {
-            setUi($sampleAnswerField, 'graph');
+            setUi($sampleAnswerField, 'graph');  // TODO change this into whatever UI the question wants
             setUi($preloadField, 'graph');
             setUi($testsField, 'tests');
-        }
-
-        // A JSON request for a question type returned a 'failure' response - probably a
-        // missing question type. Report the error with an alert, and replace
-        // the template contents with an error message in case the user
-        // saves the question and later wonders why it breaks.
-        function reportError(questionType, error) {
-            var errorMessage;
-            window.alert(getString('prototype_load_failure') + error);
-            errorMessage = getString('prototype_error') + "\n";
-            errorMessage += error + '\n';
-            errorMessage += "CourseId: " + courseId + ", qtype: " + questionType;
-            template.prop('value', errorMessage);
         }
 
         // Get the required string from the strings parameter.

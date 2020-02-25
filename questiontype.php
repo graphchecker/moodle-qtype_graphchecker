@@ -109,7 +109,6 @@ class qtype_graphchecker extends question_type {
         $options =& $question->options;
         $qtype = $options->answertype;
         $context = $this->question_context($question);
-        $options->mergedtemplateparams = $options->templateparams;
 
         return true;
     }
