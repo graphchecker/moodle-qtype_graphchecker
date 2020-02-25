@@ -42,6 +42,7 @@ $string['brokentemplategrader'] = 'Bad output from grader: {$a->output}. Somethi
 $string['confirmreset'] = 'Are you sure you want reset the answer box to the original value? This will discard all your work on the question.';
 
 $string['enable'] = 'Enable';
+$string['enable_sandbox_desc'] = 'Permit use of the specified sandbox for running student submissions';
 $string['errorstring-ok'] = 'OK';
 $string['errorstring-autherror'] = 'Unauthorised to use sandbox';
 $string['errorstring-jobe400'] = 'Error from Jobe sandbox server: ';

@@ -50,10 +50,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
     private static function author_edit_keys() {
         // A list of all the language strings required by authorform.js.
-        return array('coderunner_question_type', 'confirm_proceed', 'template_changed',
+        /*return array('coderunner_question_type', 'confirm_proceed', 'template_changed',
             'info_unavailable', 'proceed_at_own_risk', 'error_loading_prototype',
             'ajax_error', 'prototype_load_failure', 'prototype_error',
-            'question_type_changed');
+            'question_type_changed');*/
+        return array();
     }
 
     // Define the CodeRunner question edit form.
