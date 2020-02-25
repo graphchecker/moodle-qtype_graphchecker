@@ -199,7 +199,7 @@ class qtype_graphchecker_testing_outcome {
         foreach ($this->testresults as $result) {
             $tablerow = array();
             $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $this->get_test_name($question->graphcheckertype, $result->module, $result->method);
+            $tablerow[] = $this->get_test_name($question->coderunnertype, $result->module, $result->method);
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result->feedback;
             } else {
