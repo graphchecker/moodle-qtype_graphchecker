@@ -42,13 +42,13 @@ $settings->add(new admin_setting_configtext(
         "qtype_graphchecker/jobe_host",
         get_string('jobe_host', 'qtype_graphchecker'),
         get_string('jobe_host_desc', 'qtype_graphchecker'),
-        'jobe2.cosc.canterbury.ac.nz'));
+        ''));
 
 $settings->add(new admin_setting_configtext(
         "qtype_graphchecker/jobe_apikey",
         get_string('jobe_apikey', 'qtype_graphchecker'),
         get_string('jobe_apikey_desc', 'qtype_graphchecker'),
-        '2AAA7A5415B4A9B394B54BF1D2E9D'
+        ''
         ));
 
 $settings->add(new admin_setting_configtext(
