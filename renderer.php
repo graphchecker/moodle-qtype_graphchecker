@@ -81,7 +81,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                 'id'    => $responsefieldid,
                 'spellcheck' => 'false',
                 'rows'      => $rows,
-                'data-params' => qtype_graphchecker_question::get_ui_params($question->coderunnertype),
+                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype),
                 'data-globalextra' => $question->globalextra
         );
 

@@ -60,27 +60,12 @@ class qtype_graphchecker extends question_type {
 
     public function extra_question_fields() {
         return array('question_graphchecker_opts',
-            'coderunnertype',  // answer type
-            'precheck',
-            'showsource',
+            'answertype',
             'answerpreload',
-            'globalextra',
             'answer',
             'validateonsave',
-            'templateparams',
-            'attachments',
-            'attachmentsrequired',
-            'maxfilesize',
-            'filenamesregex',
-            'filenamesexplain',
-            'displayfeedback',
             'tests'
         );
-    }
-
-
-    public function response_file_areas() {
-        return array('attachments');
     }
 
 
@@ -122,7 +107,7 @@ class qtype_graphchecker extends question_type {
         global $CFG, $DB, $OUTPUT;
         parent::get_question_options($question);
         $options =& $question->options;
-        $qtype = $options->coderunnertype;
+        $qtype = $options->answertype;
         $context = $this->question_context($question);
         $options->mergedtemplateparams = $options->templateparams;
 

@@ -122,7 +122,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->coderunnertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->answertype));
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
@@ -142,7 +142,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('header', 'testshdr',
                     get_string('tests', 'qtype_graphchecker'), '');
         $mform->setExpanded('testshdr', 1);
-        $availableTests = qtype_graphchecker_test::get_available_tests($this->question->options->coderunnertype);
+        $availableTests = qtype_graphchecker_test::get_available_tests($this->question->options->answertype);
         $mform->addElement('textarea', 'tests',
             get_string('tests', 'qtype_graphchecker'),
             array(
@@ -166,7 +166,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->coderunnertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->answertype));
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
@@ -296,7 +296,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         // Clean the question object, get inherited fields and run the sample answer.
         $qtype = new qtype_graphchecker();
         $qtype->clean_question_form($question, true);
-        $questiontype = $question->coderunnertype;
+        $questiontype = $question->answertype;
         list($category) = explode(',', $question->category);
         $contextid = $DB->get_field('question_categories', 'contextid', array('id' => $category));
         $question->contextid = $contextid;

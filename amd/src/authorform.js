@@ -31,7 +31,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     // text area from PHP by setting its data-params and
     // data-lang attributes.
     function initEditForm(strings) {
-        let $typeCombo = $('#id_coderunnertype'),
+        let $typeCombo = $('#id_answertype'),
             $preloadHdr = $('#id_answerpreloadhdr'),
             $courseId = $('input[name="courseid"]').prop('value'),
             $precheck = $('select#id_precheck'),
