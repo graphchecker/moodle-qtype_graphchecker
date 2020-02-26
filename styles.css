@@ -7,15 +7,6 @@
     box-sizing: border-box;
 }
 
-#page-question-type-graphchecker table.graphchecker-test-results td,
-#page-question-type-graphchecker table.graphchecker-test-results th,
-.que.graphchecker table.graphchecker-test-results td,
-.que.graphchecker table.graphcheckerexamples td,
-.que.graphchecker textarea.edit_code {
-    font-family:courier,monospace;
-    vertical-align: top;
-}
-
 .que.graphchecker textarea.edit_code {
     width: 100%;
     max-width: 100%;

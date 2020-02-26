@@ -280,28 +280,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
     }
 
 
-    // Build and return an HTML div section containing a list of template
-    // outputs used as source code (which are recorded in the given $outcome).
-    protected function make_source_code_div($outcome) {
-        $html = '';
-        $sourcecodelist = $outcome->get_sourcecode_list();
-        if ($sourcecodelist && count($sourcecodelist) > 0) {
-            $heading = get_string('sourcecodeallruns', 'qtype_graphchecker');
-            $html = html_writer::start_tag('div', array('class' => 'debugging'));
-            $html .= html_writer::tag('h3', $heading);
-            $i = 1;
-            foreach ($sourcecodelist as $run) {
-                $html .= html_writer::tag('h4', "Run $i");
-                $i++;
-                $html .= html_writer::tag('pre', s($run));
-                $html .= html_writer::tag('hr', '');
-            }
-            $html .= html_writer::end_tag('div');
-        }
-        return $html;
-    }
-
-
     /**
      * Return the HTML to display the sample answer, if given.
      * @param question_attempt $qa

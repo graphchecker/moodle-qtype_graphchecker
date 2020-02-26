@@ -73,7 +73,7 @@ class qtype_graphchecker_util {
         if (substr($cell, 0, 1) === "\n") {
             $cell = "\n" . $cell;  // Fix <pre> quirk that ignores leading \n.
         }
-        return '<pre class="tablecell">' . s($cell) . '</pre>';
+        return s($cell);
     }
 
 
