@@ -5,6 +5,8 @@ import igraph
 # helper methods
 def _to_igraph(graph):
     g = igraph.Graph(directed=False)
+    if not graph:
+        return g
     for vertex in graph['nodes']:
         g.add_vertex(name=vertex[0])
     for edge in graph['edges']:

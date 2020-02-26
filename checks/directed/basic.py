@@ -5,6 +5,8 @@ import igraph
 # helper methods
 def _to_igraph(graph):
     g = igraph.Graph(directed=True)
+    if not graph:
+        return g
     for vertex in graph['nodes']:
         g.add_vertex(name=vertex[0])
     for edge in graph['edges']:
@@ -24,11 +26,9 @@ def _make_integer_checker(method_name, readable_name):
                         readable_name, actual, expected)}
     return result
 
-clique_number = _make_integer_checker('clique_number', 'Clique number')
 diameter = _make_integer_checker('diameter', 'Diameter')
 edge_count = _make_integer_checker('ecount', 'Edge count')
 girth = _make_integer_checker('girth', 'Girth')
-independence_number = _make_integer_checker('independence_number', 'Independence number')
 radius = _make_integer_checker('radius', 'Radius')
 vertex_count = _make_integer_checker('vcount', 'Vertex count')
 
@@ -57,6 +57,6 @@ def vertex_degrees(student_answer, sample_answer, preload_answer, degree_type, e
             return {'correct': False,
                     'feedback': ('All vertices should have {0} {1}, ' +
                         'but {2} has {0} {3}').format(
-                        degree_type, expected, v_name, v.degree())}
+                        degree_type, expected, v_name, v.degree(mode=mode))}
     return {'correct': True}
 

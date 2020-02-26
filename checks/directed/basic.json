@@ -1,19 +1,6 @@
 {
     "name": "Graph properties",
     "checks": {
-        "clique_number": {
-            "name": "Clique number",
-            "description": "Checks if the clique number (size of the largest clique) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
         "diameter": {
             "name": "Diameter",
             "description": "Checks if the diameter (length of the longest path) is equal to the given value.",
@@ -50,19 +37,6 @@
                     "type": "integer",
                     "default": 3,
                     "min": 3
-                }
-            ]
-        },
-        "independence_number": {
-            "name": "Independence number",
-            "description": "Checks if the independence number (size of the largest independent set) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
                 }
             ]
         },
