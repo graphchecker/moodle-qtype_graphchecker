@@ -69,10 +69,10 @@ class qtype_graphchecker_jobrunner {
     private function run_combinator($isprecheck) {
         global $CFG;
 
-        $numtests = count($this->checks);
+        $numchecks = count($this->checks);
         $this->templateparams['checks'] = $this->checks;
         $this->templateparams['checker_modules'] = $this->get_checker_modules();
-        $outcome = new qtype_graphchecker_testing_outcome(1, $numtests, $isprecheck);
+        $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
         $question = $this->question;
 
         $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/template.py.twig');
@@ -87,6 +87,7 @@ class qtype_graphchecker_jobrunner {
         }
 
         $this->allruns[] = $testprog;
+
         $run = $this->sandbox->execute($testprog,
             "python3",  // language
             null,

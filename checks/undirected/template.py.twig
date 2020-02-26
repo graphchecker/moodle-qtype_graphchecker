@@ -23,10 +23,10 @@ else:
 
 results = []
 
-{% for test in tests %}
-result = {{ test.get_test_code() }}
-result['module'] = """{{ test.module | e('py') }}"""
-result['method'] = """{{ test.method | e('py') }}"""
+{% for check in checks %}
+result = {{ check.get_check_code() }}
+result['module'] = """{{ check.module | e('py') }}"""
+result['method'] = """{{ check.method | e('py') }}"""
 results.append(result)
 {% endfor %}
 
