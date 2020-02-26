@@ -176,9 +176,9 @@ class qtype_graphchecker_question extends question_graded_automatically {
             // We haven't already graded this submission or we graded it with
             // a different precheck setting.
             $answer = $response['answer'];
-            $tests = $this->get_tests();
+            $checks = $this->get_checks();
             $runner = new qtype_graphchecker_jobrunner();
-            $testoutcome = $runner->run_tests($this, $answer, $tests, $isprecheck);
+            $testoutcome = $runner->run_checks($this, $answer, $checks, $isprecheck);
             $testoutcomeserial = serialize($testoutcome);
         }
 
@@ -187,18 +187,9 @@ class qtype_graphchecker_question extends question_graded_automatically {
             return array(0, question_state::$invalid, $datatocache);
         } else if ($testoutcome->all_correct()) {
              return array(1, question_state::$gradedright, $datatocache);
-        /*} else if ($this->allornothing &&
-                !($this->grader === 'TemplateGrader' && $this->iscombinatortemplate)) {
-            return array(0, question_state::$gradedwrong, $datatocache);
-        } else {
-            // Allow partial marks if not allornothing or if it's a combinator template grader.
-            return array($testoutcome->mark_as_fraction(),
-                    question_state::$gradedpartial, $datatocache);
-        }*/
         } else {
             return array(0, question_state::$gradedwrong, $datatocache);
         }
-        // TODO [ws] I still need to look into this code to allow partial grades. The library code should be able to return a grade
     }
 
 
@@ -220,18 +211,18 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    // Returns all tests that we need to run.
-    protected function get_tests() {
-        $tests = json_decode($this->tests, true);
+    // Returns all checks that we need to run.
+    protected function get_checks() {
+        $checks = json_decode($this->checks, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new coding_exception('Invalid JSON string for tests');
         }
 
-        foreach ($tests as $index => $test) {
-            $tests[$index] = new qtype_graphchecker_test($test);
+        foreach ($checks as $index => $check) {
+            $checks[$index] = new qtype_graphchecker_check($check);
         }
 
-        return $tests;
+        return $checks;
     }
 
 

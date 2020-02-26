@@ -39,6 +39,8 @@ $string['asolutionis'] = 'Example solution:';
 $string['badquestion'] = 'Error in question';
 $string['brokentemplategrader'] = 'Bad output from grader: {$a->output}. Something may be wrong with the question; please notify your tutor.';
 
+$string['checks'] = 'Checks';
+$string['checks_help'] = 'Checks used to verify if the student\'s answer is correct.';
 $string['confirmreset'] = 'Are you sure you want reset the answer box to the original value? This will discard all your work on the question.';
 
 $string['enable'] = 'Enable';
@@ -112,9 +114,6 @@ $string['resultstring-abnormaltermination'] = 'Abnormal termination';
 $string['run_failed'] = 'Failed to run checks';
 
 $string['syntax_errors'] = 'Syntax Error(s)';
-
-$string['tests'] = 'Checks';
-$string['tests_help'] = 'Checks used to verify if the student\'s answer is correct.';
 
 $string['ui_fallback'] = 'Falling back to raw text area.';
 $string['unknownerror'] = 'An unexpected error occurred. The sandbox may be down. Try again shortly.';

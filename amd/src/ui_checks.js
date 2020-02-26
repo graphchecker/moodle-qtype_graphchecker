@@ -25,7 +25,7 @@
 
 define(['jquery'], function($) {
 
-    function TestsUi(textareaId, width, height, templateParams) {
+    function ChecksUi(textareaId, width, height, templateParams) {
         this.$textArea = $('#' + textareaId);
         this.templateParams = templateParams;
         this.fail = false;
@@ -33,28 +33,28 @@ define(['jquery'], function($) {
         this.reload();
     }
 
-    TestsUi.prototype.failed = function() {
+    ChecksUi.prototype.failed = function() {
         return this.fail;
     };
 
-    TestsUi.prototype.failMessage = function() {
+    ChecksUi.prototype.failMessage = function() {
         return this.error;
     };
 
     // Copy the serialised version of the HTML UI area to the TextArea.
-    TestsUi.prototype.sync = function() {
-        let tests = [];
+    ChecksUi.prototype.sync = function() {
+        let checks = [];
 
-        let $testContainers = this.$activeTestsList.children();
-        $testContainers.each(function() {
-            let $testContainer = $(this);
-            let test = {
-                'module': $testContainer.attr('data-module'),
-                'method': $testContainer.attr('data-method')
+        let $checkContainers = this.$activeChecksList.children();
+        $checkContainers.each(function() {
+            let $checkContainer = $(this);
+            let check = {
+                'module': $checkContainer.attr('data-module'),
+                'method': $checkContainer.attr('data-method')
             };
 
             let $argRows =
-                    $testContainer.children('.args-container').children();
+                    $checkContainer.children('.args-container').children();
             if ($argRows) {
                 let args = {};
                 $argRows.each(function() {
@@ -63,45 +63,45 @@ define(['jquery'], function($) {
                     let value = $argRow.children('.argument-value').val();
                     args[name] = value;
                 });
-                test['arguments'] = args;
+                check['arguments'] = args;
             }
-            tests.push(test);
+            checks.push(check);
         });
 
-        this.$textArea.val(JSON.stringify(tests));
+        this.$textArea.val(JSON.stringify(checks));
     };
 
-    TestsUi.prototype.getElement = function() {
-        return this.$testsPanel;
+    ChecksUi.prototype.getElement = function() {
+        return this.$checksPanel;
     };
 
-    TestsUi.prototype.reload = function() {
-        this.$testsPanel = $('<div/>')
+    ChecksUi.prototype.reload = function() {
+        this.$checksPanel = $('<div/>')
             .addClass('tests-ui');
 
-        this.$activeTestsList = $('<div/>')
+        this.$activeChecksList = $('<div/>')
             .addClass('active-tests-list')
-            .appendTo(this.$testsPanel);
+            .appendTo(this.$checksPanel);
         this.$backdrop = $('<div/>')
             .addClass('backdrop')
             .css('display', 'none')
-            .on('click', this.hideAddTestDialog.bind(this))
-            .appendTo(this.$testsPanel);
+            .on('click', this.hideAddCheckDialog.bind(this))
+            .appendTo(this.$checksPanel);
         this.$availableTestsList = $('<div/>')
             .addClass('available-tests-list');
-        this.$dialog = this.createDialog('Add test', this.$availableTestsList)
+        this.$dialog = this.createDialog('Add test', this.$availableChecksList)
             .appendTo(this.$backdrop);
 
-        let activeTestsJson = this.$textArea.val();
-        let activeTests = JSON.parse(activeTestsJson);
+        let activeChecksJson = this.$textArea.val();
+        let activeChecks = JSON.parse(activeChecksJson);
 
-        let modulesJson = this.$textArea.attr('data-available-tests');
+        let modulesJson = this.$textArea.attr('data-available-checks');
         this.modules = JSON.parse(modulesJson);
 
-        for (let i = 0; i < activeTests.length; i++) {
-            let test = activeTests[i];
-            this.createActiveTestContainer(test)
-                .appendTo(this.$activeTestsList);
+        for (let i = 0; i < activeChecks.length; i++) {
+            let test = activeChecks[i];
+            this.createActiveCheckContainer(test)
+                .appendTo(this.$activeChecksList);
         }
 
         for (let moduleName in this.modules) {
@@ -109,12 +109,12 @@ define(['jquery'], function($) {
                 let module = this.modules[moduleName];
                 let $moduleContainer = this
                     .createModuleContainer(moduleName, module)
-                    .appendTo(this.$availableTestsList);
+                    .appendTo(this.$availableChecksList);
                 let checks = module['checks'];
                 for (let checkName in checks) {
                     if (checks.hasOwnProperty(checkName)) {
                         this.createAvailableTestContainer(moduleName, checkName, checks[checkName])
-                            .appendTo(this.$availableTestsList);
+                            .appendTo(this.$availableChecksList);
                     }
                 }
             }
@@ -123,19 +123,19 @@ define(['jquery'], function($) {
         this.$addTestButton = $('<button/>')
             .addClass('btn btn-primary')
             .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
-            .append('Add test')
-            .on('click', this.showAddTestDialog.bind(this))
-            .appendTo(this.$testsPanel);
+            .append('Add check')
+            .on('click', this.showAddCheckDialog.bind(this))
+            .appendTo(this.$checksPanel);
     };
 
-    TestsUi.prototype.showAddTestDialog = function(test) {
+    ChecksUi.prototype.showAddCheckDialog = function() {
         this.$backdrop.css('display', 'block')
             .addClass('visible');
         $('body').addClass('unscrollable');
         return false;
     }
 
-    TestsUi.prototype.hideAddTestDialog = function(test) {
+    ChecksUi.prototype.hideAddCheckDialog = function(check) {
         this.$backdrop.removeClass('visible');
         $('body').removeClass('unscrollable');
 
@@ -145,7 +145,7 @@ define(['jquery'], function($) {
         }.bind(this), 500);
     }
 
-    TestsUi.prototype.createActiveTestContainer = function(test) {
+    ChecksUi.prototype.createActiveCheckContainer = function(check) {
         let module = test['module'];
         let method = test['method'];
 
@@ -171,15 +171,15 @@ define(['jquery'], function($) {
             .on('click', this.moveCheckDown.bind(this))
             .appendTo($buttonGroup);
 
-        let testInfo = this.modules[module]['checks'][method];
+        let checkInfo = this.modules[module]['checks'][method];
 
         let $title = $('<span/>')
-            .html(testInfo['name'])
+            .html(checkInfo['name'])
             .addClass('test-name')
             .appendTo($header);
 
-        if (testInfo['description']) {
-            let $helpButton = this.createHelpButton(testInfo['description'])
+        if (checkInfo['description']) {
+            let $helpButton = this.createHelpButton(checkInfo['description'])
                 .appendTo($header);
         }
 
@@ -192,8 +192,8 @@ define(['jquery'], function($) {
             .on('click', this.removeCheck.bind(this))
             .appendTo($rightButtonGroup);
 
-        if (testInfo['params']) {
-            let $argsContainer = this.createArgsContainer(testInfo, test)
+        if (checkInfo['params']) {
+            let $argsContainer = this.createArgsContainer(checkInfo, check)
                 .appendTo($container);
         }
 
@@ -202,11 +202,11 @@ define(['jquery'], function($) {
 
     /**
      * Creates a panel where the user can specify the arguments to be passed
-     * to the test. This should only be called if the test accepts parameters.
+     * to the check. This should be called only if the check accepts parameters.
      */
-    TestsUi.prototype.createArgsContainer = function(testInfo, test) {
-        let params = testInfo['params'];
-        let args = test['arguments'];
+    ChecksUi.prototype.createArgsContainer = function(checkInfo, check) {
+        let params = checkInfo['params'];
+        let args = check['arguments'];
 
         let $container = $('<div/>')
             .addClass('args-container');
@@ -276,7 +276,7 @@ define(['jquery'], function($) {
      * Creates a module header.
      * @param module The name of the module.
      */
-    TestsUi.prototype.createModuleContainer = function(module) {
+    ChecksUi.prototype.createModuleContainer = function(module) {
         let $container = $('<div/>')
             .addClass('module-container');
 
@@ -292,56 +292,56 @@ define(['jquery'], function($) {
         return $container;
     };
 
-    TestsUi.prototype.moveCheckUp = function(e) {
-        let $testContainer = $(e.target).closest('.test-container');
-        let $previous = $testContainer.prev();
+    ChecksUi.prototype.moveCheckUp = function(e) {
+        let $checkContainer = $(e.target).closest('.test-container');
+        let $previous = $checkContainer.prev();
         if ($previous) {
-            $previous.before($testContainer);
+            $previous.before($checkContainer);
         }
         return false;
     };
 
-    TestsUi.prototype.moveCheckDown = function(e) {
-        let $testContainer = $(e.target).closest('.test-container');
-        let $next = $testContainer.next();
+    ChecksUi.prototype.moveCheckDown = function(e) {
+        let $checkContainer = $(e.target).closest('.test-container');
+        let $next = $checkContainer.next();
         if ($next) {
-            $next.after($testContainer);
+            $next.after($checkContainer);
         }
         return false;
     };
 
-    TestsUi.prototype.removeCheck = function(e) {
-        let $testContainer = $(e.target).closest('.test-container');
-        $testContainer.slideUp();
+    ChecksUi.prototype.removeCheck = function(e) {
+        let $checkContainer = $(e.target).closest('.test-container');
+        $checkContainer.slideUp();
 
         // remove it after the slideUp is done
         setTimeout(function() {
-            $testContainer.remove();
+            $checkContainer.remove();
         }.bind(this), 500);
-        
+
         return false;
     };
 
-    TestsUi.prototype.addCheck = function(e) {
-        let $testContainer = $(e.target).closest('.test-container');
+    ChecksUi.prototype.addCheck = function(e) {
+        let $checkContainer = $(e.target).closest('.test-container');
 
         let test = {
-            'module': $testContainer.attr('data-module'),
-            'method': $testContainer.attr('data-method'),
+            'module': $checkContainer.attr('data-module'),
+            'method': $checkContainer.attr('data-method'),
             'arguments': []
         };
 
-        this.createActiveTestContainer(test)
+        this.createActiveCheckContainer(test)
             .appendTo($('.active-tests-list'))
             .hide()
             .slideDown();
 
-        this.hideAddTestDialog();
+        this.hideAddCheckDialog();
 
         return false;
     };
 
-    TestsUi.prototype.createAvailableTestContainer = function(module, method) {
+    ChecksUi.prototype.createAvailableCheckContainer = function(module, method) {
         let $container = $('<div/>')
             .addClass('test-container')
             .attr('data-module', module)
@@ -360,22 +360,22 @@ define(['jquery'], function($) {
             .on('click', this.addCheck.bind(this))
             .appendTo($buttonGroup);
 
-        let test = this.modules[module]['checks'][method];
+        let check = this.modules[module]['checks'][method];
 
         let $title = $('<span/>')
             .html(test['name'])
             .addClass('test-name')
             .appendTo($header);
 
-        if (test['description']) {
-            let $helpButton = this.createHelpButton(test['description'])
+        if (check['description']) {
+            let $helpButton = this.createHelpButton(check['description'])
                 .appendTo($header);
         }
 
         return $container;
     };
 
-    TestsUi.prototype.createDialog = function(title, content) {
+    ChecksUi.prototype.createDialog = function(title, content) {
         return $('<div/>')
             .addClass('dialog')
             .append($('<div/>')
@@ -389,14 +389,14 @@ define(['jquery'], function($) {
             });
     };
 
-    TestsUi.prototype.createButton = function(iconClass) {
+    ChecksUi.prototype.createButton = function(iconClass) {
         return $('<button/>')
             .addClass('button')
             .attr('type', 'button')
             .append($('<i/>').addClass('icon fa ' + iconClass));
     };
 
-    TestsUi.prototype.createHelpButton = function(description) {
+    ChecksUi.prototype.createHelpButton = function(description) {
         return $button = $('<a/>')
             .addClass('btn btn-link p-0')
             .attr('data-container', 'body')
@@ -409,25 +409,25 @@ define(['jquery'], function($) {
                 .attr('title', 'Help'));
     };
 
-    TestsUi.prototype.resize = function() {
+    ChecksUi.prototype.resize = function() {
         // not resizable
     };
 
-    TestsUi.prototype.hasFocus = function() {
+    ChecksUi.prototype.hasFocus = function() {
         // TODO
     };
 
-    TestsUi.prototype.destroy = function() {
+    ChecksUi.prototype.destroy = function() {
         this.sync();
-        this.$testsPanel.remove();
-        this.$testsPanel = null;
+        this.$checksPanel.remove();
+        this.$checksPanel = null;
     };
 
-    TestsUi.prototype.isResizable = function() {
+    ChecksUi.prototype.isResizable = function() {
         return false;
     };
 
     return {
-        Constructor: TestsUi
+        Constructor: ChecksUi
     };
 });

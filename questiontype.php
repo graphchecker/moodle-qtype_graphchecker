@@ -64,7 +64,7 @@ class qtype_graphchecker extends question_type {
             'answerpreload',
             'answer',
             'validateonsave',
-            'tests'
+            'checks'
         );
     }
 

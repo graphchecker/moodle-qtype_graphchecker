@@ -6,13 +6,13 @@
   <TABLES>
     <TABLE NAME="question_graphchecker_opts" COMMENT="Extension of the graphchecker question table">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Every home should have one"/>
-        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The question this option applies to"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="ID for the primary key."/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The question this option applies to."/>
         <FIELD NAME="answertype" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The type of answer we expect the student to give."/>
-        <FIELD NAME="answerpreload" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Text to be preloaded into the question answer box."/>
-        <FIELD NAME="answer" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A solution to the problem. Should satisfy all the test cases (and may be used to generate solutions to them)."/>
-        <FIELD NAME="validateonsave" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If true, the sample answer will be checked when saving and saving will be aborted if the tests don't pass"/>
-        <FIELD NAME="tests" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The test cases, as a JSON string"/>
+        <FIELD NAME="answerpreload" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Answer to be preloaded when question is posed to the student."/>
+        <FIELD NAME="answer" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A sample solution to the problem. Should satisfy all checks."/>
+        <FIELD NAME="validateonsave" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If true, the sample answer will be checked when saving and saving will be aborted if the tests don't pass."/>
+        <FIELD NAME="checks" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The checks, as a JSON string."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

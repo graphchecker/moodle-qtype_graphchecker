@@ -105,7 +105,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
         $this->add_preload_answer_field($mform);
-        $this->add_tests_field($mform);
+        $this->add_checks_field($mform);
         $this->add_sample_answer_field($mform);
     }
 
@@ -137,21 +137,21 @@ class qtype_graphchecker_edit_form extends question_edit_form {
      * Add a field for the test cases.
      * @param object $mform the form being built
      */
-    protected function add_tests_field($mform) {
+    protected function add_checks_field($mform) {
         global $CFG;
-        $mform->addElement('header', 'testshdr',
-                    get_string('tests', 'qtype_graphchecker'), '');
-        $mform->setExpanded('testshdr', 1);
-        $availableTests = qtype_graphchecker_test::get_available_tests($this->question->options->answertype);
-        $mform->addElement('textarea', 'tests',
-            get_string('tests', 'qtype_graphchecker'),
+        $mform->addElement('header', 'checkshdr',
+                    get_string('checks', 'qtype_graphchecker'), '');
+        $mform->setExpanded('checkshdr', 1);
+        $availableTests = qtype_graphchecker_check::get_available_checks($this->question->options->answertype);
+        $mform->addElement('textarea', 'checks',
+            get_string('checks', 'qtype_graphchecker'),
             array(
                 'class' => 'edit_code',
-                'data-available-tests' => json_encode($availableTests)
+                'data-available-checks' => json_encode($availableTests)
             )
         );
-        $mform->setDefault('tests', '[]');
-        $mform->addHelpButton('tests', 'tests', 'qtype_graphchecker');
+        $mform->setDefault('checks', '[]');
+        $mform->addHelpButton('checks', 'checks', 'qtype_graphchecker');
     }
 
     /**

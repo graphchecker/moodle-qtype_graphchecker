@@ -55,7 +55,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         function setUis() {
             setUi($sampleAnswerField, 'graph');  // TODO change this into whatever UI the question wants
             setUi($preloadField, 'graph');
-            setUi($testsField, 'tests');
+            setUi($testsField, 'checks');
         }
 
         // Get the required string from the strings parameter.

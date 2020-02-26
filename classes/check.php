@@ -3,39 +3,39 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Representation of a single test that can be performed on a graph.
+ * Representation of a single check that can be performed on a graph.
  *
- * A test consists of a package name, a method name, and a set of parameters.
- * At runtime, the test is executed by calling
+ * A check consists of a package name, a method name, and a set of parameters.
+ * At runtime, the check is executed by calling
  *
  * ```
  * <package>.<method>(<params>)
  * ```
  */
-class qtype_graphchecker_test {
+class qtype_graphchecker_check {
 
     /**
-     * Constructs a test from a PHP associative array.
+     * Constructs a check from a PHP associative array.
      *
-     * @param test_array An array with the following keys:
-     *   - module: the module the test methods can be found in;
-     *   - method: the method name of the test;
-     *   - arguments: an array of arguments for the test.
+     * @param check_array An array with the following keys:
+     *   - module: the module the check methods can be found in;
+     *   - method: the method name of the check;
+     *   - arguments: an array of arguments for the check.
      */
-    public function __construct($test_array) {
-        $this->module = $test_array['module'];
-        $this->method = $test_array['method'];
-        if (array_key_exists('arguments', $test_array)) {
-            $this->arguments = $test_array['arguments'];
+    public function __construct($check_array) {
+        $this->module = $check_array['module'];
+        $this->method = $check_array['method'];
+        if (array_key_exists('arguments', $check_array)) {
+            $this->arguments = $check_array['arguments'];
         } else {
             $this->arguments = array();
         }
     }
 
     /**
-     * Returns the method call that executes the test.
+     * Returns the method call that executes the check.
      */
-    public function get_test_code() {
+    public function get_check_code() {
         return $this->module . '.' . $this->method .
             '(' . $this->get_arguments_string() . ')';
     }
@@ -60,7 +60,7 @@ class qtype_graphchecker_test {
         return "'" . $escaped . "'";
     }
 
-    public static function get_available_tests($answertype) {
+    public static function get_available_checks($answertype) {
         global $CFG;
 
         $modules = array();

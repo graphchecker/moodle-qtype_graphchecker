@@ -31,7 +31,7 @@ class qtype_graphchecker_jobrunner {
     private $code = null;            // The code we're running.
     private $files = null;           // The files to be loaded into the working dir.
     private $question = null;        // The question that we're running code for.
-    private $tests = null;           // The tests (a subset of those in the question).
+    private $checks = null;          // The checks.
     private $allruns = null;         // Array of the source code for all runs.
     private $precheck = null;        // True if this is a precheck run.
 
@@ -43,12 +43,12 @@ class qtype_graphchecker_jobrunner {
     // $answerlanguage will be the empty string except for multilanguage questions,
     // when it is the language selected in the language drop-down menu.
     // Returns a TestingOutcome object.
-    public function run_tests($question, $answer, $tests, $isprecheck) {
+    public function run_checks($question, $answer, $checks, $isprecheck) {
         global $CFG;
 
         $this->question = $question;
         $this->answer = $answer;
-        $this->tests = $tests;
+        $this->checks = $checks;
 
         $this->isprecheck = $isprecheck;
         $this->sandbox = $question->get_sandbox();
@@ -69,8 +69,8 @@ class qtype_graphchecker_jobrunner {
     private function run_combinator($isprecheck) {
         global $CFG;
 
-        $numtests = count($this->tests);
-        $this->templateparams['tests'] = $this->tests;
+        $numtests = count($this->checks);
+        $this->templateparams['checks'] = $this->checks;
         $this->templateparams['checker_modules'] = $this->get_checker_modules();
         $outcome = new qtype_graphchecker_testing_outcome(1, $numtests, $isprecheck);
         $question = $this->question;
@@ -113,8 +113,8 @@ class qtype_graphchecker_jobrunner {
     private function get_checker_modules() {
         $modules = [];
 
-        foreach ($this->tests as $test) {
-            $module = $test->module;
+        foreach ($this->checks as $check) {
+            $module = $check->module;
             $modules[] = $module;
         }
 
