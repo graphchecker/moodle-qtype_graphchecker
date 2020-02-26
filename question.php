@@ -46,10 +46,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * be needed later in the step. It is retrieved and applied by
      * apply_attempt_state.
      *
-     * For CodeRunner questions we pre-process the template parameters for any
-     * randomisation required, storing the processed template parameters in
-     * the question_attempt_step.
-     *
      * @param question_attempt_step The first step of the {@link question_attempt}
      *      being started. Can be used to store state. Is set to null during
      *      question validation, and must then be ignored.
@@ -63,32 +59,9 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $this->student = $user;
         if ($step !== null) {
             parent::start_attempt($step, $variant);
-            $step->set_qt_var('_STUDENT', serialize($user));
         }
-
-        $seed = mt_rand();
-        if ($step !== null) {
-            $step->set_qt_var('_mtrandseed', $seed);
-        }
-        $this->setup_template_params($seed);
-        $this->twig_all();
     }
 
-    // Retrieve the saved random number seed and reconstruct the template
-    // parameters to the state they were left after start_attempt was called.
-    // Also twig expand the rest of the question fields.
-    public function apply_attempt_state(question_attempt_step $step) {
-        parent::apply_attempt_state($step);
-        $this->student = unserialize($step->get_qt_var('_STUDENT'));
-        $seed = $step->get_qt_var('_mtrandseed');
-        if ($seed === null) {
-            // Rendering a question that was begun before randomisation
-            // was introduced into the code.
-            $seed = mt_rand();
-        }
-        $this->setup_template_params($seed);
-        $this->twig_all();
-    }
 
     /**
      * Override default behaviour so that we can use a specialised behaviour
@@ -104,12 +77,12 @@ class qtype_graphchecker_question extends question_graded_automatically {
         return  new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
     }
 
+
     public function get_expected_data() {
         $expecteddata = array('answer' => PARAM_RAW,
                      'language' => PARAM_NOTAGS);
         return $expecteddata;
     }
-
 
 
     public function summarise_response(array $response) {
@@ -130,7 +103,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
         return true;
     }
 
-
     /**
      * In situations where is_gradable_response() returns false, this method
      * should generate a description of what the problem is.
@@ -150,9 +122,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
      */
     public function is_same_response(array $prevresponse, array $newresponse) {
         $sameanswer = question_utils::arrays_same_at_key_missing_is_blank(
-                        $prevresponse, $newresponse, 'answer') &&
-                question_utils::arrays_same_at_key_missing_is_blank(
-                        $prevresponse, $newresponse, 'language');
+                        $prevresponse, $newresponse, 'answer');
         return $sameanswer;
     }
 
@@ -170,27 +140,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
             $answer = array('answer' => $this->answer);
             return $answer;
         }
-    }
-
-
-    public function check_file_access($qa, $options, $component, $filearea, $args, $forcedownload) {
-        if ($component == 'question' && $filearea == 'response_attachments') {
-            // Response attachments visible if the question has them.
-            return $this->attachments != 0;
-        } else {
-            return parent::check_file_access($qa, $options, $component,
-                    $filearea, $args, $forcedownload);
-        }
-    }
-
-
-    /** Return a setting that determines whether or not the specific
-     *  feedback display is controlled by the quiz settings or this particular
-     *  question.
-     * @return bool FEEDBACK_USE_QUIZ, FEEDBACK_SHOW or FEEDBACK_HIDE from constants class.
-     */
-    public function display_feedback() {
-        return isset($this->displayfeedback) ? intval($this->displayfeedback) : constants::FEEDBACK_USE_QUIZ;
     }
 
 
@@ -253,35 +202,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    // Twig expand all text fields of the question except the templateparam field
-    // (which should have been expanded when the question was started) and
-    // the template itself.
-    // Done only if randomisation is specified within the template params.
-    private function twig_all() {
-        // Before twig expanding all fields, copy the template parameters
-        // into $this->parameters.
-        if (!empty($this->templateparams)) {
-            $this->parameters = json_decode($this->templateparams);
-        } else {
-            $this->parameters = array();
-        }
-
-        // Twig expand everything in a context that includes the template
-        // parameters and the STUDENT and QUESTION objects.
-        $this->questiontext = $this->twig_expand($this->questiontext);
-        $this->generalfeedback = $this->twig_expand($this->generalfeedback);
-        $this->answer = $this->twig_expand($this->answer);
-        $this->answerpreload = $this->twig_expand($this->answerpreload);
-        $this->globalextra = $this->twig_expand($this->globalextra);
-        /* TODO twig test cases??
-        foreach ($this->testcases as $key => $test) {
-            foreach (['testcode', 'stdin', 'expected', 'extra'] as $field) {
-                $text = $this->testcases[$key]->$field;
-                $this->testcases[$key]->$field = $this->twig_expand($text);
-            }
-        }*/
-    }
-
     /**
      * Return Twig-expanded version of the given text. The
      * Twig environment includes the question itself (this) and the template
@@ -295,32 +215,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
             return $text;
         } else {
             $twigparams['QUESTION'] = $this;
-            // hoist template parameters
-            foreach ($this->parameters as $key => $value) {
-                $twigparams[$key] = $value;
-            }
             return qtype_graphchecker_twig::render($text, $twigparams);
-        }
-    }
-
-    /**
-     * Define the template parameters for this question by Twig-expanding
-     * both our own template params and our prototype template params and
-     * merging the two.
-     * @param type $seed The random number seed to set for Twig randomisation
-     */
-    private function setup_template_params($seed) {
-        mt_srand($seed);
-        if (!isset($this->templateparams)) {
-            $this->templateparams = '';
-        }
-        $ournewtemplateparams = qtype_graphchecker_twig::render($this->templateparams);
-        if (isset($this->prototypetemplateparams)) {
-            $prototypenewtemplateparams = qtype_graphchecker_twig::render($this->prototypetemplateparams);
-            $this->templateparams = qtype_graphchecker_util::merge_json($prototypenewtemplateparams, $ournewtemplateparams);
-        } else {
-            // Missing prototype?
-            $this->templateparams = $ournewtemplateparams;
         }
     }
 
@@ -337,37 +232,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
         }
 
         return $tests;
-    }
-
-
-    // Return the appropriate subset of questions in the case that the question
-    // precheck setting is "selected", given whether or not this is a precheckrun.
-    protected function selected_testcases($isprecheckrun) {
-        $testcases = array();
-        foreach ($this->testcases as $testcase) {
-            if (($isprecheckrun && $testcase->testtype != constants::TESTTYPE_NORMAL) ||
-                (!$isprecheckrun && $testcase->testtype != constants::TESTTYPE_PRECHECK)) {
-                $testcases[] = $testcase;
-            }
-        }
-        return $testcases;
-    }
-
-
-    // Return an empty testcase - an artifical testcase with all fields
-    // empty or zero except for a mark of 1.
-    private function empty_testcase() {
-        return (object) array(
-            'testtype' => 0,
-            'testcode' => '',
-            'stdin'    => '',
-            'expected' => '',
-            'extra'    => '',
-            'display'  => 'HIDE',
-            'useasexample' => 0,
-            'hiderestiffail' => 0,
-            'mark'     => 1
-        );
     }
 
 
@@ -392,24 +256,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * Interface methods for use by jobrunner.
        ================================================================*/
 
-    // Return the template.
-    public function get_template() {
-        return $this->template;
-    }
-
-
-    // Return the programming language used to run the code.
-    public function get_language() {
-        return $this->language;
-    }
-
-
-    // Get the showsource boolean.
-    public function get_show_source() {
-        return $this->showsource;
-    }
-
-
     // Return an instance of the sandbox to be used to run code for this question.
     public function get_sandbox() {
         global $CFG;
@@ -419,26 +265,5 @@ class qtype_graphchecker_question extends question_graded_automatically {
         }
 
         return $sandboxinstance;
-    }
-
-
-    // Get the sandbox parameters for a run.
-    public function get_sandbox_params() {
-        if (isset($this->sandboxparams)) {
-            $sandboxparams = json_decode($this->sandboxparams, true);
-        } else {
-            $sandboxparams = array();
-        }
-
-        if (isset($this->cputimelimitsecs)) {
-            $sandboxparams['cputime'] = intval($this->cputimelimitsecs);
-        }
-        if (isset($this->memlimitmb)) {
-            $sandboxparams['memorylimit'] = intval($this->memlimitmb);
-        }
-        if (isset($this->templateparams) && $this->templateparams != '') {
-            $this->parameters = json_decode($this->templateparams);
-        }
-        return $sandboxparams;
     }
 }

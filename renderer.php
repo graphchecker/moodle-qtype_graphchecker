@@ -79,10 +79,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                 'class' => 'graphchecker-answer edit_code',
                 'name'  => $responsefieldname,
                 'id'    => $responsefieldid,
-                'spellcheck' => 'false',
-                'rows'      => $rows,
-                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype),
-                'data-globalextra' => $question->globalextra
+                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype)
         );
 
         if ($options->readonly) {
@@ -107,51 +104,12 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                     array('class' => 'validationerror'));
         }
 
-        // Add file upload controls if attachments are allowed.
-        $files = '';
-        if ($question->attachments) {
-            if (empty($options->readonly)) {
-                $files = $this->files_input($qa, $question->attachments, $options);
-
-            } else {
-                $files = $this->files_read_only($qa, $options);
-            }
-            $qtext .= html_writer::tag('div', $files,
-                    array('class' => 'form-filemanager', 'data-fieldtype' => 'filemanager'));
-            // Class and data-fieldtype are so behat can find the filemanager in both boost and clean themes.
-        }
-
         // Initialise the Graph UI.
         qtype_graphchecker_util::load_uiplugin_js($question, $responsefieldid);
 
         return $qtext;
     }
 
-
-    /**
-     * Override the base class method to allow CodeRunner questions to force
-     * specific feedback to be displayed or hidden regardless of the quiz
-     * review options.
-     *
-     * @param question_attempt $qa the question attempt to display.
-     * @param question_display_options $options controls what should and should not be displayed.
-     * @return string HTML fragment.
-     */
-    public function feedback(question_attempt $qa, question_display_options $options) {
-        $optionsclone = clone($options);
-        $q = $qa->get_question();
-        $feedbackdisplay = $q->display_feedback();
-        if ($feedbackdisplay !== constants::FEEDBACK_USE_QUIZ && !empty($qa->get_last_qt_var('_testoutcome'))) {
-            if ($feedbackdisplay === CONSTANTS::FEEDBACK_SHOW) {
-                $optionsclone->feedback = 1;
-            } else if ($feedbackdisplay === CONSTANTS::FEEDBACK_HIDE) {
-                $optionsclone->feedback = 0;
-            } else {
-                throw new coding_exception("Invalid value of feedbackdisplay: $feedbackdisplay");
-            }
-        }
-        return parent::feedback($qa, $optionsclone);
-    }
 
     /**
      * Generate the specific feedback. This is feedback that varies according to
@@ -173,10 +131,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $resultsclass = $this->results_class($outcome);
 
         $fb = '';
-
-        if ($q->showsource) {
-            $fb .= $this->make_source_code_div($outcome);
-        }
 
         $fb .= html_writer::start_tag('div', array('class' => $resultsclass));
         if ($outcome->invalid()) {

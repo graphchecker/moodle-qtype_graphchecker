@@ -52,7 +52,6 @@ class qtype_graphchecker_jobrunner {
 
         $this->isprecheck = $isprecheck;
         $this->sandbox = $question->get_sandbox();
-        $this->sandboxparams = $question->get_sandbox_params();
 
         $this->allruns = array();
         $this->templateparams = array(
@@ -92,7 +91,7 @@ class qtype_graphchecker_jobrunner {
             "python3",  // language
             null,
             $this->get_checker_files(),  // files
-            $this->sandboxparams);
+            array());  // sandbox params
 
         // If it's a template grader, we pass the result to the
         // do_combinator_grading method. Otherwise we deal with syntax errors or
