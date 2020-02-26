@@ -62,17 +62,9 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         global $PAGE;
 
         $mform = $this->_form;
-        $this->mergedtemplateparams = '';
-        $this->twiggedparams = '';
-        if (!empty($this->question->options->mergedtemplateparams)) {
-            $this->mergedtemplateparams = $this->question->options->mergedtemplateparams;
-            try {
-                $this->twiggedparams = qtype_graphchecker_twig::render($this->mergedtemplateparams);
-            } catch (Exception $ex) {
-                // If the params are broken, don't use them.
-                // Code checker won't accept an empty catch.
-                $this->twiggedparams = '';
-            }
+        $this->answertype = 'undirected';
+        if (!empty($this->question->options->answertype)) {
+            $this->answertype = $this->question->options->answertype;
         }
 
         $this->make_error_div($mform);
@@ -95,15 +87,18 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     // Defines the bit of the CodeRunner question edit form after the "General"
     // section and before the footer stuff.
     public function definition_inner($mform) {
-        // The Question Type controls (a group with just a single member).
+
+        // add Answer type field
         $types = $this->get_types_array();
         $typeselectorelements = array();
         $typeselectorelements[] = $mform->createElement('select', 'answertype',
                 null, $types);
+        $mform->setDefault('answertype', 'undirected');
         $mform->addElement('group', 'coderunner_type_group',
                 get_string('answertype', 'qtype_graphchecker'), $typeselectorelements, null, false);
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
+        // add other sections
         $this->add_preload_answer_field($mform);
         $this->add_checks_field($mform);
         $this->add_sample_answer_field($mform);
@@ -122,7 +117,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->answertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
@@ -134,7 +129,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
 
     /**
-     * Add a field for the test cases.
+     * Add a field for the checks.
      * @param object $mform the form being built
      */
     protected function add_checks_field($mform) {
@@ -142,7 +137,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('header', 'checkshdr',
                     get_string('checks', 'qtype_graphchecker'), '');
         $mform->setExpanded('checkshdr', 1);
-        $availableTests = qtype_graphchecker_check::get_available_checks($this->question->options->answertype);
+        $availableTests = qtype_graphchecker_check::get_available_checks($this->answertype);
         $mform->addElement('textarea', 'checks',
             get_string('checks', 'qtype_graphchecker'),
             array(
@@ -166,7 +161,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->question->options->answertype));
+            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);

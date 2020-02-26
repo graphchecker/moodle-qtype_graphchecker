@@ -87,9 +87,9 @@ define(['jquery'], function($) {
             .css('display', 'none')
             .on('click', this.hideAddCheckDialog.bind(this))
             .appendTo(this.$checksPanel);
-        this.$availableTestsList = $('<div/>')
+        this.$availableChecksList = $('<div/>')
             .addClass('available-tests-list');
-        this.$dialog = this.createDialog('Add test', this.$availableChecksList)
+        this.$dialog = this.createDialog('Add check', this.$availableChecksList)
             .appendTo(this.$backdrop);
 
         let activeChecksJson = this.$textArea.val();
@@ -99,8 +99,8 @@ define(['jquery'], function($) {
         this.modules = JSON.parse(modulesJson);
 
         for (let i = 0; i < activeChecks.length; i++) {
-            let test = activeChecks[i];
-            this.createActiveCheckContainer(test)
+            let check = activeChecks[i];
+            this.createActiveCheckContainer(check)
                 .appendTo(this.$activeChecksList);
         }
 
@@ -113,14 +113,14 @@ define(['jquery'], function($) {
                 let checks = module['checks'];
                 for (let checkName in checks) {
                     if (checks.hasOwnProperty(checkName)) {
-                        this.createAvailableTestContainer(moduleName, checkName, checks[checkName])
+                        this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
                             .appendTo(this.$availableChecksList);
                     }
                 }
             }
         }
 
-        this.$addTestButton = $('<button/>')
+        this.$addCheckButton = $('<button/>')
             .addClass('btn btn-primary')
             .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
             .append('Add check')
@@ -146,8 +146,8 @@ define(['jquery'], function($) {
     }
 
     ChecksUi.prototype.createActiveCheckContainer = function(check) {
-        let module = test['module'];
-        let method = test['method'];
+        let module = check['module'];
+        let method = check['method'];
 
         let $container = $('<div/>')
             .addClass('test-container')
@@ -363,7 +363,7 @@ define(['jquery'], function($) {
         let check = this.modules[module]['checks'][method];
 
         let $title = $('<span/>')
-            .html(test['name'])
+            .html(check['name'])
             .addClass('test-name')
             .appendTo($header);
 

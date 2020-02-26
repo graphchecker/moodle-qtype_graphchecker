@@ -33,7 +33,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     function initEditForm(strings) {
         let $sampleAnswerField = $('textarea#id_answer'),
             $preloadField = $('textarea#id_answerpreload'),
-            $testsField = $('textarea#id_tests');
+            $checksField = $('textarea#id_checks');
 
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
@@ -55,7 +55,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         function setUis() {
             setUi($sampleAnswerField, 'graph');  // TODO change this into whatever UI the question wants
             setUi($preloadField, 'graph');
-            setUi($testsField, 'checks');
+            setUi($checksField, 'checks');
         }
 
         // Get the required string from the strings parameter.
