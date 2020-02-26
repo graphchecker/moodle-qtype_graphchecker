@@ -121,27 +121,13 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    public function validate_response(array $response) {
-        // Check the response and return a validation error message if it's
-        // faulty or an empty string otherwise.
-
-        $hasanswer = array_key_exists('answer', $response);
-        if (!$hasanswer || strlen($response['answer']) == 0) {
-            return get_string('answerrequired', 'qtype_graphchecker');
-        } else if (strlen($response['answer']) < constants::FUNC_MIN_LENGTH) {
-            return get_string('answertooshort', 'qtype_graphchecker', constants::FUNC_MIN_LENGTH);
-        }
-        return '';  // All good.
-    }
-
-
     public function is_gradable_response(array $response) {
-        return $this->validate_response($response) == '';
+        return true;
     }
 
 
     public function is_complete_response(array $response) {
-        return $this->is_gradable_response($response);
+        return true;
     }
 
 
@@ -151,12 +137,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return string the message.
      */
     public function get_validation_error(array $response) {
-        $error = $this->validate_response($response);
-        if ($error) {
-            return $error;
-        } else {
-            return get_string('unknownerror', 'qtype_graphchecker');
-        }
+        return '';
     }
 
 
