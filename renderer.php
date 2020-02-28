@@ -52,11 +52,11 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
         $question = $qa->get_question();
         $qid = $question->id;
-	if (empty($USER->graphcheckerquestionids)) {
+        if (empty($USER->graphcheckerquestionids)) {
             $USER->graphcheckerquestionids = array($qid);  // Record in case of AJAX request
-	} else {
-	    array_push($USER->graphcheckerquestionids, $qid); // Array of active qids
-	}
+        } else {
+            array_push($USER->graphcheckerquestionids, $qid); // Array of active qids
+        }
         $qtext = $question->format_questiontext($qa);
 
         $qtext .= html_writer::start_tag('div', array('class' => 'prompt'));
@@ -105,6 +105,16 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         qtype_graphchecker_util::load_uiplugin_js($question, $responsefieldid);
 
         return $qtext;
+    }
+
+
+    /**
+     * Override the base class method to force feedback to be shown.
+     */
+    public function feedback(question_attempt $qa, question_display_options $options) {
+        $optionsclone = clone($options);
+        $optionsclone->feedback = 1;
+        return parent::feedback($qa, $optionsclone);
     }
 
 
@@ -165,25 +175,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         return $fb;
     }
 
-    /**
-     * Return html to display the status of an empty precheck run.
-     * @param qtype_graphchecker_testing_outcome $outcome the results from the test
-     * Must be a standard testing outcome, not a combinator grader outcome.
-     * @return html string describing the outcome
-     */
-    protected function empty_precheck_status($outcome) {
-        $output = $outcome->get_raw_output();
-        if (!empty($output)) {
-            $fb = html_writer::tag('p', get_string('bademptyprecheck', 'qtype_graphchecker'));
-            $fb .= html_writer::tag('pre', qtype_graphchecker_util::format_cell($output),
-                    array('class' => 'bad_empty_precheck'));
-        } else {
-            $fb = html_writer::tag('p', get_string('goodemptyprecheck', 'qtype_graphchecker'),
-                    array('class' => 'good_empty_precheck'));
-        }
-        return $fb;
-
-    }
 
     // Generate the main feedback, consisting of (in order) any prologuehtml,
     // a table of results and any epiloguehtml.
@@ -303,119 +294,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $html .= html_writer::end_tag('div');
         qtype_graphchecker_util::load_uiplugin_js($question, $fieldid);
         return $html;
-    }
-
-
-    /**
-     * Displays any attached files when the question is in read-only mode.
-     * @param question_attempt $qa the question attempt to display.
-     * @param question_display_options $options controls what should and should
-     *      not be displayed. Used to get the context.
-     */
-    public function files_read_only(question_attempt $qa, question_display_options $options) {
-        $files = $qa->get_last_qt_files('attachments', $options->context->id);
-        $output = array();
-
-        foreach ($files as $file) {
-            $output[] = html_writer::tag('p', html_writer::link($qa->get_response_file_url($file),
-                    $this->output->pix_icon(file_file_icon($file), get_mimetype_description($file),
-                    'moodle', array('class' => 'icon')) . ' ' . s($file->get_filename())));
-        }
-        return implode($output);
-    }
-
-    /**
-     * Displays the input control for when the student is allowed to upload files.
-     * @param question_attempt $qa the question attempt to display.
-     * @param int $numallowed the maximum number of attachments allowed. -1 = unlimited.
-     * @param question_display_options $options controls what should and should
-     *      not be displayed. Used to get the context.
-     */
-    public function files_input(question_attempt $qa, $numallowed,
-            question_display_options $options) {
-        global $CFG, $PAGE;
-        require_once($CFG->dirroot . '/lib/form/filemanager.php');
-
-        $question = $qa->get_question();
-        $pickeroptions = new stdClass();
-        $pickeroptions->mainfile = null;
-        $pickeroptions->maxfiles = $numallowed;
-        $pickeroptions->maxbytes = intval($question->maxfilesize);
-        $pickeroptions->context = $options->context;
-        $pickeroptions->return_types = FILE_INTERNAL | FILE_CONTROLLED_LINK;
-        $pickeroptions->accepted_types = '*';  // Accept anything - names checked on upload.
-        $pickeroptions->itemid = $qa->prepare_response_files_draft_itemid(
-                'attachments', $options->context->id);
-
-        $fm = new form_filemanager($pickeroptions);
-        $filesrenderer = $this->page->get_renderer('core', 'files');
-
-        $text = '';
-        if (!empty($question->filenamesexplain)) {
-                $text = $question->filenamesexplain;
-        } else if (!empty($question->filenamesregex)) {
-            $text = html_writer::tag('p', get_string('allowedfilenamesregex', 'qtype_graphchecker')
-                    . ': ' . $question->filenamesregex);
-        }
-
-        // In order to prevent a spurious warning message when checking or saving
-        // the question after modifying the uploaded files, we need to explicitly
-        // initialise the form change checker, to ensure the onsubmit action for
-        // the form calls the set_form_submitted function in the module.
-        // This is only needed during Preview as it's apparently done anyway
-        // in normal quiz display mode, but we do it here regardless.
-        $PAGE->requires->yui_module('moodle-core-formchangechecker',
-                'M.core_formchangechecker.init',
-                array(array('formid' => 'responseform'))
-        );
-        $PAGE->requires->string_for_js('changesmadereallygoaway', 'moodle');
-        return $filesrenderer->render($fm). html_writer::empty_tag(
-                'input', array('type' => 'hidden', 'name' => $qa->get_qt_field_name('attachments'),
-                'value' => $pickeroptions->itemid)) . $text;
-    }
-
-
-    // Return a count of the number of non-empty stdins, tests and extras
-    // in the given list of test result objects.
-    private function count_bits($tests) {
-        $numstds = 0;
-        $numtests = 0;
-        $numextras = 0;
-        foreach ($tests as $test) {
-            if (trim($test->stdin) !== '') {
-                $numstds++;
-            }
-            if (trim($test->testcode) !== '') {
-                $numtests++;
-            }
-            if (trim($test->extra) !== '') {
-                $numextras++;
-            }
-        }
-        return array($numtests, $numstds, $numextras);
-    }
-
-    // True iff the given testcase field is specified by the given question
-    // resultcolumns field to be displayed.
-    private function show_column($field, $resultcolumns) {
-        foreach ($resultcolumns as $columnspecifier) {
-            if ($columnspecifier[1] === $field) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    // Return the column header to be used for the given testcase field,
-    // as specified by the question's resultcolumns field.
-    private function column_header($field, $resultcolumns) {
-        foreach ($resultcolumns as $columnspecifier) {
-            if ($columnspecifier[1] === $field) {
-                return $columnspecifier[0];
-            }
-        }
-        return 'ERROR';
     }
 
 
