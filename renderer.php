@@ -70,9 +70,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $qtext .= html_writer::end_tag('div');
 
         $preload = isset($question->answerpreload) ? $question->answerpreload : '';
-        if ($preload) {  // Add a reset button if preloaded text is non-empty.
-            $qtext .= self::reset_button($qa, $responsefieldid, $preload);
-        }
+        $qtext .= self::reset_button($qa, $responsefieldid, $preload);
 
         $rows = isset($question->answerboxlines) ? $question->answerboxlines : 18;
         $taattributes = array(
@@ -460,7 +458,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
             'id' => $buttonid,
             'name' => $buttonid,
             'value' => get_string('reset', 'qtype_graphchecker'),
-            'class' => 'answer_reset_btn',
+            'class' => 'answer_reset_btn btn btn-secondary',
             'data-reload-text' => $preload);
         $html = html_writer::empty_tag('input', $attributes);
 
