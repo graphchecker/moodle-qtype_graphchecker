@@ -72,7 +72,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $preload = isset($question->answerpreload) ? $question->answerpreload : '';
         $qtext .= self::reset_button($qa, $responsefieldid, $preload);
 
-        $rows = isset($question->answerboxlines) ? $question->answerboxlines : 18;
         $taattributes = array(
                 'class' => 'graphchecker-answer edit_code',
                 'name'  => $responsefieldname,
@@ -292,14 +291,12 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $heading = get_string('asolutionis', 'qtype_graphchecker');
         $html = html_writer::start_tag('div', array('class' => 'sample code'));
         $html .= html_writer::tag('h4', $heading);
-        $rows = min(18, substr_count($answer, "\n"));
         $taattributes = array(
                 'class' => 'graphchecker-sample-answer edit_code',
                 'name'  => $fieldname,
                 'id'    => $fieldid,
-                'spellcheck' => 'false',
-                'rows'      => $rows,
-                'readonly' => true
+                'readonly' => true,
+                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype)
         );
 
         $html .= html_writer::tag('textarea', s($answer), $taattributes);
