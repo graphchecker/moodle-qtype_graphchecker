@@ -31,9 +31,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     // text area from PHP by setting its data-params and
     // data-lang attributes.
     function initEditForm(strings) {
-        let $sampleAnswerField = $('textarea#id_answer'),
-            $preloadField = $('textarea#id_answerpreload'),
-            $checksField = $('textarea#id_checks');
+        let $sampleAnswerField = $('#id_answer'),
+            $preloadField = $('#id_answerpreload'),
+            $checksField = $('#id_checks'),
+            $typeCombo = $('#id_answertype');
 
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
@@ -63,32 +64,18 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             return strings[key];
         }
 
-        /*************************************************************
-         *
-         * Body of initEditFormWhenReady starts here.
-         *
-         *************************************************************/
-
         setUis();  // Set up UI controllers on answer and answerpreload.
 
-        /*typeCombo.on('change', function() {
-            // TODO load new tests or something?
-        });*/
-
-        /*// In order to initialise the Ui plugin when the answer preload section is
-        // expanded, we monitor attribute mutations in the Answer Preload
-        // header.
-        var observer = new MutationObserver( function () {
-            setUis();
-        });
-        observer.observe(preloadHdr.get(0), {'attributes': true});
-        */  // TODO [ws] I don't think this is necessary
-
-        // Setup click handler for the buttons that allow users to replace the
-        // expected output  with the output got from testing the answer program.
-        $('button.replaceexpectedwithgot').click(function() {
-            // TODO [ws] removed. This can be an example for the later
-            // button to replace the sample answer by the preload
+        $typeCombo.on('change', function() {
+            if (window.confirm('Changing the answer type will clear the ' +
+                    'Answer box preload, Checks, and Sample answer ' +
+                    'sections below.')) {
+                // TODO actually clear the boxes and set the template parameters
+                let $form = $typeCombo.closest('form');
+                $form.submit();
+            } else {
+                // TODO put back the old value
+            }
         });
     }
 
