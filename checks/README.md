@@ -47,7 +47,7 @@ Metadata
 A metadata JSON file consists of one JSON object, with the following keys:
 
 * `name` (string): The name of this library; this will be shown to question authors as the category header.
-* `checks` (array): A list of checks.
+* `checks` (object): The checks, where the key is the name of the Python check function, and the value is an object describing the check (see below).
 
 
 ### Checks
