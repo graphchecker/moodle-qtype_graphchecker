@@ -18,7 +18,7 @@ Of course, besides the check functions, it is possible to define helper function
 
 A check function receives the following arguments.
 
-* The first argument `student_answer` is the answer as given by the student, as a Python object parsed from the JSON string produced by the UI.
+* The first argument `student_answer` is the answer as given by the student, as a graph. (See the section Graph format below for more details on how the answer is encoded.)
 * The second argument `sample_answer` is the sample answer specified by the question author.
 * The third argument `preload_answer` is the answer that is preloaded into the student's answer field, also specified by the question author.
 * The remaining arguments are keyword arguments and are dependent on the particular check. These arguments must be specified in the metadata (see below), and are passed as keyword arguments.
