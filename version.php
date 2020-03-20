@@ -22,14 +22,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2020021800;
+$plugin->version  = 2020032000;
 $plugin->requires = 2015051200;
 $plugin->cron = 0;
 $plugin->component = 'qtype_graphchecker';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.1';
+$plugin->release = '0.1.1';
 
 $plugin->dependencies = array(
-    'qbehaviour_adaptive_adapted_for_coderunner' => 2018042800
 );
 
