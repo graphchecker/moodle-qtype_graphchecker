@@ -59,18 +59,13 @@ $string['errorstring-unknown'] = 'Unexpected error while executing checks. The s
 $string['failedntests'] = 'Failed {$a->numerrors} check(s)';
 $string['failedtesting'] = 'Failed testing.';
 
-$string['graphhelp'] = '- Double click at a blank space to create a new node/state.
-- Double click an existing node to "mark" it e.g. as an accept state for Finite State Machines
-  (FSMs). Double click again to unmark it.
-- Click and drag to move a node.
-- Alt click and drag to move a (sub)graph.
-- Shift click inside one node and drag to another to create a link.
-- Shift click on a blank space, drag to a node to create a start link (FSMs only).
-- Click and drag a link to alter its curve.
-- Click on a link/node to edit its text.
-- Typing _ followed by a digit makes that digit a subscript.
-- Typing \\epsilon creates an epsilon character (and similarly for \\alpha, \\beta etc).
-- Click on a link/node then press the Delete key to remove it (or function-delete on a Mac).';
+$string['graphhelp'] = 'Create a node by double-clicking at a blank space.
+Create an edge by, while holding Shift, clicking inside one node and dragging to another node.
+Click and drag a node to move it, or click and drag an edge to bend it.
+Click on a node or edge to select it and to edit its label.
+Remove a node or edge by clicking it and pressing the Delete key (or function-delete on a Mac).
+
+(Click the Help button again to hide this text and go back to the graph editor.)';
 $string['graphcheckersettings'] = 'GraphChecker settings';
 $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';
 
