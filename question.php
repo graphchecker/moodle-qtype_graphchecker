@@ -72,9 +72,9 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return question_behaviour the new behaviour object.
      */
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
-        // Regardless of the preferred behaviour, always use an adaptive
+        // Regardless of the preferred behaviour, always use a manual-graded
         // behaviour.
-        return  new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
+        return question_engine::make_behaviour('manualgraded', $qa, $preferredbehaviour);
     }
 
 
