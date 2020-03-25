@@ -65,6 +65,10 @@ Click and drag a node to move it, or click and drag an edge to bend it.
 Click on a node or edge to select it and to edit its label.
 Remove a node or edge by clicking it and pressing the Delete key (or function-delete on a Mac).
 
+To edit automata:
+Mark a state as an accepting state by double-clicking it.
+Mark a state as the initial state by, while holding Shift, clicking somewhere on the empty canvas and dragging to the node.
+
 (Click the Help button again to hide this text and go back to the graph editor.)';
 $string['graphcheckersettings'] = 'GraphChecker settings';
 $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';
