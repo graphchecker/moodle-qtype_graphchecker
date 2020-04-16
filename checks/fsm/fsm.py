@@ -8,7 +8,7 @@ def _simulate(fsm, initial_state, consumed_string, input_string):
     remaining_string = input_string[1:]
     candidates = []
     for e in fsm['edges']:
-        if e[0] == initial_state and e[2] == consumed_token:
+        if e['from'] == initial_state and e['to'] == consumed_token:
             candidates.append(e[1])
     if len(candidates) == 0:
         raise ValueError('No outgoing transition labeled "{0}" after consuming "{1}"'.format(consumed_token, consumed_string))
@@ -27,7 +27,7 @@ def string_acceptance(student_answer, sample_answer, preload_answer,
         return {'correct': False,
                 'feedback': str(e)}
 
-    if student_answer['nodes'][final_state][1]:
+    if student_answer['vertices'][final_state]['accepting']:
         # final state is accepting
         if expected == 'accepted':
             return {'correct': True,
@@ -43,5 +43,4 @@ def string_acceptance(student_answer, sample_answer, preload_answer,
         else:
             return {'correct': True,
                     'feedback': 'Your FSM rejects input "{0}", as expected'.format(input_string)}
-
 

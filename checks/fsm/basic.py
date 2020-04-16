@@ -5,10 +5,10 @@ import igraph
 # helper methods
 def _to_igraph(graph):
     g = igraph.Graph(directed=True)
-    for vertex in graph['nodes']:
-        g.add_vertex(name=vertex[0])
+    for vertex in graph['vertices']:
+        g.add_vertex(name=vertex['label'])
     for edge in graph['edges']:
-        g.add_edge(edge[0], edge[1], label=edge[2])
+        g.add_edge(edge['from'], edge['to'], label=edge['label'])
     return g
 
 def _make_integer_checker(method_name, readable_name):

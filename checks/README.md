@@ -78,9 +78,5 @@ The following parameter types are supported:
 Graph format
 ------------
 
-A graph is represented by a JSON object with the following keys **(note: this is subject to change)**:
-
-* `nodes` (array): List of nodes in the graph, where each node is represented by a 2-element array containing the label (string) and whether it is a terminal node in the DFA (boolean).
-* `edges` (array): List of edges in the graph, where each edge is represented by a 3-element array containing the index of the origin node (integer), the index of the destination node (integer), and the label (string).
-* `nodeGeometry` and `edgeGeometry` provide the location of nodes and edges, but these are generally not useful when implementing check functions.
+A graph is represented by an object, which is dependent on the graph type. For undirected and directed graphs, the [igraph](https://igraph.org/python/) library is used to represent graphs. For FSMs, ... **(to be decided)**
 

@@ -108,6 +108,39 @@
                     "min": 0
                 }
             ]
+        },
+        "number_vertices_of_degree": {
+            "name": "Vertex degree count",
+            "description": "Checks if there are a given number of vertices in the graph with the given degree.",
+            "params": [
+                {
+                    "param": "number_of_verts",
+                    "name": "There should be ",
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
+                },
+                {
+                    "param": "degree",
+                    "name": "vertices of degree ",
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
+                }
+            ]
+        },
+        "vertex_degree_at_most": {
+            "name": "Vertex degree at most",
+            "description": "Checks if all the vertices have at most the given degree.",
+            "params": [
+                {
+                    "param": "max_degree",
+                    "name": "The maximum vertex degree is ",
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
+                }
+            ]
         }
     }
 }

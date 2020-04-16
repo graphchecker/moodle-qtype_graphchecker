@@ -486,40 +486,40 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (content) {
             try {
                 // Load up the student's previous answer if non-empty.
-                var backup = JSON.parse(content), i;
+                var input = JSON.parse(content), i;
 
-                for(i = 0; i < backup.nodes.length; i++) {
-                    var backupNode = backup.nodes[i];
-                    var backupNodeLayout = backup.nodeGeometry[i];
-                    var node = new elements.Node(this, backupNodeLayout[0], backupNodeLayout[1]);
-                    node.isAcceptState = backupNode[1];
-                    node.text = backupNode[0].toString();
+                if (!input.hasOwnProperty('_version') || input['_version'] !== 1) {
+                    throw "invalid version";
+                }
+
+                for(i = 0; i < input.vertices.length; i++) {
+                    var inputNode = input.vertices[i];
+                    var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
+                    node.text = inputNode['label'];
+                    node.isAcceptState = inputNode['accepting'];
                     this.nodes.push(node);
                 }
 
-                for(i = 0; i < backup.edges.length; i++) {
-                    var backupLink = backup.edges[i];
-                    var backupLinkLayout = backup.edgeGeometry[i];
+                for(i = 0; i < input.edges.length; i++) {
+                    var inputLink = input.edges[i];
                     var link = null;
-                    if(backupLink[0] === backupLink[1]) {
+                    if(inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
-                        link = new elements.SelfLink(this, this.nodes[backupLink[0]]);
-                        link.anchorAngle = backupLinkLayout.anchorAngle;
-                        link.text = backupLink[2].toString();
-                    } else if(backupLink[0] === -1) {
-                        link = new elements.StartLink(this, this.nodes[backupLink[1]]);
-                        link.deltaX = backupLinkLayout.deltaX;
-                        link.deltaY = backupLinkLayout.deltaY;
+                        link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
+                        link.text = inputLink['label'];
+                        link.anchorAngle = inputLink['bend']['anchorAngle'];
+                    } else if(inputLink['from'] === -1) {  // TODO [ws] should be removed
+                        link = new elements.StartLink(this, this.nodes[inputLink['to']]);
+                        link.deltaX = inputLink['bend']['deltaX'];
+                        link.deltaY = inputLink['bend']['deltaY'];
                     } else {
-                        link = new elements.Link(this, this.nodes[backupLink[0]], this.nodes[backupLink[1]]);
-                        link.parallelPart = backupLinkLayout.parallelPart;
-                        link.perpendicularPart = backupLinkLayout.perpendicularPart;
-                        link.text = backupLink[2].toString();
-                        link.lineAngleAdjust = backupLinkLayout.lineAngleAdjust;
+                        link = new elements.Link(this, this.nodes[inputLink['from']], this.nodes[inputLink['to']]);
+                        link.text = inputLink['label'];
+                        link.parallelPart = inputLink['bend']['parallelPart'];
+                        link.perpendicularPart = inputLink['bend']['perpendicularPart'];
+                        link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
                     }
-                    if(link !== null) {
-                        this.links.push(link);
-                    }
+                    this.links.push(link);
                 }
             } catch(e) {
                 this.fail = true;
@@ -530,11 +530,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.save = function() {
 
-        var backup = {
-            'edgeGeometry': [],
-            'nodeGeometry': [],
-            'nodes': [],
-            'edges': [],
+        var output = {
+            '_version': 1,
+            'vertices': [],
+            'edges': []
         };
         var i;
 
@@ -544,44 +543,48 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         for(i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];
-
-            var nodeData = [node.text, node.isAcceptState];
-            var nodeLayout = [node.x, node.y];
-
-            backup.nodeGeometry.push(nodeLayout);
-            backup.nodes.push(nodeData);
+            output.vertices.push({
+                'label': node.text,
+                'position': [node.x, node.y],
+                'accepting': node.isAcceptState
+            });
         }
 
         for(i = 0; i < this.links.length; i++) {
-            var link = this.links[i],
-                linkData = null,
-                linkLayout = null;
+            var link = this.links[i];
 
             if(link instanceof elements.SelfLink) {
-                linkLayout = {
-                    'anchorAngle': link.anchorAngle,
-                };
-                linkData = [this.nodes.indexOf(link.node), this.nodes.indexOf(link.node), link.text];
-            } else if(link instanceof elements.StartLink) {
-                linkLayout = {
-                    'deltaX': link.deltaX,
-                    'deltaY': link.deltaY
-                };
-                linkData = [-1, this.nodes.indexOf(link.node), ""];
+                output.edges.push({
+                    'from': this.nodes.indexOf(link.node),
+                    'to': this.nodes.indexOf(link.node),
+                    'label': link.text,
+                    'bend': {
+                        'anchorAngle': link.anchorAngle
+                    }
+                });
+            } else if(link instanceof elements.StartLink) {  // TODO [ws] these should be removed
+                output.edges.push({
+                    'from': -1,
+                    'to': this.nodes.indexOf(link.node),
+                    'bend': {
+                        'deltaX': link.deltaX,
+                        'deltaY': link.deltaY
+                    }
+                });
             } else if(link instanceof elements.Link) {
-                linkLayout = {
-                    'lineAngleAdjust': link.lineAngleAdjust,
-                    'parallelPart': link.parallelPart,
-                    'perpendicularPart': link.perpendicularPart,
-                };
-                linkData = [this.nodes.indexOf(link.nodeA), this.nodes.indexOf(link.nodeB), link.text];
-            }
-            if(linkData !== null && linkLayout !== null) {
-                backup.edges.push(linkData);
-                backup.edgeGeometry.push(linkLayout);
+                output.edges.push({
+                    'from': this.nodes.indexOf(link.nodeA),
+                    'to': this.nodes.indexOf(link.nodeB),
+                    'label': link.text,
+                    'bend': {
+                        'lineAngleAdjust': link.lineAngleAdjust,
+                        'parallelPart': link.parallelPart,
+                        'perpendicularPart': link.perpendicularPart
+                    }
+                });
             }
         }
-        this.textArea.val(JSON.stringify(backup));
+        this.textArea.val(JSON.stringify(output));
     };
 
     Graph.prototype.destroy = function () {

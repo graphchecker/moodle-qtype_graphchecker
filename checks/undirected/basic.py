@@ -1,23 +1,10 @@
 # Tests for undirected graphs using igraph.
 
-import igraph
-
 # helper methods
-def _to_igraph(graph):
-    g = igraph.Graph(directed=False)
-    if not graph:
-        return g
-    for vertex in graph['nodes']:
-        g.add_vertex(name=vertex[0])
-    for edge in graph['edges']:
-        g.add_edge(edge[0], edge[1], label=edge[2])
-    return g
-
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,
         expected):
-        g = _to_igraph(student_answer)
-        actual = getattr(g, method_name)()
+        actual = getattr(student_answer, method_name)()
         if actual == int(expected):
             return {'correct': True}
         else:
@@ -35,17 +22,14 @@ radius = _make_integer_checker('radius', 'Radius')
 vertex_count = _make_integer_checker('vcount', 'Vertex count')
 
 def isomorphism(student_answer, sample_answer, preload_answer):
-    g1 = _to_igraph(student_answer)
-    g2 = _to_igraph(sample_answer)
-    if g1.isomorphic(g2):
+    if student_answer.isomorphic(sample_answer):
         return {'correct': True}
     else:
         return {'correct': False,
                 'feedback': 'Your graph was not isomorphic to the given answer'}
 
 def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
-    g = _to_igraph(student_answer)
-    for v in g.vs:
+    for v in student_answer.vs:
         if v.degree() != int(expected):
             v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
             return {'correct': False,
@@ -53,4 +37,28 @@ def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
                         'but {1} has degree {2}').format(
                         expected, v_name, v.degree())}
     return {'correct': True}
+
+def vertex_degree_at_most(student_answer, sample_answer, preload_answer, max_degree):
+    for v in student_answer.vs:
+        if v.degree() > int(max_degree):
+            v_name = 'Some vertex' if not v['name'] else 'Vertex ' + v['name']
+            return {'correct': False,
+                    'feedback': ('{0} has degree ' +
+                                 '{1}, but the maximum degree should be {2}').format(
+                                 v_name, v.degree(), max_degree)}
+    return {'correct': True}
+    
+def number_vertices_of_degree(student_answer, sample_answer, preload_answer, number_of_verts, degree):
+    found = 0
+    for v in student_answer.vs:
+        if v.degree() == int(degree):
+            found += 1
+    
+    if (found != int(number_of_verts)):
+        return {'correct': False,
+                'feedback': ('Number of vertices with degree {0}, is ' +
+                             '{1}, but should be {2}').format(
+                               degree, found, number_of_verts)}
+    else:
+        return {'correct': True}
 
