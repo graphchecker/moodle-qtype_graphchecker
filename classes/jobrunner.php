@@ -75,7 +75,7 @@ class qtype_graphchecker_jobrunner {
         $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
         $question = $this->question;
 
-        $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/template.py.twig');
+        $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/template.py.twig');
 
         try {
             $testprog = $question->twig_expand($template, $this->templateparams);
@@ -118,6 +118,8 @@ class qtype_graphchecker_jobrunner {
             $module = $check->module;
             $modules[] = $module;
         }
+
+        $modules[] = 'preprocess';
 
         return array_unique($modules);
     }
@@ -163,6 +165,7 @@ class qtype_graphchecker_jobrunner {
         $result = json_decode($run->output);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
+            print("RUN OUTPUT [" . $run->output . "]");
             $error = get_string('badjsonorfraction', 'qtype_graphchecker',
                 array('output' => $run->output));
             $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);

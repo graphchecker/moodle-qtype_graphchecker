@@ -1,7 +1,6 @@
 import igraph
 
 def preprocess(graph):
-    print(graph)
     g = igraph.Graph(directed=False)
     if not graph:
         return g
