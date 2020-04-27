@@ -5,21 +5,24 @@ import sys
 import {{ module }}
 {% endfor %}
 
+from preprocess import preprocess
+
+import igraph
 
 student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
-student_answer = json.loads(student_answer)
+student_answer = preprocess(json.loads(student_answer))
 
 sample_answer = """{{ QUESTION.answer | e('py') }}"""
 if sample_answer == '':
     sample_answer = None
 else:
-    sample_answer = json.loads(sample_answer)
+    sample_answer = preprocess(json.loads(sample_answer))
 
 preload_answer = """{{ QUESTION.answerpreload | e('py') }}"""
 if preload_answer == '':
     preload_answer = None
 else:
-    preload_answer = json.loads(preload_answer)
+    preload_answer = preprocess(json.loads(preload_answer))
 
 results = []
 

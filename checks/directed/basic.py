@@ -1,5 +1,7 @@
 # Tests for directed graphs using igraph.
 
+import igraph
+
 # helper methods
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,

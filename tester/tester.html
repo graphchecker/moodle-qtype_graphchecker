@@ -1,0 +1,61 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>GraphChecker tester</title>
+		<script data-main="js/main" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+		<link href="css/style-moodle.css" rel="stylesheet">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
+		<style>
+			body, button {
+				font-family: 'Fira Sans', sans-serif;
+			}
+			textarea {
+				width: 100%;
+			}
+			#header {
+				padding: 0 20px;
+				padding-bottom: 20px;
+				border-bottom: 1px solid #ccc;
+			}
+			#graph-ui,
+			#checks-ui,
+			#results-ui {
+				width: 33%;
+				float: left;
+				padding: 0 20px;
+				box-sizing: border-box;
+				height: 500px;
+				max-height: 500px;
+				min-height: 500px;
+				overflow-y: auto;
+			}
+			#graph-ui,
+			#checks-ui {
+				border-right: 1px solid #ccc;
+			}
+		</style>
+	</head>
+	<body id="page-question-type-graphchecker">
+		<div id="header">
+			<h1>GraphChecker tester</h1>
+			<p>This is a small helper application for GraphChecker that allows testing checks or the Graph UI plugin, avoiding the need to actually set up a Moodle server. It allows you to draw a graph and pick some tests, and see if the checks pass or fail.</p>
+			<p>Press Ctrl+Alt+M to see the JSON-encoded version of the graph and checks.</p>
+			<p><b>Note:</b> If you are editing the JavaScript code for the editor, but your changes are not showing up after refreshing, make sure to disable the browser cache. (The JS files are loaded asynchronously, which means that even force-refreshing with Ctrl+F5 may not clear the cache.)</p>
+		</div>
+		<div id="graph-ui">
+			<h2>Graph editor</h2>
+			<textarea id="graph-ui-textarea"></textarea>
+		</div>
+		<div id="checks-ui">
+			<h2>Checks</h2>
+			<textarea id="checks-ui-textarea" data-available-checks='[]'>[]</textarea>
+		</div>
+		<div id="results-ui">
+			<h2>Results</h2>
+			<button id="run-tests-button">Run tests</button>
+			<div id="results"></div>
+		</div>
+	</body>
+</html>
+

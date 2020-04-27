@@ -5,7 +5,8 @@
         "ui_params": {
             "isdirected": false,
             "isfsm": false
-        }
+        },
+        "python_modules": ["igraph"]
     },
     "directed": {
         "name": "Directed graph",
@@ -13,7 +14,8 @@
         "ui_params": {
             "isdirected": true,
             "isfsm": false
-        }
+        },
+        "python_modules": ["igraph"]
     },
     "fsm": {
         "name": "Finite state machine",
