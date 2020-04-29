@@ -34,7 +34,7 @@ class GCTester:
 		types_file = os.path.join(root_dir, 'checks', 'types.json')
 		with open(types_file) as types:
 			types = json.load(types)
-		if types[graph_type]['python_modules']:
+		if 'python_modules' in types[graph_type]:
 			for module in types[graph_type]['python_modules']:
 				print(module)
 				globals()[module] = importlib.import_module(module)
