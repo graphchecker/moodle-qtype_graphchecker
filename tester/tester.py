@@ -41,13 +41,16 @@ class GCTester:
 
 		graph = preprocess.preprocess(json.loads(graph))
 
+		empty_graph = {'_version': 1, 'vertices': [], 'edges': []}
+		empty_graph = preprocess.preprocess(empty_graph)
+
 		checks = json.loads(checks)
 		results = []
 		for check in checks:
 			try:
 				check_module = importlib.import_module(graph_type + '.' + check['module'])
 				check_method = getattr(check_module, check['method'])
-				result = check_method(graph, igraph.Graph(directed=False), igraph.Graph(directed=False), **(check['arguments']))
+				result = check_method(graph, empty_graph, empty_graph, **(check['arguments']))
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
