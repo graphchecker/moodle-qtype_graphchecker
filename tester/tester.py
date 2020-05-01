@@ -34,12 +34,15 @@ class GCTester:
 		types_file = os.path.join(root_dir, 'checks', 'types.json')
 		with open(types_file) as types:
 			types = json.load(types)
-		if types[graph_type]['python_modules']:
+		if 'python_modules' in types[graph_type]:
 			for module in types[graph_type]['python_modules']:
 				print(module)
 				globals()[module] = importlib.import_module(module)
 
 		graph = preprocess.preprocess(json.loads(graph))
+
+		empty_graph = {'_version': 1, 'vertices': [], 'edges': []}
+		empty_graph = preprocess.preprocess(empty_graph)
 
 		checks = json.loads(checks)
 		results = []
@@ -47,7 +50,7 @@ class GCTester:
 			try:
 				check_module = importlib.import_module(graph_type + '.' + check['module'])
 				check_method = getattr(check_module, check['method'])
-				result = check_method(graph, igraph.Graph(directed=False), igraph.Graph(directed=False), **(check['arguments']))
+				result = check_method(graph, empty_graph, empty_graph, **(check['arguments']))
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
