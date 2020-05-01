@@ -110,6 +110,40 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     /***********************************************************************
      *
+     * A GraphToolbarCanvas is a wrapper for a Graph's toolbar HTML canvas
+     * object.
+     *
+     ************************************************************************/
+
+    function GraphToolbarCanvas(parent, canvasId, w, h) {
+        // Constructor, given the Graph that owns this toolbar canvas, the
+        // required canvasId and the height and width of the wrapper that
+        // encloses the Canvas.
+
+        this.parent = parent;
+        this.canvas = $(document.createElement("canvas"));
+        this.canvas.attr({
+            id:         canvasId,
+            class:      "graphchecker_toolbarcanvas",
+            tabindex:   0 // So canvas can get focus.
+        });
+        this.canvas.css({'background-color': 'lightgrey'});
+
+        this.canvas.on('mousedown', function(e) {
+            return parent.mousedown(e);
+        });
+
+        this.resize = function(w, h) {
+            // Resize to given dimensions.
+            this.canvas.attr("width", w);
+            this.canvas.attr("height", h);
+        };
+
+        this.resize(w, h);
+    }
+
+    /***********************************************************************
+     *
      *  This is the ui component for a graph-drawing graphchecker question.
      *
      ***********************************************************************/
@@ -123,13 +157,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.HIT_TARGET_PADDING = 6;    // Pixels.
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
+        this.TOOLBAR_HEIGHT = 40;       // px. The height of the toolbar above the graphCanvas
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
         this.helpText = ''; // Obtained by JSON - see below.
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
-        this.graphCanvas = new GraphCanvas(this,  this.canvasId, width, height);
+        this.graphCanvas = new GraphCanvas(this, this.canvasId, width, height);
+        this.toolbarId = 'toolbarcanvas_' + textareaId;
+        this.toolbarCanvas = new GraphToolbarCanvas(this, this.toolbarId, width, this.TOOLBAR_HEIGHT);
         this.caretVisible = true;
         this.caretTimer = 0;  // Need global so we can kill a running timer.
         this.originalClick = null;
@@ -168,7 +205,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getElement = function() {
-        return this.getCanvas();
+        return [this.getToolbar(), this.getCanvas()];
     };
 
     Graph.prototype.hasFocus = function() {
@@ -176,8 +213,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getCanvas = function() {
-        var canvas = this.graphCanvas.canvas[0];
-        return canvas;
+        return this.graphCanvas.canvas[0];
+    };
+
+    Graph.prototype.getToolbar = function() {
+        return this.toolbarCanvas.canvas[0];
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -342,8 +382,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.resize = function(w, h) {
+    Graph.prototype.resize = function(w, h, toolbarHeight) {
+        // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
+        w = w+1;
         this.graphCanvas.resize(w, h);
+        this.toolbarCanvas.resize(w, this.TOOLBAR_HEIGHT);
         this.draw();
     };
 
@@ -590,7 +633,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.destroy = function () {
         clearInterval(this.caretTimer); // Stop the caret timer.
         this.graphCanvas.canvas.off();  // Stop all events.
+        this.toolbarCanvas.canvas.off();
         this.graphCanvas.canvas.remove();
+        this.toolbarCanvas.canvas.remove();
 
     };
 
@@ -608,11 +653,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.draw = function () {
         var canvas = this.getCanvas(),
             c = canvas.getContext('2d'),
-            i;
+            i,
+            toolbar = this.getToolbar(),
+            t = toolbar.getContext('2d');
+
+        t.clearRect(0, 0, this.getToolbar().width, this.getToolbar().height);
+        t.save();
 
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
-        c.translate(0.5, 0.5);
 
         this.helpBox.draw(c, this.selectedObject == this.helpBox, this.helpBoxHighlighted);
         if (this.selectedObject != this.helpBox) {  // Only proceed if help info not showing.
