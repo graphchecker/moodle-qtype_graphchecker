@@ -45,7 +45,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graphutil'], function(util) {
+define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
@@ -490,7 +490,47 @@ define(['qtype_graphchecker/graphutil'], function(util) {
 
     /***********************************************************************
      *
-     * Define a class HelpBox for the help box and its pseudo-menu buttonb.
+     * Define a class Button as a base class from which more specific
+     * buttons can be derived.
+     *
+     ***********************************************************************/
+
+    function Button(parent, topX, topY, w, h, iconClass, iconOffsetX, iconOffsetY, title) {
+        this.parent = parent;
+        this.topX = topX; //In pixels
+        this.topY = topY; //In px.
+        this.width = w; //In px.
+        this.height = h; //In px.
+        this.icon = iconClass;
+        this.iconOffsetX = iconOffsetX; //In px.
+        this.iconOffsetY = iconOffsetY; //In px.
+        this.title = title;
+    }
+
+    Button.prototype.containsPoint = function(x, y) {
+        return x >= this.topX && y >= this.topY &&
+            x <= this.topX + this.BUTTON_WIDTH &&
+            y <= this.topY + this.BUTTON_HEIGHT;
+    };
+
+    Button.prototype.create = function () {
+        let $button = $('<button/>')
+            .addClass('button')
+            .attr({
+                "type":     "button",
+                "title":    this.title,
+                "style":    "width: " + this.width + "px; height: " + this.height + "px",
+            })
+            .append($('<i/>').addClass('icon fa ' + this.icon));
+        let divId = '#' + this.parent.div[0].getAttribute('id');
+        jQuery(document).ready(function() {
+            $(divId).append($button);
+        });
+    }
+
+    /***********************************************************************
+     *
+     * Define a class HelpBox for the help box and its pseudo-menu button.
      *
      ***********************************************************************/
 
@@ -551,6 +591,7 @@ define(['qtype_graphchecker/graphutil'], function(util) {
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
+        Button: Button,
         HelpBox: HelpBox
     };
 });

@@ -110,33 +110,36 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     /***********************************************************************
      *
-     * A GraphToolbarCanvas is a wrapper for a Graph's toolbar HTML canvas
+     * A GraphToolbar is a wrapper for a Graph's toolbar HTML div
      * object.
      *
      ************************************************************************/
 
-    function GraphToolbarCanvas(parent, canvasId, w, h) {
-        // Constructor, given the Graph that owns this toolbar canvas, the
+    function GraphToolbar(parent, divId, w, h) {
+        // Constructor, given the Graph that owns this toolbar div, the
         // required canvasId and the height and width of the wrapper that
-        // encloses the Canvas.
+        // encloses the Div.
 
         this.parent = parent;
-        this.canvas = $(document.createElement("canvas"));
-        this.canvas.attr({
-            id:         canvasId,
-            class:      "graphchecker_toolbarcanvas",
-            tabindex:   0 // So canvas can get focus.
+        this.div = $(document.createElement("div"));
+        this.div.attr({
+            id:         divId,
+            class:      "graphchecker_toolbar",
+            tabindex:   0
         });
-        this.canvas.css({'background-color': 'lightgrey'});
+        this.div.css({'background-color': 'lightgrey'});
 
-        this.canvas.on('mousedown', function(e) {
+        this.div.on('mousedown', function(e) {
             return parent.mousedown(e);
         });
 
+        this.button = new elements.Button(this, 0, 0, 50, 25,'fa-question', 25, 17, "Help menu");
+        this.button.create();
+
         this.resize = function(w, h) {
             // Resize to given dimensions.
-            this.canvas.attr("width", w);
-            this.canvas.attr("height", h);
+            this.div.css({'width': w});
+            this.div.css({'height': h});
         };
 
         this.resize(w, h);
@@ -165,8 +168,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
         this.graphCanvas = new GraphCanvas(this, this.canvasId, width, height);
-        this.toolbarId = 'toolbarcanvas_' + textareaId;
-        this.toolbarCanvas = new GraphToolbarCanvas(this, this.toolbarId, width, this.TOOLBAR_HEIGHT);
+        this.toolbarId = 'toolbar_' + textareaId;
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT);
         this.caretVisible = true;
         this.caretTimer = 0;  // Need global so we can kill a running timer.
         this.originalClick = null;
@@ -217,7 +220,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getToolbar = function() {
-        return this.toolbarCanvas.canvas[0];
+        return this.toolbar.div[0];
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -386,7 +389,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
         this.graphCanvas.resize(w, h);
-        this.toolbarCanvas.resize(w, this.TOOLBAR_HEIGHT);
+        this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
         this.draw();
     };
 
@@ -633,9 +636,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.destroy = function () {
         clearInterval(this.caretTimer); // Stop the caret timer.
         this.graphCanvas.canvas.off();  // Stop all events.
-        this.toolbarCanvas.canvas.off();
+        this.toolbar.div.off()
         this.graphCanvas.canvas.remove();
-        this.toolbarCanvas.canvas.remove();
+        this.toolbar.div.remove();
 
     };
 
@@ -653,12 +656,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.draw = function () {
         var canvas = this.getCanvas(),
             c = canvas.getContext('2d'),
-            i,
-            toolbar = this.getToolbar(),
-            t = toolbar.getContext('2d');
-
-        t.clearRect(0, 0, this.getToolbar().width, this.getToolbar().height);
-        t.save();
+            i;
 
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
