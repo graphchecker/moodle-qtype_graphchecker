@@ -24,6 +24,14 @@
             "isdirected": true,
             "isfsm": true
         }
+    },
+    "petri": {
+        "name": "Petri Net",
+        "ui_plugin": "graph",
+        "ui_params": {
+            "isdirected": true,
+            "isfsm": false
+        }
     }
 }
 
