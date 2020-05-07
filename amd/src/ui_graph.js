@@ -115,11 +115,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, h) {
-        // Constructor, given the Graph that owns this toolbar div, the
-        // required canvasId and the height and width of the wrapper that
+    function GraphToolbar(parent, divId, w, h, helpOverlay) {
+        // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
+        // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
 
+        let self = this;
         this.parent = parent;
         this.div = $(document.createElement("div"));
         this.div.attr({
@@ -133,16 +134,95 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return parent.mousedown(e);
         });
 
-        this.button = new elements.Button(this, 0, 0, 50, 25,'fa-question', 25, 17, "Help menu");
-        this.button.create();
+        // A list for the buttons in this toolbar
+        this.buttons = [];
+        jQuery(document).ready(function() {
+            // Create the buttons, and add them to a list.
+            // Note that all buttons should have unique titles
+
+            // Create the help button
+            let helpButton = new elements.HelpButton(self, 0, 0, 50, 25,'fa-question', "Help menu", helpOverlay);
+            helpButton.create();
+            self.buttons.push(helpButton);
+
+            // Create the event listener for the buttons
+            // On a click of the button, call the onClick() method on the respective button
+            $('.toolbar_button').click(function (event) {
+                event.preventDefault();
+
+                for (let i = 0; i < self.buttons.length; i++) {
+                    if (event.target.id === self.buttons[i].getId()) {
+                        self.buttons[i].onClick(event);
+                    }
+                }
+            });
+        });
+
+
+        this.resize = function(w, h) {
+            // Resize to given dimensions.
+            this.div.css({'width': w});
+        };
+
+        this.resize(w, h);
+    }
+
+    /***********************************************************************
+     *
+     * Define a class HelpArea for the help area (i.e. a help 'box')
+     *
+     ***********************************************************************/
+
+    function HelpOverlay(parent, divId, dialogScale, w, h, bgValue, bgOpacity, boxColor) {
+        // Constructor, of the Help overlay
+        //TODO: fix helpbar staying fixed on screen when scrolling (don't use position: absolute)
+
+        this.parent = parent;
+        // Create the background div
+        this.div = $(document.createElement("div"));
+        this.div.attr({
+            id:         divId + '_background',
+            class:      "graphchecker_overlay",
+            style:      'position: absolute; background: rgba(' + bgValue + ', ' + bgValue + ', '
+                + bgValue + ', ' + bgOpacity + ')' + '; height: 100%; display: none;',
+            tabindex:   0
+        });
+        $(this.div).on('click', function() {
+            this.style.display = "none";
+        });
+
+        // Create the dialog div
+        this.divDialog = $(document.createElement("div"));
+        this.dialogScale = dialogScale; //The scale of the dialog w.r.t the size of the container
+        this.divDialog.attr({
+            id:         divId + 'dialog',
+            class:      "graphchecker_overlay",
+            style:      'position: relative; background-color: ' + boxColor +
+                '; left: ' + ((1-this.dialogScale)/2)*100 + '%; top: ' + ((1-this.dialogScale)/2)*100 + '%;' +
+                'box-shadow: 0px 7px 25px rgba(0, 0, 0, ' + bgOpacity + '); padding: 10px; border-radius: 4px;' +
+                'white-space: pre-wrap',
+            tabindex:   0
+        });
+        $(this.divDialog).on('click', function() {
+            return false;  // avoid bubbling to the backdrop
+        });
+        this.div.append(this.divDialog);
 
         this.resize = function(w, h) {
             // Resize to given dimensions.
             this.div.css({'width': w});
             this.div.css({'height': h});
+
+            this.divDialog.css({'width': w * this.dialogScale});
+            this.divDialog.css({'height': h * this.dialogScale});
         };
 
         this.resize(w, h);
+    }
+
+    // Sets the help text of the dialog. The text can contain newline and tab characters (i.e. \n and \t) for formatting
+    HelpOverlay.prototype.insertHelpText = function(text) {
+        this.divDialog.append(text);
     }
 
     /***********************************************************************
@@ -153,7 +233,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     function Graph(textareaId, width, height, templateParams) {
         // Constructor.
-        var save_this = this;
+        var self = this;
 
         this.SNAP_TO_PADDING = 6;
         this.DUPLICATE_LINK_OFFSET = 16; // Pixels offset for a duplicate link
@@ -164,32 +244,35 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
-        this.helpText = ''; // Obtained by JSON - see below.
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
         this.graphCanvas = new GraphCanvas(this, this.canvasId, width, height);
+
+        this.helpOverlayId = 'graphcanvas_overlay_' + textareaId;
+        this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, 3.0/4.0, width, height + this.TOOLBAR_HEIGHT,
+            0, '0.2', 'white');
+
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.helpOverlay);
+
         this.caretVisible = true;
         this.caretTimer = 0;  // Need global so we can kill a running timer.
         this.originalClick = null;
         this.nodes = [];
         this.links = [];
-        this.helpBox = new elements.HelpBox(this, 0, 0);
-        this.helpBoxHighlighted = false;
         this.selectedObject = null; // Either a elements.Link or a elements.Node.
         this.currentLink = null;
         this.movingObject = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
         if ('helpmenutext' in templateParams) {
-            this.helpText = templateParams.helpmenutext;
+            this.helpOverlay.insertHelpText(templateParams.helpmenutext);
         } else {
             require(['core/str'], function(str) {
                 // Get help text via AJAX.
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
                 $.when(helpPresent).done(function(graphhelp) {
-                    save_this.helpText = graphhelp;
+                    self.helpOverlay.insertHelpText(graphhelp);
                 });
             });
         }
@@ -208,7 +291,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getElement = function() {
-        return [this.getToolbar(), this.getCanvas()];
+        return [this.getHelpOverlay(), this.getToolbar(), this.getCanvas()];
     };
 
     Graph.prototype.hasFocus = function() {
@@ -221,6 +304,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.getToolbar = function() {
         return this.toolbar.div[0];
+    };
+
+    Graph.prototype.getHelpOverlay = function() {
+        return this.helpOverlay.div;
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -385,26 +472,23 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.resize = function(w, h, toolbarHeight) {
+    Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        this.graphCanvas.resize(w, h);
+        //TODO: generalize: the bottom part of the draggable area is approximately 14 pixels. This ensures that this
+        //TODO:             bottom part is not visible. However, it is not a good solution (i.e. a 'hack')
+        this.graphCanvas.resize(w, h + 14);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
+        this.helpOverlay.resize(w, h + this.TOOLBAR_HEIGHT);
         this.draw();
     };
 
     Graph.prototype.mousemove = function(e) {
         var mouse = util.crossBrowserRelativeMousePos(e),
-            closestPoint,
-            mouseInHelpBox = this.helpBox.containsPoint(mouse.x, mouse.y);
+            closestPoint;
 
         if (this.readOnly) {
             return;
-        }
-
-        if (mouseInHelpBox != this.helpBoxHighlighted) {
-            this.helpBoxHighlighted = mouseInHelpBox;
-            this.draw();
         }
 
         if(this.currentLink !== null) {
@@ -469,10 +553,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.selectObject = function(x, y) {
         var i;
-        if (this.helpBox.containsPoint(x, y) && this.selectedObject != this.helpBox) {
-            // Clicking the help box menu item toggles its select state.
-            return this.helpBox;
-        }
 
         for(i = 0; i < this.nodes.length; i++) {
             if(this.nodes[i].containsPoint(x, y)) {
@@ -636,10 +716,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.destroy = function () {
         clearInterval(this.caretTimer); // Stop the caret timer.
         this.graphCanvas.canvas.off();  // Stop all events.
-        this.toolbar.div.off()
         this.graphCanvas.canvas.remove();
+
+        this.toolbar.div.off()
         this.toolbar.div.remove();
 
+        this.helpOverlay.div.off()
+        this.helpOverlay.div.remove();
     };
 
     Graph.prototype.resetCaret = function () {
@@ -661,24 +744,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
 
-        this.helpBox.draw(c, this.selectedObject == this.helpBox, this.helpBoxHighlighted);
-        if (this.selectedObject != this.helpBox) {  // Only proceed if help info not showing.
-
-            for(i = 0; i < this.nodes.length; i++) {
-                c.lineWidth = 1;
-                c.fillStyle = c.strokeStyle = (this.nodes[i] === this.selectedObject) ? 'blue' : 'black';
-                this.nodes[i].draw(c);
-            }
-            for(i = 0; i < this.links.length; i++) {
-                c.lineWidth = 1;
-                c.fillStyle = c.strokeStyle = (this.links[i] === this.selectedObject) ? 'blue' : 'black';
-                this.links[i].draw(c);
-            }
-            if(this.currentLink !== null) {
-                c.lineWidth = 1;
-                c.fillStyle = c.strokeStyle = 'black';
-                this.currentLink.draw(c);
-            }
+        for(i = 0; i < this.nodes.length; i++) {
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = (this.nodes[i] === this.selectedObject) ? 'blue' : 'black';
+            this.nodes[i].draw(c);
+        }
+        for(i = 0; i < this.links.length; i++) {
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = (this.links[i] === this.selectedObject) ? 'blue' : 'black';
+            this.links[i].draw(c);
+        }
+        if(this.currentLink !== null) {
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = 'black';
+            this.currentLink.draw(c);
         }
 
         c.restore();

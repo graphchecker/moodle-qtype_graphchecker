@@ -495,95 +495,64 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(parent, topX, topY, w, h, iconClass, iconOffsetX, iconOffsetY, title) {
+    function Button(parent, topX, topY, w, h, iconClass, title) {
         this.parent = parent;
         this.topX = topX; //In pixels
         this.topY = topY; //In px.
         this.width = w; //In px.
         this.height = h; //In px.
         this.icon = iconClass;
-        this.iconOffsetX = iconOffsetX; //In px.
-        this.iconOffsetY = iconOffsetY; //In px.
         this.title = title;
+        this.id = '';
     }
 
-    Button.prototype.containsPoint = function(x, y) {
-        return x >= this.topX && y >= this.topY &&
-            x <= this.topX + this.BUTTON_WIDTH &&
-            y <= this.topY + this.BUTTON_HEIGHT;
-    };
+    Button.prototype.getId = function() {
+        return this.id;
+    }
 
     Button.prototype.create = function () {
+        // Create the button, and add an unclickable icon
+        this.id = 'button ' + this.title;
         let $button = $('<button/>')
-            .addClass('button')
             .attr({
+                "id":       this.id,
+                "class":    'toolbar_button',
                 "type":     "button",
                 "title":    this.title,
                 "style":    "width: " + this.width + "px; height: " + this.height + "px",
             })
-            .append($('<i/>').addClass('icon fa ' + this.icon));
+            .append($('<i/>')
+            .addClass('icon fa ' + this.icon).attr({
+                    "style":    "pointer-events: none",
+                }));
         let divId = '#' + this.parent.div[0].getAttribute('id');
-        jQuery(document).ready(function() {
-            $(divId).append($button);
-        });
+        $(divId).append($button);
+    }
+
+    Button.prototype.onClick = function(event) {
     }
 
     /***********************************************************************
      *
-     * Define a class HelpBox for the help box and its pseudo-menu button.
+     * Define a class HelpButton for the help button, which is based on
+     * the general Button class
      *
      ***********************************************************************/
 
-    function HelpBox(parent, topX, topY) {
-        this.BUTTON_WIDTH = 50;
-        this.BUTTON_HEIGHT = 25;
-        this.TEXT_OFFSET_X = 25;
-        this.TEXT_OFFSET_Y = 17;
-        this.LINE_HEIGHT = 18;
-        this.HELP_INDENT = 5;
-        this.topX = topX;
-        this.topY = topY;
-        this.parent = parent;
+    function HelpButton(parent, topX, topY, w, h, iconClass, title, helpOverlay) {
+        Button.call(this, parent, topX, topY, w, h, iconClass, title, helpOverlay);
+        this.helpOverlay = helpOverlay;
     }
 
-    HelpBox.prototype.containsPoint = function(x, y) {
-        return x >= this.topX && y >= this.topY &&
-                x <= this.topX + this.BUTTON_WIDTH &&
-                y <= this.topY + this.BUTTON_HEIGHT;
-    };
+    HelpButton.prototype = Object.create(Button.prototype);
+    HelpButton.prototype.constructor = HelpButton;
 
-    HelpBox.prototype.draw = function(c, isSelected, mouseIsOver) {
-        var lines, i, y, helpText;
+    HelpButton.prototype.onClick = function(event) {
+        Button.prototype.onClick(event);
 
-        if (mouseIsOver) {
-            c.fillStyle = '#FFFFFF';
-        } else {
-            c.fillStyle = '#F0F0F0';
-        }
-        c.fillRect(this.topX, this.topY,
-            this.topX + this.BUTTON_WIDTH, this.topY + this.BUTTON_HEIGHT);
-        c.lineWidth = 0.5;
-        c.strokeStyle = '#000000';
-        c.strokeRect(this.topX, this.topY,
-            this.topX + this.BUTTON_WIDTH, this.topY + this.BUTTON_HEIGHT);
-
-        c.font = '12pt Arial';
-        c.fillStyle = '#000000';
-        c.textAlign = "center";
-        c.fillText('Help', this.topX + this.TEXT_OFFSET_X, this.topY + this.TEXT_OFFSET_Y);
-        c.textAlign = "left";
-
-        if (isSelected) {
-            helpText = this.parent.helpText;
-            c.font = '12pt Arial';
-            lines = helpText.split('\n');
-            y = this.topY + this.BUTTON_HEIGHT;
-            for (i = 0; i < lines.length; i += 1) {
-                y += this.LINE_HEIGHT;
-                c.fillText(lines[i], this.topX + this.HELP_INDENT, y);
-            }
-        }
-    };
+        // Display an overlay on the entire graph UI
+        this.helpOverlay.div[0].style.display = "block";
+    }
 
     return {
         Node: Node,
@@ -592,6 +561,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
         Button: Button,
-        HelpBox: HelpBox
+        HelpButton: HelpButton,
     };
 });
