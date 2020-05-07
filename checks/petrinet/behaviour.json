@@ -1,0 +1,25 @@
+{
+  "name": "Behavioral properties",
+  "checks": {
+    "bounded": {
+      "name": "Is connected",
+      "description": "Checks if the petri-net is bounded.",
+      "params": []
+    },
+    "infinite": {
+      "name": "Is infinite",
+      "description": "Checks if the petri-net is infinite.",
+      "params": []
+    },
+    "deadlock_free": {
+      "name": "Is deadlock free",
+      "description": "Checks if the petri-net is deadlock free.",
+      "params": []
+    },
+    "live": {
+      "name": "Is live",
+      "description": "Checks if the petri-net is live.",
+      "params": []
+    }
+  }
+}
