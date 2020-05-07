@@ -1,0 +1,58 @@
+{
+  "name": "Graph properties",
+  "checks": {
+    "connected": {
+      "name": "Is connected",
+      "description": "Checks if the graph is connected.",
+      "params": []
+    },
+    "strongly_connected": {
+      "name": "Is strongly connected",
+      "description": "Checks if the graph is strongly connected.",
+      "params": []
+    },
+    "transition_degree_one": {
+      "name": "Transition Degree 1",
+      "description": "Checks if every transition has in/out degree 1.",
+      "params": []
+    },
+    "node_on_shortest_path": {
+      "name": "Node on shortest path",
+      "description": "Check if a node is on the shortest path from one node to another node. Check pm4py.",
+      "params": []
+    },
+    "node_label_exists": {
+      "name": "Node label exists",
+      "description": "Checks if a node with a particular label exists.",
+      "params": [
+        {
+          "param": "label",
+          "name": "should be",
+          "type": "string",
+          "default": "",
+          "min": ""
+        }
+      ]
+    },
+    "node_empty_label": {
+      "name": "Node empty label",
+      "description": "Checks if a node with an empty label exists.",
+      "params": []
+    },
+    "arc_missing": {
+      "name": "Arc missing",
+      "description": "Checks if an arc is missing.",
+      "params": []
+    },
+    "arc_has_label": {
+      "name": "Arc has given label",
+      "description": "Checks if an arc has a given label",
+      "params": []
+    },
+    "at_most_one_arc": {
+      "name": "At most one arc between nodes",
+      "description": "Check if there is at most one arc from one node to another node.",
+      "params": []
+    }
+  }
+}
