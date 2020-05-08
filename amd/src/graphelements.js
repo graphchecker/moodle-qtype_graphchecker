@@ -45,7 +45,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graphutil'], function(util) {
+define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
+
+    // An enum for defining the node types of petri nets
+    const PetriNodeType = Object.freeze({
+        NONE: 'none',               // Indicates not a petri node
+        PLACE: 'place',             // Indicates not a petri place
+        TRANSITION: 'transition'    // Indicates not a petri transition
+    });
 
     /***********************************************************************
      *
@@ -60,6 +67,8 @@ define(['qtype_graphchecker/graphutil'], function(util) {
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
         this.isAcceptState = false;
+        // When in Petri mode, this variable denotes whether the node is a place or a transition:
+        this.petriNodeType = PetriNodeType.NONE;
         this.text = '';
     }
 
@@ -84,7 +93,12 @@ define(['qtype_graphchecker/graphutil'], function(util) {
     Node.prototype.draw = function(c) {
         // Draw the circle.
         c.beginPath();
-        c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+        if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
+            c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+        } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
+            c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
+                this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+        }
         c.stroke();
 
         // Draw the text.
@@ -490,67 +504,78 @@ define(['qtype_graphchecker/graphutil'], function(util) {
 
     /***********************************************************************
      *
-     * Define a class HelpBox for the help box and its pseudo-menu buttonb.
+     * Define a class Button as a base class from which more specific
+     * buttons can be derived.
      *
      ***********************************************************************/
 
-    function HelpBox(parent, topX, topY) {
-        this.BUTTON_WIDTH = 50;
-        this.BUTTON_HEIGHT = 25;
-        this.TEXT_OFFSET_X = 25;
-        this.TEXT_OFFSET_Y = 17;
-        this.LINE_HEIGHT = 18;
-        this.HELP_INDENT = 5;
-        this.topX = topX;
-        this.topY = topY;
+    function Button(parent, topX, topY, w, h, iconClass, title) {
         this.parent = parent;
+        this.topX = topX; //In pixels
+        this.topY = topY; //In px.
+        this.width = w; //In px.
+        this.height = h; //In px.
+        this.icon = iconClass;
+        this.title = title;
+        this.id = '';
     }
 
-    HelpBox.prototype.containsPoint = function(x, y) {
-        return x >= this.topX && y >= this.topY &&
-                x <= this.topX + this.BUTTON_WIDTH &&
-                y <= this.topY + this.BUTTON_HEIGHT;
-    };
+    Button.prototype.getId = function() {
+        return this.id;
+    }
 
-    HelpBox.prototype.draw = function(c, isSelected, mouseIsOver) {
-        var lines, i, y, helpText;
+    Button.prototype.create = function () {
+        // Create the button, and add an unclickable icon
+        this.id = 'button ' + this.title;
+        let $button = $('<button/>')
+            .attr({
+                "id":       this.id,
+                "class":    'toolbar_button',
+                "type":     "button",
+                "title":    this.title,
+                "style":    "width: " + this.width + "px; height: " + this.height + "px",
+            })
+            .append($('<i/>')
+            .addClass('icon fa ' + this.icon).attr({
+                    "style":    "pointer-events: none",
+                }));
+        let divId = '#' + this.parent.div[0].getAttribute('id');
+        $(divId).append($button);
+    }
 
-        if (mouseIsOver) {
-            c.fillStyle = '#FFFFFF';
-        } else {
-            c.fillStyle = '#F0F0F0';
-        }
-        c.fillRect(this.topX, this.topY,
-            this.topX + this.BUTTON_WIDTH, this.topY + this.BUTTON_HEIGHT);
-        c.lineWidth = 0.5;
-        c.strokeStyle = '#000000';
-        c.strokeRect(this.topX, this.topY,
-            this.topX + this.BUTTON_WIDTH, this.topY + this.BUTTON_HEIGHT);
+    Button.prototype.onClick = function(event) {
+    }
 
-        c.font = '12pt Arial';
-        c.fillStyle = '#000000';
-        c.textAlign = "center";
-        c.fillText('Help', this.topX + this.TEXT_OFFSET_X, this.topY + this.TEXT_OFFSET_Y);
-        c.textAlign = "left";
+    /***********************************************************************
+     *
+     * Define a class HelpButton for the help button, which is based on
+     * the general Button class
+     *
+     ***********************************************************************/
 
-        if (isSelected) {
-            helpText = this.parent.helpText;
-            c.font = '12pt Arial';
-            lines = helpText.split('\n');
-            y = this.topY + this.BUTTON_HEIGHT;
-            for (i = 0; i < lines.length; i += 1) {
-                y += this.LINE_HEIGHT;
-                c.fillText(lines[i], this.topX + this.HELP_INDENT, y);
-            }
-        }
-    };
+    function HelpButton(parent, topX, topY, w, h, iconClass, title, helpOverlay) {
+        Button.call(this, parent, topX, topY, w, h, iconClass, title, helpOverlay);
+        this.helpOverlay = helpOverlay;
+    }
+
+    HelpButton.prototype = Object.create(Button.prototype);
+    HelpButton.prototype.constructor = HelpButton;
+
+    HelpButton.prototype.onClick = function(event) {
+        Button.prototype.onClick(event);
+
+        // Display an overlay on the entire graph UI
+        this.helpOverlay.div[0].style.display = "block";
+    }
 
     return {
+        PetriNodeType: PetriNodeType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
-        HelpBox: HelpBox
+        Button: Button,
+        HelpButton: HelpButton,
     };
 });
