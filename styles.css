@@ -496,3 +496,18 @@ li.bulktest.graphchecker.context.quiz {
     padding-left: 1.5em;
     list-style-type: none;
 }
+
+/* Help dialog background */
+div#graphcanvas_overlay_graph-ui-textarea_background {
+    position: absolute;
+    height: 100%;
+    display: none;
+}
+
+/* Help dialog */
+div#graphcanvas_overlay_graph-ui-textareadialog {
+    position: relative;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+}

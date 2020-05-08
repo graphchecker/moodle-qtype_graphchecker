@@ -183,8 +183,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.div.attr({
             id:         divId + '_background',
             class:      "graphchecker_overlay",
-            style:      'position: absolute; background: rgba(' + bgValue + ', ' + bgValue + ', '
-                + bgValue + ', ' + bgOpacity + ')' + '; height: 100%; display: none;',
+            style:      'background: rgba(' + bgValue + ', ' + bgValue + ', '
+                + bgValue + ', ' + bgOpacity + ')' + ';',
             tabindex:   0
         });
         $(this.div).on('click', function() {
@@ -197,10 +197,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.divDialog.attr({
             id:         divId + 'dialog',
             class:      "graphchecker_overlay",
-            style:      'position: relative; background-color: ' + boxColor +
+            style:      'background-color: ' + boxColor +
                 '; left: ' + ((1-this.dialogScale)/2)*100 + '%; top: ' + ((1-this.dialogScale)/2)*100 + '%;' +
-                'box-shadow: 0px 7px 25px rgba(0, 0, 0, ' + bgOpacity + '); padding: 10px; border-radius: 4px;' +
-                'white-space: pre-wrap',
+                'box-shadow: 0px 7px 25px rgba(0, 0, 0, ' + bgOpacity + ');',
             tabindex:   0
         });
         $(this.divDialog).on('click', function() {
