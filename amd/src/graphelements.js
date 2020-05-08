@@ -47,6 +47,13 @@
 
 define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
+    // An enum for defining the node types of petri nets
+    const PetriNodeType = Object.freeze({
+        NONE: 'none',               // Indicates not a petri node
+        PLACE: 'place',             // Indicates not a petri place
+        TRANSITION: 'transition'    // Indicates not a petri transition
+    });
+
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -60,6 +67,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
         this.isAcceptState = false;
+        // When in Petri mode, this variable denotes whether the node is a place or a transition:
+        this.petriNodeType = PetriNodeType.NONE;
         this.text = '';
     }
 
@@ -84,7 +93,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.draw = function(c) {
         // Draw the circle.
         c.beginPath();
-        c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+        if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
+            c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+        } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
+            c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
+                this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+        }
         c.stroke();
 
         // Draw the text.
@@ -555,6 +569,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     }
 
     return {
+        PetriNodeType: PetriNodeType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,

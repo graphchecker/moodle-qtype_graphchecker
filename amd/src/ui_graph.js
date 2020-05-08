@@ -322,6 +322,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return this.templateParams.isfsm !== undefined ? this.templateParams.isfsm : true;
     };
 
+    Graph.prototype.isPetri = function() {
+        return this.templateParams.ispetri !== undefined ? this.templateParams.ispetri : true;
+    };
+
     // Draw an arrow head if this is a directed graph. Otherwise do nothing.
     Graph.prototype.arrowIfReqd = function(c, x, y, angle) {
         if (this.templateParams.isdirected === undefined || this.templateParams.isdirected) {
@@ -461,12 +465,23 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         if(this.selectedObject === null) {
             this.selectedObject = new elements.Node(this, mouse.x, mouse.y);
+            if (this.isPetri()) { // Consider the node a place if it is a petri net
+                this.selectedObject.petriNodeType = elements.PetriNodeType.PLACE;
+            }
             this.nodes.push(this.selectedObject);
             this.resetCaret();
             this.draw();
         } else {
             if(this.selectedObject instanceof elements.Node && this.isFsm()) {
                 this.selectedObject.isAcceptState = !this.selectedObject.isAcceptState;
+                this.draw();
+            } else if(this.selectedObject instanceof elements.Node && this.isPetri()) {
+                let nodeType = this.selectedObject.petriNodeType;
+                if (nodeType === elements.PetriNodeType.PLACE) {
+                    this.selectedObject.petriNodeType = elements.PetriNodeType.TRANSITION;
+                } else if (nodeType === elements.PetriNodeType.TRANSITION) {
+                    this.selectedObject.petriNodeType = elements.PetriNodeType.PLACE;
+                }
                 this.draw();
             }
         }
@@ -623,6 +638,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
                     node.text = inputNode['label'];
                     node.isAcceptState = inputNode['accepting'];
+                    if (this.isPetri()) {
+                        node.petriNodeType = inputNode['petri_type'];
+                    }
                     this.nodes.push(node);
                 }
 
@@ -669,11 +687,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         for(i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];
-            output.vertices.push({
+            let vertex = {
                 'label': node.text,
                 'position': [node.x, node.y],
                 'accepting': node.isAcceptState
-            });
+            };
+            if (this.isPetri()) {
+                vertex['petri_type'] = node.petriNodeType;
+            }
+            output.vertices.push(vertex);
         }
 
         for(i = 0; i < this.links.length; i++) {
