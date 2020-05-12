@@ -7,10 +7,13 @@ import {{ module }}
 
 from preprocess import preprocess
 
-import igraph
-
 student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
-student_answer = preprocess(json.loads(student_answer))
+try:
+    student_answer = preprocess(json.loads(student_answer))
+except Exception as e:
+    output = {'type': 'preprocess_fail', 'feedback': str(e)}
+    print(json.dumps(output))
+    sys.exit(0)
 
 sample_answer = """{{ QUESTION.answer | e('py') }}"""
 if sample_answer == '':
@@ -24,14 +27,14 @@ if preload_answer == '':
 else:
     preload_answer = preprocess(json.loads(preload_answer))
 
-results = []
+output = {'type': 'success', 'results': []}
 
 {% for check in checks %}
 result = {{ check.get_check_code() }}
 result['module'] = """{{ check.module | e('py') }}"""
 result['method'] = """{{ check.method | e('py') }}"""
-results.append(result)
+output['results'].append(result)
 {% endfor %}
 
-print(json.dumps(results))
+print(json.dumps(output))
 
