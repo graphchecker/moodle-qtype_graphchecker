@@ -29,8 +29,7 @@
           "param": "label",
           "name": "should be",
           "type": "string",
-          "default": "",
-          "min": ""
+          "default": ""
         }
       ]
     },
@@ -42,17 +41,62 @@
     "arc_missing": {
       "name": "Arc missing",
       "description": "Checks if an arc is missing.",
-      "params": []
+      "params": [
+        {
+          "param": "label_a",
+          "name": "first node label",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_b",
+          "name": "second node label",
+          "type": "string",
+          "default": ""
+        }
+      ]
     },
     "arc_has_label": {
       "name": "Arc has given label",
       "description": "Checks if an arc has a given label",
-      "params": []
+      "params": [
+        {
+          "param": "label_a",
+          "name": "first node label",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_b",
+          "name": "second node label",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_arc",
+          "name": "arc label",
+          "type": "string",
+          "default": ""
+        }
+      ]
     },
     "at_most_one_arc": {
       "name": "At most one arc between nodes",
       "description": "Check if there is at most one arc from one node to another node.",
-      "params": []
+      "params": [
+        {
+          "param": "label_a",
+          "name": "first node label",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_b",
+          "name": "second node label",
+          "type": "string",
+          "default": ""
+        }
+      ]
     }
   }
 }

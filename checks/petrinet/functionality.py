@@ -72,6 +72,7 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2]:
         # TODO: return true if a transition was missing thus sequence is impossible?
+        # No: return false with an error message
         return {'correct': False,
                 'feedback': 'A transition in the transition sequence was not present'
                             'in the given petri net.'}

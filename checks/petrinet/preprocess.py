@@ -4,6 +4,8 @@ from pm4py.objects.petri import utils
 
 def preprocess(graph):
     # TODO: input validation
+    # TODO: raise new exception when input is not valid.
+
     version = graph["_version"]
     print("version = " + str(version))
 

@@ -1,0 +1,109 @@
+{
+  "name": "Design",
+  "checks": {
+    "no_forbidden_words": {
+      "name": "Label have no forbidden words",
+      "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
+      "params": [
+        {
+          "param": "words",
+          "name": "labels",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    },
+    "only_mandatory_words": {
+      "name": "Labels only contain mandatory words.",
+      "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of mandatory words. If another word is used then the test fails and reports what illegal word was used.",
+      "params": [
+        {
+          "param": "words",
+          "name": "labels",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    },
+    "no_duplicate_label": {
+      "name": "No duplicate labels",
+      "description": "Checks if there are no duplicate labels.",
+      "params": []
+    },
+    "left_to_right": {
+      "name": "Left to right",
+      "description": "Checks if the modeling is left-to-right. That is, all arcs are left-to-right.",
+      "params": []
+    },
+    "top_to_bottom": {
+      "name": "Top to bottom",
+      "description": "Check if the modeling is top-to-bottom. That is, all arcs are top-to-bottom.",
+      "params": []
+    },
+    "crossing_arcs": {
+      "name": "Number of crossing arcs",
+      "description": " Check if the number of crossing arcs is at most a given natural number.",
+      "params": []
+    },
+    "horizontally_adjacent": {
+      "name": "Nodes horizontally adjacent",
+      "description": "Check if for a given array of labels all the nodes matching the labels are (approximately) horizontally adjacent.",
+      "params": [
+        {
+          "param": "labels",
+          "name": "labels",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    },
+    "vertically_adjacent": {
+      "name": "Nodes vertically adjacent",
+      "description": " Check if for a given array of labels all the nodes matching the labels are (approximately) vertically adjacent.",
+      "params": [
+        {
+          "param": "labels",
+          "name": "labels",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    },
+    "list_left_of": {
+      "name": "Nodes left of other nodes",
+      "description": " Check if for two given arrays A, B with labels, all the nodes matching the labels in A are left of all the nodes with labels in B. Fails if A, B have an overlapping label.",
+      "params": [
+        {
+          "param": "labels_a",
+          "name": "labels_a",
+          "type": "list",
+          "default": ""
+        },
+        {
+          "param": "labels_b",
+          "name": "labels_b",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    },
+    "list_above_of": {
+      "name": "Nodes above of other nodes",
+      "description": " Check if for two given arrays A, B with labels, all the nodes matching the labels in A are above all the nodes with labels in B. Fails if A, B have an overlapping label.",
+      "params": [
+        {
+          "param": "labels_a",
+          "name": "labels_a",
+          "type": "list",
+          "default": ""
+        },
+        {
+          "param": "labels_b",
+          "name": "labels_b",
+          "type": "list",
+          "default": ""
+        }
+      ]
+    }
+  }
+}
