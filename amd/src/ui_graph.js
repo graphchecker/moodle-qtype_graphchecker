@@ -64,8 +64,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // required canvasId and the height and width of the wrapper that
         // encloses the Canvas.
 
-        this.HANDLE_SIZE = 10;
-
         this.parent = parent;
         this.canvas = $(document.createElement("canvas"));
         this.canvas.attr({
@@ -129,33 +127,35 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             class:      "graphchecker_toolbar",
             tabindex:   0
         });
-        this.div.css({'background-color': 'lightgrey'});
 
         // A list for the buttons in this toolbar
         this.buttons = [];
-        jQuery(document).ready(function() {
+        $(document).ready(function() {
             // Create the buttons, and add them to a list.
             // Note that all buttons should have unique titles
 
             // Create the help button
-            let helpButton = new elements.HelpButton(self, elements.ButtonType.HELP, 0, 0, 40, 25, 'fa-question', "Help menu", helpOverlay);
+            let helpButton = new elements.HelpButton(self, elements.ButtonType.HELP, 0, 0, 35, 25, 'fa-question',
+                "Help menu", helpOverlay);
             helpButton.create();
             self.buttons.push(helpButton);
 
             // Create the draw button
-            let drawButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 40, 25, 'fa-pen', "Draw mode", elements.ModeType.DRAW)
+            let drawButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 35, 25, 'fa-pencil',
+                "Draw mode", elements.ModeType.DRAW);
             drawButton.create();
             self.buttons.push(drawButton);
-            //TODO maybe something else: set the button to pressed or not (depending on the mode)
 
             // Create the edit button
-            let editButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 40, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT)
+            let editButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 35, 25, 'fa-mouse-pointer',
+                "Edit mode", elements.ModeType.EDIT);
             editButton.create();
             self.buttons.push(editButton);
 
             // Enable one of the mode buttons at the start
             for (let i = 0; i < self.buttons.length; i++) {
-                if (self.buttons[i].buttonType === elements.ButtonType.MODE && self.buttons[i].buttonModeType === self.uiMode) {
+                if (self.buttons[i].buttonType === elements.ButtonType.MODE && self.buttons[i].buttonModeType ===
+                    self.uiMode) {
                     self.buttons[i].setSelected();
                 }
             }
@@ -183,7 +183,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.buttons[i].setDeselected();
                 }
             }
-        }
+        };
 
         this.resize = function(w, h) {
             // Resize to given dimensions.
@@ -202,7 +202,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     function HelpOverlay(parent, divId, dialogScale, w, h, bgValue, bgOpacity, boxColor) {
         // Constructor, of the Help overlay
-        //TODO: fix helpbar staying fixed on screen when scrolling (don't use position: absolute)
 
         let self = this;
         this.parent = parent;
@@ -224,7 +223,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Create the dialog div
         this.divDialog = $(document.createElement("div"));
-        this.dialogScale = dialogScale; //The scale of the dialog w.r.t the size of the container
         this.divDialog.attr({
             id:         divId + 'dialog',
             class:      'dialog',
@@ -239,7 +237,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     // Sets the help text of the dialog. The text can contain newline and tab characters (i.e. \n and \t) for formatting
     HelpOverlay.prototype.insertHelpText = function(text) {
         this.divDialog.append(text);
-    }
+    };
 
     /***********************************************************************
      *
@@ -272,6 +270,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.toolbarId = 'toolbar_' + textareaId;
         this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.uiMode, this.helpOverlay);
+
+        // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
+        this.containerDiv = $(document.createElement('div'));
+        $(this.containerDiv).addClass('graph_ui_container_div');
 
         this.caretVisible = true;
         this.caretTimer = 0;  // Need global so we can kill a running timer.
@@ -310,7 +312,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getElement = function() {
-        return [this.getHelpOverlay(), this.getToolbar(), this.getCanvas()];
+        this.containerDiv.append(this.getHelpOverlay());
+        this.containerDiv.append(this.getToolbar());
+        this.containerDiv.append(this.getCanvas());
+        return this.containerDiv;
     };
 
     Graph.prototype.hasFocus = function() {
@@ -333,7 +338,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.uiMode = modeType;
         this.clickedObject = null;
         this.selectedObject = null;
-    }
+    };
 
     Graph.prototype.nodeRadius = function() {
         return this.templateParams.noderadius ? this.templateParams.noderadius : this.DEFAULT_NODE_RADIUS;
@@ -416,10 +421,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.resetCaret();
                     this.draw();
                 }
-                /*
-                if (e.shiftKey && clickedObject instanceof elements.Node) {
-                        this.currentLink = new elements.SelfLink(this, clickedObject, mouse);
-                    }
+                /* //TODO: FSMs
                 } else if (e.shiftKey && this.isFsm()) {
                     this.currentLink = new elements.TemporaryLink(this, mouse, mouse);
                 }
@@ -495,31 +497,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.dblclick = function(e) {
-        var mouse = util.crossBrowserRelativeMousePos(e);
-
-        if (this.readOnly) {
-            return;
-        }
-        //TODO: remove function
-        /*
-        this.selectedObject = this.getMouseOverObject(mouse.x, mouse.y);
-
-        if(this.selectedObject === null) {
-        } else {
-            if(this.selectedObject instanceof elements.Node && this.isFsm()) {
-                this.selectedObject.isAcceptState = !this.selectedObject.isAcceptState;
-                this.draw();
-            } else if(this.selectedObject instanceof elements.Node && this.isPetri()) {
-                let nodeType = this.selectedObject.petriNodeType;
-                if (nodeType === elements.PetriNodeType.PLACE) {
-                    this.selectedObject.petriNodeType = elements.PetriNodeType.TRANSITION;
-                } else if (nodeType === elements.PetriNodeType.TRANSITION) {
-                    this.selectedObject.petriNodeType = elements.PetriNodeType.PLACE;
-                }
-                this.draw();
-            }
-        }
-        */
+        // The double click function is not needed anymore according to the documentation
+        // But keeping it here in case it is needed in the future
     };
 
     Graph.prototype.resize = function(w, h) {
@@ -529,7 +508,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         //TODO:             bottom part is not visible. However, it is not a good solution (i.e. it is a 'hack')
         this.graphCanvas.resize(w, h + 14);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
-        this.helpOverlay.resize(w, h + this.TOOLBAR_HEIGHT);
         this.draw();
     };
 
@@ -815,10 +793,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.graphCanvas.canvas.off();  // Stop all events.
         this.graphCanvas.canvas.remove();
 
-        this.toolbar.div.off()
+        this.toolbar.div.off();
         this.toolbar.div.remove();
 
-        this.helpOverlay.div.off()
+        this.helpOverlay.div.off();
         this.helpOverlay.div.remove();
     };
 

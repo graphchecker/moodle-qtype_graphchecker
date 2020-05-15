@@ -395,6 +395,11 @@ body#page-question-type-graphchecker .tests-ui .test-container {
     padding: 5px;
 }
 
+.graphchecker_toolbar {
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #bbb;
+}
+
 body#page-question-type-graphchecker .tests-ui .test-container:last-child {
     background-color: #f2f2f2;
     border-bottom: 0px;
@@ -407,7 +412,7 @@ body#page-question-type-graphchecker .tests-ui .module-container {
 }
 
 /* definitions for button styling taken from atto for consistency */
-body#page-question-type-graphchecker .tests-ui .button-group {
+body#page-question-type-graphchecker .tests-ui .button-group, .toolbar_button {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
@@ -429,8 +434,18 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
     border-left: 1px solid #ccc;
 }
 
-body#page-question-type-graphchecker .tests-ui .button:hover {
-    background-image: radial-gradient(ellipse at center,#fff 60%,#dfdfdf 100%);
+body#page-question-type-graphchecker .tests-ui .button:hover,
+.toolbar_button:hover:not(:active):not(.mode),
+.toolbar_button.mode.not_clicked:hover:not(:active) {
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,1) 60%, rgba(223,223,223,1) 100%);
+    background-color: #ebebeb;
+}
+
+button.toolbar_button.mode.clicked {
+    background-color: #ebebeb;
+}
+
+button.toolbar_button:active {
     background-color: #ebebeb;
 }
 

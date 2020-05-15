@@ -536,15 +536,16 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Button.prototype.getId = function() {
         return this.id;
-    }
+    };
 
+    // The create function should be called explicitly in order to create the HTML element(s) of the button
     Button.prototype.create = function () {
         // Create the button, and add an unclickable icon
         this.id = 'button_' + this.title.split(' ').join('_');
         let $button = $('<button/>')
             .attr({
                 "id":       this.id,
-                "class":    'toolbar_button',
+                "class":    'toolbar_button' + ' ' + this.buttonType,
                 "type":     "button",
                 "title":    this.title,
                 "style":    "width: " + this.width + "px; height: " + this.height + "px",
@@ -554,11 +555,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                     "style":    "pointer-events: none",
                 }));
         let divId = '#' + this.parent.div[0].getAttribute('id');
-        $(divId).append($button)
-    }
+        $(divId).append($button);
+    };
 
     Button.prototype.onClick = function(event) {
-    }
+    };
 
     /***********************************************************************
      *
@@ -568,28 +569,39 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      ***********************************************************************/
 
     function ModeButton(parent, buttonType, topX, topY, w, h, iconClass, title, buttonModeType) {
-        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title)
+        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title);
         this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
-    }
+    };
 
     ModeButton.prototype = Object.create(Button.prototype);
     ModeButton.prototype.constructor = ModeButton;
 
+    ModeButton.prototype.create = function() {
+        Button.prototype.create.call(this);
+
+        // Add the not_clicked class name by default, based on the button type
+        $('#' + this.id).addClass('not_clicked');
+    };
+
     ModeButton.prototype.onClick = function(event) {
         Button.prototype.onClick(event);
         this.setSelected();
-    }
+    };
 
     ModeButton.prototype.setSelected = function() {
-        $('#' + this.id).css('background-color', 'lime'); //TODO: change in styles.css
+        let jqueryId = $('#' + this.id);
+        jqueryId.addClass('clicked');
+        jqueryId.removeClass('not_clicked');
 
         // Set the mode of the UI
         this.parent.onModeButtonPressed(this);
-    }
+    };
 
     ModeButton.prototype.setDeselected = function() {
-        $('#' + this.id).css('background-color', 'red'); //TODO: change in styles.css
-    }
+        let jqueryId = $('#' + this.id)
+        jqueryId.removeClass('clicked');
+        jqueryId.addClass('not_clicked');
+    };
 
     /***********************************************************************
      *
@@ -613,7 +625,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.helpOverlay.div[0].style.display = 'block';
         this.helpOverlay.div.addClass('visible');
         $('body').addClass('unscrollable');
-    }
+    };
 
     return {
         PetriNodeType: PetriNodeType,
