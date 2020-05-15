@@ -54,6 +54,19 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         TRANSITION: 'transition'    // Indicates not a petri transition
     });
 
+    // An enum for defining the mode type of the graph UI
+    const ModeType = Object.freeze({
+        EDIT: 'edit',               // Indicates that the UI is in edit mode
+        DRAW: 'draw'                // Indicates that the UI is in draw mode
+    });
+
+    // An enum for defining the mode type of the graph UI
+    const ButtonType = Object.freeze({
+        DEFAULT: 'default',         // Indicates that the button is a default button
+        MODE: 'mode',               // Indicates that the button is a mode button
+        HELP: 'help'                // Indicates that the button is a help button
+    });
+
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -509,8 +522,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(parent, topX, topY, w, h, iconClass, title) {
+    function Button(parent, buttonType, topX, topY, w, h, iconClass, title) {
         this.parent = parent;
+        this.buttonType = buttonType;
         this.topX = topX; //In pixels
         this.topY = topY; //In px.
         this.width = w; //In px.
@@ -526,7 +540,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Button.prototype.create = function () {
         // Create the button, and add an unclickable icon
-        this.id = 'button ' + this.title;
+        this.id = 'button_' + this.title.split(' ').join('_');
         let $button = $('<button/>')
             .attr({
                 "id":       this.id,
@@ -540,10 +554,41 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                     "style":    "pointer-events: none",
                 }));
         let divId = '#' + this.parent.div[0].getAttribute('id');
-        $(divId).append($button);
+        $(divId).append($button)
     }
 
     Button.prototype.onClick = function(event) {
+    }
+
+    /***********************************************************************
+     *
+     * Define a class ModeButton for the buttons used to switch modes,
+     * which are based on the general Button class
+     *
+     ***********************************************************************/
+
+    function ModeButton(parent, buttonType, topX, topY, w, h, iconClass, title, buttonModeType) {
+        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title)
+        this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
+    }
+
+    ModeButton.prototype = Object.create(Button.prototype);
+    ModeButton.prototype.constructor = ModeButton;
+
+    ModeButton.prototype.onClick = function(event) {
+        Button.prototype.onClick(event);
+        this.setSelected();
+    }
+
+    ModeButton.prototype.setSelected = function() {
+        $('#' + this.id).css('background-color', 'lime'); //TODO: change in styles.css
+
+        // Set the mode of the UI
+        this.parent.onModeButtonPressed(this);
+    }
+
+    ModeButton.prototype.setDeselected = function() {
+        $('#' + this.id).css('background-color', 'red'); //TODO: change in styles.css
     }
 
     /***********************************************************************
@@ -553,8 +598,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function HelpButton(parent, topX, topY, w, h, iconClass, title, helpOverlay) {
-        Button.call(this, parent, topX, topY, w, h, iconClass, title, helpOverlay);
+    function HelpButton(parent, buttonType, topX, topY, w, h, iconClass, title, helpOverlay) {
+        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title);
         this.helpOverlay = helpOverlay;
     }
 
@@ -570,12 +615,14 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     return {
         PetriNodeType: PetriNodeType,
+        ModeType : ModeType,
+        ButtonType: ButtonType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
-        Button: Button,
+        ModeButton: ModeButton,
         HelpButton: HelpButton,
     };
 });

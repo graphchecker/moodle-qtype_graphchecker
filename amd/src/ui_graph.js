@@ -115,24 +115,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, h, helpOverlay) {
+    function GraphToolbar(parent, divId, w, h, uiMode, helpOverlay) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
 
         let self = this;
         this.parent = parent;
-        this.div = $(document.createElement("div"));
+        this.uiMode = uiMode;
+        this.div = $(document.createElement('div'));
         this.div.attr({
             id:         divId,
             class:      "graphchecker_toolbar",
             tabindex:   0
         });
         this.div.css({'background-color': 'lightgrey'});
-
-        this.div.on('mousedown', function(e) {
-            return parent.mousedown(e);
-        });
 
         // A list for the buttons in this toolbar
         this.buttons = [];
@@ -141,9 +138,27 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Note that all buttons should have unique titles
 
             // Create the help button
-            let helpButton = new elements.HelpButton(self, 0, 0, 50, 25,'fa-question', "Help menu", helpOverlay);
+            let helpButton = new elements.HelpButton(self, elements.ButtonType.HELP, 0, 0, 40, 25, 'fa-question', "Help menu", helpOverlay);
             helpButton.create();
             self.buttons.push(helpButton);
+
+            // Create the draw button
+            let drawButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 40, 25, 'fa-pen', "Draw mode", elements.ModeType.DRAW)
+            drawButton.create();
+            self.buttons.push(drawButton);
+            //TODO maybe something else: set the button to pressed or not (depending on the mode)
+
+            // Create the edit button
+            let editButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 40, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT)
+            editButton.create();
+            self.buttons.push(editButton);
+
+            // Enable one of the mode buttons at the start
+            for (let i = 0; i < self.buttons.length; i++) {
+                if (self.buttons[i].buttonType === elements.ButtonType.MODE && self.buttons[i].buttonModeType === self.uiMode) {
+                    self.buttons[i].setSelected();
+                }
+            }
 
             // Create the event listener for the buttons
             // On a click of the button, call the onClick() method on the respective button
@@ -158,10 +173,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             });
         });
 
+        this.onModeButtonPressed = function(button) {
+            // Activate the pressed mode
+            this.parent.setUIMode(button.buttonModeType);
+
+            // Display the other mode button(s) accordingly
+            for (let i = 0; i < this.buttons.length; i++) {
+                if (this.buttons[i].buttonType === elements.ButtonType.MODE && this.buttons[i] !== button) {
+                    this.buttons[i].setDeselected();
+                }
+            }
+        }
 
         this.resize = function(w, h) {
             // Resize to given dimensions.
             this.div.css({'width': w});
+            this.div.css({'height': h});
         };
 
         this.resize(w, h);
@@ -241,6 +268,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
         this.TOOLBAR_HEIGHT = 40;       // px. The height of the toolbar above the graphCanvas
 
+        this.uiMode = elements.ModeType.DRAW; // Set the UI mode type
+
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
         this.readOnly = this.textArea.prop('readonly');
@@ -252,7 +281,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             0, '0.2', 'white');
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.helpOverlay);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.uiMode, this.helpOverlay);
 
         this.caretVisible = true;
         this.caretTimer = 0;  // Need global so we can kill a running timer.
@@ -260,6 +289,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.nodes = [];
         this.links = [];
         this.selectedObject = null; // Either a elements.Link or a elements.Node.
+        this.clickedObject = null; // Same as this.selectedObject, but not highlighted
         this.currentLink = null;
         this.movingObject = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
@@ -308,6 +338,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
     };
+
+    Graph.prototype.setUIMode = function(modeType) {
+        this.uiMode = modeType;
+        this.clickedObject = null;
+        this.selectedObject = null;
+    }
 
     Graph.prototype.nodeRadius = function() {
         return this.templateParams.noderadius ? this.templateParams.noderadius : this.DEFAULT_NODE_RADIUS;
@@ -371,31 +407,46 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        this.selectedObject = this.selectObject(mouse.x, mouse.y);
+        this.clickedObject = this.getMouseOverObject(mouse.x, mouse.y);
         this.movingObject = false;
         this.movingGraph = false;
         this.originalClick = mouse;
 
-        if(this.selectedObject !== null) {
-            if(e.shiftKey && this.selectedObject instanceof elements.Node) {
-                this.currentLink = new elements.SelfLink(this, this.selectedObject, mouse);
-            } else if (e.altKey && this.selectedObject instanceof elements.Node) {
-                // Moving an entire connected graph component.
-                this.movingGraph = true;
-                this.movingNodes = this.selectedObject.traverseGraph(this.links, []);
-                for (var i = 0; i < this.movingNodes.length; i++) {
-                    this.movingNodes[i].setMouseStart(mouse.x, mouse.y);
+        // Check whether the click is a left mouse click
+        if (e.button === 0) {
+            // Depending on the mode, perform different tasks
+            if (this.uiMode === elements.ModeType.DRAW) {
+                if (this.clickedObject === null && this.currentLink === null) {
+                    // Draw a node
+                    let newNode = new elements.Node(this, mouse.x, mouse.y);
+                    if (this.isPetri()) { // Consider the node a place if it is a petri net
+                        newNode.petriNodeType = elements.PetriNodeType.PLACE;
+                    }
+                    this.nodes.push(newNode);
+                    this.resetCaret();
+                    this.draw();
                 }
-            } else if (!(this.templateParams.locknodes && this.selectedObject instanceof elements.Node)
-                       && !(this.templateParams.lockedges && this.selectedObject instanceof elements.Link)){
-                this.movingObject = true;
-                if(this.selectedObject.setMouseStart) {
-                    this.selectedObject.setMouseStart(mouse.x, mouse.y);
+                /*
+                if (e.shiftKey && clickedObject instanceof elements.Node) {
+                        this.currentLink = new elements.SelfLink(this, clickedObject, mouse);
+                    }
+                } else if (e.shiftKey && this.isFsm()) {
+                    this.currentLink = new elements.TemporaryLink(this, mouse, mouse);
                 }
+                */
+
+            } else if (this.uiMode === elements.ModeType.EDIT) {
+                this.selectedObject = this.clickedObject;
+
+                if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
+                    && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)){
+                    this.movingObject = true;
+                    if(this.clickedObject !== null && this.clickedObject.setMouseStart) {
+                        this.clickedObject.setMouseStart(mouse.x, mouse.y);
+                    }
+                }
+                this.resetCaret();
             }
-            this.resetCaret();
-        } else if(e.shiftKey && this.isFsm()) {
-            this.currentLink = new elements.TemporaryLink(this, mouse, mouse);
         }
 
         this.draw();
@@ -459,17 +510,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (this.readOnly) {
             return;
         }
-
-        this.selectedObject = this.selectObject(mouse.x, mouse.y);
+        //TODO: remove function
+        /*
+        this.selectedObject = this.getMouseOverObject(mouse.x, mouse.y);
 
         if(this.selectedObject === null) {
-            this.selectedObject = new elements.Node(this, mouse.x, mouse.y);
-            if (this.isPetri()) { // Consider the node a place if it is a petri net
-                this.selectedObject.petriNodeType = elements.PetriNodeType.PLACE;
-            }
-            this.nodes.push(this.selectedObject);
-            this.resetCaret();
-            this.draw();
         } else {
             if(this.selectedObject instanceof elements.Node && this.isFsm()) {
                 this.selectedObject.isAcceptState = !this.selectedObject.isAcceptState;
@@ -484,13 +529,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.draw();
             }
         }
+        */
     };
 
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
         //TODO: generalize: the bottom part of the draggable area is approximately 14 pixels. This ensures that this
-        //TODO:             bottom part is not visible. However, it is not a good solution (i.e. a 'hack')
+        //TODO:             bottom part is not visible. However, it is not a good solution (i.e. it is a 'hack')
         this.graphCanvas.resize(w, h + 14);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
         this.helpOverlay.resize(w, h + this.TOOLBAR_HEIGHT);
@@ -505,8 +551,47 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
+        // Depending on the mode, perform different tasks TODO: disable selection after link making
+        if (this.uiMode === elements.ModeType.DRAW) {
+            if (this.clickedObject instanceof elements.Node) {
+                let targetNode = this.getMouseOverObject(mouse.x, mouse.y);
+                if(!(targetNode instanceof elements.Node)) {
+                    // If the target node is not a node (e.g. an edge) set it to null
+                    targetNode = null;
+                }
+
+                // Depending on the mouse position, draw different kind of links
+                if (targetNode === this.clickedObject) {
+                    this.currentLink = new elements.SelfLink(this, this.clickedObject, mouse);
+                } else if (targetNode !== null) {
+                    this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
+                } else {
+                    closestPoint = this.clickedObject.closestPointOnCircle(mouse.x, mouse.y);
+                    this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
+                }
+            }
+        } else if (this.uiMode === elements.ModeType.EDIT) {
+            if (this.clickedObject !== null) {
+                if (this.movingGraph) {
+                    var nodes = this.movingNodes;
+                    for (var i = 0; i < nodes.length; i++) {
+                        nodes[i].trackMouse(mouse.x, mouse.y);
+                        this.snapNode(nodes[i]);
+                    }
+                } else if (this.movingObject) {
+                    this.clickedObject.setAnchorPoint(mouse.x, mouse.y);
+                    if (this.clickedObject instanceof elements.Node) {
+                        this.snapNode(this.clickedObject);
+                    }
+                }
+            }
+        }
+
+        this.draw();
+
+        /*
         if(this.currentLink !== null) {
-            var targetNode = this.selectObject(mouse.x, mouse.y);
+            var targetNode = this.getMouseOverObject(mouse.x, mouse.y);
             if(!(targetNode instanceof elements.Node)) {
                 targetNode = null;
             }
@@ -543,6 +628,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
             this.draw();
         }
+        */
     };
 
     Graph.prototype.mouseup = function() {
@@ -551,12 +637,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        this.movingObject = false;
-        this.movingGraph = false;
+        //this.movingObject = false;
+        //this.movingGraph = false;
+        this.clickedObject = null;
 
         if(this.currentLink !== null) {
             if(!(this.currentLink instanceof elements.TemporaryLink)) {
-                this.selectedObject = this.currentLink;
                 this.addLink(this.currentLink);
                 this.resetCaret();
             }
@@ -565,16 +651,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.selectObject = function(x, y) {
+    Graph.prototype.getMouseOverObject = function(x, y) {
         var i;
 
-        for(i = 0; i < this.nodes.length; i++) {
-            if(this.nodes[i].containsPoint(x, y)) {
+        for (i = 0; i < this.nodes.length; i++) {
+            if (this.nodes[i].containsPoint(x, y)) {
                 return this.nodes[i];
             }
         }
-        for(i = 0; i < this.links.length; i++) {
-            if(this.links[i].containsPoint(x, y)) {
+        for (i = 0; i < this.links.length; i++) {
+            if (this.links[i].containsPoint(x, y)) {
                 return this.links[i];
             }
         }
