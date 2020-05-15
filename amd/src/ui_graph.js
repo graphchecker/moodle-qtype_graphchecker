@@ -204,18 +204,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Constructor, of the Help overlay
         //TODO: fix helpbar staying fixed on screen when scrolling (don't use position: absolute)
 
+        let self = this;
         this.parent = parent;
         // Create the background div
         this.div = $(document.createElement("div"));
         this.div.attr({
             id:         divId + '_background',
             class:      "graphchecker_overlay",
-            style:      'background: rgba(' + bgValue + ', ' + bgValue + ', '
-                + bgValue + ', ' + bgOpacity + ')' + ';',
             tabindex:   0
         });
         $(this.div).on('click', function() {
-            this.style.display = "none";
+            // Hide the background element only after the CSS transition has finished
+            self.div.removeClass('visible');
+            setTimeout(function() {
+                self.div.css('display', 'none');
+                $('body').removeClass('unscrollable');
+            }.bind(this), 500);
         });
 
         // Create the dialog div
@@ -223,27 +227,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.dialogScale = dialogScale; //The scale of the dialog w.r.t the size of the container
         this.divDialog.attr({
             id:         divId + 'dialog',
-            class:      "graphchecker_overlay",
-            style:      'background-color: ' + boxColor +
-                '; left: ' + ((1-this.dialogScale)/2)*100 + '%; top: ' + ((1-this.dialogScale)/2)*100 + '%;' +
-                'box-shadow: 0px 7px 25px rgba(0, 0, 0, ' + bgOpacity + ');',
+            class:      'dialog',
             tabindex:   0
         });
         $(this.divDialog).on('click', function() {
             return false;  // avoid bubbling to the backdrop
         });
         this.div.append(this.divDialog);
-
-        this.resize = function(w, h) {
-            // Resize to given dimensions.
-            this.div.css({'width': w});
-            this.div.css({'height': h});
-
-            this.divDialog.css({'width': w * this.dialogScale});
-            this.divDialog.css({'height': h * this.dialogScale});
-        };
-
-        this.resize(w, h);
     }
 
     // Sets the help text of the dialog. The text can contain newline and tab characters (i.e. \n and \t) for formatting

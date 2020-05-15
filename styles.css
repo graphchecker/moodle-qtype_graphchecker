@@ -371,8 +371,9 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop {
+body#page-question-type-graphchecker .tests-ui .backdrop, .graphchecker_overlay {
     position: fixed;
+    display: none;
     left: 0px;
     right: 0px;
     top: 0px;
@@ -384,7 +385,7 @@ body#page-question-type-graphchecker .tests-ui .backdrop {
     overflow-y: scroll;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop.visible {
+body#page-question-type-graphchecker .tests-ui .backdrop.visible, .graphchecker_overlay.visible {
     opacity: 1;
 }
 
@@ -470,7 +471,7 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     top: -2px;
 }
 
-body#page-question-type-graphchecker .tests-ui .dialog {
+body#page-question-type-graphchecker .tests-ui .dialog, .dialog {
     max-width: 550px;
     margin: auto;
     margin-top: 50px;
@@ -495,19 +496,4 @@ body#page-question-type-graphchecker.unscrollable {
 li.bulktest.graphchecker.context.quiz {
     padding-left: 1.5em;
     list-style-type: none;
-}
-
-/* Help dialog background */
-div#graphcanvas_overlay_graph-ui-textarea_background {
-    position: absolute;
-    height: 100%;
-    display: none;
-}
-
-/* Help dialog */
-div#graphcanvas_overlay_graph-ui-textareadialog {
-    position: relative;
-    padding: 10px;
-    border-radius: 4px;
-    white-space: pre-wrap;
 }

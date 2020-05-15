@@ -610,7 +610,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         Button.prototype.onClick(event);
 
         // Display an overlay on the entire graph UI
-        this.helpOverlay.div[0].style.display = "block";
+        this.helpOverlay.div[0].style.display = 'block';
+        this.helpOverlay.div.addClass('visible');
+        $('body').addClass('unscrollable');
     }
 
     return {
