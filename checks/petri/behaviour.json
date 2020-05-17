@@ -2,7 +2,7 @@
   "name": "Behavioral properties",
   "checks": {
     "bounded": {
-      "name": "Is connected",
+      "name": "Is bounded",
       "description": "Checks if the petri-net is bounded.",
       "params": []
     },
