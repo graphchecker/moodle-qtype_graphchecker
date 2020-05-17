@@ -133,7 +133,7 @@ define(['jquery'], function($) {
              params,
              t = this; // For use by embedded functions.
 
-        this.GUTTER = 14;  // Size of gutter at base of wrapper Node (pixels)
+        this.GUTTER = 40;  // Size of gutter at base of wrapper Node (pixels)
         this.MIN_WRAPPER_HEIGHT = 50;
 
         this.taId = textareaId;
@@ -160,6 +160,7 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
+            "background-color": "transparent"
         });
 
         // Record a reference to this wrapper in the text area's data attribute
@@ -167,7 +168,7 @@ define(['jquery'], function($) {
         // wrapper, e.g. the multilanguage.js module.
         this.textArea.data('current-ui-wrapper', this);
 
-        // Load the UI into the wrapper (aysnchronous).
+        // Load the UI into the wrapper (asynchronous).
         this.uiInstance = null;  // Defined by loadUi asynchronously
         this.loadUi(uiname, this.templateParams);  // Load the required UI element
 

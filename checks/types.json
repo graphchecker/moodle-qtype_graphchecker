@@ -4,7 +4,8 @@
         "ui_plugin": "graph",
         "ui_params": {
             "isdirected": false,
-            "isfsm": false
+            "isfsm": false,
+            "ispetri": false
         },
         "python_modules": ["igraph"]
     },
@@ -13,7 +14,8 @@
         "ui_plugin": "graph",
         "ui_params": {
             "isdirected": true,
-            "isfsm": false
+            "isfsm": false,
+            "ispetri": false
         },
         "python_modules": ["igraph"]
     },
@@ -22,7 +24,17 @@
         "ui_plugin": "graph",
         "ui_params": {
             "isdirected": true,
-            "isfsm": true
+            "isfsm": true,
+            "ispetri": false
+        }
+    },
+    "petri": {
+        "name": "Petri net",
+        "ui_plugin": "graph",
+        "ui_params": {
+            "isdirected": true,
+            "isfsm": false,
+            "ispetri": true
         }
     }
 }
