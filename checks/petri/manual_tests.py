@@ -23,6 +23,8 @@ def some_tests():
     print(res)
     res = functionality.workflow_net(net, net, net)
     print(res)
+    res = functionality.number_of_tokens(net, net, net, 2)
+    print(res)
 
 
 example_graph = {"_version": 1,
@@ -57,4 +59,4 @@ def strongly_test():
     pn_visualizer.save(gviz, "alpha.svg")
 
 
-strongly_test()
+some_tests()
