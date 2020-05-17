@@ -21,7 +21,7 @@
         {
           "param": "transition_sequence",
           "name": "list of transitions",
-          "type": "list",
+          "type": "list"
         }
       ]
     },
