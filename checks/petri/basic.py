@@ -1,5 +1,6 @@
 import networkx as nx
 from pm4py.objects.petri.networkx_graph import create_networkx_directed_graph, create_networkx_undirected_graph
+from pm4py.objects.petri.utils import get_strongly_connected_subnets
 
 
 def connected(student_answer, sample_answer, preload_answer):
@@ -16,9 +17,12 @@ def strongly_connected(student_answer, sample_answer, preload_answer):
     normal_graph, table = create_networkx_directed_graph(student_answer)
     components = nx.algorithms.components.strongly_connected_components(normal_graph)
 
-    #TODO: check out pm4py function
-
     num_components = len(list(components))
+
+    # TODO: only difference between the two methods is that pm4py does not count a single node as a component
+    # and networkx does. What do we want?
+    other_num = len(list(get_strongly_connected_subnets(student_answer)))
+    print(str(num_components) + " vs " + str(other_num))
     if num_components == 1:
         return {'correct': True}
     else:
@@ -41,10 +45,12 @@ def transition_degree_one(student_answer, sample_answer, preload_answer):
 
 def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a, label_b, label_c):
     # TODO try their implementation and see what it does
-    return {'correct': True}
+    return {'correct': False,
+            'feedback': 'Not implemented yet.'}
 
 
 def node_label_exists(student_answer, sample_answer, preload_answer, label):
+    # TODO: separate between place and transition?
     for place in student_answer.places:
         if place.name == label:
             return {'correct': True}
@@ -83,7 +89,7 @@ def arc_missing(student_answer, sample_answer, preload_answer, label_a, label_b)
 
 def arc_has_label(student_answer, sample_answer, preload_answer, label_a, label_b, label_arc):
     for arc in student_answer.arcs:
-        if arc.name != label_arc:
+        if arc.properties['name'] != label_arc:
             continue
         node_a = arc.source.name
         node_b = arc.target.name
