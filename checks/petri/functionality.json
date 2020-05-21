@@ -20,7 +20,7 @@
       "params": [
         {
           "param": "transition_sequence",
-          "name": "list of transitions",
+          "name": "list of transition labels in order of firing",
           "type": "list"
         }
       ]
@@ -31,7 +31,7 @@
       "params": [
         {
           "param": "transition_sequence",
-          "name": "list of transitions",
+          "name": "list of transition labels in order of firing",
           "type": "list"
         }
       ]

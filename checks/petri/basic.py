@@ -1,6 +1,5 @@
 import networkx as nx
 from pm4py.objects.petri.networkx_graph import create_networkx_directed_graph, create_networkx_undirected_graph
-from pm4py.objects.petri.utils import get_strongly_connected_subnets
 
 
 def connected(student_answer, sample_answer, preload_answer):
@@ -14,15 +13,19 @@ def connected(student_answer, sample_answer, preload_answer):
 
 
 def strongly_connected(student_answer, sample_answer, preload_answer):
+    # Use networkx to get scc
     normal_graph, table = create_networkx_directed_graph(student_answer)
     components = nx.algorithms.components.strongly_connected_components(normal_graph)
 
+    # count the number of scc
     num_components = len(list(components))
 
-    # TODO: only difference between the two methods is that pm4py does not count a single node as a component
-    # and networkx does. What do we want?
-    other_num = len(list(get_strongly_connected_subnets(student_answer)))
-    print(str(num_components) + " vs " + str(other_num))
+    """ Note: pm4py also has a method for strongly connected components.
+    Howerver, they do not count a single node as a component. We are currently not using their method.
+    from pm4py.objects.petri.utils import get_strongly_connected_subnets
+    pm4py_num = len(list(get_strongly_connected_subnets(student_answer)))
+    """
+
     if num_components == 1:
         return {'correct': True}
     else:
@@ -50,7 +53,6 @@ def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a
 
 
 def node_label_exists(student_answer, sample_answer, preload_answer, label):
-    # TODO: separate between place and transition?
     for place in student_answer.places:
         if place.name == label:
             return {'correct': True}

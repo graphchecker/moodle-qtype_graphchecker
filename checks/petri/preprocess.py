@@ -20,9 +20,14 @@ def preprocess(graph):
         label = vertex['label']
         if vertex['petri_type'] == "place":
             new_place = PetriNet.Place(label)
-            # new_place.properties['tokens'] = vertex['tokens']
             new_place.properties['position'] = vertex['position']
-            new_place.properties['tokens'] = 0
+
+            # new_place.properties['tokens'] = vertex['tokens']
+            # TEMPORARY: let the label of a place represent the number of tokens in there
+            try:
+                new_place.properties['tokens'] = int(vertex['label'])
+            except ValueError:
+                new_place.properties['tokens'] = 0
 
             net.places.add(new_place)
             ordered_vertices.append(new_place)

@@ -18,7 +18,7 @@
     },
     "node_on_shortest_path": {
       "name": "Node on shortest path",
-      "description": "Check if a node is on the shortest path from one node to another node. Check pm4py.",
+      "description": "Check if a node is on the shortest path from one node to another node.",
       "params": []
     },
     "node_label_exists": {
@@ -40,17 +40,17 @@
     },
     "arc_missing": {
       "name": "Arc missing",
-      "description": "Checks if an arc is missing.",
+      "description": "Checks if an arc is missing between two nodes.",
       "params": [
         {
           "param": "label_a",
-          "name": "first node label",
+          "name": "from node with label",
           "type": "string",
           "default": ""
         },
         {
           "param": "label_b",
-          "name": "second node label",
+          "name": "to node with label",
           "type": "string",
           "default": ""
         }
@@ -62,13 +62,13 @@
       "params": [
         {
           "param": "label_a",
-          "name": "first node label",
+          "name": "from node with label",
           "type": "string",
           "default": ""
         },
         {
           "param": "label_b",
-          "name": "second node label",
+          "name": "to node with label",
           "type": "string",
           "default": ""
         },
@@ -86,13 +86,13 @@
       "params": [
         {
           "param": "label_a",
-          "name": "first node label",
+          "name": "from node with label",
           "type": "string",
           "default": ""
         },
         {
           "param": "label_b",
-          "name": "second node label",
+          "name": "to node with label",
           "type": "string",
           "default": ""
         }

@@ -20,7 +20,12 @@ def infinite(student_answer, sample_answer, preload_answer):
 
 
 def deadlock_free(student_answer, sample_answer, preload_answer):
-    # TODO: issue: only works for workflow net
+    is_workflow = check_wfnet(student_answer)
+    if not is_workflow:
+        return {'correct': False,
+                'feedback': 'The petri net is not a workflow net. The deadlock free check only works'
+                            'for workflow nets.'}
+
     non_blocking = check_non_blocking(student_answer)
     if non_blocking:
         return {'correct': True}
@@ -30,6 +35,13 @@ def deadlock_free(student_answer, sample_answer, preload_answer):
 
 
 def live(student_answer, sample_answer, preload_answer):
-    # TODO: is checked together with other properties and only works for workflow nets
+    is_workflow = check_wfnet(student_answer)
+    if not is_workflow:
+        return {'correct': False,
+                'feedback': 'The petri net is not a workflow net. The live check only works'
+                            'for workflow nets.'}
+
+
+    # TODO: is checked together with other properties
     return {'correct': False,
             'feedback': 'Not implemented yet.'}

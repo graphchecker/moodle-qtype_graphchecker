@@ -25,7 +25,7 @@ def is_sequence_possible(net, transition_sequence):
     """ Returns [a,b,c] where
     a = True if sequence of transitions is possible
     b = the index of the transition that is not possible if a = False
-    c = True if a transition was not found in the network
+    c = label of transition if a transition was not found in the network else False
     """
     current_marking = get_marking(net)
 
@@ -39,7 +39,7 @@ def is_sequence_possible(net, transition_sequence):
     for transition_label in transition_sequence:
         # Transition not found
         if transition_label not in transition_dict.keys():
-            return [False, 0, True]
+            return [False, 0, transition_label]
 
         transition = transition_dict[transition_label]
         # Transition not enabled, sequence impossible
@@ -56,8 +56,8 @@ def possible_sequence(student_answer, sample_answer, preload_answer, transition_
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2]:
         return {'correct': False,
-                'feedback': 'A transition in the transition sequence was not present'
-                            'in the given petri net.'}
+                'feedback': 'Transition with label {0} in the transition sequence was not present'
+                            'in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': True}
     else:
@@ -71,11 +71,9 @@ def possible_sequence(student_answer, sample_answer, preload_answer, transition_
 def impossible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2]:
-        # TODO: return true if a transition was missing thus sequence is impossible?
-        # No: return false with an error message
         return {'correct': False,
-                'feedback': 'A transition in the transition sequence was not present'
-                            'in the given petri net.'}
+                'feedback': 'Transition with label {0} in the transition sequence was not present'
+                            'in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': False,
                 'feedback': 'The transition sequence {0} was possible. Expected'
@@ -85,6 +83,9 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
 
 
 def marking_given(student_answer, sample_answer, preload_answer, marking_list):
+    # TODO: needs to be updated in the future:
+    # Change this to a parameter where a graph is given and the student answer is compared to the given graph (by labels).
+
     for (label, n) in marking_list:
         for place in student_answer.places:
             if place.name == label:

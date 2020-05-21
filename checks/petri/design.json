@@ -70,36 +70,36 @@
       ]
     },
     "list_left_of": {
-      "name": "Nodes left of other nodes",
-      "description": " Check if for two given arrays A, B with labels, all the nodes matching the labels in A are left of all the nodes with labels in B. Fails if A, B have an overlapping label.",
+      "name": "Node groups horizontal separation.",
+      "description": "Check if for two given arrays A, B with labels, all the nodes matching the labels in A are left of all the nodes with labels in B. Fails if A, B have an overlapping label.",
       "params": [
         {
           "param": "labels_a",
-          "name": "labels_a",
+          "name": "labels of nodes in A",
           "type": "list",
           "default": ""
         },
         {
           "param": "labels_b",
-          "name": "labels_b",
+          "name": "labels of nodes in B",
           "type": "list",
           "default": ""
         }
       ]
     },
     "list_above_of": {
-      "name": "Nodes above of other nodes",
+      "name": "Node groups vertical separation.",
       "description": " Check if for two given arrays A, B with labels, all the nodes matching the labels in A are above all the nodes with labels in B. Fails if A, B have an overlapping label.",
       "params": [
         {
           "param": "labels_a",
-          "name": "labels_a",
+          "name": "labels of nodes in A",
           "type": "list",
           "default": ""
         },
         {
           "param": "labels_b",
-          "name": "labels_b",
+          "name": "labels of nodes in B",
           "type": "list",
           "default": ""
         }
