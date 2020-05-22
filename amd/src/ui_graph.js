@@ -81,10 +81,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return parent.mouseup(e);
         });
 
-        this.canvas.on('dblclick', function(e) {
-            return parent.dblclick(e);
-        });
-
         this.canvas.on('keydown', function(e) {
             return parent.keydown(e);
         });
@@ -121,56 +117,55 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let self = this;
         this.parent = parent;
         this.uiMode = uiMode;
+        this.helpOverlay = helpOverlay;
         this.div = $(document.createElement('div'));
         this.div.attr({
             id:         divId,
             class:      "graphchecker_toolbar",
             tabindex:   0
         });
-
+        
         // A list for the buttons in this toolbar
         this.buttons = [];
         $(document).ready(function() {
-            // Create the buttons, and add them to a list.
-            // Note that all buttons should have unique titles
-
-            // Create the help button
-            let helpButton = new elements.HelpButton(self, elements.ButtonType.HELP, 0, 0, 35, 25, 'fa-question',
-                "Help menu", helpOverlay);
-            helpButton.create();
-            self.buttons.push(helpButton);
+            // Create the 3 parts of the toolbar: left, middle and right
+            self.toolbarLeftPart = self.createToolbarPartObject(self.div[0].id,
+                self.div[0].style.height, 'left');
+            self.toolbarMiddlePart = self.createToolbarPartObject(self.div[0].id,
+                self.div[0].style.height, 'middle');
+            self.toolbarRightPart = self.createToolbarPartObject(self.div[0].id,
+                self.div[0].style.height, 'right');
 
             // Create the draw button
-            let drawButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 35, 25, 'fa-pencil',
-                "Draw mode", elements.ModeType.DRAW);
+            let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
+                0, 0, 35, 25, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
             drawButton.create();
             self.buttons.push(drawButton);
 
             // Create the edit button
-            let editButton = new elements.ModeButton(self, elements.ButtonType.MODE, 0, 0, 35, 25, 'fa-mouse-pointer',
-                "Edit mode", elements.ModeType.EDIT);
+            let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
+                0, 0, 35, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
             editButton.create();
             self.buttons.push(editButton);
 
+            // Create the help button
+            let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
+                0, 0, 35, 25, 'fa-question', "Help menu");
+            helpButton.create();
+            self.buttons.push(helpButton);
+
             // Enable one of the mode buttons at the start
             for (let i = 0; i < self.buttons.length; i++) {
-                if (self.buttons[i].buttonType === elements.ButtonType.MODE && self.buttons[i].buttonModeType ===
+                if (self.buttons[i] instanceof elements.ModeButton && self.buttons[i].buttonModeType ===
                     self.uiMode) {
                     self.buttons[i].setSelected();
                 }
             }
 
             // Create the event listener for the buttons
-            // On a click of the button, call the onClick() method on the respective button
-            $('.toolbar_button').click(function (event) {
-                event.preventDefault();
+            self.setButtonsEventListener(self.buttons);
 
-                for (let i = 0; i < self.buttons.length; i++) {
-                    if (event.target.id === self.buttons[i].getId()) {
-                        self.buttons[i].onClick(event);
-                    }
-                }
-            });
+            self.resize(w, h);
         });
 
         this.onModeButtonPressed = function(button) {
@@ -179,9 +174,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Display the other mode button(s) accordingly
             for (let i = 0; i < this.buttons.length; i++) {
-                if (this.buttons[i].buttonType === elements.ButtonType.MODE && this.buttons[i] !== button) {
+                if (this.buttons[i] instanceof elements.ModeButton && this.buttons[i] !== button) {
                     this.buttons[i].setDeselected();
                 }
+            }
+
+            // Remove the FSM options from display if the mode is switched to draw mode
+            if (button.buttonModeType === elements.ModeType.DRAW) {
+                this.removeFSMNodeOptions();
             }
         };
 
@@ -189,18 +189,95 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Resize to given dimensions.
             this.div.css({'width': w});
             this.div.css({'height': h});
+
+            // Update the width of the middle part of the toolbar
+            if (this.toolbarMiddlePart !== undefined) {
+                let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
+                let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
+                let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
+                let middleWidth = w - leftWidth - rightWidth - middlePadding;
+                $(this.toolbarMiddlePart).width(middleWidth);
+            }
         };
 
         this.resize(w, h);
     }
 
+    GraphToolbar.prototype.displayHelpOverlay = function() {
+        // Display a help overlay on the entire graph UI
+        this.helpOverlay.div[0].style.display = 'block';
+        this.helpOverlay.div.addClass('visible');
+        $('body').addClass('unscrollable');
+    };
+
+    GraphToolbar.prototype.createToolbarPartObject = function(parentId, parentHeight, side) {
+        // A function to create a basic div for a part of the toolbar:
+        // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
+        let $part = $('<div/>')
+            .attr({
+                'id':       'toolbar_part_' + side,
+                'class':    'toolbar_part',
+                'style':    'height: ' + parseFloat(parentHeight) + 'px;',
+            });
+        $('#' + parentId).append($part);
+        return $part;
+    };
+
+    GraphToolbar.prototype.setButtonsEventListener = function(buttons) {
+        // On a click of the button, call the onClick() method on the respective button
+        $('.toolbar_button').click(function (event) {
+            event.preventDefault();
+
+            for (let i = 0; i < buttons.length; i++) {
+                if (event.target.id === buttons[i].getId()) {
+                    buttons[i].onClick(event);
+                }
+            }
+        });
+    }
+
+    GraphToolbar.prototype.setInitialFSMVertex = function() {
+        this.parent.setInitialFSMVertex(this.parent.selectedObject);
+    };
+
+    GraphToolbar.prototype.addFSMNodeOptions = function() {
+        // Check if there is not FSM initial button yet
+        for (let i = 0; i < this.buttons.length; i++) {
+            if (this.buttons[i] instanceof elements.FSMInitialButton) {
+                return;
+            }
+        }
+
+        // Create the FSM initial button
+        let fsmInitialButton = new elements.FSMInitialButton(this, this.toolbarMiddlePart,
+            0, 0, 35, 25, 'fa-flag-o', "Set initial vertex");
+        fsmInitialButton.create();
+        this.buttons.push(fsmInitialButton);
+
+        // Reset the event listener of the toolbar
+        this.setButtonsEventListener(this.buttons);
+    };
+
+    GraphToolbar.prototype.removeFSMNodeOptions = function() {
+        // Remove the FSM initial button if it is present
+        for (let i = 0; i < this.buttons.length; i++) {
+            if (this.buttons[i] instanceof elements.FSMInitialButton) {
+                // Remove from the DOM
+                $("#" + this.buttons[i].id).remove();
+
+                // Remove from the list
+                this.buttons.splice(i--, 1);
+            }
+        }
+    };
+
     /***********************************************************************
      *
-     * Define a class HelpArea for the help area (i.e. a help 'box')
+     * Define a class HelpOverlay for the help overlay (i.e. a help 'box')
      *
      ***********************************************************************/
 
-    function HelpOverlay(parent, divId, dialogScale, w, h, bgValue, bgOpacity, boxColor) {
+    function HelpOverlay(parent, divId) {
         // Constructor, of the Help overlay
 
         let self = this;
@@ -254,7 +331,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.HIT_TARGET_PADDING = 6;    // Pixels.
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.TOOLBAR_HEIGHT = 40;       // px. The height of the toolbar above the graphCanvas
+        this.TOOLBAR_HEIGHT = 35;       // px. The height of the toolbar above the graphCanvas
+        this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
         this.uiMode = elements.ModeType.DRAW; // Set the UI mode type
 
@@ -396,6 +474,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.mousedown = function(e) {
+        //TODO: test all functionality out with lock nodes, I assume these are nodes that cannot be moved/edited?
         var mouse = util.crossBrowserRelativeMousePos(e);
 
         if (this.readOnly) {
@@ -420,6 +499,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.nodes.push(newNode);
                     this.resetCaret();
                     this.draw();
+
+                    // Set as initial node if it is the first node, and if the type is FSM
+                    if (this.nodes.length === 1 && this.isFsm()) {
+                        this.setInitialFSMVertex(newNode);
+                    }
                 }
                 /* //TODO: FSMs
                 } else if (e.shiftKey && this.isFsm()) {
@@ -429,6 +513,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             } else if (this.uiMode === elements.ModeType.EDIT) {
                 this.selectedObject = this.clickedObject;
+
+                // If the type is FSM, display the according buttons in the toolbar, depending on the sitation
+                if (this.isFsm()) {
+                    if (this.clickedObject instanceof elements.Node) {
+                        this.toolbar.addFSMNodeOptions();
+                    } else {
+                        this.toolbar.removeFSMNodeOptions();
+                    }
+                }
 
                 if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
                     && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)){
@@ -496,11 +589,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.dblclick = function(e) {
-        // The double click function is not needed anymore according to the documentation
-        // But keeping it here in case it is needed in the future
-    };
-
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
@@ -519,7 +607,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        // Depending on the mode, perform different tasks TODO: disable selection after link making
+        // Depending on the mode, perform different tasks
         if (this.uiMode === elements.ModeType.DRAW) {
             if (this.clickedObject instanceof elements.Node) {
                 let targetNode = this.getMouseOverObject(mouse.x, mouse.y);
@@ -620,7 +708,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getMouseOverObject = function(x, y) {
-        var i;
+        let i;
 
         for (i = 0; i < this.nodes.length; i++) {
             if (this.nodes[i].containsPoint(x, y)) {
@@ -633,6 +721,91 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         }
         return null;
+    };
+
+    Graph.prototype.setInitialFSMVertex = function(vertex) {
+        // Set all vertices to not be an initial vertex
+        for (let i = 0; i < this.nodes.length; i++) {
+            this.nodes[i].isInitial = false;
+        }
+
+        // Remove all initial links
+        for (let i = 0; i < this.links.length; i++) {
+            if (this.links[i] instanceof elements.StartLink) {
+                this.links.splice(i--, 1);
+            }
+        }
+
+        // Set the selected vertex as the initial vertex, and draw it
+        if (this.isFsm() && vertex instanceof elements.Node) {
+            vertex.isInitial = true;
+
+            // Get the angles of all incident (i.e. incoming and outgoing) edges of this vertex
+            let angles = util.getAnglesOfIncidentLinks(this.links, vertex);
+
+            let topLeft = (3.0/4.0 * Math.PI); // The top-left of the vertex's circle in radians
+            let nodeLinkDrawRadius = this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
+            // edges in the last two cases
+
+            // Execute different cases, to fill the startLinkPos variable's x and y values
+            let startLinkPos = {};
+            if (angles.length === 0) {
+                // Set the start link position to the top-left of the vertex
+                startLinkPos.x = vertex.x - (this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH);
+                startLinkPos.y = vertex.y - (this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH);
+            } else if (angles.length === 1) {
+                // Divide the circle of the vertex in an arbitrary number of equal parts (e.g. 8).
+                // For each of these parts' borders (except for the location of the incident edge itself) check which
+                // border's angle (w.r.t. the selected vertex) is closest to the top-left corner.
+                // The start link will then be created based on this border's angle
+
+                let oppositeAngle = (angles[0] + Math.PI) % (2*Math.PI); // Angle opposite of incident edge's angle
+
+                // Get all possible (i.e. candidate) angles
+                angles = util.getAnglesStartLinkFSMOneIncident(oppositeAngle, 2*Math.PI, topLeft,8);
+
+                // Sort the possible angles, and use the one closest to the top-left
+                angles = angles.sort(function (a, b) {
+                    return Math.abs(topLeft - a) - Math.abs(topLeft - b);
+                });
+
+                startLinkPos.x = vertex.x + (nodeLinkDrawRadius * Math.cos(angles[0]));
+                startLinkPos.y = vertex.y - (nodeLinkDrawRadius * Math.sin(angles[0]));
+            } else {
+                // Sort the incident angles
+                angles = angles.sort(function (a, b) { return a - b; });
+
+                // Create all candidate angles, based on a division (as in the case of angles.length === 1), and filter
+                // out angles which are too close to existing incoming links, to not obscure them
+                let candidateAngles = util.getAnglesStartLinkFSMMultipleIncident(angles, topLeft, 8);
+                let candidateAnglesTemp = candidateAngles;
+                candidateAngles = util.filterOutCloseAngles(candidateAngles, angles, 0.05);
+
+                if (candidateAngles.length > 0) {
+                    // If there are angles which are far enough away, use the one which is closest to the top-left
+                    // to create the start link
+                    candidateAngles.sort(function (a, b) {
+                        return Math.abs(topLeft - a) - Math.abs(topLeft - b);
+                    });
+
+                    startLinkPos.x = vertex.x + (nodeLinkDrawRadius * Math.cos(candidateAngles[0]));
+                    startLinkPos.y = vertex.y - (nodeLinkDrawRadius * Math.sin(candidateAngles[0]));
+                } else {
+                    // If there are no angles which are far enough away (i.e. the vertex has too many incident edges),
+                    // use the one most far away (i.e. with the most space around itself)
+                    //TODO: not tested yet; this is a rare case
+                    let candidateAngle = util.getAngleMaximumMinimumProximity(candidateAnglesTemp, angles);
+
+                    startLinkPos.x = vertex.x + (nodeLinkDrawRadius * Math.cos(candidateAngle));
+                    startLinkPos.y = vertex.y - (nodeLinkDrawRadius * Math.sin(candidateAngle));
+                }
+            }
+            //TODO: clicking in draw mode AFTER having set an initial link doesn't work smoothly (needs 2 clicks)
+
+            this.currentLink = new elements.StartLink(this, vertex, startLinkPos);
+            this.addLink(this.currentLink);
+            this.currentLink = null;
+        }
     };
 
     Graph.prototype.snapNode = function(node) {
@@ -738,7 +911,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;  // Don't save if we have an empty textbox and no graphic content.
         }
 
-        for(i = 0; i < this.nodes.length; i++) {
+        for(i = 0; i < this.nodes.length; i++) { //TODO: save isInitial for FSMs
             var node = this.nodes[i];
             let vertex = {
                 'label': node.text,

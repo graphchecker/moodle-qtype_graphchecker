@@ -60,13 +60,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         DRAW: 'draw'                // Indicates that the UI is in draw mode
     });
 
-    // An enum for defining the mode type of the graph UI
-    const ButtonType = Object.freeze({
-        DEFAULT: 'default',         // Indicates that the button is a default button
-        MODE: 'mode',               // Indicates that the button is a mode button
-        HELP: 'help'                // Indicates that the button is a help button
-    });
-
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -79,6 +72,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = y;
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
+        this.isInitial = false;
         this.isAcceptState = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
         this.petriNodeType = PetriNodeType.NONE;
@@ -341,6 +335,38 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         return false;
     };
 
+    Link.prototype.calculateAngle = function(node) {
+        // Calculates the angle in radians of the point of the link touching the selected node's circle with
+        // the selected node itself
+        let linkPoint = {};
+        let linkInfo = this.getEndPointsAndCircle();
+
+        if (this.nodeA === node) {
+            // If the link originates in the node
+            linkPoint.x = linkInfo.startX;
+            linkPoint.y = linkInfo.startY;
+        } else if (this.nodeB === node) {
+            // If the link ends in the node
+            linkPoint.x = linkInfo.endX;
+            linkPoint.y = linkInfo.endY;
+        } else {
+            // The link is not connected to the input node
+            return;
+        }
+
+        let nodeToLinkVector = { //TODO: maybe noramlize in length? mb it's not needed
+            x: node.x - linkPoint.x,
+            y: node.y - linkPoint.y
+        };
+        let rightVector = {
+            x: 1,
+            y: 0
+        };
+
+        return (Math.atan2(rightVector.y, rightVector.x) - Math.atan2(nodeToLinkVector.y, nodeToLinkVector.x)
+            + Math.PI) % (2*Math.PI);
+    };
+
     /***********************************************************************
      *
      * Define a class SelfLink that represents a connection from a node back
@@ -522,9 +548,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(parent, buttonType, topX, topY, w, h, iconClass, title) {
+    function Button(toolbar, parent, topX, topY, w, h, iconClass, title) {
+        this.toolbar = toolbar;
         this.parent = parent;
-        this.buttonType = buttonType;
         this.topX = topX; //In pixels
         this.topY = topY; //In px.
         this.width = w; //In px.
@@ -542,23 +568,26 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Button.prototype.create = function () {
         // Create the button, and add an unclickable icon
         this.id = 'button_' + this.title.split(' ').join('_');
+
+        let toolbarContainerHeight = $(this.parent[0]).height();
         let $button = $('<button/>')
             .attr({
                 "id":       this.id,
-                "class":    'toolbar_button' + ' ' + this.buttonType,
+                "class":    'toolbar_button',
                 "type":     "button",
                 "title":    this.title,
-                "style":    "width: " + this.width + "px; height: " + this.height + "px",
+                "style":    "width: " + this.width + "px; height: " + this.height + "px; margin-top: " +
+                    (toolbarContainerHeight - this.height)/2 + "px;",
             })
             .append($('<i/>')
             .addClass('icon fa ' + this.icon).attr({
                     "style":    "pointer-events: none",
                 }));
-        let divId = '#' + this.parent.div[0].getAttribute('id');
-        $(divId).append($button);
+        let parentId = '#' + $(this.parent[0]).attr('id');
+        $(parentId).append($button);
     };
 
-    Button.prototype.onClick = function(event) {
+    Button.prototype.onClick = function() {
     };
 
     /***********************************************************************
@@ -568,10 +597,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function ModeButton(parent, buttonType, topX, topY, w, h, iconClass, title, buttonModeType) {
-        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title);
+    function ModeButton(toolbar, parent, topX, topY, w, h, iconClass, title, buttonModeType) {
+        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
         this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
-    };
+    }
 
     ModeButton.prototype = Object.create(Button.prototype);
     ModeButton.prototype.constructor = ModeButton;
@@ -579,12 +608,16 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     ModeButton.prototype.create = function() {
         Button.prototype.create.call(this);
 
+        // Add 'mode' to the class
+        let jqueryId = $('#' + this.id);
+        jqueryId.addClass('mode');
+
         // Add the not_clicked class name by default, based on the button type
-        $('#' + this.id).addClass('not_clicked');
+        jqueryId.addClass('not_clicked');
     };
 
-    ModeButton.prototype.onClick = function(event) {
-        Button.prototype.onClick(event);
+    ModeButton.prototype.onClick = function() {
+        Button.prototype.onClick();
         this.setSelected();
     };
 
@@ -594,11 +627,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         jqueryId.removeClass('not_clicked');
 
         // Set the mode of the UI
-        this.parent.onModeButtonPressed(this);
+        this.toolbar.onModeButtonPressed(this);
     };
 
     ModeButton.prototype.setDeselected = function() {
-        let jqueryId = $('#' + this.id)
+        let jqueryId = $('#' + this.id);
         jqueryId.removeClass('clicked');
         jqueryId.addClass('not_clicked');
     };
@@ -610,33 +643,50 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function HelpButton(parent, buttonType, topX, topY, w, h, iconClass, title, helpOverlay) {
-        Button.call(this, parent, buttonType, topX, topY, w, h, iconClass, title);
-        this.helpOverlay = helpOverlay;
+    function HelpButton(toolbar, parent, topX, topY, w, h, iconClass, title) {
+        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
     }
 
     HelpButton.prototype = Object.create(Button.prototype);
     HelpButton.prototype.constructor = HelpButton;
 
-    HelpButton.prototype.onClick = function(event) {
-        Button.prototype.onClick(event);
+    HelpButton.prototype.onClick = function() {
+        Button.prototype.onClick();
 
-        // Display an overlay on the entire graph UI
-        this.helpOverlay.div[0].style.display = 'block';
-        this.helpOverlay.div.addClass('visible');
-        $('body').addClass('unscrollable');
+        this.toolbar.displayHelpOverlay();
+    };
+
+    /***********************************************************************
+     *
+     * Define a class FSMInitialButton for the button to set a vertex to
+     * the initial vertex, for FSM graphs. This button is based on the
+     * general Button class
+     *
+     ***********************************************************************/
+
+    function FSMInitialButton(toolbar, parent, topX, topY, w, h, iconClass, title) {
+        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
+    }
+
+    FSMInitialButton.prototype = Object.create(Button.prototype);
+    FSMInitialButton.prototype.constructor = FSMInitialButton;
+
+    FSMInitialButton.prototype.onClick = function() {
+        Button.prototype.onClick();
+
+        this.toolbar.setInitialFSMVertex();
     };
 
     return {
         PetriNodeType: PetriNodeType,
         ModeType : ModeType,
-        ButtonType: ButtonType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
         ModeButton: ModeButton,
+        FSMInitialButton: FSMInitialButton,
         HelpButton: HelpButton,
     };
 });

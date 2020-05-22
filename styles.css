@@ -512,3 +512,18 @@ li.bulktest.graphchecker.context.quiz {
     padding-left: 1.5em;
     list-style-type: none;
 }
+
+/* Styling for the subparts of the graph UI toolbar */
+div.toolbar_part {
+    display: inline-block;
+    vertical-align:top;
+    padding: 0 3px;
+}
+
+div#toolbar_part_left {
+    border-right: 1px solid DarkGray;
+}
+
+div#toolbar_part_right {
+    border-left: 1px solid DarkGray;
+}
