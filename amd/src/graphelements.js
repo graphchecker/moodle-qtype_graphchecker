@@ -60,6 +60,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         DRAW: 'draw'                // Indicates that the UI is in draw mode
     });
 
+    // An enum for defining the type of the checkboxes graph UI
+    const CheckboxType = Object.freeze({
+        FSM_INITIAL: 'fsm_initial',         // Indicates that the checkbox controls the initial fsm state
+        FSM_FINAL: 'fsm_final'             // Indicates that the checkbox controls the final fsm state
+    });
+
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -73,7 +79,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
         this.isInitial = false;
-        this.isAcceptState = false;
+        this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
         this.petriNodeType = PetriNodeType.NONE;
         this.text = '';
@@ -112,7 +118,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent.drawText(this.text, this.x, this.y, null, this);
 
         // Draw a double circle for an accept state.
-        if(this.isAcceptState) {
+        if(this.isFinal) {
             c.beginPath();
             c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
             c.stroke();
@@ -149,6 +155,18 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             }
         }
         return neighbours;
+    };
+
+    // A function returning whether or not the node has any incoming start links
+    Node.prototype.hasStartLink = function(links) {
+        let hasStartLink = false;
+        for (let i = 0; i < links.length; i++) {
+            if (links[i] instanceof StartLink && links[i].node === this) {
+                hasStartLink = true;
+                break;
+            }
+        }
+        return hasStartLink;
     };
 
     // Method of Node that traverses a graph defined by a given set of links
@@ -548,11 +566,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(toolbar, parent, topX, topY, w, h, iconClass, title) {
+    function Button(toolbar, parent, w, h, iconClass, title) {
         this.toolbar = toolbar;
         this.parent = parent;
-        this.topX = topX; //In pixels
-        this.topY = topY; //In px.
         this.width = w; //In px.
         this.height = h; //In px.
         this.icon = iconClass;
@@ -597,8 +613,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function ModeButton(toolbar, parent, topX, topY, w, h, iconClass, title, buttonModeType) {
-        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
+    function ModeButton(toolbar, parent, w, h, iconClass, title, buttonModeType) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title);
         this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
     }
 
@@ -643,8 +659,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function HelpButton(toolbar, parent, topX, topY, w, h, iconClass, title) {
-        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
+    function HelpButton(toolbar, parent, w, h, iconClass, title) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title);
     }
 
     HelpButton.prototype = Object.create(Button.prototype);
@@ -655,6 +671,50 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         this.toolbar.displayHelpOverlay();
     };
+
+    /***********************************************************************
+     *
+     * Define a class Checkbox which can be used in the graph toolbar
+     *
+     ***********************************************************************/
+
+    function Checkbox(toolbar, parent, w, h, type, text, eventFunction) {
+        this.toolbar = toolbar;
+        this.parent = parent;
+        this.w = w;
+        this.h = h;
+        this.text = text;
+        this.type = type;
+        this.eventFunction = eventFunction;
+    }
+
+    // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
+    Checkbox.prototype.create = function () {
+        this.id = 'checkbox_' + this.text.split(' ').join('_');
+        let TOP_DISPLACEMENT = -3; // TODO: Don't know why the label is 3px from the top without any styling, needs fix
+        let HALF_CHECKBOX_HEIGHT = 8; // TODO: needs fix as well
+        let $checkbox = $('<label/>')
+            .attr({
+                'class':    'checkbox_label',
+                'style':    'top: ' +
+                    (TOP_DISPLACEMENT + (this.toolbar.parent.TOOLBAR_HEIGHT / 2.0) - HALF_CHECKBOX_HEIGHT) + 'px;',
+            }).append($('<input/>')
+            .attr({
+                'id':       this.id,
+                'class':    'toolbar_checkbox',
+                'type':     'checkbox',
+            })).append(this.text);
+        let parentId = '#' + $(this.parent[0]).attr('id');
+        $(parentId).append($checkbox);
+
+        // Add the event listener
+        $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
+        this.object = $checkbox;
+    };
+
+    Checkbox.prototype.handleInteraction = function(event) {
+        this.eventFunction(event);
+    }
 
     /***********************************************************************
      *
@@ -679,14 +739,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     return {
         PetriNodeType: PetriNodeType,
-        ModeType : ModeType,
+        ModeType: ModeType,
+        CheckboxType: CheckboxType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
         ModeButton: ModeButton,
-        FSMInitialButton: FSMInitialButton,
         HelpButton: HelpButton,
+        Checkbox: Checkbox,
     };
 });

@@ -516,7 +516,7 @@ li.bulktest.graphchecker.context.quiz {
 /* Styling for the subparts of the graph UI toolbar */
 div.toolbar_part {
     display: inline-block;
-    vertical-align:top;
+    vertical-align: top;
     padding: 0 3px;
 }
 
@@ -526,4 +526,9 @@ div#toolbar_part_left {
 
 div#toolbar_part_right {
     border-left: 1px solid DarkGray;
+}
+
+label.checkbox_label {
+    position: relative;
+    font-size: 14px;
 }

@@ -125,8 +125,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             tabindex:   0
         });
         
-        // A list for the buttons in this toolbar
+        // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
         this.buttons = [];
+        this.checkboxes = [];
+
         $(document).ready(function() {
             // Create the 3 parts of the toolbar: left, middle and right
             self.toolbarLeftPart = self.createToolbarPartObject(self.div[0].id,
@@ -138,19 +140,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Create the draw button
             let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                0, 0, 35, 25, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
+                35, 25, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
             drawButton.create();
             self.buttons.push(drawButton);
 
             // Create the edit button
             let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                0, 0, 35, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
+                35, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
             editButton.create();
             self.buttons.push(editButton);
 
             // Create the help button
             let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
-                0, 0, 35, 25, 'fa-question', "Help menu");
+                35, 25, 'fa-question', "Help menu");
             helpButton.create();
             self.buttons.push(helpButton);
 
@@ -236,38 +238,73 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         });
     }
 
-    GraphToolbar.prototype.setInitialFSMVertex = function() {
-        this.parent.setInitialFSMVertex(this.parent.selectedObject);
-    };
-
-    GraphToolbar.prototype.addFSMNodeOptions = function() {
-        // Check if there is not FSM initial button yet
-        for (let i = 0; i < this.buttons.length; i++) {
-            if (this.buttons[i] instanceof elements.FSMInitialButton) {
-                return;
+    GraphToolbar.prototype.addFSMNodeOptions = function(vertex) {
+        // If there are already FSM checkboxes present in the toolbar, set the states accordingly and return
+        if (this.checkboxes.length > 0) {
+            for (let i = 0; i < this.checkboxes.length; i++) {
+                if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL) {
+                    // Check whether the vertex has any start links and set the checkbox accordingly
+                    let hasStartLink = vertex.hasStartLink(this.parent.links);
+                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked = hasStartLink;
+                }
+                if (this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
+                    // Check whether the vertex has any start links and set the checkbox accordingly
+                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
+                }
             }
+
+            return;
         }
 
-        // Create the FSM initial button
-        let fsmInitialButton = new elements.FSMInitialButton(this, this.toolbarMiddlePart,
-            0, 0, 35, 25, 'fa-flag-o', "Set initial vertex");
-        fsmInitialButton.create();
-        this.buttons.push(fsmInitialButton);
+        // Create the FSM initial checkbox
+        let fsmInitialCheckbox = new elements.Checkbox(
+            this, this.toolbarMiddlePart, 10, 10, elements.CheckboxType.FSM_INITIAL, 'Initial',
+            this.onClickFSMInitialCheckbox);
+        fsmInitialCheckbox.create();
 
-        // Reset the event listener of the toolbar
-        this.setButtonsEventListener(this.buttons);
+        // Set the initial checkbox value accordingly (in case it was pressed before) and save it
+        let hasStartLink = vertex.hasStartLink(this.parent.links);
+        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked = hasStartLink;
+        this.checkboxes.push(fsmInitialCheckbox);
+
+        // Create the FSM final checkbox
+        let fsmFinalCheckbox = new elements.Checkbox(
+            this, this.toolbarMiddlePart, 10, 10, elements.CheckboxType.FSM_FINAL, 'Final',
+            this.onClickFSMFinalCheckbox);
+        fsmFinalCheckbox.create();
+
+        // Set the final checkbox value accordingly (in case it was pressed before) and save it
+        $($(fsmFinalCheckbox).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
+        this.checkboxes.push(fsmFinalCheckbox);
     };
 
     GraphToolbar.prototype.removeFSMNodeOptions = function() {
-        // Remove the FSM initial button if it is present
-        for (let i = 0; i < this.buttons.length; i++) {
-            if (this.buttons[i] instanceof elements.FSMInitialButton) {
-                // Remove from the DOM
-                $("#" + this.buttons[i].id).remove();
+        // Remove the FSM initial checkbox if it is present
+        for (let i = 0; i < this.checkboxes.length; i++) {
+            if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL ||
+                this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
+                // Remove the label and the according checkbox from the DOM
+                $("#" + this.checkboxes[i].id).parent().remove();
 
                 // Remove from the list
-                this.buttons.splice(i--, 1);
+                this.checkboxes.splice(i--, 1);
             }
+        }
+    };
+
+    GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
+        if (event.target.checked) {
+            this.toolbar.parent.setInitialFSMVertex(this.toolbar.parent.selectedObject);
+        } else {
+            //TODO: Fix for cases where there must be an initial vertex
+            this.toolbar.parent.removeInitialFSMVertex(this.toolbar.parent.selectedObject);
+        }
+    };
+
+    GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
+        if (this.toolbar.parent.selectedObject instanceof elements.Node && this.toolbar.parent.isFsm()) {
+            this.toolbar.parent.selectedObject.isFinal = !this.toolbar.parent.selectedObject.isFinal;
+            this.toolbar.parent.draw();
         }
     };
 
@@ -505,11 +542,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         this.setInitialFSMVertex(newNode);
                     }
                 }
-                /* //TODO: FSMs
-                } else if (e.shiftKey && this.isFsm()) {
-                    this.currentLink = new elements.TemporaryLink(this, mouse, mouse);
-                }
-                */
 
             } else if (this.uiMode === elements.ModeType.EDIT) {
                 this.selectedObject = this.clickedObject;
@@ -517,7 +549,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // If the type is FSM, display the according buttons in the toolbar, depending on the sitation
                 if (this.isFsm()) {
                     if (this.clickedObject instanceof elements.Node) {
-                        this.toolbar.addFSMNodeOptions();
+                        this.toolbar.addFSMNodeOptions(this.clickedObject);
                     } else {
                         this.toolbar.removeFSMNodeOptions();
                     }
@@ -805,8 +837,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.currentLink = new elements.StartLink(this, vertex, startLinkPos);
             this.addLink(this.currentLink);
             this.currentLink = null;
+            this.toolbar.parent.draw();
         }
     };
+
+    Graph.prototype.removeInitialFSMVertex = function(vertex) {
+        // Remove all start links incoming to this vertex
+        for (let i = 0; i < this.links.length; i++) {
+            if (this.links[i] instanceof elements.StartLink && this.links[i].node === vertex) {
+                this.links.splice(i--, 1);
+            }
+        }
+    }
 
     Graph.prototype.snapNode = function(node) {
         for(var i = 0; i < this.nodes.length; i++) {
@@ -859,18 +901,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     throw "invalid version";
                 }
 
-                for(i = 0; i < input.vertices.length; i++) {
+                for (i = 0; i < input.vertices.length; i++) {
                     var inputNode = input.vertices[i];
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
                     node.text = inputNode['label'];
-                    node.isAcceptState = inputNode['accepting'];
+                    if (this.isFsm()) {
+                        node.isInitial = inputNode['initial'];
+                        node.isFinal = inputNode['final'];
+                    }
                     if (this.isPetri()) {
                         node.petriNodeType = inputNode['petri_type'];
                     }
                     this.nodes.push(node);
                 }
 
-                for(i = 0; i < input.edges.length; i++) {
+                for (i = 0; i < input.edges.length; i++) {
                     var inputLink = input.edges[i];
                     var link = null;
                     if(inputLink['from'] === inputLink['to']) {
@@ -911,13 +956,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;  // Don't save if we have an empty textbox and no graphic content.
         }
 
-        for(i = 0; i < this.nodes.length; i++) { //TODO: save isInitial for FSMs
+        for(i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];
             let vertex = {
                 'label': node.text,
                 'position': [node.x, node.y],
-                'accepting': node.isAcceptState
             };
+            if (this.isFsm()) {
+                vertex['initial'] = node.isInitial;
+                vertex['final'] = node.isFinal;
+            }
             if (this.isPetri()) {
                 vertex['petri_type'] = node.petriNodeType;
             }
