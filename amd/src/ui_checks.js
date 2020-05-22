@@ -249,6 +249,12 @@ define(['jquery'], function($) {
                         .val(value)
                         .appendTo($argumentRow);
                     break;
+                case 'string_list':
+                    $field = $('<textarea/>')
+                        .addClass('argument-value')
+                        .val(value)
+                        .appendTo($argumentRow);
+                    break;
                 case 'choice':
                     $field = $('<select/>')
                         .addClass('argument-value')
