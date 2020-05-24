@@ -20,10 +20,17 @@ def infinite(student_answer, sample_answer, preload_answer):
 
 
 def deadlock_free(student_answer, sample_answer, preload_answer):
+    # TODO: does not seem to work. Simple example of 2 places and 1 transition fails.
     is_workflow = check_wfnet(student_answer)
-    if not is_workflow:
+
+    # These are used by them, do we want that?
+    is_source_sink = check_source_sink_place_conditions(student_answer)
+    relaxed_soundness = check_relaxed_soundness_of_wfnet(student_answer)
+    is_stable = check_stability_wfnet(student_answer)
+
+    if not is_workflow or not is_source_sink or not relaxed_soundness or not is_stable:
         return {'correct': False,
-                'feedback': 'The petri net is not a workflow net. The deadlock free check only works'
+                'feedback': 'The petri net is not a valid workflow net. The deadlock free check only works'
                             'for workflow nets.'}
 
     non_blocking = check_non_blocking(student_answer)

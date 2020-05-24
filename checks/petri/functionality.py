@@ -1,6 +1,5 @@
 from pm4py.objects.petri import check_soundness, utils, semantics
 from pm4py.objects.petri.petrinet import PetriNet, Marking
-from pm4py.visualization.petrinet import visualizer
 
 
 # Gets the initial marking encoded in the PetriNet properties dict
@@ -12,6 +11,8 @@ def get_marking(net):
 
 
 def number_of_tokens(student_answer, sample_answer, preload_answer, num_tokens):
+    # TODO: remove if they pass ints
+    num_tokens = int(num_tokens)
     for place in student_answer.places:
         if place.properties['tokens'] == num_tokens:
             return {'correct': True}

@@ -1,5 +1,6 @@
 import networkx as nx
 from pm4py.objects.petri.networkx_graph import create_networkx_directed_graph, create_networkx_undirected_graph
+from pm4py.objects.petri.utils import *
 
 
 def connected(student_answer, sample_answer, preload_answer):
@@ -47,7 +48,14 @@ def transition_degree_one(student_answer, sample_answer, preload_answer):
 
 
 def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a, label_b, label_c):
-    # TODO try their implementation and see what it does
+    # Returns a dictionary:
+    # For each PLACE A we get a dictionary holding:
+    # PLACE B mapping to a list of transitions needed to get from A to B
+    places_shortest_path = get_places_shortest_path_by_hidden(student_answer, 100)
+    print(places_shortest_path)
+
+    # TODO: do we want to use their stuff? Do we want our own as well?
+
     return {'correct': False,
             'feedback': 'Not implemented yet.'}
 
