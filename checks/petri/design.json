@@ -43,7 +43,15 @@
     "crossing_arcs": {
       "name": "Number of crossing arcs",
       "description": " Check if the number of crossing arcs is at most a given natural number.",
-      "params": []
+      "params": [
+        {
+          "param": "max_crossings",
+          "name": "Max number of crossings",
+          "type": "int",
+          "default": "10",
+          "min": "0"
+        }
+      ]
     },
     "horizontally_adjacent": {
       "name": "Nodes horizontally adjacent",
