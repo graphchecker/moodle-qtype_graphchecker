@@ -1,3 +1,5 @@
 .idea/
 **/__pycache__/
 amd/build
+composer.lock
+*.swp
