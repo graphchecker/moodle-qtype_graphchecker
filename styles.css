@@ -528,7 +528,24 @@ div#toolbar_part_right {
     border-left: 1px solid DarkGray;
 }
 
+div#toolbar_part_middle {
+    display: inline-flex;
+    align-items: center;
+}
+
 label.checkbox_label {
     position: relative;
     font-size: 14px;
+    margin-right: 10px;
+}
+
+label.textfield_label {
+    position: relative;
+    font-size: 14px;
+}
+
+input.toolbar_textfield {
+    margin-left: 3px;
+    margin-right: 10px;
+    height: 14px;
 }
