@@ -78,7 +78,8 @@ class qtype_graphchecker_jobrunner {
         $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/template.py.twig');
 
         try {
-            $testprog = $question->twig_expand($template, $this->templateparams);
+            $testprog = "print('hello world')";
+            //$testprog = $question->twig_expand($template, $this->templateparams);
         } catch (Exception $e) {
             $outcome->set_status(
                     qtype_graphchecker_testing_outcome::STATUS_SYNTAX_ERROR,
