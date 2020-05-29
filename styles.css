@@ -531,4 +531,15 @@ div#toolbar_part_right {
 label.checkbox_label {
     position: relative;
     font-size: 14px;
+    margin-right: 10px;
+}
+
+label.textfield_label {
+    position: relative;
+    font-size: 14px;
+}
+
+input.toolbar_textfield {
+    margin-left: 3px;
+    margin-right: 10px;
 }

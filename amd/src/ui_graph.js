@@ -124,10 +124,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             class:      "graphchecker_toolbar",
             tabindex:   0
         });
-        
+
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
         this.buttons = [];
         this.checkboxes = [];
+        this.selectionOptions = [];
 
         $(document).ready(function() {
             // Create the 3 parts of the toolbar: left, middle and right
@@ -183,7 +184,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Remove the FSM options from display if the mode is switched to draw mode
             if (button.buttonModeType === elements.ModeType.DRAW) {
-                this.removeFSMNodeOptions();
+                this.removeSelectionOptions();
+                this.removeFSMNodeSelectionOptions();
             }
         };
 
@@ -197,7 +199,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
                 let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
-                let middleWidth = w - leftWidth - rightWidth - middlePadding;
+                let canvasWidth = $(this.parent.graphCanvas.canvas).width()
+                let middleWidth = canvasWidth - leftWidth - rightWidth - middlePadding;
                 $(this.toolbarMiddlePart).width(middleWidth);
             }
         };
@@ -231,21 +234,53 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             event.preventDefault();
 
             for (let i = 0; i < buttons.length; i++) {
-                if (event.target.id === buttons[i].getId()) {
+                if (event.target === $(buttons[i].button)[0]) {
                     buttons[i].onClick(event);
                 }
             }
         });
     }
 
-    GraphToolbar.prototype.addFSMNodeOptions = function(vertex) {
+    GraphToolbar.prototype.addSelectionOptions = function(object) {
+        // TODO: incorporate the input parameters (e.g. vertex_labels)
+        // TODO: make more tidy: rewrite the this.selectionOptions and this.checkboxes variables
+        // If there are already selection options present in the toolbar, set the states accordingly and return
+        if (this.selectionOptions.length > 0) {
+            for (let i = 0; i < this.selectionOptions.length; i++) {
+                //TODO: set the filled value of the label
+            }
+            return;
+        }
+
+        // Create the label textfield
+        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
+        labelTextField.create();
+        this.selectionOptions.push(labelTextField);
+    };
+
+    GraphToolbar.prototype.removeSelectionOptions = function() {
+        for (let i = 0; i < this.selectionOptions.length; i++) {
+            // Remove the label and the according checkbox from the DOM
+            $(this.selectionOptions[i].object).remove();
+
+            // Remove from the list
+            this.selectionOptions.splice(i--, 1);
+        }
+    };
+
+    GraphToolbar.prototype.onInteractTextField = function(event) {
+        //TODO
+        console.log("onInteractTextField()");
+    };
+
+    GraphToolbar.prototype.addFSMNodeSelectionOptions = function(vertex) {
         // If there are already FSM checkboxes present in the toolbar, set the states accordingly and return
         if (this.checkboxes.length > 0) {
             for (let i = 0; i < this.checkboxes.length; i++) {
                 if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL) {
                     // Check whether the vertex has any start links and set the checkbox accordingly
-                    let hasStartLink = vertex.hasStartLink(this.parent.links);
-                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked = hasStartLink;
+                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked =
+                        vertex.hasStartLink(this.parent.links);
                 }
                 if (this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
                     // Check whether the vertex has any start links and set the checkbox accordingly
@@ -258,18 +293,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Create the FSM initial checkbox
         let fsmInitialCheckbox = new elements.Checkbox(
-            this, this.toolbarMiddlePart, 10, 10, elements.CheckboxType.FSM_INITIAL, 'Initial',
+            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_INITIAL, 'Initial',
             this.onClickFSMInitialCheckbox);
         fsmInitialCheckbox.create();
 
         // Set the initial checkbox value accordingly (in case it was pressed before) and save it
-        let hasStartLink = vertex.hasStartLink(this.parent.links);
-        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked = hasStartLink;
+        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked =
+            vertex.hasStartLink(this.parent.links);
         this.checkboxes.push(fsmInitialCheckbox);
 
         // Create the FSM final checkbox
         let fsmFinalCheckbox = new elements.Checkbox(
-            this, this.toolbarMiddlePart, 10, 10, elements.CheckboxType.FSM_FINAL, 'Final',
+            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_FINAL, 'Final',
             this.onClickFSMFinalCheckbox);
         fsmFinalCheckbox.create();
 
@@ -278,13 +313,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.checkboxes.push(fsmFinalCheckbox);
     };
 
-    GraphToolbar.prototype.removeFSMNodeOptions = function() {
+    GraphToolbar.prototype.removeFSMNodeSelectionOptions = function() {
         // Remove the FSM initial checkbox if it is present
         for (let i = 0; i < this.checkboxes.length; i++) {
             if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL ||
                 this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
                 // Remove the label and the according checkbox from the DOM
-                $("#" + this.checkboxes[i].id).parent().remove();
+                $(this.checkboxes[i].object).remove();
 
                 // Remove from the list
                 this.checkboxes.splice(i--, 1);
@@ -295,9 +330,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
         if (event.target.checked) {
             this.toolbar.parent.setInitialFSMVertex(this.toolbar.parent.selectedObject);
+            this.toolbar.parent.draw();
         } else {
-            //TODO: Fix for cases where there must be an initial vertex
+            //TODO: Possibly fix for cases where there must be an initial vertex, depending on the input parameter
             this.toolbar.parent.removeInitialFSMVertex(this.toolbar.parent.selectedObject);
+            this.toolbar.parent.draw();
         }
     };
 
@@ -371,10 +408,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.TOOLBAR_HEIGHT = 35;       // px. The height of the toolbar above the graphCanvas
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
-        this.uiMode = elements.ModeType.DRAW; // Set the UI mode type
-
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
+        this.uiMode = this.getUIModeBeginning(); // Set the UI mode type depending on whether there is a graph or not
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
         this.graphCanvas = new GraphCanvas(this, this.canvasId, width, height);
@@ -447,6 +483,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
+    };
+
+    Graph.prototype.getUIModeBeginning = function() {
+        var content = $(this.textArea).val();
+        if (content) {
+            // Load up the student's previous answer if non-empty.
+            var input = JSON.parse(content), i;
+
+            if (input.vertices.length === 0) {
+                // If there is no vertex (and thus no edge), return draw mode
+                return elements.ModeType.DRAW;
+            } else {
+                return elements.ModeType.EDIT;
+            }
+        } else {
+            // If there is no content yet, return draw mode
+            return elements.ModeType.DRAW;
+        }
     };
 
     Graph.prototype.setUIMode = function(modeType) {
@@ -546,12 +600,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             } else if (this.uiMode === elements.ModeType.EDIT) {
                 this.selectedObject = this.clickedObject;
 
-                // If the type is FSM, display the according buttons in the toolbar, depending on the sitation
+                // If an object is selected (apart from TemporaryLinks),
+                // display the according input elements in the toolbar
+                if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
+                    this.clickedObject instanceof elements.StartLink ||
+                    this.clickedObject instanceof elements.SelfLink) {
+                    this.toolbar.addSelectionOptions(this.clickedObject);
+                } else {
+                    this.toolbar.removeSelectionOptions();
+                }
+
+                // If the type is FSM, display the according buttons in the toolbar, depending on the situation
                 if (this.isFsm()) {
                     if (this.clickedObject instanceof elements.Node) {
-                        this.toolbar.addFSMNodeOptions(this.clickedObject);
+                        this.toolbar.addFSMNodeSelectionOptions(this.clickedObject);
                     } else {
-                        this.toolbar.removeFSMNodeOptions();
+                        this.toolbar.removeFSMNodeSelectionOptions();
                     }
                 }
 
@@ -756,6 +820,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
+        /*
+        TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
+         number of input vertices
         // Set all vertices to not be an initial vertex
         for (let i = 0; i < this.nodes.length; i++) {
             this.nodes[i].isInitial = false;
@@ -767,6 +834,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.links.splice(i--, 1);
             }
         }
+         */
 
         // Set the selected vertex as the initial vertex, and draw it
         if (this.isFsm() && vertex instanceof elements.Node) {

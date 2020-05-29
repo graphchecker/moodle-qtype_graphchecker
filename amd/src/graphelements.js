@@ -573,12 +573,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.height = h; //In px.
         this.icon = iconClass;
         this.title = title;
-        this.id = '';
     }
-
-    Button.prototype.getId = function() {
-        return this.id;
-    };
 
     // The create function should be called explicitly in order to create the HTML element(s) of the button
     Button.prototype.create = function () {
@@ -599,8 +594,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             .addClass('icon fa ' + this.icon).attr({
                     "style":    "pointer-events: none",
                 }));
-        let parentId = '#' + $(this.parent[0]).attr('id');
-        $(parentId).append($button);
+        $(this.parent[0]).append($button);
+        this.button = $button;
     };
 
     Button.prototype.onClick = function() {
@@ -625,11 +620,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         Button.prototype.create.call(this);
 
         // Add 'mode' to the class
-        let jqueryId = $('#' + this.id);
-        jqueryId.addClass('mode');
+        this.button.addClass('mode');
 
         // Add the not_clicked class name by default, based on the button type
-        jqueryId.addClass('not_clicked');
+        this.button.addClass('not_clicked');
     };
 
     ModeButton.prototype.onClick = function() {
@@ -638,18 +632,16 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     ModeButton.prototype.setSelected = function() {
-        let jqueryId = $('#' + this.id);
-        jqueryId.addClass('clicked');
-        jqueryId.removeClass('not_clicked');
+        this.button.addClass('clicked');
+        this.button.removeClass('not_clicked');
 
         // Set the mode of the UI
         this.toolbar.onModeButtonPressed(this);
     };
 
     ModeButton.prototype.setDeselected = function() {
-        let jqueryId = $('#' + this.id);
-        jqueryId.removeClass('clicked');
-        jqueryId.addClass('not_clicked');
+        this.button.removeClass('clicked');
+        this.button.addClass('not_clicked');
     };
 
     /***********************************************************************
@@ -678,11 +670,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Checkbox(toolbar, parent, w, h, type, text, eventFunction) {
+    function Checkbox(toolbar, parent, type, text, eventFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
-        this.w = w;
-        this.h = h;
         this.text = text;
         this.type = type;
         this.eventFunction = eventFunction;
@@ -704,8 +694,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 'class':    'toolbar_checkbox',
                 'type':     'checkbox',
             })).append(this.text);
-        let parentId = '#' + $(this.parent[0]).attr('id');
-        $(parentId).append($checkbox);
+        $(this.parent[0]).append($checkbox);
 
         // Add the event listener
         $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
@@ -718,24 +707,48 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
-     * Define a class FSMInitialButton for the button to set a vertex to
-     * the initial vertex, for FSM graphs. This button is based on the
-     * general Button class
+     * Define a class TextField which can be used in the graph toolbar
      *
      ***********************************************************************/
 
-    function FSMInitialButton(toolbar, parent, topX, topY, w, h, iconClass, title) {
-        Button.call(this, toolbar, parent, topX, topY, w, h, iconClass, title);
+    function TextField(toolbar, parent, w, placeholderText, eventFunction) {
+        this.toolbar = toolbar;
+        this.parent = parent;
+        this.w = w;
+        this.placeholderText = placeholderText;
+        this.eventFunction = eventFunction;
+    //<input type="text" id="pin" name="pin" maxlength="4" size="4" placeholder="Hello0000008808080">
     }
 
-    FSMInitialButton.prototype = Object.create(Button.prototype);
-    FSMInitialButton.prototype.constructor = FSMInitialButton;
+    // The create function should be called explicitly in order to create the HTML element(s) of the text field
+    TextField.prototype.create = function () {
+        this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
+        let TOP_DISPLACEMENT = -3; // TODO: Don't know why the label is 3px from the top without any styling, needs fix
+        let HALF_CHECKBOX_HEIGHT = 8; // TODO: needs fix as well
+        let $textfield = $('<label/>')
+            .attr({
+                'class':    'textfield_label',
+                'style':    'top: ' +
+                    (TOP_DISPLACEMENT + (this.toolbar.parent.TOOLBAR_HEIGHT / 2.0) - HALF_CHECKBOX_HEIGHT) + 'px;',
+            }).append(this.placeholderText + ":")
+            .append($('<input/>')
+                .attr({
+                    'id':           this.id,
+                    'class':        'toolbar_textfield',
+                    'type':         'text',
+                    'placeholder':  this.placeholderText,
+                    'size':         this.w,
+                }));
+        $(this.parent[0]).append($textfield);
 
-    FSMInitialButton.prototype.onClick = function() {
-        Button.prototype.onClick();
-
-        this.toolbar.setInitialFSMVertex();
+        // Add the event listener
+        $textfield[0].addEventListener('change', (event) => this.handleInteraction(event));
+        this.object = $textfield;
     };
+
+    TextField.prototype.handleInteraction = function(event) {
+        this.eventFunction(event);
+    }
 
     return {
         PetriNodeType: PetriNodeType,
@@ -749,5 +762,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         ModeButton: ModeButton,
         HelpButton: HelpButton,
         Checkbox: Checkbox,
+        TextField: TextField,
     };
 });
