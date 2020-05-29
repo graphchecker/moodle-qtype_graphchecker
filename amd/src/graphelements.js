@@ -686,8 +686,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         let $checkbox = $('<label/>')
             .attr({
                 'class':    'checkbox_label',
-                'style':    'top: ' +
-                    (TOP_DISPLACEMENT + (this.toolbar.parent.TOOLBAR_HEIGHT / 2.0) - HALF_CHECKBOX_HEIGHT) + 'px;',
             }).append($('<input/>')
             .attr({
                 'id':       this.id,
@@ -728,8 +726,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         let $textfield = $('<label/>')
             .attr({
                 'class':    'textfield_label',
-                'style':    'top: ' +
-                    (TOP_DISPLACEMENT + (this.toolbar.parent.TOOLBAR_HEIGHT / 2.0) - HALF_CHECKBOX_HEIGHT) + 'px;',
             }).append(this.placeholderText + ":")
             .append($('<input/>')
                 .attr({
