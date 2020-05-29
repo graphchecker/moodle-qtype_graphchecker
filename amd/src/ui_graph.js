@@ -270,7 +270,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     GraphToolbar.prototype.onInteractTextField = function(event) {
         //TODO
-        console.log("onInteractTextField()");
     };
 
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function(vertex) {
