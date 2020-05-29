@@ -7,7 +7,7 @@ def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,
         expected):
         actual = getattr(student_answer, method_name)()
-        if actual == int(expected):
+        if actual == expected:
             return {'correct': True}
         else:
             return {'correct': False,
@@ -37,7 +37,7 @@ def vertex_degrees(student_answer, sample_answer, preload_answer, degree_type, e
         mode = igraph.ALL
 
     for v in student_answer.vs:
-        if v.degree(mode=mode) != int(expected):
+        if v.degree(mode=mode) != expected:
             v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
             return {'correct': False,
                     'feedback': ('All vertices should have {0} {1}, ' +

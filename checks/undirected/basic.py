@@ -7,7 +7,7 @@ def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,
         expected):
         actual = getattr(student_answer, method_name)()
-        if actual == int(expected):
+        if actual == expected:
             return {'correct': True}
         else:
             return {'correct': False,
@@ -32,7 +32,7 @@ def isomorphism(student_answer, sample_answer, preload_answer):
 
 def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
     for v in student_answer.vs:
-        if v.degree() != int(expected):
+        if v.degree() != expected:
             v_name = 'some vertex' if not v['name'] else 'vertex ' + v['name']
             return {'correct': False,
                     'feedback': ('All vertices should have degree {0}, ' +
@@ -42,7 +42,7 @@ def vertex_degrees(student_answer, sample_answer, preload_answer, expected):
 
 def vertex_degree_at_most(student_answer, sample_answer, preload_answer, max_degree):
     for v in student_answer.vs:
-        if v.degree() > int(max_degree):
+        if v.degree() > max_degree:
             v_name = 'Some vertex' if not v['name'] else 'Vertex ' + v['name']
             return {'correct': False,
                     'feedback': ('{0} has degree ' +
@@ -53,10 +53,10 @@ def vertex_degree_at_most(student_answer, sample_answer, preload_answer, max_deg
 def number_vertices_of_degree(student_answer, sample_answer, preload_answer, number_of_verts, degree):
     found = 0
     for v in student_answer.vs:
-        if v.degree() == int(degree):
+        if v.degree() == degree:
             found += 1
     
-    if (found != int(number_of_verts)):
+    if found != number_of_verts:
         return {'correct': False,
                 'feedback': ('Number of vertices with degree {0}, is ' +
                              '{1}, but should be {2}').format(
