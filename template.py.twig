@@ -7,8 +7,6 @@ import {{ module }}
 
 from preprocess import preprocess
 
-import igraph
-
 student_answer = """{{ STUDENT_ANSWER | e('py') }}"""
 student_answer = preprocess(json.loads(student_answer))
 
