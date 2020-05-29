@@ -145,5 +145,100 @@ define(function() {
         };
     };
 
+    Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
+        let angles = [];
+        for (let i = 0; i < links.length; i++) {
+            let nodeA = links[i].nodeA;
+            let nodeB = links[i].nodeB;
+            //TODO: rekening houden met self links, zit er op dit moment nog niet in
+            if (nodeA === vertex || nodeB === vertex) {
+                // Calculate the angle (in radians) of the point of the link touching the selected vertex's
+                // circle with the selected node itself
+                angles.push(links[i].calculateAngle(vertex));
+            }
+        }
+        return angles;
+    };
+
+    Util.prototype.getAnglesStartLinkFSMOneIncident = function(oppositeAngle, divisibleRange, topLeft, nrDivisions) {
+        // It is to be noted that this function expects an even number of divisions
+        if (nrDivisions % 2 !== 0) {
+            throw 'nrDivisions in Util.prototype.getAnglesBasedOnDivision() is not an even number.';
+        }
+        let angles = [];
+        let range = (nrDivisions / 2) - 1;
+        for (let i = -range; i <= range; i++) {
+            let angle = (oppositeAngle + (i / nrDivisions) * divisibleRange) % (2*Math.PI);
+            if (angle < 0) {
+                angle += 2*Math.PI;
+            }
+            angles.push(angle);
+        }
+        return angles;
+    };
+
+    Util.prototype.getAnglesStartLinkFSMMultipleIncident = function(angles, topLeft, nrDivisions) {
+        // Create, for each space between two incident links (occurring in the angles array), all possible angles
+        // based on the division
+        let candidateAngles = [];
+        for (let i = 0; i < angles.length; i++) {
+            let startAngle = angles[i];
+            let endAngle = angles[i+1];
+            if (i === angles.length-1) {
+                // Special case for the last value in the array
+                endAngle = angles[0] + 2*Math.PI;
+            }
+
+            let averageAngle = (startAngle + endAngle) / 2.0;
+            let divisibleRange = Math.abs(startAngle - endAngle);
+            let foundAngles = this.getAnglesStartLinkFSMOneIncident(averageAngle, divisibleRange, topLeft, nrDivisions);
+            for (let j = 0; j < foundAngles.length; j++) {
+                candidateAngles.push(foundAngles[j]);
+            }
+        }
+        return candidateAngles;
+    };
+
+    Util.prototype.filterOutCloseAngles = function(candidateAngles, fixedAngles, proximityPercentage) {
+        // Filters out the angles in the possibleAngles array that are too close to angles in the fixedAngles array
+        // An angle is deemed to close if it is withing proximityPercentage% of 2*Math.PI of another angle
+        let validAngles = [];
+        for (let i = 0; i < candidateAngles.length; i++) {
+            let isValid = true;
+            for (let j = 0; j < fixedAngles.length; j++) {
+                let proximity = Math.abs(fixedAngles[j] - candidateAngles[i]);
+                if (proximity < proximityPercentage * 2*Math.PI) {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (isValid) {
+                validAngles.push(candidateAngles[i]);
+            }
+        }
+
+        return validAngles;
+    };
+
+    Util.prototype.getAngleMaximumMinimumProximity = function(candidateAngles, angles) {
+        let maximumSpace = 0;
+        let candidateAngle = candidateAngles[0];
+        for (let i = 0; i < candidateAngles.length; i++) {
+            let minimumProximity = Number.MAX_SAFE_INTEGER;
+            for (let j = 0; j < angles.length; j++) {
+                let proximity = Math.abs(angles[j] - candidateAngles[i]);
+                if (proximity < minimumProximity) {
+                    minimumProximity = proximity;
+                }
+            }
+
+            if (minimumProximity > maximumSpace) {
+                maximumSpace = minimumProximity;
+                candidateAngle = candidateAngles[i];
+            }
+        }
+    };
+
     return new Util();
 });
