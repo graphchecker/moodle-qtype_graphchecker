@@ -167,6 +167,145 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.resize(w, h);
     }
 
+    GraphToolbar.prototype.displayHelpOverlay = function() {
+        // Display a help overlay on the entire graph UI
+        this.helpOverlay.div[0].style.display = 'block';
+        this.helpOverlay.div.addClass('visible');
+        $('body').addClass('unscrollable');
+    };
+
+    GraphToolbar.prototype.createToolbarPartObject = function(parentId, parentHeight, side) {
+        // A function to create a basic div for a part of the toolbar:
+        // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
+        console.log('blabla');
+        console.log(parentId, parentHeight, side);
+        let $part = $('<div/>')
+            .attr({
+                'id':       'toolbar_part_' + side,
+                'class':    'toolbar_part',
+                'style':    'height: ' + parseFloat(parentHeight) + 'px;',
+            });
+        console.log($part);
+        $('#' + parentId).append($part);
+        return $part;
+    };
+
+    GraphToolbar.prototype.setButtonsEventListener = function(buttons) {
+        // On a click of the button, call the onClick() method on the respective button
+        $('.toolbar_button').click(function (event) {
+            event.preventDefault();
+
+            for (let i = 0; i < buttons.length; i++) {
+                if (event.target === $(buttons[i].button)[0]) {
+                    buttons[i].onClick(event);
+                }
+            }
+        });
+    }
+
+    GraphToolbar.prototype.addSelectionOptions = function(object) {
+        // TODO: incorporate the input parameters (e.g. vertex_labels)
+        // TODO: make more tidy: rewrite the this.selectionOptions and this.checkboxes variables
+        // If there are already selection options present in the toolbar, set the states accordingly and return
+        if (this.selectionOptions.length > 0) {
+            for (let i = 0; i < this.selectionOptions.length; i++) {
+                //TODO: set the filled value of the label
+            }
+            return;
+        }
+
+        // Create the label textfield
+        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
+        labelTextField.create();
+        this.selectionOptions.push(labelTextField);
+    };
+
+    GraphToolbar.prototype.removeSelectionOptions = function() {
+        for (let i = 0; i < this.selectionOptions.length; i++) {
+            // Remove the label and the according checkbox from the DOM
+            $(this.selectionOptions[i].object).remove();
+
+            // Remove from the list
+            this.selectionOptions.splice(i--, 1);
+        }
+    };
+
+    GraphToolbar.prototype.onInteractTextField = function(event) {
+        //TODO
+    };
+
+    GraphToolbar.prototype.addFSMNodeSelectionOptions = function(vertex) {
+        // If there are already FSM checkboxes present in the toolbar, set the states accordingly and return
+        if (this.checkboxes.length > 0) {
+            for (let i = 0; i < this.checkboxes.length; i++) {
+                if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL) {
+                    // Check whether the vertex has any start links and set the checkbox accordingly
+                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked =
+                        vertex.hasStartLink(this.parent.links);
+                }
+                if (this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
+                    // Check whether the vertex has any start links and set the checkbox accordingly
+                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
+                }
+            }
+
+            return;
+        }
+
+        // Create the FSM initial checkbox
+        let fsmInitialCheckbox = new elements.Checkbox(
+            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_INITIAL, 'Initial',
+            this.onClickFSMInitialCheckbox);
+        fsmInitialCheckbox.create();
+
+        // Set the initial checkbox value accordingly (in case it was pressed before) and save it
+        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked =
+            vertex.hasStartLink(this.parent.links);
+        this.checkboxes.push(fsmInitialCheckbox);
+
+        // Create the FSM final checkbox
+        let fsmFinalCheckbox = new elements.Checkbox(
+            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_FINAL, 'Final',
+            this.onClickFSMFinalCheckbox);
+        fsmFinalCheckbox.create();
+
+        // Set the final checkbox value accordingly (in case it was pressed before) and save it
+        $($(fsmFinalCheckbox).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
+        this.checkboxes.push(fsmFinalCheckbox);
+    };
+
+    GraphToolbar.prototype.removeFSMNodeSelectionOptions = function() {
+        // Remove the FSM initial checkbox if it is present
+        for (let i = 0; i < this.checkboxes.length; i++) {
+            if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL ||
+                this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
+                // Remove the label and the according checkbox from the DOM
+                $(this.checkboxes[i].object).remove();
+
+                // Remove from the list
+                this.checkboxes.splice(i--, 1);
+            }
+        }
+    };
+
+    GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
+        if (event.target.checked) {
+            this.toolbar.parent.setInitialFSMVertex(this.toolbar.parent.selectedObject);
+            this.toolbar.parent.draw();
+        } else {
+            //TODO: Possibly fix for cases where there must be an initial vertex, depending on the input parameter
+            this.toolbar.parent.removeInitialFSMVertex(this.toolbar.parent.selectedObject);
+            this.toolbar.parent.draw();
+        }
+    };
+
+    GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
+        if (this.toolbar.parent.selectedObject instanceof elements.Node && this.toolbar.parent.isFsm()) {
+            this.toolbar.parent.selectedObject.isFinal = !this.toolbar.parent.selectedObject.isFinal;
+            this.toolbar.parent.draw();
+        }
+    };
+
     /***********************************************************************
      *
      * Define a class HelpArea for the help area (i.e. a help 'box')
