@@ -133,11 +133,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         $(document).ready(function() {
             // Create the 3 parts of the toolbar: left, middle and right
-            self.toolbarLeftPart = self.createToolbarPartObject(self.div[0].id,
+            self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'left');
-            self.toolbarMiddlePart = self.createToolbarPartObject(self.div[0].id,
+            self.toolbarMiddlePart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'middle');
-            self.toolbarRightPart = self.createToolbarPartObject(self.div[0].id,
+            self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'right');
 
             // Create the draw button
@@ -216,7 +216,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         $('body').addClass('unscrollable');
     };
 
-    GraphToolbar.prototype.createToolbarPartObject = function(parentId, parentHeight, side) {
+    GraphToolbar.prototype.createToolbarPartObject = function(parentDiv, parentHeight, side) {
         // A function to create a basic div for a part of the toolbar:
         // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
         let $part = $('<div/>')
@@ -225,7 +225,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 'class':    'toolbar_part',
                 'style':    'height: ' + parseFloat(parentHeight) + 'px;',
             });
-        $('#' + parentId).append($part);
+        $(parentDiv).append($part);
         return $part;
     };
 
