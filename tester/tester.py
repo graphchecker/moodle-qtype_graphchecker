@@ -44,19 +44,38 @@ class GCTester:
 		empty_graph = {'_version': 1, 'vertices': [], 'edges': []}
 		empty_graph = preprocess.preprocess(empty_graph)
 
+		check_data = self.available_checks()
+
 		checks = json.loads(checks)
 		results = []
 		for check in checks:
 			try:
+				print(check_data[check['module']])
 				check_module = importlib.import_module(graph_type + '.' + check['module'])
 				check_method = getattr(check_module, check['method'])
-				result = check_method(graph, empty_graph, empty_graph, **(check['arguments']))
+				argument = self.convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']])
+				result = check_method(graph, empty_graph, empty_graph, **argument)
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
 				results.append({'error': stacktrace})
 
 		return results
+
+	def convert_arguments(self, args, check):
+		converted = {}
+		for a in args:
+			converted[a] = self.convert_argument(a, args[a], check)
+		return converted
+
+	def convert_argument(self, name, value, check):
+		param_type = next(p for p in check['params'] if p['param'] == name)['type']
+		if param_type == 'integer':
+			return int(value)
+		elif param_type == 'string_list':
+			return value.split('\n')
+		else:
+			return value
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
