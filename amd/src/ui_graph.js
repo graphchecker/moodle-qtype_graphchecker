@@ -109,13 +109,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, h, uiMode, helpOverlay) {
+    function GraphToolbar(parent, divId, w, h, buttonSize, uiMode, helpOverlay) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
 
         let self = this;
         this.parent = parent;
+        this.buttonSize = buttonSize;
         this.uiMode = uiMode;
         this.helpOverlay = helpOverlay;
         this.div = $(document.createElement('div'));
@@ -141,19 +142,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Create the draw button
             let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                35, 25, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
+                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
             drawButton.create();
             self.buttons.push(drawButton);
 
             // Create the edit button
             let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                35, 25, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
+                self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
             editButton.create();
             self.buttons.push(editButton);
 
             // Create the help button
             let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
-                35, 25, 'fa-question', "Help menu");
+                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu");
             helpButton.create();
             self.buttons.push(helpButton);
 
@@ -405,6 +406,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
         this.TOOLBAR_HEIGHT = 35;       // px. The height of the toolbar above the graphCanvas
+        this.BUTTON_SIZE = {            //px. The size of the buttons (width, w, and height, h)
+            w:  35,
+            h:  25,
+        };
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
         this.canvasId = 'graphcanvas_' + textareaId;
@@ -419,7 +424,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             0, '0.2', 'white');
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.uiMode, this.helpOverlay);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.BUTTON_SIZE, this.uiMode, this.helpOverlay);
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
