@@ -81,6 +81,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return parent.mouseup(e);
         });
 
+        // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
+        this.canvas.on('mouseleave', function(e) {
+            return parent.mouseup(e);
+        });
+
         this.canvas.on('keydown', function(e) {
             return parent.keydown(e);
         });
@@ -129,7 +134,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
         this.buttons = [];
         this.checkboxes = [];
-        this.selectionOptions = [];
+        this.labelTextField = null;
 
         $(document).ready(function() {
             // Create the 3 parts of the toolbar: left, middle and right
@@ -142,19 +147,27 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Create the draw button
             let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW);
+                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
+                self.onModeButtonPressed);
             drawButton.create();
             self.buttons.push(drawButton);
 
             // Create the edit button
             let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT);
+                self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT,
+                self.onModeButtonPressed);
             editButton.create();
             self.buttons.push(editButton);
 
+            // Create the delete button
+            let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
+                self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObject);
+            deleteButton.create();
+            self.buttons.push(deleteButton);
+
             // Create the help button
             let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu");
+                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu", null);
             helpButton.create();
             self.buttons.push(helpButton);
 
@@ -174,19 +187,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.onModeButtonPressed = function(button) {
             // Activate the pressed mode
-            this.parent.setUIMode(button.buttonModeType);
+            self.parent.setUIMode(button.buttonModeType);
 
             // Display the other mode button(s) accordingly
-            for (let i = 0; i < this.buttons.length; i++) {
-                if (this.buttons[i] instanceof elements.ModeButton && this.buttons[i] !== button) {
-                    this.buttons[i].setDeselected();
+            for (let i = 0; i < self.buttons.length; i++) {
+                if (self.buttons[i] instanceof elements.ModeButton && self.buttons[i] !== button) {
+                    self.buttons[i].setDeselected();
                 }
             }
 
             // Remove the FSM options from display if the mode is switched to draw mode
             if (button.buttonModeType === elements.ModeType.DRAW) {
-                this.removeSelectionOptions();
-                this.removeFSMNodeSelectionOptions();
+                self.removeSelectionOptions();
+                self.removeFSMNodeSelectionOptions();
             }
         };
 
@@ -214,6 +227,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay.div[0].style.display = 'block';
         this.helpOverlay.div.addClass('visible');
         $('body').addClass('unscrollable');
+
+        // Disable resizing of the graphUI wrapper
+        this.helpOverlay.graphUIWrapper.disableResize();
     };
 
     GraphToolbar.prototype.createToolbarPartObject = function(parentDiv, parentHeight, side) {
@@ -242,54 +258,37 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         });
     }
 
-    GraphToolbar.prototype.addSelectionOptions = function(object) {
+    GraphToolbar.prototype.addSelectionOptions = function(selectedObject) {
         // TODO: incorporate the input parameters (e.g. vertex_labels)
         // TODO: make more tidy: rewrite the this.selectionOptions and this.checkboxes variables
-        // If there are already selection options present in the toolbar, set the states accordingly and return
-        if (this.selectionOptions.length > 0) {
-            for (let i = 0; i < this.selectionOptions.length; i++) {
-                //TODO: set the filled value of the label
-            }
-            return;
-        }
+        // Clear the selection options, and re-add them below
+        this.removeSelectionOptions();
 
         // Create the label textfield
         let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
         labelTextField.create();
-        this.selectionOptions.push(labelTextField);
+        this.labelTextField = labelTextField;
+
+        // Fill the value of the label text field according to the selected object
+        this.labelTextField.object[0].childNodes[1].value = selectedObject.text;
     };
 
     GraphToolbar.prototype.removeSelectionOptions = function() {
-        for (let i = 0; i < this.selectionOptions.length; i++) {
-            // Remove the label and the according checkbox from the DOM
-            $(this.selectionOptions[i].object).remove();
-
-            // Remove from the list
-            this.selectionOptions.splice(i--, 1);
+        if (this.labelTextField !== null) {
+            $(this.labelTextField.object).remove();
+            this.labelTextField = null;
         }
     };
 
-    GraphToolbar.prototype.onInteractTextField = function(event) {
-        //TODO
+    GraphToolbar.prototype.onInteractTextField = function(event, toolbar) {
+        // Add or remove one character to the label of the selected object (i.e. node or link)
+        toolbar.parent.selectedObject.text = event.target.value;
+        toolbar.parent.draw();
     };
 
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function(vertex) {
-        // If there are already FSM checkboxes present in the toolbar, set the states accordingly and return
-        if (this.checkboxes.length > 0) {
-            for (let i = 0; i < this.checkboxes.length; i++) {
-                if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL) {
-                    // Check whether the vertex has any start links and set the checkbox accordingly
-                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked =
-                        vertex.hasStartLink(this.parent.links);
-                }
-                if (this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
-                    // Check whether the vertex has any start links and set the checkbox accordingly
-                    $($(this.checkboxes[i]).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
-                }
-            }
-
-            return;
-        }
+        // Clear the selection options, and re-add them below
+        this.removeFSMNodeSelectionOptions();
 
         // Create the FSM initial checkbox
         let fsmInitialCheckbox = new elements.Checkbox(
@@ -351,11 +350,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ***********************************************************************/
 
-    function HelpOverlay(parent, divId) {
+    function HelpOverlay(parent, divId, graphUIWrapper) {
         // Constructor, of the Help overlay
 
         let self = this;
         this.parent = parent;
+        this.graphUIWrapper = graphUIWrapper;
         // Create the background div
         this.div = $(document.createElement("div"));
         this.div.attr({
@@ -369,6 +369,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             setTimeout(function() {
                 self.div.css('display', 'none');
                 $('body').removeClass('unscrollable');
+
+                // Enable the resizing of the graph interface wrapper again
+                self.graphUIWrapper.enableResize();
             }.bind(this), 500);
         });
 
@@ -385,7 +388,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.div.append(this.divDialog);
     }
 
-    // Sets the help text of the dialog. The text can contain newline and tab characters (i.e. \n and \t) for formatting
+    // Sets the (HTML) help text of the dialog
     HelpOverlay.prototype.insertHelpText = function(text) {
         this.divDialog.append(text);
     };
@@ -396,7 +399,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ***********************************************************************/
 
-    function Graph(textareaId, width, height, templateParams) {
+    function Graph(textareaId, uiWrapper, width, height, templateParams) {
         // Constructor.
         var self = this;
 
@@ -417,11 +420,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.uiMode = this.getUIModeBeginning(); // Set the UI mode type depending on whether there is a graph or not
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
+        this.uiWrapper = uiWrapper;
         this.graphCanvas = new GraphCanvas(this, this.canvasId, width, height);
 
         this.helpOverlayId = 'graphcanvas_overlay_' + textareaId;
-        this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, 3.0/4.0, width, height + this.TOOLBAR_HEIGHT,
-            0, '0.2', 'white');
+        this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
         this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.BUTTON_SIZE, this.uiMode, this.helpOverlay);
@@ -430,8 +433,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.containerDiv = $(document.createElement('div'));
         $(this.containerDiv).addClass('graph_ui_container_div');
 
-        this.caretVisible = true;
-        this.caretTimer = 0;  // Need global so we can kill a running timer.
         this.originalClick = null;
         this.nodes = [];
         this.links = [];
@@ -446,9 +447,32 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         } else {
             require(['core/str'], function(str) {
                 // Get help text via AJAX.
+                //TODO: remove newHelpString and place it inside lang/en/qtype_graphchecker.php.
+                // This is only here temporarily to show what the help dialog looks like in the tester tool
+                let newHelpString = "<div class = 'dialog-header'>Graph Help</div>\
+                    To create and modify graphs you can use two modes:\
+                    'Draw mode' and 'Edit mode' \
+                    <br><br>\
+                    Draw mode (<i class=\"fa fa-pencil\"></i>):\
+                    <ul class='dialog-help'>\
+                      <li><em>Create new node/state:</em> &nbsp;Double click on an empty space.</li>\
+                      <li><em>Create link:</em> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><em>Create self link:</em> &nbsp;Click on a node and drag to the same node.</li>\
+                    </ul><br>\
+                    Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):\
+                    <ul class='dialog-help'>\
+                      <li><em>Move node:</em> &nbsp;Click and drag a node.</li>\
+                      <li><em>Move link:</em> &nbsp;Click and drag a link.</li>\
+                      <li><em>Edit node/link label text:</em> &nbsp;Click on a node/link to show the label text field.</li>\
+                      <li><em>Subscripts in label text:</em> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
+                      <li><em>Greek letters in label text:</em> &nbsp;Type a \\ followed by a greek letter's name (e.g. \\alpha or \\beta).</li>\
+                      <li><em>Delete node/link:</em> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
+                      <li><em>(FSMs only) Mark node as initial or accept state:</em> &nbsp;Click on a node to show the according checkboxes.</li>\
+                    </ul><br>\
+                     ";
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
                 $.when(helpPresent).done(function(graphhelp) {
-                    self.helpOverlay.insertHelpText(graphhelp);
+                    self.helpOverlay.insertHelpText(newHelpString);
                 });
             });
         }
@@ -511,6 +535,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.uiMode = modeType;
         this.clickedObject = null;
         this.selectedObject = null;
+
+        // If the mode is set to draw, disable the delete button
+        if (this.uiMode === elements.ModeType.DRAW) {
+            for (let i = 0; i < this.toolbar.buttons.length; i++) {
+                if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
+                    this.toolbar.buttons[i].setDisabled();
+                }
+            }
+        }
+
+        // Unselect a (possibly) selected item when going from edit to draw mode
+        this.draw();
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -548,21 +584,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        if(key >= 0x20 &&
-                  key <= 0x7E &&
-                  !e.metaKey &&
-                  !e.altKey &&
-                  !e.ctrlKey &&
-                  this.selectedObject !== null &&
-                  'text' in this.selectedObject) {
-
-            this.selectedObject.text += String.fromCharCode(key);
-            this.resetCaret();
-            this.draw();
-
-            // Don't let keys do their actions (like space scrolls down the page).
-            return false;
-        } else if(key === 8 || key === 0x20 || key === 9) {
+        if(key === 8 || key === 0x20 || key === 9) {
             // Disable scrolling on backspace, tab and space.
             return false;
         }
@@ -592,7 +614,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         newNode.petriNodeType = elements.PetriNodeType.PLACE;
                     }
                     this.nodes.push(newNode);
-                    this.resetCaret();
                     this.draw();
 
                     // Set as initial node if it is the first node, and if the type is FSM
@@ -607,7 +628,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // If an object is selected (apart from TemporaryLinks),
                 // display the according input elements in the toolbar
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
-                    this.clickedObject instanceof elements.StartLink ||
                     this.clickedObject instanceof elements.SelfLink) {
                     this.toolbar.addSelectionOptions(this.clickedObject);
                 } else {
@@ -624,13 +644,30 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
 
                 if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
-                    && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)){
+                    && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)) {
                     this.movingObject = true;
                     if(this.clickedObject !== null && this.clickedObject.setMouseStart) {
                         this.clickedObject.setMouseStart(mouse.x, mouse.y);
                     }
                 }
-                this.resetCaret();
+
+                // If an object is selected, activate the delete button.
+                // Else, deactivate it
+                if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
+                    this.clickedObject instanceof elements.SelfLink ||
+                    this.clickedObject instanceof elements.StartLink) {
+                    for (let i = 0; i < this.toolbar.buttons.length; i++) {
+                        if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
+                            this.toolbar.buttons[i].setEnabled();
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < this.toolbar.buttons.length; i++) {
+                        if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
+                            this.toolbar.buttons[i].setDisabled();
+                        }
+                    }
+                }
             }
         }
 
@@ -641,7 +678,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return false;
         } else {
             // Otherwise, let the browser switch the focus away from wherever it was.
-            this.resetCaret();
             return true;
         }
     };
@@ -654,32 +690,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if(key === 8) { // Backspace key.
-            if(this.selectedObject !== null && 'text' in this.selectedObject) {
-                this.selectedObject.text = this.selectedObject.text.substr(0, this.selectedObject.text.length - 1);
-                this.resetCaret();
-                this.draw();
-            }
-
             // Backspace is a shortcut for the back button, but do NOT want to change pages.
             return false;
         } else if(key === 46) { // Delete key.
-            if(this.selectedObject !== null) {
-                for(i = 0; i < this.nodes.length; i++) {
-                    if(this.nodes[i] === this.selectedObject) {
-                        this.nodes.splice(i--, 1);
-                    }
-                }
-                for(i = 0; i < this.links.length; i++) {
-                    if(this.links[i] === this.selectedObject ||
-                           this.links[i].node === this.selectedObject ||
-                           this.links[i].nodeA === this.selectedObject ||
-                           this.links[i].nodeB === this.selectedObject) {
-                        this.links.splice(i--, 1);
-                    }
-                }
-                this.selectedObject = null;
-                this.draw();
-            }
+            this.deleteSelectedObject(this);
         } else if(key === 13) { // Enter key.
             if(this.selectedObject !== null) {
                 // Deselect the object.
@@ -692,9 +706,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        //TODO: generalize: the bottom part of the draggable area is approximately 14 pixels. This ensures that this
-        //TODO:             bottom part is not visible. However, it is not a good solution (i.e. it is a 'hack')
-        this.graphCanvas.resize(w, h + 14);
+        // Setting h to h+1, in order to not make the canvas change size when the help button is pressed (which causes
+        // the screen to resize)
+        this.graphCanvas.resize(w, h+1);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
         this.draw();
     };
@@ -788,19 +802,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.mouseup = function() {
-
         if (this.readOnly) {
             return;
         }
 
-        //this.movingObject = false;
-        //this.movingGraph = false;
         this.clickedObject = null;
 
         if(this.currentLink !== null) {
             if(!(this.currentLink instanceof elements.TemporaryLink)) {
                 this.addLink(this.currentLink);
-                this.resetCaret();
             }
             this.currentLink = null;
             this.draw();
@@ -822,6 +832,37 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
         return null;
     };
+
+    Graph.prototype.deleteSelectedObject = function(graphUI) {
+        if(graphUI.selectedObject !== null) {
+            for(let i = 0; i < graphUI.nodes.length; i++) {
+                if(graphUI.nodes[i] === graphUI.selectedObject) {
+                    graphUI.nodes.splice(i--, 1);
+                }
+            }
+            for(let i = 0; i < graphUI.links.length; i++) {
+                if(graphUI.links[i] === graphUI.selectedObject ||
+                    graphUI.links[i].node === graphUI.selectedObject ||
+                    graphUI.links[i].nodeA === graphUI.selectedObject ||
+                    graphUI.links[i].nodeB === graphUI.selectedObject) {
+                    graphUI.links.splice(i--, 1);
+                }
+            }
+            graphUI.selectedObject = null;
+            graphUI.draw();
+
+            // Set the deleted button as disabled
+            for (let i = 0; i < graphUI.toolbar.buttons.length; i++) {
+                if (graphUI.toolbar.buttons[i] instanceof elements.DeleteButton) {
+                    graphUI.toolbar.buttons[i].setDisabled();
+                }
+            }
+
+            // Remove the options in the toolbar based on the selected object
+            graphUI.toolbar.removeSelectionOptions();
+            graphUI.toolbar.removeFSMNodeSelectionOptions();
+        }
+    }
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
         /*
@@ -1082,7 +1123,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.destroy = function () {
-        clearInterval(this.caretTimer); // Stop the caret timer.
         this.graphCanvas.canvas.off();  // Stop all events.
         this.graphCanvas.canvas.remove();
 
@@ -1091,17 +1131,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.helpOverlay.div.off();
         this.helpOverlay.div.remove();
-    };
-
-    Graph.prototype.resetCaret = function () {
-        var t = this; // For embedded function to access this.
-
-        clearInterval(this.caretTimer);
-        this.caretTimer = setInterval(function() {
-            t.caretVisible = !t.caretVisible;
-            t.draw();
-        }, 500);
-        this.caretVisible = true;
     };
 
     Graph.prototype.draw = function () {
@@ -1132,7 +1161,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.save();
     };
 
-    Graph.prototype.drawText = function(originalText, x, y, angleOrNull, theObject) {
+    Graph.prototype.drawText = function(originalText, x, y, angleOrNull) {
         var c = this.getCanvas().getContext('2d'),
             text = util.convertLatexShortcuts(originalText),
             width,
@@ -1155,7 +1184,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             y += cornerPointY + cos * slide;
         }
 
-        // Draw text and caret (round the coordinates so the caret falls on a pixel).
+        // Draw text
         if('advancedFillText' in c) {
             c.advancedFillText(text, originalText, x + width / 2, y, angleOrNull);
         } else {
@@ -1163,14 +1192,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             y = Math.round(y);
             dy = Math.round(this.fontSize() / 3); // Don't understand this.
             c.fillText(text, x, y + dy);
-            if(theObject == this.selectedObject && this.caretVisible && this.hasFocus() && document.hasFocus()) {
-                x += width;
-                dy = Math.round(this.fontSize() / 2);
-                c.beginPath();
-                c.moveTo(x, y - dy);
-                c.lineTo(x, y + dy);
-                c.stroke();
-            }
         }
     };
 
