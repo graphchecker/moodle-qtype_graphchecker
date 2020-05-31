@@ -451,23 +451,23 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // This is only here temporarily to show what the help dialog looks like in the tester tool
                 let newHelpString = "<div class = 'dialog-header'>Graph Help</div>\
                     To create and modify graphs you can use two modes:\
-                    'Draw mode' and 'Edit mode' \
+                    'Draw mode' and 'Edit mode'.\
                     <br><br>\
-                    Draw mode (<i class=\"fa fa-pencil\"></i>):\
+                    <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
                     <ul class='dialog-help'>\
-                      <li><em>Create new node/state:</em> &nbsp;Double click on an empty space.</li>\
-                      <li><em>Create link:</em> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><em>Create self link:</em> &nbsp;Click on a node and drag to the same node.</li>\
+                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
+                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
                     </ul><br>\
-                    Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):\
+                    <div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
                     <ul class='dialog-help'>\
-                      <li><em>Move node:</em> &nbsp;Click and drag a node.</li>\
-                      <li><em>Move link:</em> &nbsp;Click and drag a link.</li>\
-                      <li><em>Edit node/link label text:</em> &nbsp;Click on a node/link to show the label text field.</li>\
-                      <li><em>Subscripts in label text:</em> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
-                      <li><em>Greek letters in label text:</em> &nbsp;Type a \\ followed by a greek letter's name (e.g. \\alpha or \\beta).</li>\
-                      <li><em>Delete node/link:</em> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
-                      <li><em>(FSMs only) Mark node as initial or accept state:</em> &nbsp;Click on a node to show the according checkboxes.</li>\
+                      <li><b>Move node:</b> &nbsp;Click and drag a node.</li>\
+                      <li><b>Move link:</b> &nbsp;Click and drag a link.</li>\
+                      <li><b>Edit node/link label text:</b> &nbsp;Click on a node/link to show the label text field.</li>\
+                      <li><b>Subscripts in label text:</b> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
+                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a greek letter's name (e.g. \\alpha or \\beta).</li>\
+                      <li><b>Delete node/link:</b> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
+                      <li><b>(FSMs only) Mark node as initial or accept state:</b> &nbsp;Click on a node to show the according checkboxes.</li>\
                     </ul><br>\
                      ";
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');

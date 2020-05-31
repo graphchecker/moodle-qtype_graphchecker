@@ -503,6 +503,10 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     margin-bottom: 20px;
 }
 
+.dialog-section {
+    font-size: 18px;
+}
+
 body#page-question-type-graphchecker.unscrollable {
     overflow-y: hidden;
 }
