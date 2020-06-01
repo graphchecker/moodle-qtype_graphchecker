@@ -6,7 +6,7 @@ import traceback
 root_dir = os.path.join(os.getcwd(), '..')
 
 def run(graph_type, graph, checks):
-	preprocess = importlib.import_module(graph_type + '.preprocess')
+	preprocess = importlib.import_module('preprocess')
 
 	types_file = os.path.join(root_dir, 'checks', 'types.json')
 	with open(types_file) as types:
@@ -26,7 +26,7 @@ def run(graph_type, graph, checks):
 	results = []
 	for check in checks:
 		try:
-			check_module = importlib.import_module(graph_type + '.' + check['module'])
+			check_module = importlib.import_module(check['module'])
 			check_method = getattr(check_module, check['method'])
 			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']])
 			result = check_method(graph, empty_graph, empty_graph, **argument)

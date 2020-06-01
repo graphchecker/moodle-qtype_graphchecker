@@ -10,7 +10,6 @@ import sys
 import traceback
 
 sys.path.append(os.path.join(os.getcwd(), '../checks'))
-
 import checkrunner
 
 root_dir = os.path.join(os.getcwd(), '..')
@@ -21,6 +20,7 @@ if len(sys.argv) != 2:
 	sys.exit(1)
 
 graph_type = sys.argv[1]
+sys.path.append(os.path.join(os.getcwd(), '../checks', graph_type))
 
 class GCTester:
 
