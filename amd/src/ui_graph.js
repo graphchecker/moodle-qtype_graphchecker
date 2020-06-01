@@ -145,19 +145,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'right');
 
-            // Create the draw button
-            let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
-                self.onModeButtonPressed);
-            drawButton.create();
-            self.buttons.push(drawButton);
-
             // Create the edit button
             let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
                 self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT,
                 self.onModeButtonPressed);
             editButton.create();
             self.buttons.push(editButton);
+
+            // Create the draw button
+            let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
+                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
+                self.onModeButtonPressed);
+            drawButton.create();
+            self.buttons.push(drawButton);
 
             // Create the delete button
             let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
@@ -451,24 +451,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // This is only here temporarily to show what the help dialog looks like in the tester tool
                 let newHelpString = "<div class = 'dialog-header'>Graph Help</div>\
                     To create and modify graphs you can use two modes:\
-                    'Draw mode' and 'Edit mode'.\
+                    'Edit mode' and 'Draw mode'.\
                     <br><br>\
-                    <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
-                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
-                    </ul><br>\
                     <div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
                     <ul class='dialog-help'>\
                       <li><b>Move node:</b> &nbsp;Click and drag a node.</li>\
                       <li><b>Move link:</b> &nbsp;Click and drag a link.</li>\
                       <li><b>Edit node/link label text:</b> &nbsp;Click on a node/link to show the label text field.</li>\
                       <li><b>Subscripts in label text:</b> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
-                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a greek letter's name (e.g. \\alpha or \\beta).</li>\
+                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a Greek letter's name (e.g. \\alpha or \\beta).</li>\
                       <li><b>Delete node/link:</b> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
                       <li><b>(FSMs only) Mark node as initial or accept state:</b> &nbsp;Click on a node to show the according checkboxes.</li>\
                     </ul><br>\
+                    <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
+                    <ul class='dialog-help'>\
+                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
+                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
+                    </ul>\
                      ";
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
                 $.when(helpPresent).done(function(graphhelp) {
