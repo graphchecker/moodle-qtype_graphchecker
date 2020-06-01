@@ -70,22 +70,9 @@ class qtype_graphchecker_jobrunner {
         global $CFG;
 
         $numchecks = count($this->checks);
-        $this->templateparams['checks'] = $this->checks;
-        $this->templateparams['checker_modules'] = $this->get_checker_modules();
         $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
-        $question = $this->question;
 
-        $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/template.py.twig');
-
-        try {
-            $testprog = "print('hello world')";
-            //$testprog = $question->twig_expand($template, $this->templateparams);
-        } catch (Exception $e) {
-            $outcome->set_status(
-                    qtype_graphchecker_testing_outcome::STATUS_SYNTAX_ERROR,
-                    get_string('templateerror', 'qtype_graphchecker') . ': ' . $e->getMessage());
-            return $outcome;
-        }
+        $testprog = $this->get_testing_code();
 
         $this->allruns[] = $testprog;
 
@@ -109,6 +96,35 @@ class qtype_graphchecker_jobrunner {
             $outcome = $this->do_combinator_grading($run, $isprecheck);
         }
         return $outcome;
+    }
+
+
+    private function get_testing_code() {
+        $code = "";
+
+        $code .= "import checkrunner\n";
+
+        /*foreach ($this->get_checker_modules() as $module) {
+            $code .= "import " . $module . "\n";
+        }*/
+
+        $checks = $this->checks;
+        $code .= "checks = \"\"\"" . $this->py_escape(json_encode($checks)) . "\"\"\"\n";
+
+        $code .= "checkrunner.run(checks)\n";
+
+        return $code;
+    }
+
+
+    /**
+     * An escaper for user with Python triple-doublequote delimiters. Escapes only
+     * double quote characters plus backslashes.
+     * @param type $s         The string to convert
+     * @return typestudentanswervar
+     */
+    private function py_escape($s) {
+        return str_replace('"', '\"', str_replace('\\', '\\\\', $s));
     }
 
 
