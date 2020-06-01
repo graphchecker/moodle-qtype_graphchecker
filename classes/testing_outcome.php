@@ -29,11 +29,10 @@ use qtype_graphchecker\constants;
 
 class qtype_graphchecker_testing_outcome {
     const STATUS_VALID = 1;         // A full set of test results is returned.
-    const STATUS_SYNTAX_ERROR = 2;  // The code (on any one test) didn't compile.
     const STATUS_BAD_COMBINATOR = 3; // A combinator template yielded an invalid result.
     const STATUS_SANDBOX_ERROR = 4;  // The run failed altogether.
-    const STATUS_MISSING_PROTOTYPE = 5;  // Can't even start - no prototype.
     const STATUS_UNSERIALIZE_FAILED = 6; // A serialised outcome can't be deserialised.
+    const STATUS_PREPROCESSOR_ERROR = 7; // An error occurred while preprocessing the student's answer.
 
     const TOLERANCE = 0.00001;       // Allowable difference between actual and max marks for a correct outcome.
 
@@ -69,20 +68,19 @@ class qtype_graphchecker_testing_outcome {
     }
 
     public function run_failed() {
-        return ($this->status === self::STATUS_SANDBOX_ERROR) ||
-               ($this->status === self::STATUS_MISSING_PROTOTYPE);
+        return $this->status === self::STATUS_SANDBOX_ERROR;
     }
 
     public function invalid() {
         return $this->status === self::STATUS_UNSERIALIZE_FAILED;
     }
 
-    public function has_syntax_error() {
-        return $this->status === self::STATUS_SYNTAX_ERROR;
-    }
-
     public function combinator_error() {
         return $this->status === self::STATUS_BAD_COMBINATOR;
+    }
+
+    public function preprocessor_error() {
+        return $this->status === self::STATUS_PREPROCESSOR_ERROR;
     }
 
     public function is_ungradable() {
@@ -92,7 +90,7 @@ class qtype_graphchecker_testing_outcome {
     public function mark_as_fraction() {
         if ($this->status === self::STATUS_VALID) {
             foreach ($this->testresults as $result) {
-                if (!$result->correct) {
+                if (!$result["correct"]) {
                     return 0;
                 }
             }
@@ -113,8 +111,6 @@ class qtype_graphchecker_testing_outcome {
             return html_writer::tag('pre', $this->errormessage);
         } else if ($this->run_failed()) {
             return get_string('run_failed', 'qtype_graphchecker');
-        } else if ($this->has_syntax_error()) {
-            return get_string('syntax_errors', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if (!$this->iscombinatorgrader()) {  // Combinator grader results table can't be used.
@@ -198,11 +194,11 @@ class qtype_graphchecker_testing_outcome {
 
         foreach ($this->testresults as $result) {
             $tablerow = array();
-            $tablerow[] = $result->correct ? 1 : 0;
-            $tablerow[] = $this->get_test_name($question->answertype, $result->module, $result->method);
+            $tablerow[] = $result["correct"] ? 1 : 0;
+            $tablerow[] = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
             if (array_key_exists('feedback', $result)) {
-                $tablerow[] = $result->feedback;
-            } elseif ($result->correct) {
+                $tablerow[] = $result["feedback"];
+            } elseif ($result["correct"]) {
                 $tablerow[] = "Correct!";
             } else {
                 $tablerow[] = "Incorrect!";

@@ -147,14 +147,13 @@ class qtype_graphchecker_renderer extends qtype_renderer {
             $fb .= html_writer::tag('h5', get_string('run_failed', 'qtype_graphchecker'));;
             $fb .= html_writer::tag('p', s($outcome->errormessage),
                     array('class' => 'run_failed_error'));
-        } else if ($outcome->has_syntax_error()) {
-            $fb .= html_writer::tag('h5', get_string('syntax_errors', 'qtype_graphchecker'));
-            $fb .= html_writer::tag('pre', s($outcome->errormessage),
-                    array('class' => 'pre_syntax_error'));
         } else if ($outcome->combinator_error()) {
             $fb .= html_writer::tag('h5', get_string('badquestion', 'qtype_graphchecker'));
             $fb .= html_writer::tag('pre', s($outcome->errormessage),
                     array('class' => 'pre_question_error'));
+        } else if ($outcome->preprocessor_error()) {
+            $fb .= html_writer::tag('h5', "Your answer failed a sanity check:");
+            $fb .= html_writer::tag('p', s($outcome->errormessage));
 
         } else {
 
@@ -164,8 +163,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
         // Summarise the status of the response in a paragraph at the end.
         // Suppress when previous errors have already said enough.
-        if (!$outcome->has_syntax_error() &&
-             !$outcome->is_ungradable() &&
+        if (!$outcome->is_ungradable() &&
              !$outcome->run_failed()) {
 
             $fb .= $this->build_feedback_summary($qa, $outcome);
@@ -231,37 +229,17 @@ class qtype_graphchecker_renderer extends qtype_renderer {
     // Compute the HTML feedback summary for this test outcome.
     // Should not be called if there were any syntax or sandbox errors.
     protected function build_feedback_summary(question_attempt $qa, qtype_graphchecker_testing_outcome $outcome) {
-        if ($outcome->iscombinatorgrader()) {
-            // Simplified special case.
-            return $this->build_combinator_grader_feedback_summary($qa, $outcome);
-        }
-        $question = $qa->get_question();
         $lines = array();  // List of lines of output.
 
-        $onlyhiddenfailed = false;
         if ($outcome->was_aborted()) {
-            $lines[] = get_string('aborted', 'qtype_graphchecker');
-        }
-
-        if ($outcome->all_correct()) {
-            $lines[] = get_string('allok', 'qtype_graphchecker') .
+            $lines[] = 'Grading was aborted due to an error.';
+        } else if ($outcome->all_correct()) {
+            $lines[] = 'Passed all checks!' .
                     "&nbsp;" . $this->feedback_image(1.0);
+        } else if ($outcome->preprocessor_error()) {
+            $lines[] = 'Your answer must pass the sanity checks to earn any marks. Try again.';
         } else {
-            $lines[] = get_string('noerrorsallowed', 'qtype_graphchecker');
-        }
-
-        return qtype_graphchecker_util::make_html_para($lines);
-    }
-
-
-    // A special case of the above method for use with combinator template graders
-    // only.
-    protected function build_combinator_grader_feedback_summary($qa, qtype_graphchecker_combinator_grader_outcome $outcome) {
-        $lines = array();  // List of lines of output.
-
-        if ($outcome->all_correct()) {
-            $lines[] = get_string('allok', 'qtype_graphchecker') .
-                    "&nbsp;" . $this->feedback_image(1.0);
+            $lines[] = 'Your answer must pass all checks to earn any marks. Try again.';
         }
 
         return qtype_graphchecker_util::make_html_para($lines);

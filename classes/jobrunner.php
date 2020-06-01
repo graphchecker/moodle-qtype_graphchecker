@@ -71,7 +71,6 @@ class qtype_graphchecker_jobrunner {
 
         $numchecks = count($this->checks);
         $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
-
         $testprog = $this->get_testing_code();
 
         $this->allruns[] = $testprog;
@@ -82,18 +81,12 @@ class qtype_graphchecker_jobrunner {
             $this->get_checker_files(),  // files
             array());  // sandbox params
 
-        // If it's a template grader, we pass the result to the
-        // do_combinator_grading method. Otherwise we deal with syntax errors or
-        // a successful result without accompanying stderr.
-        // In all other cases (runtime error etc) we give up
-        // on the combinator.
-
         if ($run->error !== qtype_graphchecker_sandbox::OK) {
             $outcome->set_status(
                     qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
                     qtype_graphchecker_sandbox::error_string($run));
         } else {
-            $outcome = $this->do_combinator_grading($run, $isprecheck);
+            $outcome = $this->do_grading($run, $isprecheck);
         }
         return $outcome;
     }
@@ -192,25 +185,35 @@ class qtype_graphchecker_jobrunner {
      * array of pseudo-test_result objects) and some html for display after
      * the result table.
      */
-    private function do_combinator_grading($run, $isprecheck) {
+    private function do_grading($run, $isprecheck) {
         if ($run->result !== qtype_graphchecker_sandbox::RESULT_SUCCESS) {
-            $error = get_string('brokentemplategrader', 'qtype_graphchecker',
-                    array('output' => $run->cmpinfo . "\n" . $run->stderr));
-            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $error = "Checks failed, output on stderr: " . $run->stderr;
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
+                [], $error);
             return $outcome;
         }
 
-        $result = json_decode($run->output);
+        $result = json_decode($run->output, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            print("RUN OUTPUT [" . $run->output . "]");
-            $error = get_string('badjsonorfraction', 'qtype_graphchecker',
-                array('output' => $run->output));
-            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $error = "Invalid JSON output from checks: " . $run->output;
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
+                [], $error);
             return $outcome;
         }
 
-        return new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_VALID, $result);
+        if ($result["type"] === "preprocess_fail") {
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_PREPROCESSOR_ERROR,
+                [], $result["feedback"]);
+            return $outcome;
+        }
+
+        return new qtype_graphchecker_testing_outcome(
+            qtype_graphchecker_testing_outcome::STATUS_VALID,
+            $result["results"]);
     }
 
 
