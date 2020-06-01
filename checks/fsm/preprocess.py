@@ -5,6 +5,7 @@ def preprocess(graph):
     final_states = set([])
     states = set([])
     transitions = []
+
     for vertex in graph['vertices']:
         state = vertex['label']
         states.add(state)

@@ -70,21 +70,8 @@ class qtype_graphchecker_jobrunner {
         global $CFG;
 
         $numchecks = count($this->checks);
-        $this->templateparams['checks'] = $this->checks;
-        $this->templateparams['checker_modules'] = $this->get_checker_modules();
         $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
-        $question = $this->question;
-
-        $template = file_get_contents($CFG->dirroot . '/question/type/graphchecker/template.py.twig');
-
-        try {
-            $testprog = $question->twig_expand($template, $this->templateparams);
-        } catch (Exception $e) {
-            $outcome->set_status(
-                    qtype_graphchecker_testing_outcome::STATUS_SYNTAX_ERROR,
-                    get_string('templateerror', 'qtype_graphchecker') . ': ' . $e->getMessage());
-            return $outcome;
-        }
+        $testprog = $this->get_testing_code();
 
         $this->allruns[] = $testprog;
 
@@ -94,20 +81,50 @@ class qtype_graphchecker_jobrunner {
             $this->get_checker_files(),  // files
             array());  // sandbox params
 
-        // If it's a template grader, we pass the result to the
-        // do_combinator_grading method. Otherwise we deal with syntax errors or
-        // a successful result without accompanying stderr.
-        // In all other cases (runtime error etc) we give up
-        // on the combinator.
-
         if ($run->error !== qtype_graphchecker_sandbox::OK) {
             $outcome->set_status(
                     qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
                     qtype_graphchecker_sandbox::error_string($run));
         } else {
-            $outcome = $this->do_combinator_grading($run, $isprecheck);
+            $outcome = $this->do_grading($run, $isprecheck);
         }
         return $outcome;
+    }
+
+
+    private function get_testing_code() {
+        $code = "";
+
+        $code .= "import checkrunner\n";
+        $code .= "import json\n";
+
+        foreach ($this->get_checker_modules() as $module) {
+            $code .= "import " . $module . "\n";
+        }
+
+        $code .= "answer_type = \"\"\"" . $this->py_escape($this->question->answertype) . "\"\"\"\n";
+
+        $answer = $this->answer;
+        $code .= "answer = \"\"\"" . $this->py_escape($answer) . "\"\"\"\n";
+
+        $checks = $this->checks;
+        $code .= "checks = \"\"\"" . $this->py_escape(json_encode($checks)) . "\"\"\"\n";
+
+        $code .= "result = checkrunner.run(answer_type, answer, checks)\n";
+        $code .= "print(json.dumps(result))";
+
+        return $code;
+    }
+
+
+    /**
+     * An escaper for user with Python triple-doublequote delimiters. Escapes only
+     * double quote characters plus backslashes.
+     * @param type $s         The string to convert
+     * @return typestudentanswervar
+     */
+    private function py_escape($s) {
+        return str_replace('"', '\"', str_replace('\\', '\\\\', $s));
     }
 
 
@@ -131,10 +148,24 @@ class qtype_graphchecker_jobrunner {
         $filemap = [];
 
         foreach ($this->get_checker_modules() as $module) {
+            // Python file
             $name = $module . '.py';
             $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
+
+            // JSON file
+            if ($module != 'preprocess') {
+                $name = $module . '.json';
+                $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
+                $filemap[$name] = file_get_contents($full_name);
+            }
         }
+
+        // also add the checkrunner and types.json
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/checkrunner.py';
+        $filemap['checkrunner.py'] = file_get_contents($full_name);
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/types.json';
+        $filemap['types.json'] = file_get_contents($full_name);
 
         return $filemap;
     }
@@ -154,25 +185,35 @@ class qtype_graphchecker_jobrunner {
      * array of pseudo-test_result objects) and some html for display after
      * the result table.
      */
-    private function do_combinator_grading($run, $isprecheck) {
+    private function do_grading($run, $isprecheck) {
         if ($run->result !== qtype_graphchecker_sandbox::RESULT_SUCCESS) {
-            $error = get_string('brokentemplategrader', 'qtype_graphchecker',
-                    array('output' => $run->cmpinfo . "\n" . $run->stderr));
-            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $error = "Checks failed, output on stderr: " . $run->stderr;
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
+                [], $error);
             return $outcome;
         }
 
-        $result = json_decode($run->output);
+        $result = json_decode($run->output, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            print("RUN OUTPUT [" . $run->output . "]");
-            $error = get_string('badjsonorfraction', 'qtype_graphchecker',
-                array('output' => $run->output));
-            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR, [], $error);
+            $error = "Invalid JSON output from checks: " . $run->output;
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
+                [], $error);
             return $outcome;
         }
 
-        return new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_VALID, $result);
+        if ($result["type"] === "preprocess_fail") {
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_PREPROCESSOR_ERROR,
+                [], $result["feedback"]);
+            return $outcome;
+        }
+
+        return new qtype_graphchecker_testing_outcome(
+            qtype_graphchecker_testing_outcome::STATUS_VALID,
+            $result["results"]);
     }
 
 

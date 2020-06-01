@@ -193,24 +193,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    /**
-     * Return Twig-expanded version of the given text. The
-     * Twig environment includes the question itself (this) and the template
-     * parameters. Additional twig environment parameters are passed in via
-     * $twigparams. Template parameters are hoisted if required.
-     * @param string $text Text to be twig expanded.
-     * @param associative array $twigparams Extra twig environment parameters
-     */
-    public function twig_expand($text, $twigparams=array()) {
-        if (empty(trim($text))) {
-            return $text;
-        } else {
-            $twigparams['QUESTION'] = $this;
-            return qtype_graphchecker_twig::render($text, $twigparams);
-        }
-    }
-
-
     // Returns all checks that we need to run.
     protected function get_checks() {
         $checks = json_decode($this->checks, true);
