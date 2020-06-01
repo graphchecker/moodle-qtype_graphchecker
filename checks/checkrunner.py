@@ -3,7 +3,7 @@ import json
 import os
 import traceback
 
-root_dir = os.path.join(os.getcwd())
+root_dir = os.getcwd()
 
 def run(graph_type, graph, checks):
 	preprocess = importlib.import_module('preprocess')
@@ -73,10 +73,17 @@ def available_checks(graph_type):
 
 	modules = {}
 
-	directory = os.path.join(root_dir)
+	# note: this needs to werk both for the tester, where the checks are
+	# in a subdirectory graph_type/, and on the server, where everything
+	# is placed in the same directory
+
+	if os.path.exists(os.path.join(root_dir, graph_type)):
+		directory = os.path.join(root_dir, graph_type)
+	else:
+		directory = root_dir
 	for file in os.listdir(directory):
 		if file.endswith('.json') and file != "types.json":
-			checks = json.load(open(os.path.join(root_dir, file)))
+			checks = json.load(open(os.path.join(directory, file)))
 			modules[file[:-5]] = checks
 
 	return modules

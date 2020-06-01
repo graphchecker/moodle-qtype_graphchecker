@@ -26,7 +26,7 @@ class GCTester:
 
 	@cherrypy.expose
 	def index(self):
-		return open('tester.html')
+		return open('../tester/tester.html')
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
@@ -63,7 +63,7 @@ class GCTester:
 
 conf = {
 	'/': {
-		'tools.staticdir.root': os.getcwd()
+		'tools.staticdir.root': os.path.join(os.getcwd(), '../tester')
 	},
 	'/css/style-moodle.css': {
 		'tools.staticfile.on': True,
