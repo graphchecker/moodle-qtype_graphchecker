@@ -115,7 +115,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
 
         // Draw the text.
-        this.parent.drawText(this.text, this.x, this.y, null, this);
+        this.parent.drawText(this.text, this.x, this.y, null);
 
         // Draw a double circle for an accept state.
         if(this.isFinal) {
@@ -308,12 +308,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             textAngle = (startAngle + endAngle) / 2 + linkInfo.isReversed * Math.PI;
             textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(textAngle);
             textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(textAngle);
-            this.parent.drawText(this.text, textX, textY, textAngle, this);
+            this.parent.drawText(this.text, textX, textY, textAngle);
         } else {
             textX = (linkInfo.startX + linkInfo.endX) / 2;
             textY = (linkInfo.startY + linkInfo.endY) / 2;
             textAngle = Math.atan2(linkInfo.endX - linkInfo.startX, linkInfo.startY - linkInfo.endY);
-            this.parent.drawText(this.text, textX, textY, textAngle + this.lineAngleAdjust, this);
+            this.parent.drawText(this.text, textX, textY, textAngle + this.lineAngleAdjust);
         }
     };
 
@@ -457,7 +457,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Draw the text on the loop farthest from the node.
         var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
         var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
-        this.parent.drawText(this.text, textX, textY, this.anchorAngle, this);
+        this.parent.drawText(this.text, textX, textY, this.anchorAngle);
         // Draw the head of the arrow.
         this.parent.arrowIfReqd(c, linkInfo.endX, linkInfo.endY, linkInfo.endAngle + Math.PI * 0.4);
     };
@@ -566,13 +566,14 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(toolbar, parent, w, h, iconClass, title) {
+    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.width = w; //In px.
         this.height = h; //In px.
         this.icon = iconClass;
         this.title = title;
+        this.eventFunction = eventFunction;
     }
 
     // The create function should be called explicitly in order to create the HTML element(s) of the button
@@ -598,7 +599,14 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.button = $button;
     };
 
-    Button.prototype.onClick = function() {
+    Button.prototype.onClick = function(eventFunction, object) {
+        if (eventFunction !== null) {
+            if (object === null) {
+                eventFunction();
+            } else {
+                eventFunction(object);
+            }
+        }
     };
 
     /***********************************************************************
@@ -608,8 +616,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function ModeButton(toolbar, parent, w, h, iconClass, title, buttonModeType) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title);
+    function ModeButton(toolbar, parent, w, h, iconClass, title, buttonModeType, eventFunction) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
         this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
     }
 
@@ -627,16 +635,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     ModeButton.prototype.onClick = function() {
-        Button.prototype.onClick();
+        Button.prototype.onClick(this.eventFunction, this);
         this.setSelected();
     };
 
     ModeButton.prototype.setSelected = function() {
         this.button.addClass('clicked');
         this.button.removeClass('not_clicked');
-
-        // Set the mode of the UI
-        this.toolbar.onModeButtonPressed(this);
     };
 
     ModeButton.prototype.setDeselected = function() {
@@ -646,20 +651,57 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
+     * Define a class DeleteButton for the delete button, which is based on
+     * the general Button class
+     *
+     ***********************************************************************/
+
+    function DeleteButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
+    }
+
+    DeleteButton.prototype = Object.create(Button.prototype);
+    DeleteButton.prototype.constructor = DeleteButton;
+
+    DeleteButton.prototype.create = function() {
+        Button.prototype.create.call(this);
+
+        // Set the button as disabled
+        this.setDisabled();
+    };
+
+    DeleteButton.prototype.onClick = function() {
+        Button.prototype.onClick(this.eventFunction, this.toolbar.parent);
+    };
+
+    DeleteButton.prototype.setEnabled = function() {
+        $(this.button[0]).attr('disabled', false);
+
+        this.button.removeClass('disabled');
+    };
+
+    DeleteButton.prototype.setDisabled = function() {
+        $(this.button[0]).attr('disabled', true);
+
+        this.button.addClass('disabled');
+    };
+
+    /***********************************************************************
+     *
      * Define a class HelpButton for the help button, which is based on
      * the general Button class
      *
      ***********************************************************************/
 
-    function HelpButton(toolbar, parent, w, h, iconClass, title) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title);
+    function HelpButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
     }
 
     HelpButton.prototype = Object.create(Button.prototype);
     HelpButton.prototype.constructor = HelpButton;
 
     HelpButton.prototype.onClick = function() {
-        Button.prototype.onClick();
+        Button.prototype.onClick(this.eventFunction);
 
         this.toolbar.displayHelpOverlay();
     };
@@ -681,8 +723,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
     Checkbox.prototype.create = function () {
         this.id = 'checkbox_' + this.text.split(' ').join('_');
-        let TOP_DISPLACEMENT = -3; // TODO: Don't know why the label is 3px from the top without any styling, needs fix
-        let HALF_CHECKBOX_HEIGHT = 8; // TODO: needs fix as well
         let $checkbox = $('<label/>')
             .attr({
                 'class':    'checkbox_label',
@@ -721,8 +761,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
     TextField.prototype.create = function () {
         this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
-        let TOP_DISPLACEMENT = -3; // TODO: Don't know why the label is 3px from the top without any styling, needs fix
-        let HALF_CHECKBOX_HEIGHT = 8; // TODO: needs fix as well
         let $textfield = $('<label/>')
             .attr({
                 'class':    'textfield_label',
@@ -738,12 +776,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         $(this.parent[0]).append($textfield);
 
         // Add the event listener
-        $textfield[0].addEventListener('change', (event) => this.handleInteraction(event));
+        $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
         this.object = $textfield;
     };
 
     TextField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event);
+        this.eventFunction(event, this.toolbar);
     }
 
     return {
@@ -757,6 +795,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         StartLink: StartLink,
         ModeButton: ModeButton,
         HelpButton: HelpButton,
+        DeleteButton: DeleteButton,
         Checkbox: Checkbox,
         TextField: TextField,
     };

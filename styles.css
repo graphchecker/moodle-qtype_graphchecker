@@ -84,7 +84,7 @@ body#page-question-type-graphchecker .ace_editor {
 
 #page-question-type-graphchecker table.graphchecker-test-results {
     margin-top: 0.5em;
-    margin-bottom: 0 em;
+    margin-bottom: 0.0em;
 }
 
 .que.graphchecker table.graphchecker-test-results,
@@ -435,7 +435,7 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
 }
 
 body#page-question-type-graphchecker .tests-ui .button:hover,
-.toolbar_button:hover:not(:active):not(.mode),
+.toolbar_button:hover:not(:active):not(.mode):not(.disabled),
 .toolbar_button.mode.not_clicked:hover:not(:active) {
     background-image: radial-gradient(ellipse at center, rgba(255,255,255,1) 60%, rgba(223,223,223,1) 100%);
     background-color: #ebebeb;
@@ -445,7 +445,7 @@ button.toolbar_button.mode.clicked {
     background-color: #ebebeb;
 }
 
-button.toolbar_button:active {
+button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb;
 }
 
@@ -486,8 +486,8 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     top: -2px;
 }
 
-body#page-question-type-graphchecker .tests-ui .dialog, .dialog {
-    max-width: 550px;
+.dialog {
+    max-width: 600px;
     margin: auto;
     margin-top: 50px;
     background-color: white;
@@ -496,11 +496,15 @@ body#page-question-type-graphchecker .tests-ui .dialog, .dialog {
     box-shadow: 0px 7px 25px rgba(0, 0, 0, 0.3);
 }
 
-body#page-question-type-graphchecker .tests-ui .dialog-header {
+.dialog-header {
     font-size: 24px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
     margin-bottom: 20px;
+}
+
+.dialog-section {
+    font-size: 18px;
 }
 
 body#page-question-type-graphchecker.unscrollable {
@@ -548,4 +552,13 @@ input.toolbar_textfield {
     margin-left: 3px;
     margin-right: 10px;
     height: 14px;
+}
+
+button.disabled {
+    background-color: #d9d9d9;
+}
+
+ul.dialog-help {
+    margin-top: 0;
+    margin-bottom: 0;
 }

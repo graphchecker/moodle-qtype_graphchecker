@@ -252,7 +252,7 @@ define(['jquery'], function($) {
 
                     h = t.wrapperNode.innerHeight() - t.GUTTER;
                     w = t.wrapperNode.innerWidth();
-                    uiInstance = new ui.Constructor(t.taId, w, h, params);
+                    uiInstance = new ui.Constructor(t.taId, t, w, h, params);
                     if (uiInstance.failed()) {
                         // Constructor failed to load serialisation.
                         // Set uiloadfailed class on text area.
@@ -347,6 +347,16 @@ define(['jquery'], function($) {
             }
         }
     };
+
+    // Enables the resizing of the interface wrapper
+    InterfaceWrapper.prototype.enableResize = function() {
+        $(this.wrapperNode).css('resize', 'vertical');
+    }
+
+    // Disables the resizing of the interface wrapper
+    InterfaceWrapper.prototype.disableResize = function() {
+        $(this.wrapperNode).css('resize', 'none');
+    }
 
     /**
      *  The external entry point from the PHP.

@@ -8,7 +8,7 @@ def preprocess(graph):
     for vertex in graph['vertices']:
         state = vertex['label']
         states.add(state)
-        if vertex['accepting']:
+        if vertex['final']:
             final_states.add(state)
     for edge in graph['edges']:
         if 'label' in edge:
