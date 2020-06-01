@@ -3,12 +3,12 @@ import json
 import os
 import traceback
 
-root_dir = os.path.join(os.getcwd(), '..')
+root_dir = os.path.join(os.getcwd())
 
 def run(graph_type, graph, checks):
 	preprocess = importlib.import_module('preprocess')
 
-	types_file = os.path.join(root_dir, 'checks', 'types.json')
+	types_file = os.path.join(root_dir, 'types.json')
 	with open(types_file) as types:
 		types = json.load(types)
 	if 'python_modules' in types[graph_type]:
@@ -30,10 +30,16 @@ def run(graph_type, graph, checks):
 			check_method = getattr(check_module, check['method'])
 			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']])
 			result = check_method(graph, empty_graph, empty_graph, **argument)
+			result['module'] = check['module']
+			result['method'] = check['method']
 			results.append(result)
 		except:
 			stacktrace = traceback.format_exc()
-			results.append({'error': stacktrace})
+			results.append({
+				'module': check['module'],
+				'method': check['method'],
+				'error': stacktrace
+				})
 
 	return results
 
@@ -58,10 +64,11 @@ def available_checks(graph_type):
 
 	modules = {}
 
-	directory = os.path.join(root_dir, 'checks', graph_type)
+	directory = os.path.join(root_dir)
 	for file in os.listdir(directory):
-		if file.endswith('.json'):
-			checks = json.load(open(os.path.join(root_dir, 'checks', graph_type, file)))
+		if file.endswith('.json') and file != "types.json":
+			checks = json.load(open(os.path.join(root_dir, file)))
 			modules[file[:-5]] = checks
 
 	return modules
+

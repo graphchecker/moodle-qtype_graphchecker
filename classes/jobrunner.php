@@ -103,15 +103,22 @@ class qtype_graphchecker_jobrunner {
         $code = "";
 
         $code .= "import checkrunner\n";
+        $code .= "import json\n";
 
-        /*foreach ($this->get_checker_modules() as $module) {
+        foreach ($this->get_checker_modules() as $module) {
             $code .= "import " . $module . "\n";
-        }*/
+        }
+
+        $code .= "answer_type = \"\"\"" . $this->py_escape($this->question->answertype) . "\"\"\"\n";
+
+        $answer = $this->answer;
+        $code .= "answer = \"\"\"" . $this->py_escape($answer) . "\"\"\"\n";
 
         $checks = $this->checks;
         $code .= "checks = \"\"\"" . $this->py_escape(json_encode($checks)) . "\"\"\"\n";
 
-        $code .= "checkrunner.run(checks)\n";
+        $code .= "result = checkrunner.run(answer_type, answer, checks)\n";
+        $code .= "print(json.dumps(result))";
 
         return $code;
     }
@@ -148,10 +155,24 @@ class qtype_graphchecker_jobrunner {
         $filemap = [];
 
         foreach ($this->get_checker_modules() as $module) {
+            // Python file
             $name = $module . '.py';
             $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
+
+            // JSON file
+            if ($module != 'preprocess') {
+                $name = $module . '.json';
+                $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
+                $filemap[$name] = file_get_contents($full_name);
+            }
         }
+
+        // also add the checkrunner and types.json
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/checkrunner.py';
+        $filemap['checkrunner.py'] = file_get_contents($full_name);
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/types.json';
+        $filemap['types.json'] = file_get_contents($full_name);
 
         return $filemap;
     }
