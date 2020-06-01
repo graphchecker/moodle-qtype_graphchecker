@@ -15,7 +15,13 @@ def run(graph_type, graph, checks):
 		for module in types[graph_type]['python_modules']:
 			globals()[module] = importlib.import_module(module)
 
-	graph = preprocess.preprocess(json.loads(graph))
+	try:
+		graph = preprocess.preprocess(json.loads(graph))
+	except Exception as e:
+		return {
+			'type': 'preprocess_fail',
+			'feedback': str(e)
+		}
 
 	empty_graph = {'_version': 1, 'vertices': [], 'edges': []}
 	empty_graph = preprocess.preprocess(empty_graph)
@@ -41,7 +47,10 @@ def run(graph_type, graph, checks):
 				'error': stacktrace
 				})
 
-	return results
+	return {
+		'type': 'success',
+		'results': results
+	}
 
 def convert_arguments(args, check):
 	converted = {}
