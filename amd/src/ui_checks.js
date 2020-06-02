@@ -250,6 +250,8 @@ define(['jquery'], function($) {
                         .appendTo($argumentRow);
                     break;
                 case 'string_list':
+                case 'string_multiline':
+                case 'graph':
                     $field = $('<textarea/>')
                         .addClass('argument-value')
                         .val(value)
