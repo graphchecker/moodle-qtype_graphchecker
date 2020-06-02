@@ -84,7 +84,7 @@ body#page-question-type-graphchecker .ace_editor {
 
 #page-question-type-graphchecker table.graphchecker-test-results {
     margin-top: 0.5em;
-    margin-bottom: 0 em;
+    margin-bottom: 0.0em;
 }
 
 .que.graphchecker table.graphchecker-test-results,
@@ -371,8 +371,9 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop {
+body#page-question-type-graphchecker .tests-ui .backdrop, .graphchecker_overlay {
     position: fixed;
+    display: none;
     left: 0px;
     right: 0px;
     top: 0px;
@@ -384,7 +385,7 @@ body#page-question-type-graphchecker .tests-ui .backdrop {
     overflow-y: scroll;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop.visible {
+body#page-question-type-graphchecker .tests-ui .backdrop.visible, .graphchecker_overlay.visible {
     opacity: 1;
 }
 
@@ -392,6 +393,11 @@ body#page-question-type-graphchecker .tests-ui .test-container {
     background-color: #f2f2f2;
     border-bottom: 1px solid darkgray;
     padding: 5px;
+}
+
+.graphchecker_toolbar {
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #bbb;
 }
 
 body#page-question-type-graphchecker .tests-ui .test-container:last-child {
@@ -406,7 +412,7 @@ body#page-question-type-graphchecker .tests-ui .module-container {
 }
 
 /* definitions for button styling taken from atto for consistency */
-body#page-question-type-graphchecker .tests-ui .button-group {
+body#page-question-type-graphchecker .tests-ui .button-group, .toolbar_button {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
@@ -428,8 +434,18 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
     border-left: 1px solid #ccc;
 }
 
-body#page-question-type-graphchecker .tests-ui .button:hover {
-    background-image: radial-gradient(ellipse at center,#fff 60%,#dfdfdf 100%);
+body#page-question-type-graphchecker .tests-ui .button:hover,
+.toolbar_button:hover:not(:active):not(.mode):not(.disabled),
+.toolbar_button.mode.not_clicked:hover:not(:active) {
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,1) 60%, rgba(223,223,223,1) 100%);
+    background-color: #ebebeb;
+}
+
+button.toolbar_button.mode.clicked {
+    background-color: #ebebeb;
+}
+
+button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb;
 }
 
@@ -477,8 +493,8 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     top: -2px;
 }
 
-body#page-question-type-graphchecker .tests-ui .dialog {
-    max-width: 550px;
+.dialog {
+    max-width: 600px;
     margin: auto;
     margin-top: 50px;
     background-color: white;
@@ -487,11 +503,15 @@ body#page-question-type-graphchecker .tests-ui .dialog {
     box-shadow: 0px 7px 25px rgba(0, 0, 0, 0.3);
 }
 
-body#page-question-type-graphchecker .tests-ui .dialog-header {
+.dialog-header {
     font-size: 24px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
     margin-bottom: 20px;
+}
+
+.dialog-section {
+    font-size: 18px;
 }
 
 body#page-question-type-graphchecker.unscrollable {
@@ -504,17 +524,48 @@ li.bulktest.graphchecker.context.quiz {
     list-style-type: none;
 }
 
-/* Help dialog background */
-div#graphcanvas_overlay_graph-ui-textarea_background {
-    position: absolute;
-    height: 100%;
-    display: none;
+/* Styling for the subparts of the graph UI toolbar */
+div.toolbar_part {
+    display: inline-block;
+    vertical-align: top;
+    padding: 0 3px;
 }
 
-/* Help dialog */
-div#graphcanvas_overlay_graph-ui-textareadialog {
+div#toolbar_part_left {
+    border-right: 1px solid DarkGray;
+}
+
+div#toolbar_part_right {
+    border-left: 1px solid DarkGray;
+}
+
+div#toolbar_part_middle {
+    display: inline-flex;
+    align-items: center;
+}
+
+label.checkbox_label {
     position: relative;
-    padding: 10px;
-    border-radius: 4px;
-    white-space: pre-wrap;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+label.textfield_label {
+    position: relative;
+    font-size: 14px;
+}
+
+input.toolbar_textfield {
+    margin-left: 3px;
+    margin-right: 10px;
+    height: 14px;
+}
+
+button.disabled {
+    background-color: #d9d9d9;
+}
+
+ul.dialog-help {
+    margin-top: 0;
+    margin-bottom: 0;
 }
