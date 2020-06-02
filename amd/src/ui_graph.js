@@ -455,19 +455,17 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     <br><br>\
                     <div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
                     <ul class='dialog-help'>\
-                      <li><b>Move node:</b> &nbsp;Click and drag a node.</li>\
-                      <li><b>Move link:</b> &nbsp;Click and drag a link.</li>\
-                      <li><b>Edit node/link label text:</b> &nbsp;Click on a node/link to show the label text field.</li>\
-                      <li><b>Subscripts in label text:</b> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
-                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a Greek letter's name (e.g. \\alpha or \\beta).</li>\
-                      <li><b>Delete node/link:</b> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
-                      <li><b>(FSMs only) Mark node as initial or accept state:</b> &nbsp;Click on a node to show the according checkboxes.</li>\
+                      <li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>\
+                      <li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>\
+                      <li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field in the toolbar. You can add a one-character subscript by adding an underscore followed by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by the letter name (i.e., \\alpha).</li>\
+                      <li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click the delete button (<i class=\"fa fa-trash\"></i>), or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>\
+                      <li><b>(FSMs only) Mark node as initial or final state:</b> &nbsp;Select a node to show the according checkboxes.</li>\
                     </ul><br>\
                     <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
                     <ul class='dialog-help'>\
-                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
-                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
+                      <li><b>Create new node:</b> &nbsp;Click on an empty space.</li>\
+                      <li><b>Create edge:</b> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>\
                     </ul>\
                      ";
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
