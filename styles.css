@@ -419,6 +419,7 @@ body#page-question-type-graphchecker .tests-ui .button-group, .toolbar_button {
     border-radius: 4px;
     margin: 2px;
     background: #fff;
+    color: black;
 }
 
 body#page-question-type-graphchecker .tests-ui .button {
@@ -541,11 +542,13 @@ label.checkbox_label {
     position: relative;
     font-size: 14px;
     margin-right: 10px;
+    color: black;
 }
 
 label.textfield_label {
     position: relative;
     font-size: 14px;
+    color: black;
 }
 
 input.toolbar_textfield {
