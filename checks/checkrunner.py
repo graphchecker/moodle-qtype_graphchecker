@@ -34,7 +34,7 @@ def run(graph_type, graph, checks):
 		try:
 			check_module = importlib.import_module(check['module'])
 			check_method = getattr(check_module, check['method'])
-			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']])
+			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
 			result = check_method(graph, empty_graph, empty_graph, **argument)
 			result['module'] = check['module']
 			result['method'] = check['method']
@@ -52,18 +52,20 @@ def run(graph_type, graph, checks):
 		'results': results
 	}
 
-def convert_arguments(args, check):
+def convert_arguments(args, check, preprocess):
 	converted = {}
 	for a in args:
-		converted[a] = convert_argument(a, args[a], check)
+		converted[a] = convert_argument(a, args[a], check, preprocess)
 	return converted
 
-def convert_argument(name, value, check):
+def convert_argument(name, value, check, preprocess):
 	param_type = next(p for p in check['params'] if p['param'] == name)['type']
 	if param_type == 'integer':
 		return int(value)
 	elif param_type == 'string_list':
 		return value.split('\n')
+	elif param_type == 'graph':
+		return preprocess.preprocess(json.loads(value))
 	else:
 		return value
 

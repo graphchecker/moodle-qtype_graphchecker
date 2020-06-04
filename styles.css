@@ -480,6 +480,13 @@ body#page-question-type-graphchecker .tests-ui .argument-value {
     width: 140px;
 }
 
+body#page-question-type-graphchecker .tests-ui textarea.argument-value {
+    display: block;
+    margin-left: 73px;
+    width: calc(100% - 85px);
+    resize: vertical;
+}
+
 body#page-question-type-graphchecker .tests-ui .btn-link {
     position: relative;
     left: 5px;
