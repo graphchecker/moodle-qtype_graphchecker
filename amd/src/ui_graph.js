@@ -447,29 +447,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         } else {
             require(['core/str'], function(str) {
                 // Get help text via AJAX.
-                //TODO: remove newHelpString and place it inside lang/en/qtype_graphchecker.php.
-                // This is only here temporarily to show what the help dialog looks like in the tester tool
-                let newHelpString = "<div class = 'dialog-header'>Graph Help</div>\
-                    To create and modify graphs you can use two modes:\
-                    'Edit mode' and 'Draw mode'.\
-                    <br><br>\
-                    <div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Move node:</b> &nbsp;Click and drag a node.</li>\
-                      <li><b>Move link:</b> &nbsp;Click and drag a link.</li>\
-                      <li><b>Edit node/link label text:</b> &nbsp;Click on a node/link to show the label text field.</li>\
-                      <li><b>Subscripts in label text:</b> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
-                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a Greek letter's name (e.g. \\alpha or \\beta).</li>\
-                      <li><b>Delete node/link:</b> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys</li>\
-                      <li><b>(FSMs only) Mark node as initial or accept state:</b> &nbsp;Click on a node to show the according checkboxes.</li>\
-                    </ul><br>\
-                    <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
-                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
-                    </ul>\
-                     ";
+                let newHelpString = self.getHelpText();
                 var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
                 $.when(helpPresent).done(function(graphhelp) {
                     self.helpOverlay.insertHelpText(newHelpString);
@@ -563,6 +541,42 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.isPetri = function() {
         return this.templateParams.ispetri !== undefined ? this.templateParams.ispetri : true;
+    };
+
+    // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
+    Graph.prototype.getHelpText = function() {
+        // Create the first part of the help text
+        let introductoryText =
+        "<div class = 'dialog-header'>Graph Help</div>\
+                    To create and modify graphs you can use two modes:\
+                    'Edit mode' and 'Draw mode'.\
+                    <br><br>";
+
+        // Create the help text for the edit mode
+        let editModeText = "<div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
+                    <ul class='dialog-help'>\
+                      <li><b>Move node:</b> &nbsp;Click and drag a node.</li>\
+                      <li><b>Move link:</b> &nbsp;Click and drag a link.</li>\
+                      <li><b>Edit node/link label text:</b> &nbsp;Click on a node/link to show the label text field.</li>\
+                      <li><b>Subscripts in label text:</b> &nbsp;Type a _ followed by a digit to make that digit a subscript.</li>\
+                      <li><b>Greek letters in label text:</b> &nbsp;Type a \\ followed by a Greek letter's name (e.g. \\alpha or \\beta).</li>\
+                      <li><b>Delete node/link:</b> &nbsp;Click on a node/link and press the delete button (<i class=\"fa fa-trash\"></i>), or 'Delete' (Windows) or 'Fn-Delete' (Mac) keys.</li>";
+        if (this.isFsm()) {
+            // If the current graph type is FSM, add specific help for FSMs
+            editModeText += "<li><b>Mark node as initial or accept state:</b> &nbsp;Click on a node to show the according checkboxes.</li>";
+        }
+        editModeText += "</ul><br>";
+
+        // Create the help text for the draw mode
+        let drawModeText = "<div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
+                    <ul class='dialog-help'>\
+                      <li><b>Create new node/state:</b> &nbsp;Double click on an empty space.</li>\
+                      <li><b>Create link:</b> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><b>Create self link:</b> &nbsp;Click on a node and drag to the same node.</li>\
+                    </ul>";
+
+        // Return the concatenation
+        return introductoryText + editModeText + drawModeText;
     };
 
     // Draw an arrow head if this is a directed graph. Otherwise do nothing.
@@ -706,9 +720,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        // Setting h to h+1, in order to not make the canvas change size when the help button is pressed (which causes
-        // the screen to resize)
-        this.graphCanvas.resize(w, h+1);
+        // Setting h to h-7, in order to not make the canvas change size when the help button is pressed (which causes
+        // the screen to resize). TODO: not sure why this happens, but -7 seems to fix it
+        this.graphCanvas.resize(w, h-7);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
         this.draw();
     };
