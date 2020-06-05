@@ -408,7 +408,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.HIT_TARGET_PADDING = 6;    // Pixels.
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.TOOLBAR_HEIGHT = 35;       // px. The height of the toolbar above the graphCanvas
+        this.TOOLBAR_HEIGHT = 42.75;       // px. The height of the toolbar above the graphCanvas
         this.BUTTON_SIZE = {            //px. The size of the buttons (width, w, and height, h)
             w:  35,
             h:  25,
