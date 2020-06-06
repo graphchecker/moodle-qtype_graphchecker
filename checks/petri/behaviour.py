@@ -20,6 +20,8 @@ def infinite(student_answer, sample_answer, preload_answer):
 
 
 def deadlock_free(student_answer, sample_answer, preload_answer):
+    print(student_answer.places)
+    print(student_answer.arcs)
     # TODO: does not seem to work. Simple example of 2 places and 1 transition fails.
     is_workflow = check_wfnet(student_answer)
 

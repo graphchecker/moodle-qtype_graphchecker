@@ -5,6 +5,7 @@ from pm4py.objects.petri import utils
 def preprocess(graph):
     # TODO: input validation
     # TODO: raise new exception when input is not valid.
+    # TODO: all places unique name
 
     version = graph["_version"]
     print("version = " + str(version))
@@ -47,6 +48,7 @@ def preprocess(graph):
 
         arc = PetriNet.Arc(source, target, 1)
         arc.properties['name'] = edge['label']
+        arc.properties['bend'] = edge['bend']
 
         net.arcs.add(arc)
         source.out_arcs.add(arc)

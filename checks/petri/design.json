@@ -47,7 +47,7 @@
         {
           "param": "max_crossings",
           "name": "Max number of crossings",
-          "type": "int",
+          "type": "string",
           "default": "10",
           "min": "0"
         }
