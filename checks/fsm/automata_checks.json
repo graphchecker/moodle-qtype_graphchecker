@@ -1,0 +1,27 @@
+{
+    "name": "Automata checks",
+    "checks": {
+        "dfa_for_given_language": {
+            "name": "DFA for given language",
+            "description": "Checks if the DFA accepts a given language.",
+            "params": [
+                {
+                    "param": "language",
+                    "name": "language",
+                    "type": "string"
+                }
+            ]
+        },
+        "nfa_for_given_language": {
+            "name": "NFA for given language",
+            "description": "Checks if the NFA accepts a given language.",
+            "params": [
+                {
+                    "param": "language",
+                    "name": "language",
+                    "type": "string"
+                }
+            ]
+        }
+    }
+}
