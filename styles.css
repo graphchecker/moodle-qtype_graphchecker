@@ -436,18 +436,22 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
 }
 
 body#page-question-type-graphchecker .tests-ui .button:hover,
-.toolbar_button:hover:not(:active):not(.mode):not(.disabled),
-.toolbar_button.mode.not_clicked:hover:not(:active) {
+.toolbar_button:hover:not(:active):not(.toggle):not(.disabled),
+.toolbar_button.toggle.not_clicked:hover:not(:active) {
     background-image: radial-gradient(ellipse at center, rgba(255,255,255,1) 60%, rgba(223,223,223,1) 100%);
     background-color: #ebebeb;
 }
 
-button.toolbar_button.mode.clicked {
+button.toolbar_button.toggle.clicked {
     background-color: #ebebeb;
 }
 
 button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb;
+}
+
+button.toolbar_button.petri_node_type {
+    margin-top: 2px;
 }
 
 body#page-question-type-graphchecker .tests-ui .button .icon {
