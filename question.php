@@ -72,9 +72,15 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return question_behaviour the new behaviour object.
      */
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
-        // Regardless of the preferred behaviour, always use an adaptive
-        // behaviour.
-        return  new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
+
+        // if asking for deferred behavior, use that
+        // otherwise use our adapted adaptive behavior (so that we can display the results table)
+
+        if ($preferredbehaviour === "deferredfeedback") {
+            return parent::make_behaviour($qa, $preferredbehaviour);
+        } else {
+            return new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
+        }
     }
 
 
