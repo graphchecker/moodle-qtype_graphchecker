@@ -408,7 +408,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.HIT_TARGET_PADDING = 6;    // Pixels.
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.TOOLBAR_HEIGHT = 35;       // px. The height of the toolbar above the graphCanvas
+        this.TOOLBAR_HEIGHT = 42.75;       // px. The height of the toolbar above the graphCanvas
         this.BUTTON_SIZE = {            //px. The size of the buttons (width, w, and height, h)
             w:  35,
             h:  25,
@@ -445,34 +445,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if ('helpmenutext' in templateParams) {
             this.helpOverlay.insertHelpText(templateParams.helpmenutext);
         } else {
-            require(['core/str'], function(str) {
-                // Get help text via AJAX.
-                //TODO: remove newHelpString and place it inside lang/en/qtype_graphchecker.php.
-                // This is only here temporarily to show what the help dialog looks like in the tester tool
-                let newHelpString = "<div class = 'dialog-header'>Graph Help</div>\
-                    To create and modify graphs you can use two modes:\
-                    'Edit mode' and 'Draw mode'.\
-                    <br><br>\
-                    <div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>\
-                      <li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>\
-                      <li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field in the toolbar. You can add a one-character subscript by adding an underscore followed by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by the letter name (i.e., \\alpha).</li>\
-                      <li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click the delete button (<i class=\"fa fa-trash\"></i>), or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>\
-                      <li><b>(FSMs only) Mark node as initial or final state:</b> &nbsp;Select a node to show the according checkboxes.</li>\
-                    </ul><br>\
-                    <div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Create new node:</b> &nbsp;Click on an empty space.</li>\
-                      <li><b>Create edge:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>\
-                    </ul>\
-                     ";
-                var helpPresent = str.get_string('graphhelp', 'qtype_graphchecker');
-                $.when(helpPresent).done(function(graphhelp) {
-                    self.helpOverlay.insertHelpText(newHelpString);
-                });
-            });
+            let newHelpString = self.getHelpText();
+            this.helpOverlay.insertHelpText(newHelpString);
         }
         this.reload();
         if (!this.fail) {
@@ -561,6 +535,40 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.isPetri = function() {
         return this.templateParams.ispetri !== undefined ? this.templateParams.ispetri : true;
+    };
+
+    // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
+    Graph.prototype.getHelpText = function() {
+        // Create the first part of the help text
+        let introductoryText =
+        "<div class = 'dialog-header'>Graph Help</div>\
+                    To create and modify graphs you can use two modes:\
+                    'Edit mode' and 'Draw mode'.\
+                    <br><br>";
+
+        // Create the help text for the edit mode
+        let editModeText = "<div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
+                    <ul class='dialog-help'>\
+                      <li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>\
+                      <li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>\
+                      <li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field in the toolbar. You can add a one-character subscript by adding an underscore followed by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by the letter name (i.e., \\alpha).</li>\
+                      <li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click the delete button (<i class=\"fa fa-trash\"></i>), or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
+        if (this.isFsm()) {
+            // If the current graph type is FSM, add specific help for FSMs
+            editModeText += "<li><b>Mark node as initial or final state:</b> &nbsp;Select a node to show the corresponding checkboxes.</li>";
+        }
+        editModeText += "</ul><br>";
+
+        // Create the help text for the draw mode
+        let drawModeText = "<div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
+                    <ul class='dialog-help'>\
+                      <li><b>Create new node:</b> &nbsp;Click on an empty space.</li>\
+                      <li><b>Create new edge:</b> &nbsp;Click on a node and drag to another node.</li>\
+                      <li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>\
+                    </ul>";
+
+        // Return the concatenation
+        return introductoryText + editModeText + drawModeText;
     };
 
     // Draw an arrow head if this is a directed graph. Otherwise do nothing.
@@ -704,9 +712,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        // Setting h to h+1, in order to not make the canvas change size when the help button is pressed (which causes
-        // the screen to resize)
-        this.graphCanvas.resize(w, h+1);
+        // Setting h to h-7, in order to not make the canvas change size when the help button is pressed (which causes
+        // the screen to resize). TODO: not sure why this happens, but -7 seems to fix it
+        this.graphCanvas.resize(w, h-7);
         this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
         this.draw();
     };
