@@ -11,7 +11,6 @@ def get_marking(net):
 
 
 def number_of_tokens(student_answer, sample_answer, preload_answer, num_tokens):
-    # TODO: remove if they pass ints
     num_tokens = int(num_tokens)
     for place in student_answer.places:
         if place.properties['tokens'] == num_tokens:
@@ -83,17 +82,29 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
         return {'correct': True}
 
 
-def marking_given(student_answer, sample_answer, preload_answer, marking_list):
-    # TODO: needs to be updated in the future:
-    # Change this to a parameter where a graph is given and the student answer is compared to the given graph (by labels).
+def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
+    student_place_names = [p.name for p in student_answer.places]
 
-    for (label, n) in marking_list:
-        for place in student_answer.places:
-            if place.name == label:
-                if place.properties['tokens'] != n:
-                    return {'correct': False,
-                            'feedback': 'Place {0} has {1} tokens, expected {2} tokens.'
-                                        ''.format(place.name, place.properties['tokens'], n)}
+    # TODO: we could also check if the student answer has more places than the given graph and return False?
+    # TODO: The code below does this, remove it if we don't want it
+    correct_graph_names = [p.name for p in correct_graph.places]
+    for p in student_answer.places:
+        if p.name not in correct_graph_names:
+            return {'correct': False,
+                    'feedback': 'The place with name {0} was found but is not present in the correct graph.'.format(
+                        p.name)}
+
+    # Check if all tokens in the given answer exist and have the right amount of tokens.
+    for their_p in correct_graph.places:
+        if their_p.name not in student_place_names:
+            return {'correct': False,
+                    'feedback': 'The place with name {0} was not present in the given petri net.'.format(their_p.name)}
+        student_p = [p for p in student_answer.places if p.name == their_p.name][0]
+        if their_p.properties['tokens'] != student_p.properties['tokens']:
+            return {'correct': False,
+                    'feedback': 'The place with name {0} has {1} tokens. Expected {2} '
+                                'tokens.'.format(their_p.name, student_p.properties['tokens'],
+                                                 their_p.properties['tokens'])}
 
     return {'correct': True}
 

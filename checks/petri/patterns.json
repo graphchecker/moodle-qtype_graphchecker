@@ -1,0 +1,16 @@
+{
+  "name": "Basic petri-net functionality",
+  "checks": {
+    "has_sub_graph": {
+      "name": "Contains given sub graph",
+      "description": "Checks if for a given sub-graph the nodes with matching labels form have the exact sameconnections (no more, no less) and markings.",
+      "params": [
+        {
+          "param": "sub_graph",
+          "name": "sub graph",
+          "type": "graph"
+        }
+      ]
+    }
+  }
+}

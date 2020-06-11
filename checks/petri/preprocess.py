@@ -5,7 +5,7 @@ from pm4py.objects.petri import utils
 def preprocess(graph):
     # TODO: input validation
     # TODO: raise new exception when input is not valid.
-    # TODO: all places unique name
+    # TODO: all places unique name -> all (transitions+places) should have unique names for things to work
 
     version = graph["_version"]
     print("version = " + str(version))
