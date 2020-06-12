@@ -109,7 +109,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     /***********************************************************************
      *
-     * A GraphToolbar is a wrapper for a Graph's toolbar HTML div
+     * A GraphToolbar is the Graph's toolbar HTML div
      * object.
      *
      ************************************************************************/
@@ -122,7 +122,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let self = this;
         this.parent = parent;
         this.buttonSize = buttonSize;
-        this.uiMode = uiMode;
+        this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
         this.helpOverlay = helpOverlay;
         this.div = $(document.createElement('div'));
         this.div.attr({
@@ -134,6 +134,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
         this.buttons = [];
         this.checkboxes = [];
+        this.petriNodeTypeButtons = [];
         this.labelTextField = null;
 
         $(document).ready(function() {
@@ -171,12 +172,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             helpButton.create();
             self.buttons.push(helpButton);
 
-            // Enable one of the mode buttons at the start
+            // Enable one of the mode buttons at the start, depending on the UI mode
             for (let i = 0; i < self.buttons.length; i++) {
                 if (self.buttons[i] instanceof elements.ModeButton && self.buttons[i].buttonModeType ===
                     self.uiMode) {
                     self.buttons[i].setSelected();
                 }
+            }
+
+            // If the graph type is 'Petri net', and the initial mode is 'Draw', show the buttons for selection
+            // different types of petri nodes: places and transitions
+            if (self.parent.isPetri() && self.uiMode === elements.ModeType.DRAW) {
+                self.addPetriNodeTypeOptions();
+
+                // Set the place button to highlighted
+                self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]);
             }
 
             // Create the event listener for the buttons
@@ -200,6 +210,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             if (button.buttonModeType === elements.ModeType.DRAW) {
                 self.removeSelectionOptions();
                 self.removeFSMNodeSelectionOptions();
+                self.removePetriPlaceSelectionOptions();
+                self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]); //TODO: make into self.setInitialPetriNodeTypeButton function, so it's clearer
             }
         };
 
@@ -251,7 +263,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             event.preventDefault();
 
             for (let i = 0; i < buttons.length; i++) {
-                if (event.target === $(buttons[i].button)[0]) {
+                if (event.target === $(buttons[i].object)[0]) {
                     buttons[i].onClick(event);
                 }
             }
@@ -313,7 +325,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.removeFSMNodeSelectionOptions = function() {
-        // Remove the FSM initial checkbox if it is present
+        // Remove the FSM initial checkboxes if they are present
         for (let i = 0; i < this.checkboxes.length; i++) {
             if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL ||
                 this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
@@ -324,6 +336,46 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.checkboxes.splice(i--, 1);
             }
         }
+    };
+
+    GraphToolbar.prototype.addPetriNodeTypeOptions = function() {
+        // Clear the existing petri node type options, and re-add them below
+        this.removePetriNodeTypeOptions();
+
+        // Create the place PetriNodeType button
+        let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
+            this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
+            this.onClickPetriNodeTypeButton); //TODO: function
+        petriNodeTypePlaceButton.create();
+        this.petriNodeTypeButtons.push(petriNodeTypePlaceButton);
+
+        // Create the transition PetriNodeType button
+        let petriNodeTypeTransitionButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
+            this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', elements.PetriNodeType.TRANSITION,
+            this.onClickPetriNodeTypeButton); //TODO: function
+        petriNodeTypeTransitionButton.create();
+        this.petriNodeTypeButtons.push(petriNodeTypeTransitionButton);
+    };
+
+    GraphToolbar.prototype.removePetriNodeTypeOptions = function() {
+        // Remove the PetriNodeType buttons if they are present
+        for (let i = 0; i < this.petriNodeTypeButtons.length; i++) {
+            if (this.petriNodeTypeButtons[i] instanceof elements.PetriNodeTypeButton) {
+                // Remove the button from the DOM
+                $(this.petriNodeTypeButtons[i].object).remove();
+
+                // Remove from the list
+                this.petriNodeTypeButtons.splice(i--, 1);
+            }
+        }
+    };
+
+    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function() {
+        //TODO: add support for showing button nr of tokens
+    };
+
+    GraphToolbar.prototype.removePetriPlaceSelectionOptions = function() {
+        //TODO: add support for removing button nr of tokens
     };
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
@@ -343,6 +395,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.toolbar.parent.draw();
         }
     };
+
+    GraphToolbar.prototype.onClickPetriNodeTypeButton = function(object) {
+        // Set the button to selected (in case it was not already), and set the other button to deselected.
+        // Furthermore, set the petriNodeType of the graphUI
+        for (let i = 0; i < object.toolbar.petriNodeTypeButtons.length; i++) {
+            if (object.toolbar.petriNodeTypeButtons[i] === object) {
+                object.toolbar.parent.petriNodeType = object.toolbar.petriNodeTypeButtons[i].petriNodeType; //TODO create function
+                object.toolbar.petriNodeTypeButtons[i].setSelected();
+            } else {
+                object.toolbar.petriNodeTypeButtons[i].setDeselected();
+            }
+        }
+
+    }
 
     /***********************************************************************
      *
@@ -418,6 +484,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
         this.uiMode = this.getUIModeBeginning(); // Set the UI mode type depending on whether there is a graph or not
+        this.petriNodeType = elements.PetriNodeType.NONE;
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
         this.uiWrapper = uiWrapper;
@@ -508,12 +575,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.clickedObject = null;
         this.selectedObject = null;
 
-        // If the mode is set to draw, disable the delete button
         if (this.uiMode === elements.ModeType.DRAW) {
+            // Disable the delete button
             for (let i = 0; i < this.toolbar.buttons.length; i++) {
                 if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
                     this.toolbar.buttons[i].setDisabled();
                 }
+            }
+
+            // If the graph type is Petri net,
+            if (this.isPetri()) {
+                this.toolbar.addPetriNodeTypeOptions();
+            }
+        } else if (this.uiMode === elements.ModeType.EDIT) {
+            if (this.isPetri()) {
+                this.toolbar.removePetriNodeTypeOptions();
             }
         }
 
@@ -617,7 +693,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     // Draw a node
                     let newNode = new elements.Node(this, mouse.x, mouse.y);
                     if (this.isPetri()) { // Consider the node a place if it is a petri net
-                        newNode.petriNodeType = elements.PetriNodeType.PLACE;
+                        newNode.petriNodeType = this.petriNodeType;
                     }
                     this.nodes.push(newNode);
                     this.draw();
@@ -646,6 +722,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         this.toolbar.addFSMNodeSelectionOptions(this.clickedObject);
                     } else {
                         this.toolbar.removeFSMNodeSelectionOptions();
+                    }
+                }
+
+                // If the type is Petri, display the according token input field in the toolbar
+                if (this.isPetri()) {
+                    if (this.clickedObject instanceof elements.Node &&
+                        this.clickedObject.petriNodeType === elements.PetriNodeType.PLACE) {
+                        this.toolbar.addPetriPlaceSelectionOptions(this.clickedObject);
+                    } else {
+                        this.toolbar.removePetriPlaceSelectionOptions();
                     }
                 }
 
@@ -867,6 +953,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Remove the options in the toolbar based on the selected object
             graphUI.toolbar.removeSelectionOptions();
             graphUI.toolbar.removeFSMNodeSelectionOptions();
+            graphUI.toolbar.removePetriPlaceSelectionOptions();
         }
     }
 

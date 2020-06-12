@@ -596,7 +596,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                     "style":    "pointer-events: none",
                 }));
         $(this.parent[0]).append($button);
-        this.button = $button;
+        this.object = $button;
     };
 
     Button.prototype.onClick = function(eventFunction, object) {
@@ -627,11 +627,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     ModeButton.prototype.create = function() {
         Button.prototype.create.call(this);
 
-        // Add 'mode' to the class
-        this.button.addClass('mode');
+        // Add 'toggle' to the class
+        this.object.addClass('toggle');
 
         // Add the not_clicked class name by default, based on the button type
-        this.button.addClass('not_clicked');
+        this.object.addClass('not_clicked');
     };
 
     ModeButton.prototype.onClick = function() {
@@ -640,13 +640,63 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     ModeButton.prototype.setSelected = function() {
-        this.button.addClass('clicked');
-        this.button.removeClass('not_clicked');
+        this.object.addClass('clicked');
+        this.object.removeClass('not_clicked');
     };
 
     ModeButton.prototype.setDeselected = function() {
-        this.button.removeClass('clicked');
-        this.button.addClass('not_clicked');
+        this.object.removeClass('clicked');
+        this.object.addClass('not_clicked');
+    };
+
+    /***********************************************************************
+     *
+     * Define a class PetriNodeTypeButton for the buttons used to switch
+     * the petri node to be placed, when in Draw mode and when the graph
+     * type is Petri nets
+     *
+     ***********************************************************************/
+
+    function PetriNodeTypeButton(toolbar, parent, w, h, iconClass, title, petriNodeType, eventFunction) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
+        this.petriNodeType = petriNodeType; // Denotes which petri node type mode pressing the button activates
+    }
+
+    PetriNodeTypeButton.prototype = Object.create(Button.prototype);
+    PetriNodeTypeButton.prototype.constructor = PetriNodeTypeButton;
+
+    PetriNodeTypeButton.prototype.create = function() {
+        Button.prototype.create.call(this);
+
+        // Add 'toggle' to the class
+        this.object.addClass('toggle');
+
+        // Add 'petri_node_type' to the class
+        this.object.addClass('petri_node_type');
+
+        // Add the not_clicked class name by default, based on the button type
+        this.object.addClass('not_clicked');
+
+        // Add the event function to this button
+        let self = this;
+        $(this.object).click(function () {
+            self.onClick();
+        });
+    };
+
+    PetriNodeTypeButton.prototype.onClick = function() {
+        Button.prototype.onClick(this.eventFunction, this);
+        this.setSelected();
+    };
+
+    PetriNodeTypeButton.prototype.setSelected = function() {
+        this.object.addClass('clicked');
+        this.object.removeClass('not_clicked');
+    };
+
+    PetriNodeTypeButton.prototype.setDeselected = function() {
+        this.object.removeClass('clicked');
+        this.object.addClass('not_clicked');
     };
 
     /***********************************************************************
@@ -675,15 +725,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     DeleteButton.prototype.setEnabled = function() {
-        $(this.button[0]).attr('disabled', false);
+        $(this.object[0]).attr('disabled', false);
 
-        this.button.removeClass('disabled');
+        this.object.removeClass('disabled');
     };
 
     DeleteButton.prototype.setDisabled = function() {
-        $(this.button[0]).attr('disabled', true);
+        $(this.object[0]).attr('disabled', true);
 
-        this.button.addClass('disabled');
+        this.object.addClass('disabled');
     };
 
     /***********************************************************************
@@ -794,6 +844,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
         ModeButton: ModeButton,
+        PetriNodeTypeButton: PetriNodeTypeButton,
         HelpButton: HelpButton,
         DeleteButton: DeleteButton,
         Checkbox: Checkbox,
