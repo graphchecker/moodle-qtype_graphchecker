@@ -85,8 +85,7 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
 def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
     student_place_names = [p.name for p in student_answer.places]
 
-    # TODO: we could also check if the student answer has more places than the given graph and return False?
-    # TODO: The code below does this, remove it if we don't want it
+    # TODO: the correct_graph is a subset, this means it is alright if the student has places that the given answer does not have: remove code below!
     correct_graph_names = [p.name for p in correct_graph.places]
     for p in student_answer.places:
         if p.name not in correct_graph_names:

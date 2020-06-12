@@ -57,7 +57,7 @@ def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a
         return {'correct': False,
                 'feedback': 'The given labels ({0}, {1}, {2}) do not correspond to places in the graph. '
                             'Cannot find shortest path.'.format(label_a, label_b, label_c)}
-    # TODO: only places or also transitions? Need unique name!
+    # TODO: BOTH PLACES AND TRANSITONS
     # Get the places associated to the labels
     place_a = [p for p in student_answer.places if p.name == label_a][0]
     place_b = [p for p in student_answer.places if p.name == label_b][0]

@@ -8,6 +8,7 @@ def number_of_tokens(student_answer, sample_answer, preload_answer, sub_graph):
 
     # TODO: this test could be an issue if the subgraph is allowed to be connected to something
     # TODO: outside of it. Discuss.
+    # TODO: it is allowed to be connected to nodes outside of it
 
     # Check if all places match the arcs
     for p in sub_graph.places:
