@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/behaviour/adaptive/behaviour.php');
 require_once($CFG->dirroot . '/question/engine/questionattemptstep.php');
 require_once($CFG->dirroot . '/question/behaviour/adaptive_adapted_for_coderunner/behaviour.php');
+require_once($CFG->dirroot . '/question/behaviour/deferredfeedback_graphchecker/behaviour.php');
 require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 
 use qtype_graphchecker\constants;
@@ -77,7 +78,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
         // otherwise use our adapted adaptive behavior (so that we can display the results table)
 
         if ($preferredbehaviour === "deferredfeedback") {
-            return parent::make_behaviour($qa, $preferredbehaviour);
+            return new qbehaviour_deferredfeedback_graphchecker($qa, $preferredbehaviour);
         } else {
             return new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
         }
