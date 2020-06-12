@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/behaviour/adaptive/behaviour.php');
 require_once($CFG->dirroot . '/question/engine/questionattemptstep.php');
 require_once($CFG->dirroot . '/question/behaviour/adaptive_adapted_for_coderunner/behaviour.php');
+require_once($CFG->dirroot . '/question/behaviour/deferredfeedback_graphchecker/behaviour.php');
 require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 
 use qtype_graphchecker\constants;
@@ -72,9 +73,15 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return question_behaviour the new behaviour object.
      */
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
-        // Regardless of the preferred behaviour, always use an adaptive
-        // behaviour.
-        return  new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
+
+        // if asking for deferred behavior, use that
+        // otherwise use our adapted adaptive behavior (so that we can display the results table)
+
+        if ($preferredbehaviour === "deferredfeedback") {
+            return new qbehaviour_deferredfeedback_graphchecker($qa, $preferredbehaviour);
+        } else {
+            return new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
+        }
     }
 
 
@@ -189,24 +196,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
              return array(1, question_state::$gradedright, $datatocache);
         } else {
             return array(0, question_state::$gradedwrong, $datatocache);
-        }
-    }
-
-
-    /**
-     * Return Twig-expanded version of the given text. The
-     * Twig environment includes the question itself (this) and the template
-     * parameters. Additional twig environment parameters are passed in via
-     * $twigparams. Template parameters are hoisted if required.
-     * @param string $text Text to be twig expanded.
-     * @param associative array $twigparams Extra twig environment parameters
-     */
-    public function twig_expand($text, $twigparams=array()) {
-        if (empty(trim($text))) {
-            return $text;
-        } else {
-            $twigparams['QUESTION'] = $this;
-            return qtype_graphchecker_twig::render($text, $twigparams);
         }
     }
 

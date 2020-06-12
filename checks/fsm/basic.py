@@ -3,7 +3,7 @@
 def state_count(student_answer, sample_answer, preload_answer, expected):
 	states, transitions, initial_states, final_states = student_answer
 	actual = len(states)
-	if actual == int(expected):
+	if actual == expected:
 		return {'correct': True}
 	else:
 		return {'correct': False,
