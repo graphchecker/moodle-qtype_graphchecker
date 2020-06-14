@@ -54,10 +54,10 @@ def is_sequence_possible(net, transition_sequence):
 
 def possible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
-    if result[2]:
+    if result[2] or result[2] == '':
         return {'correct': False,
-                'feedback': 'Transition with label {0} in the transition sequence was not present'
-                            'in the given petri net.'.format(result[2])}
+                'feedback': 'Transition with label \'{0}\' in the transition sequence was not present'
+                            ' in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': True}
     else:
@@ -73,25 +73,17 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
     if result[2]:
         return {'correct': False,
                 'feedback': 'Transition with label {0} in the transition sequence was not present'
-                            'in the given petri net.'.format(result[2])}
+                            ' in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': False,
                 'feedback': 'The transition sequence {0} was possible. Expected'
-                            'it to be impossible.'.format(transition_sequence)}
+                            ' it to be impossible.'.format(transition_sequence)}
     else:
         return {'correct': True}
 
 
 def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
     student_place_names = [p.name for p in student_answer.places]
-
-    # TODO: the correct_graph is a subset, this means it is alright if the student has places that the given answer does not have: remove code below!
-    correct_graph_names = [p.name for p in correct_graph.places]
-    for p in student_answer.places:
-        if p.name not in correct_graph_names:
-            return {'correct': False,
-                    'feedback': 'The place with name {0} was found but is not present in the correct graph.'.format(
-                        p.name)}
 
     # Check if all tokens in the given answer exist and have the right amount of tokens.
     for their_p in correct_graph.places:

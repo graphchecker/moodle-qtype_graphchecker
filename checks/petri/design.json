@@ -2,13 +2,13 @@
   "name": "Design",
   "checks": {
     "no_forbidden_words": {
-      "name": "Label have no forbidden words",
+      "name": "Labels have no forbidden words",
       "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
       "params": [
         {
           "param": "words",
           "name": "labels",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]
@@ -20,7 +20,7 @@
         {
           "param": "words",
           "name": "labels",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]
@@ -60,7 +60,7 @@
         {
           "param": "labels",
           "name": "labels",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]
@@ -72,7 +72,7 @@
         {
           "param": "labels",
           "name": "labels",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]
@@ -84,13 +84,13 @@
         {
           "param": "labels_a",
           "name": "labels of nodes in A",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         },
         {
           "param": "labels_b",
           "name": "labels of nodes in B",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]
@@ -102,13 +102,13 @@
         {
           "param": "labels_a",
           "name": "labels of nodes in A",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         },
         {
           "param": "labels_b",
           "name": "labels of nodes in B",
-          "type": "list",
+          "type": "string_list",
           "default": ""
         }
       ]

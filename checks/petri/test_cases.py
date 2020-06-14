@@ -34,14 +34,12 @@ not_at_most_one_arc = {"_version":1,"vertices":[{"label":"a","position":[131,67]
 number_of_tokens = {"_version":1,"vertices":[{"label":"abc","position":[58,80],"accepting":false,"petri_type":"place"},{"label":"0","position":[276,118],"accepting":false,"petri_type":"place"},{"label":"","position":[160,80],"accepting":false,"petri_type":"transition"},{"label":"4","position":[455,92],"accepting":false,"petri_type":"place"},{"label":"","position":[324,194],"accepting":false,"petri_type":"transition"}],"edges":[{"from":0,"to":2,"label":"e0","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":1,"label":"e1","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":1,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":4,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":3,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.6975071413002327,"perpendicularPart":-30.395201953672565}}]}
 not_number_of_tokens = {"_version":1,"vertices":[{"label":"abc","position":[58,80],"accepting":false,"petri_type":"place"},{"label":"0","position":[276,118],"accepting":false,"petri_type":"place"},{"label":"","position":[160,80],"accepting":false,"petri_type":"transition"},{"label":"3","position":[455,92],"accepting":false,"petri_type":"place"},{"label":"","position":[324,194],"accepting":false,"petri_type":"transition"}],"edges":[{"from":0,"to":2,"label":"e0","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":1,"label":"e1","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":1,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":4,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":3,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.6975071413002327,"perpendicularPart":-30.395201953672565}}]}
 
-# TODO: there is no UI for lists yet
-# possible_sequence =
-# not_possible_sequence =
-# impossible_sequence =
-# not_impossible_sequence =
-# marking_given =
-# not_marking_given =
+# possible_sequence seems to work
+# impossible_sequence seems to work
+# marking_given
 
+
+# Not sure what a workflow net is so did not test it extensively
 workflow_net = {"_version":1,"vertices":[{"label":"abc","position":[58,80],"accepting":false,"petri_type":"place"},{"label":"0","position":[276,118],"accepting":false,"petri_type":"place"},{"label":"","position":[160,80],"accepting":false,"petri_type":"transition"},{"label":"3","position":[455,92],"accepting":false,"petri_type":"place"},{"label":"","position":[324,194],"accepting":false,"petri_type":"transition"}],"edges":[{"from":0,"to":2,"label":"e0","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":1,"label":"e1","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":1,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":4,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":3,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.6975071413002327,"perpendicularPart":-30.395201953672565}}]}
 not_workflow_net = {"_version":1,"vertices":[{"label":"abc","position":[58,80],"accepting":false,"petri_type":"place"},{"label":"0","position":[276,118],"accepting":false,"petri_type":"place"},{"label":"","position":[160,80],"accepting":false,"petri_type":"transition"},{"label":"3","position":[455,92],"accepting":false,"petri_type":"place"},{"label":"","position":[324,194],"accepting":false,"petri_type":"transition"},{"label":"","position":[333,289],"accepting":false,"petri_type":"transition"}],"edges":[{"from":0,"to":2,"label":"e0","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":1,"label":"e1","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":1,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":4,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":2,"to":3,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.6975071413002327,"perpendicularPart":-30.395201953672565}},{"from":3,"to":5,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5907287728381725,"perpendicularPart":-60.068833708661614}},{"from":5,"to":0,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5761571086114696,"perpendicularPart":-124.87007852626739}}]}
 
@@ -59,6 +57,17 @@ not_infinite = {"_version":1,"vertices":[{"label":"a","position":[131,67],"accep
 
 
 ## DESIGN ###
+
+# no_forbidden_words works
+# only_mandatory_words works
+# no_duplicate_label works
+# left_to_right works
+# top_to_bottom works
+# horizontally_adjacent works
+# vertically_adjacent works
+# list_left_of works
+# list_above_of works
+
 # This should contain exactly 5 crossings, tests only curved edges
 crossing_arcs = {"_version":1,"vertices":[{"label":"a","position":[288,189],"accepting":false,"petri_type":"place"},{"label":"b","position":[535,189],"accepting":false,"petri_type":"transition"},{"label":"c","position":[298,27],"accepting":false,"petri_type":"transition"},{"label":"d","position":[49,172],"accepting":false,"petri_type":"transition"},{"label":"e","position":[288,373],"accepting":false,"petri_type":"transition"}],"edges":[{"from":0,"to":1,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.6153846153846154,"perpendicularPart":-87}},{"from":0,"to":2,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.43767081688430004,"perpendicularPart":95.80529986031056}},{"from":0,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.375,"perpendicularPart":-81}},{"from":0,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5002961156592928,"perpendicularPart":-118.80444000976476}},{"from":0,"to":2,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.4417704221075008,"perpendicularPart":-120.64690558614798}},{"from":0,"to":1,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.15384615384615385,"perpendicularPart":95}},{"from":0,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.09782608695652174,"perpendicularPart":123}},{"from":0,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.7453579515763804,"perpendicularPart":86.54702706676356}}]}
 

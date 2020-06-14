@@ -22,7 +22,7 @@ def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
 
     for transition in student_answer.transitions:
-        if transition.name in words:
+        if transition.name not in words:
             return {'correct': False,
                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
 
@@ -62,7 +62,7 @@ def top_to_bottom(student_answer, sample_answer, preload_answer):
     for arc in student_answer.arcs:
         a_pos = arc.source.properties['position'][1]
         b_pos = arc.target.properties['position'][1]
-        if a_pos <= b_pos:
+        if a_pos >= b_pos:
             return {'correct': False,
                     'feedback': 'The arc between {0} and {1} is not top to bottom. '
                                 'This is not allowed.'.format(arc.source.name, arc.target.name)}
@@ -410,7 +410,7 @@ def list_above_of(student_answer, sample_answer, preload_answer, labels_a, label
         y = thing.properties['position'][1]
         for other in b_list:
             other_y = other.properties['position'][1]
-            if y <= other_y:
+            if y >= other_y:
                 return {'correct': False,
                         'feedback': 'Node {0} should be above node {1}'.format(thing.name, other.name)}
 

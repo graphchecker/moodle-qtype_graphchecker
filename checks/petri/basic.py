@@ -51,17 +51,19 @@ def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a
     # Create networkx graph
     graph, inv_dict = create_networkx_directed_graph(student_answer)
 
+    transitions_and_places = student_answer.places.union(student_answer.transitions)
+
     # Check if the given labels have a corresponding node
-    names = [p.name for p in student_answer.places]
+    names = [p.name for p in transitions_and_places]
     if label_a not in names or label_b not in names or label_c not in names:
         return {'correct': False,
-                'feedback': 'The given labels ({0}, {1}, {2}) do not correspond to places in the graph. '
+                'feedback': 'The given labels ({0}, {1}, {2}) do not all correspond to nodes in the graph. '
                             'Cannot find shortest path.'.format(label_a, label_b, label_c)}
-    # TODO: BOTH PLACES AND TRANSITONS
+
     # Get the places associated to the labels
-    place_a = [p for p in student_answer.places if p.name == label_a][0]
-    place_b = [p for p in student_answer.places if p.name == label_b][0]
-    place_c = [p for p in student_answer.places if p.name == label_c][0]
+    place_a = [p for p in transitions_and_places if p.name == label_a][0]
+    place_b = [p for p in transitions_and_places if p.name == label_b][0]
+    place_c = [p for p in transitions_and_places if p.name == label_c][0]
 
     # Get the numerical code of the networkx node related to a given label
     node_a = list(inv_dict.keys())[list(inv_dict.values()).index(place_a)]
@@ -71,11 +73,15 @@ def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a
     # Get all shortest paths between A and C
     all_paths = nx.algorithms.shortest_paths.all_shortest_paths(graph, node_a, node_c)
 
-    for path in all_paths:
-        if node_b in path:
-            return {'correct': True}
-        [print(inv_dict[n]) for n in path]
-        print(path)
+    try:
+        for path in all_paths:
+            if node_b in path:
+                return {'correct': True}
+            [print(inv_dict[n]) for n in path]
+            print(path)
+    except nx.exception.NetworkXException:
+        return {'correct': False,
+                'feedback': 'There is no shortest path between node {0} and node {1}.'.format(label_a, label_c)}
 
     return {'correct': False,
             'feedback': 'Node with label {0} is not on a shortest path between nodes'
