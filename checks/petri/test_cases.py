@@ -36,7 +36,7 @@ not_number_of_tokens = {"_version":1,"vertices":[{"label":"abc","position":[58,8
 
 # possible_sequence seems to work
 # impossible_sequence seems to work
-# marking_given
+# marking_given seems to work, however, currently 'label'='tokens' so it can only go wrong on 'label' until 'token' functionality is there
 
 
 # Not sure what a workflow net is so did not test it extensively
@@ -76,3 +76,7 @@ crossing_arcs_straight = {"_version":1,"vertices":[{"label":"a","position":[298,
 
 # Tests all type of intersections, should be 12
 crossing_arcs_all = {"_version":1,"vertices":[{"label":"a","position":[262,164],"accepting":false,"petri_type":"place"},{"label":"b","position":[459,170],"accepting":false,"petri_type":"transition"},{"label":"d","position":[62,158],"accepting":false,"petri_type":"transition"},{"label":"c","position":[278,43],"accepting":false,"petri_type":"transition"},{"label":"e","position":[262,300],"accepting":false,"petri_type":"transition"},{"label":"","position":[435,28],"accepting":false,"petri_type":"transition"},{"label":"","position":[49,82],"accepting":false,"petri_type":"place"}],"edges":[{"from":0,"to":1,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":0,"to":4,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.35294117647058826,"perpendicularPart":-130}},{"from":0,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.4237765993152984,"perpendicularPart":139.42273246684888}},{"from":0,"to":5,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":0,"to":2,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":0,"to":3,"label":"","bend":{"lineAngleAdjust":3.141592653589793,"parallelPart":0.1799019936900047,"perpendicularPart":-139.07862041633425}},{"from":6,"to":5,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5292406129864659,"perpendicularPart":77.32472565172229}},{"from":4,"to":6,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":0,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.4264705882352941,"perpendicularPart":114}}]}
+
+## PATTERNS ##
+
+# has_sub_graph seems to work

@@ -1,5 +1,5 @@
 {
-  "name": "Basic petri-net functionality",
+  "name": "Patterns",
   "checks": {
     "has_sub_graph": {
       "name": "Contains given sub graph",
