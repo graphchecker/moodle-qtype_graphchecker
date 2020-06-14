@@ -32,8 +32,8 @@ def has_keys(graph):
             raise Exception("There is an edge without a 'bend'")
         if 'label' not in e:
             raise Exception("There is an edge without a 'label'")
-        if 'parralelPart' not in e['bend']:
-            raise Exception("There is an edge without a 'bend.parralelPart'")
+        if 'parallelPart' not in e['bend']:
+            raise Exception("There is an edge without a 'bend.parallelPart'")
         if 'perpendicularPart' not in e['bend']:
             raise Exception("There is an edge without a 'bend.perpendicularPart'")
 
