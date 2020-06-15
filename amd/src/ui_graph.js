@@ -217,7 +217,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 self.removeSelectionOptions();
                 self.removeFSMNodeSelectionOptions();
                 self.removePetriPlaceSelectionOptions();
-                self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]); //TODO: make into self.setInitialPetriNodeTypeButton function, so it's clearer
+                if (self.parent.isPetri()) {
+                    self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]); //TODO: make into self.setInitialPetriNodeTypeButton function, so it's clearer
+                }
             }
         };
 
