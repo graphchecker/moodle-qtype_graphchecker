@@ -543,29 +543,17 @@ div#toolbar_part_middle {
     align-items: center;
 }
 
-label.checkbox_label {
+label.toolbar_label {
     position: relative;
     font-size: 14px;
-    margin-right: 10px;
+    margin-right: 7px;
+    margin-left: 7px;
     margin-bottom: 0;
-    color: black;
-}
-
-input.toolbar_checkbox {
-    margin-right: 5px;
-}
-
-label.textfield_label {
-    position: relative;
-    font-size: 14px;
-    margin-bottom: 0;
-    margin-left: 5px;
     color: black;
 }
 
 input.toolbar_textfield {
     margin-left: 5px;
-    margin-right: 13px;
     height: 14px;
 }
 
@@ -576,4 +564,10 @@ button.disabled {
 ul.dialog-help {
     margin-top: 0;
     margin-bottom: 0;
+}
+
+input.toolbar_numberinput {
+    height: 14px;
+    width: 45px;
+    margin-left: 5px;
 }

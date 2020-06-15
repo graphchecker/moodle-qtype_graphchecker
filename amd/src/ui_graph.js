@@ -121,7 +121,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         let self = this;
         this.parent = parent;
-        this.buttonSize = buttonSize;
+        this.buttonSize = {     //px. The pre-set size of the buttons (width, w, and height, h)
+            w:  35,             //TODO: set this in the style.css file instead of as a variable (a generic button class for this plugin)
+            h:  25,
+        };
         this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
         this.helpOverlay = helpOverlay;
         this.div = $(document.createElement('div'));
@@ -132,9 +135,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         });
 
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
+        // TODO: make one list per toolbar part (left, middle, right), and index by string, e.g. 'token'
+        // TODO: make button groups
         this.buttons = [];
         this.checkboxes = [];
         this.petriNodeTypeButtons = [];
+        this.petriTokenField = null;
         this.labelTextField = null;
 
         $(document).ready(function() {
@@ -277,7 +283,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.removeSelectionOptions();
 
         // Create the label textfield
-        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
+        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label:', this.onInteractTextField);
         labelTextField.create();
         this.labelTextField = labelTextField;
 
@@ -371,12 +377,52 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.addPetriPlaceSelectionOptions = function() {
-        //TODO: add support for showing button nr of tokens
+        this.removePetriPlaceSelectionOptions()
+
+        // Create the token number input field
+        let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
+        let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
+        let tokenInputField = new elements.NumberInputField(this, this.toolbarMiddlePart,
+            45, this.buttonSize.h, min, max, 'PetriToken', 'Tokens:', 'Number of tokens (' + min + '-' + max +')',
+            this.onEnterPetriTokenInput);
+        tokenInputField.create();
+        this.petriTokenField = tokenInputField;
+
+        // Set the value of the number input field depending on the selected object
+        $(this.petriTokenField.object)[0].childNodes[1].value = this.parent.selectedObject.petriTokens;
+        //todo draw
     };
 
     GraphToolbar.prototype.removePetriPlaceSelectionOptions = function() {
-        //TODO: add support for removing button nr of tokens
+        if (this.petriTokenField !== null) {
+            // Remove the input field from the DOM
+            $(this.petriTokenField.object).remove();
+        }
+        this.petriTokenField = null;
     };
+
+    GraphToolbar.prototype.onEnterPetriTokenInput = function(event) {
+        // Determine the token value
+        let min = this.minValue;
+        let max = this.maxValue;
+        let tokenValue = min;
+        if (isNaN(event.target.valueAsNumber) || event.target.valueAsNumber < min) {
+            tokenValue = min;
+        } else if (event.target.valueAsNumber > max) {
+            // Set to 100
+            tokenValue = max;
+        } else {
+            // Set to the value
+            tokenValue = event.target.valueAsNumber;
+        }
+
+        // Set the token value in the node
+        this.toolbar.parent.selectedObject.petriTokens = tokenValue;
+
+        // Draw the number of tokens
+        this.toolbar.parent.draw();
+        // TODO: display the token value, using         this.toolbar.parent.draw()          and another method
+    }
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
         if (event.target.checked) {
@@ -475,10 +521,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
         this.TOOLBAR_HEIGHT = 42.75;       // px. The height of the toolbar above the graphCanvas
-        this.BUTTON_SIZE = {            //px. The size of the buttons (width, w, and height, h)
-            w:  35,
-            h:  25,
-        };
+        this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
+            min: 0,
+            max: 100,
+        }       //TODO: assure that these values are met when saving (double check). if > 100, set to 100. If <0 or a char, set to 0
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
         this.canvasId = 'graphcanvas_' + textareaId;
@@ -494,7 +540,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.BUTTON_SIZE, this.uiMode, this.helpOverlay);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.uiMode, this.helpOverlay);
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
@@ -1125,6 +1171,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                     if (this.isPetri()) {
                         node.petriNodeType = inputNode['petri_type'];
+                        if (inputNode['petri_type'] === elements.PetriNodeType.PLACE) {
+                            node.petriTokens = inputNode['tokens'];
+                        }
                     }
                     this.nodes.push(node);
                 }
@@ -1182,6 +1231,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
             if (this.isPetri()) {
                 vertex['petri_type'] = node.petriNodeType;
+                if (vertex['petri_type'] === elements.PetriNodeType.PLACE) {
+                    vertex['tokens'] = node.petriTokens;
+                }
             }
             output.vertices.push(vertex);
         }
@@ -1262,7 +1314,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.save();
     };
 
-    Graph.prototype.drawText = function(originalText, x, y, angleOrNull) {
+    Graph.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
         var c = this.getCanvas().getContext('2d'),
             text = util.convertLatexShortcuts(originalText),
             width,
@@ -1271,8 +1323,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.font = this.fontSize() + 'px Arial';
         width = c.measureText(text).width;
 
-        // Center the text.
-        x -= width / 2;
+        // Find position for the text
+        if (originalObject instanceof elements.Node && originalObject.petriNodeType === elements.PetriNodeType.PLACE) {
+            x += 30;
+        } else {
+            // Center the text.
+            x -= width / 2;
+        }
 
         // Position the text intelligently if given an angle.
         if(angleOrNull !== null) {

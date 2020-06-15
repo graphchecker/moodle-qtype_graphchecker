@@ -81,7 +81,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.isInitial = false;
         this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
-        this.petriNodeType = PetriNodeType.NONE;
+        this.petriNodeType = PetriNodeType.NONE; //TODO: create a new subtype of node perhaps?
+        this.petriTokens = 0;
         this.text = '';
     }
 
@@ -114,8 +115,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
         c.stroke();
 
-        // Draw the text.
-        this.parent.drawText(this.text, this.x, this.y, null);
+        // Draw the label.
+        this.parent.drawText(this, this.text, this.x, this.y, null);
+
+        if (this.petriNodeType === PetriNodeType.PLACE && this.petriTokens > 0) {
+            // Draw the token values.
+            this.parent.drawText(null, this.petriTokens.toString(), this.x, this.y, null);
+        }
 
         // Draw a double circle for an accept state.
         if(this.isFinal) {
@@ -308,12 +314,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             textAngle = (startAngle + endAngle) / 2 + linkInfo.isReversed * Math.PI;
             textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(textAngle);
             textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(textAngle);
-            this.parent.drawText(this.text, textX, textY, textAngle);
+            this.parent.drawText(this, this.text, textX, textY, textAngle);
         } else {
             textX = (linkInfo.startX + linkInfo.endX) / 2;
             textY = (linkInfo.startY + linkInfo.endY) / 2;
             textAngle = Math.atan2(linkInfo.endX - linkInfo.startX, linkInfo.startY - linkInfo.endY);
-            this.parent.drawText(this.text, textX, textY, textAngle + this.lineAngleAdjust);
+            this.parent.drawText(this, this.text, textX, textY, textAngle + this.lineAngleAdjust);
         }
     };
 
@@ -457,7 +463,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Draw the text on the loop farthest from the node.
         var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
         var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
-        this.parent.drawText(this.text, textX, textY, this.anchorAngle);
+        this.parent.drawText(this, this.text, textX, textY, this.anchorAngle);
         // Draw the head of the arrow.
         this.parent.arrowIfReqd(c, linkInfo.endX, linkInfo.endY, linkInfo.endAngle + Math.PI * 0.4);
     };
@@ -566,7 +572,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) {
+    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) { //TODO: put a button in a button group (used for draw/edit mode buttons, or place/transition buttons) to easily switch between buttons in a group
         this.toolbar = toolbar;
         this.parent = parent;
         this.width = w; //In px.
@@ -758,6 +764,55 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
+     * Define a class NumberInputField for the number input field
+     * This can be used to set the number of tokens in a petri net's place
+     * for example
+     *
+     ***********************************************************************/
+
+    function NumberInputField(toolbar, parent, w, h, minValue, maxValue, name, labelText, title, eventFunction) {
+        this.toolbar = toolbar;
+        this.parent = parent;
+        this.width = w;     // In px.
+        this.height = h;    // In px.
+        this.minValue = minValue;   // The minimum numeric value possible to be entered
+        this.maxValue = maxValue;   // The maximum numeric value possible to be entered
+        this.name = name;
+        this.labelText = labelText;
+        this.title = title;
+        this.eventFunction = eventFunction;
+    }
+
+    NumberInputField.prototype.create = function() {
+        // Create the number input field
+        this.id = 'numberinput_' + this.title.split(' ').join('_');
+
+        let $number_input = $('<label/>')
+            .attr({
+                'class':    'toolbar_label',
+            }).append(this.labelText).append($('<input/>')
+            .attr({
+                'id':       this.id,
+                'class':    'toolbar_numberinput',
+                'type':     'number',
+                'title':    this.title,
+                'name':     this.name,
+                'min':      this.minValue,
+                'max':      this.maxValue,
+            }));
+        $(this.parent[0]).append($number_input);
+
+        // Add the event listener
+        $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
+        this.object = $number_input;
+    }
+
+    NumberInputField.prototype.handleInteraction = function(event) {
+        this.eventFunction(event, this.toolbar);
+    };
+
+    /***********************************************************************
+     *
      * Define a class Checkbox which can be used in the graph toolbar
      *
      ***********************************************************************/
@@ -775,7 +830,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.id = 'checkbox_' + this.text.split(' ').join('_');
         let $checkbox = $('<label/>')
             .attr({
-                'class':    'checkbox_label',
+                'class':    'toolbar_label',
             }).append($('<input/>')
             .attr({
                 'id':       this.id,
@@ -813,8 +868,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
         let $textfield = $('<label/>')
             .attr({
-                'class':    'textfield_label',
-            }).append(this.placeholderText + ":")
+                'class':    'toolbar_label',
+            }).append(this.placeholderText)
             .append($('<input/>')
                 .attr({
                     'id':           this.id,
@@ -846,6 +901,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         ModeButton: ModeButton,
         PetriNodeTypeButton: PetriNodeTypeButton,
         HelpButton: HelpButton,
+        NumberInputField: NumberInputField,
         DeleteButton: DeleteButton,
         Checkbox: Checkbox,
         TextField: TextField,
