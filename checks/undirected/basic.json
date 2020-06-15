@@ -1,78 +1,9 @@
 {
-    "name": "Graph properties",
+    "name": "Basic properties",
     "checks": {
-        "clique_number": {
-            "name": "Clique number",
-            "description": "Checks if the clique number (size of the largest clique) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
-        "diameter": {
-            "name": "Diameter",
-            "description": "Checks if the diameter (length of the longest path) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
         "edge_count": {
             "name": "Edge count",
             "description": "Checks if the graph has the given number of edges.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
-        "girth": {
-            "name": "Girth",
-            "description": "Checks if the girth (length of the shortest cycle) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 3,
-                    "min": 3
-                }
-            ]
-        },
-        "independence_number": {
-            "name": "Independence number",
-            "description": "Checks if the independence number (size of the largest independent set) is equal to the given value.",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
-        "isomorphism": {
-            "name": "Isomorphism",
-            "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices)."
-        },
-        "radius": {
-            "name": "Radius",
-            "description": "Checks if the radius (minimum eccentricity) is equal to the given value.",
             "params": [
                 {
                     "param": "expected",
@@ -96,51 +27,20 @@
                 }
             ]
         },
-        "vertex_degrees": {
-            "name": "Vertex degrees",
-            "description": "Checks if each vertex in the graph has the given degree.",
+		"connected": {
+			"name": "Graph is connected",
+			"description": "Check if the graph is connected"
+		},
+		"exact_same": {
+			"name": "Exact answer",
+			"description": "Check if exactly the specified graph is given. (excluding embedding)",
             "params": [
                 {
                     "param": "expected",
-                    "name": "should all be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
+                    "name": "should be",
+                    "type": "graph"
                 }
             ]
-        },
-        "number_vertices_of_degree": {
-            "name": "Vertex degree count",
-            "description": "Checks if there are a given number of vertices in the graph with the given degree.",
-            "params": [
-                {
-                    "param": "number_of_verts",
-                    "name": "There should be ",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                },
-                {
-                    "param": "degree",
-                    "name": "vertices of degree ",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        },
-        "vertex_degree_at_most": {
-            "name": "Vertex degree at most",
-            "description": "Checks if all the vertices have at most the given degree.",
-            "params": [
-                {
-                    "param": "max_degree",
-                    "name": "The maximum vertex degree is ",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                }
-            ]
-        }
+		}
     }
 }
