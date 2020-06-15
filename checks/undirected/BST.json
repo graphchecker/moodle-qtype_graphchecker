@@ -1,5 +1,5 @@
 {
-    "name": "Basic properties",
+    "name": "BST properties",
     "checks": {
         "BST_layout": {
             "name": "BST layout",
