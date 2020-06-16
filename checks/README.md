@@ -41,6 +41,11 @@ A checker function must return an object that describes the result of the test. 
 If a checker function raises an exception, the question is not graded and instead the exception stack trace is shown verbatim to the student. This should be avoided in student-facing quizzes, so in practice checker functions must never raise an exception (except possibly for debugging purposes during development). Similarly, a checker function must never return an object that does not correspond to the specification above.
 
 
+### Other requirements
+
+On the server, the PHP code communicates with the checker functions by JSON over stdout. Due to this, checker functions must not print anything to stdout (or stderr) because this will confuse the JSON parsing code.
+
+
 Metadata
 --------
 
