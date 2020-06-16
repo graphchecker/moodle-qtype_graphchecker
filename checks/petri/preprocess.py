@@ -7,7 +7,7 @@ def preprocess(graph):
     # TODO: raise new exception when input is not valid.
 
     version = graph["_version"]
-    print("version = " + str(version))
+    #print("version = " + str(version))
 
     vertices = graph['vertices']
     edges = graph['edges']

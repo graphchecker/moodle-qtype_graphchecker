@@ -33,8 +33,8 @@ def vertex_degree_sequence(student_answer, sample_answer, preload_answer, degree
 	
 	sequence.sort()
 	student_degs.sort()
-	print(sequence)
-	print(student_degs)
+	#print(sequence)
+	#print(student_degs)
 	for deg, stu_deg in zip(sequence, student_degs):
 		if (int(deg) != stu_deg):
 			#print(sequence)
