@@ -457,9 +457,18 @@ body#page-question-type-graphchecker .tests-ui .button .icon {
 
 body#page-question-type-graphchecker .tests-ui .test-name {
     margin-left: 10px;
+    font-weight: bold;
 }
 
-body#page-question-type-graphchecker .tests-ui .active-tests-list .test-name,
+body#page-question-type-graphchecker .tests-ui .available-tests-list .button-group {
+    position: absolute;
+}
+
+body#page-question-type-graphchecker .tests-ui .available-tests-list .test-name,
+body#page-question-type-graphchecker .tests-ui .available-tests-list .test-description {
+    margin-left: 45px;
+}
+
 body#page-question-type-graphchecker .tests-ui .module-name {
     font-weight: bold;
 }

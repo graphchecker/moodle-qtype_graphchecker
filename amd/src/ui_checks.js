@@ -179,8 +179,8 @@ define(['jquery'], function($) {
             .appendTo($header);
 
         if (checkInfo['description']) {
-            let $helpButton = this.createHelpButton(checkInfo['description'])
-                .appendTo($header);
+            //let $helpButton = this.createHelpButton(checkInfo['description'])
+            //    .appendTo($header);
         }
 
         let $rightButtonGroup = $('<div/>')
@@ -376,7 +376,11 @@ define(['jquery'], function($) {
             .appendTo($header);
 
         if (check['description']) {
-            let $helpButton = this.createHelpButton(check['description'])
+            //let $helpButton = this.createHelpButton(check['description'])
+            //    .appendTo($header);
+            let $descriptionLabel = $('<div/>')
+                .html(check['description'])
+                .addClass('test-description')
                 .appendTo($header);
         }
 
