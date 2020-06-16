@@ -21,7 +21,7 @@
 .que.graphchecker div.ui_wrapper {
     max-width: 100%;
     box-sizing: border-box;
-    background-color: #F0F0F0;
+    background-color: #f0f0f0;
 }
 
 .que.graphchecker .ace_editor,
@@ -53,7 +53,7 @@ body#page-question-type-graphchecker .ace_editor {
 }
 
 .que.graphchecker select.graphchecker-lang-select {
-    margin: 0px 0px 0px 10px;
+    margin: 0 0 0 10px;
     padding: 1px 5px 1px 5px;
 }
 
@@ -67,7 +67,7 @@ body#page-question-type-graphchecker .ace_editor {
 .que.graphchecker table.graphchecker-test-results th,
 .que.graphchecker table.graphcheckerexamples td,
 .que.graphchecker table.graphcheckerexamples th {
-    border: 1px solid #B0B0B0;
+    border: 1px solid #b0b0b0;
     padding: 0.4em;
 }
 
@@ -75,7 +75,7 @@ body#page-question-type-graphchecker .ace_editor {
 .que.graphchecker table.graphchecker-test-results .header,
 .que.graphchecker table.graphcheckerexamples .header {
     text-align: left;
-    background-color: #F8F8FF;
+    background-color: #f8f8ff;
 }
 
 .que.graphchecker table.graphchecker-test-results tr.hidden-test {
@@ -84,7 +84,7 @@ body#page-question-type-graphchecker .ace_editor {
 
 #page-question-type-graphchecker table.graphchecker-test-results {
     margin-top: 0.5em;
-    margin-bottom: 0.0em;
+    margin-bottom: 0;
 }
 
 .que.graphchecker table.graphchecker-test-results,
@@ -118,33 +118,33 @@ body#page-question-type-graphchecker .ace_editor {
 .que.graphchecker pre.tablecell {
     background-color: inherit;
     border: none;
-    padding: 0px;
+    padding: 0;
     white-space: pre;
 }
 
 .que.graphchecker div.graphchecker-test-results pre,
 .que.graphchecker div.graphchecker-examples pre {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .que.graphchecker div.graphchecker-test-results.good,
 #page-question-type-graphchecker tr.graphchecker-failed-test.fixed {
-    background-color: #AAFFAA;
+    background-color: #afa;
 }
 
 .que.graphchecker div.graphchecker-test-results.good.precheck {
-    background: repeating-linear-gradient(0deg, #FFFFFF, #FFFFFF 8px, #f8f1f9 8px, #f8f1f9 16px);
+    background: repeating-linear-gradient(0deg, #fff, #fff 8px, #f8f1f9 8px, #f8f1f9 16px);
 }
 
 .que.graphchecker div.graphchecker-test-results.bad,
 .que.graphchecker div.pre_syntax_error,
 .que.graphchecker div.pre_question_error {
-    background-color: #FFAAAA;
+    background-color: #faa;
 }
 
 .que.graphchecker div.graphchecker-test-results.bad.precheck,
 .que.graphchecker pre.pre_syntax_error .precheck {
-    background: repeating-linear-gradient(0deg, #FFDDDD, #FFDDDD 8px, #FFEEEE 8px, #FFEEEE 16px);
+    background: repeating-linear-gradient(0deg, #fdd, #fdd 8px, #fee 8px, #fee 16px);
 }
 
 .que.graphchecker pre.pre_syntax_error,
@@ -153,7 +153,7 @@ body#page-question-type-graphchecker .ace_editor {
 }
 
 div.graphchecker-test-results.partial {
-    background-color: #FFF3BF;
+    background-color: #fff3bf;
 }
 
 .que.graphchecker span.answerprompt {
@@ -171,16 +171,16 @@ div.graphchecker-test-results.partial {
 */
 .que.graphchecker div.graphchecker-test-results del {
     text-decoration: none;
-    background-color: #E0E000;
+    background-color: #e0e000;
 }
 
 /* Add lines I seem to have somehow overridden in styles.php */
 .que.graphchecker tr.r0 td {
-    background-color:#F5F5F5
+    background-color: #f5f5f5;
 }
 
 .que.graphchecker tr.r1 td {
-    background-color:#E5E5E5
+    background-color: #e5e5e5;
 }
 
 .que.graphchecker div.im-controls p.penaltyregime {
@@ -193,7 +193,7 @@ div.graphchecker-test-results.partial {
 }
 
 .que.graphchecker .ace_gutter-cell {
-    border-right: solid 1px #000000;
+    border-right: solid 1px #000;
 }
 
 .que.graphchecker .ace_fold-widget {
@@ -266,12 +266,12 @@ body#page-question-type-graphchecker .ace_wrapper {
 
 body#page-question-type-graphchecker div[id^=fitem_id_],
 body#page-question-type-graphchecker div[id^=fgroup_id_] {
-    background: #EEE;
+    background: #eee;
     margin-bottom: 0;
     margin-top: 0;
     padding-bottom: 5px;
     padding-top: 5px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     border-top: 0;
     border-bottom: 0;
     overflow: visible;
@@ -279,19 +279,17 @@ body#page-question-type-graphchecker div[id^=fgroup_id_] {
 
 body#page-question-type-graphchecker label[for^=id_useasexample],
 body#page-question-type-graphchecker label[for^=id_hiderestiffail],
-body#page-question-type-graphchecker label.form-check
-{
+body#page-question-type-graphchecker label.form-check {
     padding: 5px;
     border: 1px solid lightgray;
 }
 
 body#page-question-type-graphchecker p.question-type-details-header {
     font-size: 130%;
-    padding-botton: 10px;
+    padding-bottom: 10px;
 }
 
-body#page-question-type-graphchecker div[id^=fgroup_id_][id*=show_columns]
-        .felement span {
+body#page-question-type-graphchecker div[id^=fgroup_id_][id*=show_columns] .felement span {
     margin-right: 2em;
 }
 
@@ -301,19 +299,19 @@ body#page-question-type-graphchecker div[id^=fgroup_id_][id*=show_columns] {
 }
 
 body#page-question-type-graphchecker select#id_graphchecker_type {
-    margin-right:2em;
+    margin-right: 2em;
 }
 
 body#page-question-type-graphchecker div[id^=fitem_id_testcode]:not(:first-of-type) {
     margin-top: 14px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     border-bottom: 0;
     padding-top: 8px;
 }
 
 body#page-question-type-graphchecker div[id=fitem_id_addanswers] {
     margin-top: 14px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     padding-top: 8px;
 }
 
@@ -322,7 +320,7 @@ body#page-question-type-graphchecker input[name="usecurrentcat"] {
     margin-left: 2em;
 }
 
-body#page-question-type-graphchecker input[type="checkbox"]+label {
+body#page-question-type-graphchecker input[type="checkbox"] + label {
     margin-right: 1em;
 }
 
@@ -338,7 +336,7 @@ body#page-question-type-graphchecker textarea.uiloadfailed {
 
 body#page-question-type-graphchecker div.uiloadfailed {
     background-color: orange;
-    padding-after: 0px;
+    padding-bottom: 0;
     padding-left: 10px;
 }
 
@@ -349,8 +347,8 @@ body#page-question-type-graphchecker input#id_memlimitmb {
     width: auto;
 }
 
-body#page-question-type-graphchecker label+select,
-body#page-question-type-graphchecker label+input {
+body#page-question-type-graphchecker label + select,
+body#page-question-type-graphchecker label + input {
     margin-right: 1em;
 }
 
@@ -371,13 +369,14 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop, .graphchecker_overlay {
+body#page-question-type-graphchecker .tests-ui .backdrop,
+.graphchecker_overlay {
     position: fixed;
     display: none;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     opacity: 0;
     transition: opacity .5s;
     z-index: 2000;
@@ -385,7 +384,8 @@ body#page-question-type-graphchecker .tests-ui .backdrop, .graphchecker_overlay 
     overflow-y: scroll;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop.visible, .graphchecker_overlay.visible {
+body#page-question-type-graphchecker .tests-ui .backdrop.visible,
+.graphchecker_overlay.visible {
     opacity: 1;
 }
 
@@ -402,7 +402,7 @@ body#page-question-type-graphchecker .tests-ui .test-container {
 
 body#page-question-type-graphchecker .tests-ui .test-container:last-child {
     background-color: #f2f2f2;
-    border-bottom: 0px;
+    border-bottom: 0;
 }
 
 body#page-question-type-graphchecker .tests-ui .module-container {
@@ -412,7 +412,8 @@ body#page-question-type-graphchecker .tests-ui .module-container {
 }
 
 /* definitions for button styling taken from atto for consistency */
-body#page-question-type-graphchecker .tests-ui .button-group, .toolbar_button {
+body#page-question-type-graphchecker .tests-ui .button-group,
+.toolbar_button {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
@@ -438,7 +439,7 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
 body#page-question-type-graphchecker .tests-ui .button:hover,
 .toolbar_button:hover:not(:active):not(.mode):not(.disabled),
 .toolbar_button.mode.not_clicked:hover:not(:active) {
-    background-image: radial-gradient(ellipse at center, rgba(255,255,255,1) 60%, rgba(223,223,223,1) 100%);
+    background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 60%, rgba(223, 223, 223, 1) 100%);
     background-color: #ebebeb;
 }
 
@@ -510,7 +511,7 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     background-color: white;
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0px 7px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.3);
     color: black;
 }
 
@@ -589,3 +590,4 @@ ul.dialog-help {
     margin-top: 0;
     margin-bottom: 0;
 }
+
