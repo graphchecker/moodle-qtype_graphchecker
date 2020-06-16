@@ -413,14 +413,14 @@ body#page-question-type-graphchecker .tests-ui .module-container {
 
 /* definitions for button styling taken from atto for consistency */
 body#page-question-type-graphchecker .tests-ui .button-group,
-.toolbar_button {
+.graph_ui_container_div .toolbar_button {
     display: inline-block;
     border: 1px solid #ccc;
     border-bottom: 1px solid #b3b3b3;
     border-radius: 4px;
     margin: 2px;
     background: #fff;
-    color: black;
+    color: black !important;
 }
 
 body#page-question-type-graphchecker .tests-ui .button {
@@ -437,18 +437,26 @@ body#page-question-type-graphchecker .tests-ui .button + .button {
 }
 
 body#page-question-type-graphchecker .tests-ui .button:hover,
-.toolbar_button:hover:not(:active):not(.mode):not(.disabled),
-.toolbar_button.mode.not_clicked:hover:not(:active) {
+.graph_ui_container_div .toolbar_button:hover:not(:active):not(.mode):not(.disabled),
+.graph_ui_container_div .toolbar_button.mode.not_clicked:hover:not(:active) {
     background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 60%, rgba(223, 223, 223, 1) 100%);
-    background-color: #ebebeb;
+    background-color: #ebebeb !important;
 }
 
-button.toolbar_button.mode.clicked {
-    background-color: #ebebeb;
+.graph_ui_container_div button.toolbar_button.mode.clicked {
+    background-color: #ebebeb !important;
 }
 
-button.toolbar_button:active:not(.disabled) {
-    background-color: #ebebeb;
+.graph_ui_container_div button.toolbar_button:active:not(.disabled) {
+    background-color: #ebebeb !important;
+}
+
+.graph_ui_container_div .toolbar_button {
+    padding: 0 !important;
+}
+
+.graph_ui_container_div .toolbar_button .icon {
+    margin-right: 0 !important;
 }
 
 body#page-question-type-graphchecker .tests-ui .button .icon {
