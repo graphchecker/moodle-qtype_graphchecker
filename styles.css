@@ -465,6 +465,10 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list .button-gro
     position: absolute;
 }
 
+body#page-question-type-graphchecker .tests-ui .float-right {
+    float: right;
+}
+
 body#page-question-type-graphchecker .tests-ui .available-tests-list .test-name,
 body#page-question-type-graphchecker .tests-ui .available-tests-list .test-description {
     margin-left: 45px;
