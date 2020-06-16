@@ -420,6 +420,11 @@ body#page-question-type-graphchecker .tests-ui .button-group,
     border-radius: 4px;
     margin: 2px;
     background: #fff;
+    color: black;
+}
+
+body#page-question-type-graphchecker .tests-ui .test-container button .fa,
+.graph_ui_container_div .toolbar_button .fa {
     color: black !important;
 }
 
