@@ -2,6 +2,7 @@
 
 import igraph
 
+#helper
 def filter_orig_name(v):
     return v['name'].split("_")[1]
 
