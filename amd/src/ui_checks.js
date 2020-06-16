@@ -107,8 +107,7 @@ define(['jquery'], function($) {
         for (let moduleName in this.modules) {
             if (this.modules.hasOwnProperty(moduleName)) {
                 let module = this.modules[moduleName];
-                let $moduleContainer = this
-                    .createModuleContainer(moduleName, module)
+                this.createModuleContainer(moduleName, module)
                     .appendTo(this.$availableChecksList);
                 let checks = module['checks'];
                 for (let checkName in checks) {
@@ -133,9 +132,9 @@ define(['jquery'], function($) {
             .addClass('visible');
         $('body').addClass('unscrollable');
         return false;
-    }
+    };
 
-    ChecksUi.prototype.hideAddCheckDialog = function(check) {
+    ChecksUi.prototype.hideAddCheckDialog = function() {
         this.$backdrop.removeClass('visible');
         $('body').removeClass('unscrollable');
 
@@ -143,7 +142,7 @@ define(['jquery'], function($) {
         setTimeout(function() {
             this.$backdrop.css('display', 'none');
         }.bind(this), 500);
-    }
+    };
 
     ChecksUi.prototype.createActiveCheckContainer = function(check) {
         let module = check['module'];
@@ -162,18 +161,18 @@ define(['jquery'], function($) {
             .addClass('button-group')
             .appendTo($header);
 
-        let $upButton = this.createButton('fa-angle-up')
+        this.createButton('fa-angle-up')
             .attr('title', 'Move this check up in the list')
             .on('click', this.moveCheckUp.bind(this))
             .appendTo($buttonGroup);
-        let $downButton = this.createButton('fa-angle-down')
+        this.createButton('fa-angle-down')
             .attr('title', 'Move this check down in the list')
             .on('click', this.moveCheckDown.bind(this))
             .appendTo($buttonGroup);
 
         let checkInfo = this.modules[module]['checks'][method];
 
-        let $title = $('<span/>')
+        $('<span/>')
             .html(checkInfo['name'])
             .addClass('test-name')
             .appendTo($header);
@@ -187,13 +186,13 @@ define(['jquery'], function($) {
             .addClass('button-group float-right')
             .appendTo($header);
 
-        let $removeButton = this.createButton('fa-trash')
+        this.createButton('fa-trash')
             .attr('title', 'Remove this check from the list')
             .on('click', this.removeCheck.bind(this))
             .appendTo($rightButtonGroup);
 
         if (checkInfo['params']) {
-            let $argsContainer = this.createArgsContainer(checkInfo, check)
+            this.createArgsContainer(checkInfo, check)
                 .appendTo($container);
         }
 
@@ -229,56 +228,61 @@ define(['jquery'], function($) {
                 value = param['default'];
             }
 
-            switch (param['type']) {
-                case 'integer':
-                    $field = $('<input/>')
-                        .addClass('argument-value')
-                        .attr('type', 'number')
-                        .val(value)
+            let type = param['type'];
+
+            if (type === 'integer') {
+                let $field = $('<input/>')
+                    .addClass('argument-value')
+                    .attr('type', 'number')
+                    .val(value)
+                    .appendTo($argumentRow);
+                if (param.hasOwnProperty('min')) {
+                    $field.attr('min', param['min']);
+                }
+                if (param.hasOwnProperty('max')) {
+                    $field.attr('max', param['max']);
+                }
+
+            } else if (type === 'string') {
+                $('<input/>')
+                    .addClass('argument-value')
+                    .val(value)
+                    .appendTo($argumentRow);
+
+            } else if (type === 'string_list' ||
+                    type === 'string_multiline' ||
+                    type === 'graph') {
+                $('<textarea/>')
+                    .addClass('argument-value')
+                    .val(value)
+                    .appendTo($argumentRow);
+
+            } else if (type === 'choice') {
+                if (!param.hasOwnProperty('options')) {
+                    $('<span/>')
+                        .html('No options provided for choice parameter')
                         .appendTo($argumentRow);
-                    if (param.hasOwnProperty('min')) {
-                        $field.attr('min', param['min']);
-                    }
-                    if (param.hasOwnProperty('max')) {
-                        $field.attr('max', param['max']);
-                    }
-                    break;
-                case 'string':
-                    $field = $('<input/>')
-                        .addClass('argument-value')
-                        .val(value)
-                        .appendTo($argumentRow);
-                    break;
-                case 'string_list':
-                case 'string_multiline':
-                case 'graph':
-                    $field = $('<textarea/>')
-                        .addClass('argument-value')
-                        .val(value)
-                        .appendTo($argumentRow);
-                    break;
-                case 'choice':
-                    $field = $('<select/>')
+                } else {
+                    let $field = $('<select/>')
                         .addClass('argument-value')
                         .appendTo($argumentRow);
-                    if (!param.hasOwnProperty('options')) {
-                        console.error('No options provided for choice parameter');
-                        break;
-                    }
                     for (let option of param['options']) {
                         $('<option/>')
                             .text(option)
                             .appendTo($field);
                     }
                     $field.val(value);
-                    break;
-                default:
-                    console.error('Unknown type ' + param['type']);
+                }
+
+            } else {
+                $('<span/>')
+                    .html('Unknown parameter type "' + type + '"')
+                    .appendTo($argumentRow);
             }
         }
 
         return $container;
-    }
+    };
 
     /**
      * Creates a module header.
@@ -292,7 +296,7 @@ define(['jquery'], function($) {
             .addClass('module-header')
             .appendTo($container);
 
-        let $title = $('<span/>')
+        $('<span/>')
             .html(this.modules[module]['name'])
             .addClass('module-name')
             .appendTo($header);
@@ -363,14 +367,14 @@ define(['jquery'], function($) {
             .addClass('button-group')
             .appendTo($header);
 
-        let $addButton = this.createButton('fa-plus')
+        this.createButton('fa-plus')
             .attr('title', 'Add this check to the list')
             .on('click', this.addCheck.bind(this))
             .appendTo($buttonGroup);
 
         let check = this.modules[module]['checks'][method];
 
-        let $title = $('<span/>')
+        $('<span/>')
             .html(check['name'])
             .addClass('test-name')
             .appendTo($header);
@@ -378,7 +382,7 @@ define(['jquery'], function($) {
         if (check['description']) {
             //let $helpButton = this.createHelpButton(check['description'])
             //    .appendTo($header);
-            let $descriptionLabel = $('<div/>')
+            $('<div/>')
                 .html(check['description'])
                 .addClass('test-description')
                 .appendTo($header);
@@ -409,7 +413,7 @@ define(['jquery'], function($) {
     };
 
     ChecksUi.prototype.createHelpButton = function(description) {
-        return $button = $('<a/>')
+        return $('<a/>')
             .addClass('btn btn-link p-0')
             .attr('data-container', 'body')
             .attr('data-content', '<div><p>' + description + '</p></div>')
