@@ -72,9 +72,6 @@ def preprocess(graph):
     if not no_empty_label(graph):
         return None
 
-    # TODO: input validation
-    # TODO: raise new exception when input is not valid.
-
     vertices = graph['vertices']
     edges = graph['edges']
 
@@ -100,9 +97,6 @@ def preprocess(graph):
             ordered_vertices.append(new_place)
         elif vertex['petri_type'] == "transition":
             new_transition = PetriNet.Transition(label, label)
-            # TODO: do we want this?
-            if label == "":
-                new_transition.label = None
             new_transition.properties['position'] = vertex['position']
 
             net.transitions.add(new_transition)
