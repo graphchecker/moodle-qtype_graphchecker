@@ -182,7 +182,10 @@ class qtype_graphchecker_question extends question_graded_automatically {
         if ($gradingreqd) {
             // We haven't already graded this submission or we graded it with
             // a different precheck setting.
-            $answer = $response['answer'];
+            $answer = '';
+            if (array_key_exists('answer', $response)) {
+                $answer = $response['answer'];
+            }
             $checks = $this->get_checks();
             $runner = new qtype_graphchecker_jobrunner();
             $testoutcome = $runner->run_checks($this, $answer, $checks, $isprecheck);
