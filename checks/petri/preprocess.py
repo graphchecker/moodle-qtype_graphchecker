@@ -1,5 +1,4 @@
-from pm4py.objects.petri.petrinet import PetriNet, Marking
-from pm4py.objects.petri import utils
+from pm4py.objects.petri.petrinet import PetriNet
 
 
 def has_keys(graph):
@@ -18,10 +17,8 @@ def has_keys(graph):
         if 'petri_type' not in v:
             raise Exception("There is a node without a 'petri_type'")
         if v['petri_type'] == 'place':
-            pass
-            # TODO: uncomment this once token functionality is there
-            # if 'tokens' not in v:
-            #     raise Exception("There is a place without a number of tokens")
+            if 'tokens' not in v:
+                raise Exception("There is a place without a number of tokens")
 
     for e in graph['edges']:
         if 'from' not in e:
@@ -64,9 +61,8 @@ def preprocess(graph):
         return None
 
     # Check if the labels of all nodes are unique
-    # TODO: uncomment this once tokens are not stored in label anymore
-    # if not unique_labels(graph):
-    #     return None
+    if not unique_labels(graph):
+        return None
 
     # Check if all nodes (place/transition) have a non empty label
     if not no_empty_label(graph):
@@ -84,14 +80,7 @@ def preprocess(graph):
         if vertex['petri_type'] == "place":
             new_place = PetriNet.Place(label)
             new_place.properties['position'] = vertex['position']
-
-            # TODO: uncomment this and remove temporary work around when 'tokens' field works
-            # new_place.properties['tokens'] = vertex['tokens']
-            # TEMPORARY: let the label of a place represent the number of tokens in there
-            try:
-                new_place.properties['tokens'] = int(vertex['label'])
-            except ValueError:
-                new_place.properties['tokens'] = 0
+            new_place.properties['tokens'] = vertex['tokens']
 
             net.places.add(new_place)
             ordered_vertices.append(new_place)
