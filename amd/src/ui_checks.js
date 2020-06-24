@@ -92,8 +92,11 @@ define(['jquery'], function($) {
         this.$dialog = this.createDialog('Add check', this.$availableChecksList)
             .appendTo(this.$backdrop);
 
+        let activeChecks = [];
         let activeChecksJson = this.$textArea.val();
-        let activeChecks = JSON.parse(activeChecksJson);
+        if (activeChecksJson !== '') {
+            activeChecks = JSON.parse(activeChecksJson);
+        }
 
         let modulesJson = this.$textArea.attr('data-available-checks');
         this.modules = JSON.parse(modulesJson);

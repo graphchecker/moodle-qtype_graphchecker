@@ -25,29 +25,24 @@
 define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
     // Set up the author edit form UI plugins and event handlers.
-    // The strings parameter is an associative array containing a subset of
-    // the strings extracted from lang/xx/qtype_graphchecker.php.
-    // The template parameters and Ace language are passed to each
-    // text area from PHP by setting its data-params and
-    // data-lang attributes.
-    function initEditForm(strings) {
+    function initEditForm() {
         let $sampleAnswerField = $('#id_answer'),
             $preloadField = $('#id_answerpreload'),
             $checksField = $('#id_checks'),
-            $typeCombo = $('#id_answertype');
+            $typeCombo = $('#id_answertype'),
+            type = $typeCombo.val();
 
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
         function setUi($textArea, uiName) {
-            let paramsJson = $textArea.attr('data-params');
 
-            // check if the right UI controller is already present
-            uiWrapper = $textArea.data('current-ui-wrapper');
-            if (uiWrapper && uiWrapper.uiname == uiName) {
-                return;
-            }
-            if (!uiWrapper) {
+            // if the right UI controller is not yet present, create it
+            // otherwise, just reload
+            let uiWrapper = $textArea.data('current-ui-wrapper');
+            if (!uiWrapper || uiWrapper.uiname !== uiName) {
                 uiWrapper = new ui.InterfaceWrapper(uiName, $textArea.attr('id'));
+            } else {
+                uiWrapper.loadUi(uiName, $textArea.data('params'));
             }
 
         }
@@ -59,9 +54,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             setUi($checksField, 'checks');
         }
 
-        // Get the required string from the strings parameter.
-        function getString(key) {
-            return strings[key];
+        function stopUis() {
+            $sampleAnswerField.data('current-ui-wrapper').stop();
+            $preloadField.data('current-ui-wrapper').stop();
+            $checksField.data('current-ui-wrapper').stop();
         }
 
         setUis();  // Set up UI controllers on answer and answerpreload.
@@ -70,11 +66,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             if (window.confirm('Changing the answer type will clear the ' +
                     'Answer box preload, Checks, and Sample answer ' +
                     'sections below.')) {
-                // TODO actually clear the boxes and set the template parameters
-                let $form = $typeCombo.closest('form');
-                $form.submit();
+
+                type = $typeCombo.val();
+
+                stopUis();
+
+                $sampleAnswerField.val('');
+                $preloadField.val('');
+                $checksField.val('');
+
+                setUis();
+
             } else {
-                // TODO put back the old value
+                $typeCombo.val(type);
             }
         });
     }
