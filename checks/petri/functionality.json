@@ -21,7 +21,7 @@
         {
           "param": "transition_sequence",
           "name": "list of transition labels in order of firing",
-          "type": "list"
+          "type": "string_list"
         }
       ]
     },
@@ -32,19 +32,18 @@
         {
           "param": "transition_sequence",
           "name": "list of transition labels in order of firing",
-          "type": "list"
+          "type": "string_list"
         }
       ]
     },
     "marking_given": {
       "name": "Marking is given",
-      "description": "Checks if a particular marking is given for a known petri-net.",
+      "description": "Checks if a particular marking is given for a known petri-net. Given a petri-net checks if the markings in the student answer are the same.",
       "params": [
         {
-          "param": "marking_list",
-          "name": "list of (place, num_tokens)",
-          "type": "list",
-          "default": 1
+          "param": "correct_graph",
+          "name": "petri net with correct marking",
+          "type": "graph"
         }
       ]
     },
