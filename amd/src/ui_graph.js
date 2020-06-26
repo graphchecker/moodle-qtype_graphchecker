@@ -213,7 +213,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
                 let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
-                let canvasWidth = $(this.parent.graphCanvas.canvas).width()
+                let canvasWidth = $(this.parent.graphCanvas.canvas).width();
                 let middleWidth = canvasWidth - leftWidth - rightWidth - middlePadding;
                 $(this.toolbarMiddlePart).width(middleWidth);
             }
@@ -256,7 +256,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
         });
-    }
+    };
 
     GraphToolbar.prototype.addSelectionOptions = function(selectedObject) {
         // TODO: incorporate the input parameters (e.g. vertex_labels)
@@ -337,7 +337,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
+    GraphToolbar.prototype.onClickFSMFinalCheckbox = function() {
         if (this.toolbar.parent.selectedObject instanceof elements.Node && this.toolbar.parent.isFsm()) {
             this.toolbar.parent.selectedObject.isFinal = !this.toolbar.parent.selectedObject.isFinal;
             this.toolbar.parent.draw();
@@ -427,7 +427,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.BUTTON_SIZE, this.uiMode, this.helpOverlay);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width,
+            this.TOOLBAR_HEIGHT, this.BUTTON_SIZE, this.uiMode, this.helpOverlay);
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
@@ -689,7 +690,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.keydown = function(e) {
-        var key = util.crossBrowserKey(e), i;
+        var key = util.crossBrowserKey(e);
 
         if (this.readOnly) {
             return;
@@ -868,7 +869,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             graphUI.toolbar.removeSelectionOptions();
             graphUI.toolbar.removeFSMNodeSelectionOptions();
         }
-    }
+    };
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
         /*
@@ -967,7 +968,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.links.splice(i--, 1);
             }
         }
-    }
+    };
 
     Graph.prototype.snapNode = function(node) {
         for(var i = 0; i < this.nodes.length; i++) {

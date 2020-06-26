@@ -41,10 +41,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             let uiWrapper = $textArea.data('current-ui-wrapper');
             if (!uiWrapper || uiWrapper.uiname !== uiName) {
                 uiWrapper = new ui.InterfaceWrapper(uiName, $textArea.attr('id'));
-            } else {
-                uiWrapper.loadUi(uiName, $textArea.data('params'));
-            }
 
+            } else {
+                let params = {};
+                if ($textArea.attr('data-params')) {
+                    params = JSON.parse($textArea.attr('data-params'));
+                }
+                uiWrapper.loadUi(uiName, params);
+            }
         }
 
         // Set the correct Ui controller on both the sample answer and the answer preload.
@@ -70,12 +74,32 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 type = $typeCombo.val();
 
                 stopUis();
-
                 $sampleAnswerField.val('');
                 $preloadField.val('');
                 $checksField.val('');
 
-                setUis();
+                $.getJSON(M.cfg.wwwroot + '/question/type/graphchecker/api/typeinfo.php',
+                    {
+                        answertype: type
+                    },
+                    function(data) {
+                        // again empty the fields to be sure that the user
+                        // hasn't entered something in the meantime
+                        $sampleAnswerField.val('');
+                        $preloadField.val('');
+                        $checksField.val('');
+
+                        $sampleAnswerField.attr('data-params', JSON.stringify(data['ui_params']));
+                        $preloadField.attr('data-params', JSON.stringify(data['ui_params']));
+                        $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
+
+                        setUis();
+                    }
+                ).fail(function() {
+                    window.alert('Could not read answer type data. ' +
+                        'Please reload this page to retry, or notify the ' +
+                        'teacher if this keeps happening.');
+                });
 
             } else {
                 $typeCombo.val(type);
