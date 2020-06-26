@@ -448,12 +448,13 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
     background-color: #ebebeb !important;
 }
 
-.graph_ui_container_div button.toolbar_button.mode.clicked {
+.graph_ui_container_div button.toolbar_button.clicked,
+.graph_ui_container_div button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb !important;
 }
 
-.graph_ui_container_div button.toolbar_button:active:not(.disabled) {
-    background-color: #ebebeb !important;
+.graph_ui_container_div button.toolbar_button.disabled {
+    opacity: .3;
 }
 
 .graph_ui_container_div .toolbar_button {
