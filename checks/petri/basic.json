@@ -52,11 +52,6 @@
         }
       ]
     },
-    "node_empty_label": {
-      "name": "Node empty label",
-      "description": "Checks if a node with an empty label exists.",
-      "params": []
-    },
     "arc_missing": {
       "name": "Arc missing",
       "description": "Checks if an arc is missing between two nodes.",
