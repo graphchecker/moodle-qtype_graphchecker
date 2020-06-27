@@ -25,6 +25,42 @@
         }
       ]
     },
+    "all_labels_from_set": {
+      "name": "All labels come from set",
+      "description": "Check if all the labels for places/transitions/both (dropdown) come from a given set.",
+      "params": [
+        {
+          "param": "labels",
+          "name": "Allowed Labels",
+          "type": "string_list",
+          "default": ""
+        },
+        {
+          "param": "node_type",
+          "name": "Node Type",
+          "type": "choice",
+          "options": ["places", "transitions", "both"]
+        }
+      ]
+    },
+    "all_labels_used": {
+      "name": "All labels in set are used",
+      "description": "Check if all labels from a given set (string list) are used to label places/transitions/both (dropdown).",
+      "params": [
+        {
+          "param": "labels",
+          "name": "Required Labels",
+          "type": "string_list",
+          "default": ""
+        },
+        {
+          "param": "node_type",
+          "name": "Node Type",
+          "type": "choice",
+          "options": ["places", "transitions", "both"]
+        }
+      ]
+    },
     "left_to_right": {
       "name": "Left to right",
       "description": "Checks if the modeling is left-to-right. That is, all arcs are left-to-right.",

@@ -44,6 +44,67 @@ def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
     return {'correct': True}
 
 
+def all_labels_from_set(student_answer, sample_answer, preload_answer, labels, node_type):
+    """
+    Checks if all labels for nodes (places/transitions/both) all have labels that are in the labels list.
+    If node_type is 'places' only places are checked.
+    If node_type is 'transitions' only transitions are checked.
+    If node_type is 'both' places and transitions are checked.
+    """
+    if node_type not in ['places', 'transitions', 'both']:
+        return {'correct': False,
+                'feedback': 'Please set the Node Type'}
+
+    if node_type == 'places' or node_type == 'both':
+        for place in student_answer.places:
+            if place.name not in labels:
+                return {'correct': False,
+                        'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
+
+    if node_type == 'transitions' or node_type == 'both':
+        for transition in student_answer.transitions:
+            if transition.name not in labels:
+                return {'correct': False,
+                        'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
+
+    # All labels came from the labels list
+    return {'correct': True}
+
+
+def all_labels_used(student_answer, sample_answer, preload_answer, labels, node_type):
+    """
+    Checks if all labels in the list labels can be found in the (places/transitions/both) of student_answer.
+    If node_type is 'places' only places are checked.
+    If node_type is 'transitions' only transitions are checked.
+    If node_type is 'both' places and transitions are checked.
+    """
+    if node_type not in ['places', 'transitions', 'both']:
+        return {'correct': False,
+                'feedback': 'Please set the Node Type'}
+
+    # Keep track of all labels that have not been seen yet
+    labels_needed = [la for la in labels]
+
+    if node_type == 'places' or node_type == 'both':
+        for place in student_answer.places:
+            if place.name in labels_needed:
+                labels_needed.remove(place.name)
+    if node_type == 'transitions' or node_type == 'both':
+        for transition in student_answer.transitions:
+            if transition.name in labels_needed:
+                labels_needed.remove(transition.name)
+
+    word = 'places or transitions' if node_type == 'both' else node_type
+    # Not all labels were present
+    if len(labels_needed) > 0:
+        return {'correct': False,
+                'feedback': 'Label \'{0}\' was not found in the student_answer but was expected to be '
+                            'found in {1}'.format(labels_needed[0], word)}
+
+    # All labels were present
+    return {'correct': True}
+
+
 # This check is currently useless because no petri-nets with duplicate labels get through the pre-process check.
 # def no_duplicate_label(student_answer, sample_answer, preload_answer):
 #     """
@@ -368,6 +429,7 @@ def line_line_intersect(geom_a, geom_b):
     """
     Helper function that returns true if the two lines encoded in geom_a and geom_b intersect.
     """
+
     # Contains utility functions from
     # https://kite.com/python/answers/how-to-check-if-two-line-segments-intersect-in-python
     def on_segment(p, q, r):
