@@ -26,22 +26,23 @@ def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
     return {'correct': True}
 
 
-def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
-    """
-    Checks if all nodes (places and transitions) in student_answer have a label that
-    is present in the words list.
-    """
-    for place in student_answer.places:
-        if place.name not in words:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
-
-    for transition in student_answer.transitions:
-        if transition.name not in words:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
-
-    return {'correct': True}
+# DEPRECATED
+# def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
+#     """
+#     Checks if all nodes (places and transitions) in student_answer have a label that
+#     is present in the words list.
+#     """
+#     for place in student_answer.places:
+#         if place.name not in words:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
+#
+#     for transition in student_answer.transitions:
+#         if transition.name not in words:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
+#
+#     return {'correct': True}
 
 
 def all_labels_from_set(student_answer, sample_answer, preload_answer, labels, node_type):

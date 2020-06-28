@@ -13,18 +13,6 @@
         }
       ]
     },
-    "only_mandatory_words": {
-      "name": "Labels only contain mandatory words.",
-      "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of mandatory words. If another word is used then the test fails and reports what illegal word was used.",
-      "params": [
-        {
-          "param": "words",
-          "name": "labels",
-          "type": "string_list",
-          "default": ""
-        }
-      ]
-    },
     "all_labels_from_set": {
       "name": "All labels come from set",
       "description": "Check if all the labels for places/transitions/both (dropdown) come from a given set.",
