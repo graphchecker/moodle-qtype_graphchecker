@@ -121,8 +121,17 @@ def preprocess(graph):
         source = ordered_vertices[edge['from']]
         target = ordered_vertices[edge['to']]
 
+        # TODO: Change this if you want to get the edge weight another way.
+        edge_weight = 1
+        if edge['label'] != '':
+            try:
+                num = int(edge['label'])
+                edge_weight = num
+            except:
+                raise Exception("There is an edge with a label that is not a number.")
+
         # Create arc object of weight 1
-        arc = PetriNet.Arc(source, target, 1)
+        arc = PetriNet.Arc(source, target, edge_weight)
         # Add extra properties
         arc.properties['name'] = edge['label']
         arc.properties['bend'] = edge['bend']
