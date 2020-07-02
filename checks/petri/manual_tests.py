@@ -12,18 +12,20 @@ def test():
 
 
 def some_tests():
-    net = preprocess(example_graph)
-    res = basic.connected(net, net, net)
-    print(res)
-    res = basic.strongly_connected(net, net, net)
-    print(res)
-    res = basic.transition_degree_one(net, net, net)
-    print(res)
-    res = basic.node_empty_label(net, net, net)
-    print(res)
-    res = functionality.workflow_net(net, net, net)
-    print(res)
-    res = functionality.number_of_tokens(net, net, net, 2)
+    net = preprocess(other_example)
+    # res = basic.connected(net, net, net)
+    # print(res)
+    # res = basic.strongly_connected(net, net, net)
+    # print(res)
+    # res = basic.transition_degree_one(net, net, net)
+    # print(res)
+    # res = basic.node_empty_label(net, net, net)
+    # print(res)
+    # res = functionality.workflow_net(net, net, net)
+    # print(res)
+    # res = functionality.number_of_tokens(net, net, net, 2)
+    # print(res)
+    res = basic.node_on_shortest_path(net, net, net, 'a', 'b', 'c')
     print(res)
 
 
@@ -32,12 +34,14 @@ example_graph = {"_version": 1,
                      [{"label": "p0", "position": [10, 60], "petri_type": "place", "tokens": 1, "color": "blue"},
                       {"label": "p1", "position": [10, 10], "petri_type": "place", "tokens": 1, "color": "red"},
                       {"label": "p2", "position": [200, 35], "petri_type": "place", "tokens": 1, "color": "red"},
-                      {"label": "t0", "position": [100, 35], "petri_type": "transition", "color": "red"}, ],
+                      {"label": "", "position": [100, 35], "petri_type": "transition", "color": "red"}, ],
                  "edges":
                      [{"from": 0, "to": 3, "bend": {"parallelPart": 0.5, "perpendicularPart": 50}, "label": "e0"},
                       {"from": 1, "to": 3, "bend": {"parallelPart": 0.5, "perpendicularPart": 50}, "label": "e1"},
                       {"from": 3, "to": 2, "bend": {"anchorAngle": 0.0}, "label": "e2"}]
                  }
+
+other_example = {"_version":1,"vertices":[{"label":"a","position":[115,58],"accepting":False,"petri_type":"place"},{"label":"","position":[236,58],"accepting":False,"petri_type":"transition"},{"label":"b","position":[425,47],"accepting":False,"petri_type":"place"},{"label":"c","position":[263,192],"accepting":False,"petri_type":"place"},{"label":"","position":[405,145],"accepting":False,"petri_type":"transition"},{"label":"","position":[127,226],"accepting":False,"petri_type":"transition"}],"edges":[{"from":0,"to":1,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":1,"to":2,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":0,"to":5,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":5,"to":3,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":3,"to":4,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}},{"from":4,"to":2,"label":"","bend":{"lineAngleAdjust":0,"parallelPart":0.5,"perpendicularPart":0}}]}
 
 from pm4py.visualization.petrinet import visualizer as pn_visualizer
 from pm4py.objects.petri.petrinet import Marking

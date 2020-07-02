@@ -33,16 +33,16 @@ def BinaryTree(student_answer, sample_answer, preload_answer, downwards):
         split = splitParentChildren(v, down)
         if split == None:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.')}
+                    'feedback': 'Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.'}
         (par, chil) = split
         if len(par) > 1:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: node ' + filter_orig_name(v) + ' has two parents.')}
+                    'feedback': 'Not a binary tree: node {0} has two parents.'.format(filter_orig_name(v))}
         elif len(par) == 0:
             root += 1
         if len(chil) > 2:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: node ' + filter_orig_name(v) + ' has more than two children.')}
+                    'feedback': 'Not a binary tree: node {0} has more than two children.'.format(filter_orig_name(v))}
     if root > 1:
         return {'correct': False,
                 'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
@@ -61,17 +61,21 @@ def BinarySearchTree(student_answer, sample_answer, preload_answer, downwards):
         split = splitParentChildren(v, down)
         if split == None:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.')}
+                    'feedback': 'Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.'}
         (par, chil) = split
         if len(par) > 1:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: node ' + filter_orig_name(v) + ' has two parents.')}
+                    'feedback': 'Not a binary tree: node {0} has two parents.'.format(filter_orig_name(v))}
         elif len(par) == 0:
             root += 1
         if len(chil) > 2:
             return {'correct': False,
-                    'feedback': ('Not a binary tree: node ' + filter_orig_name(v) + ' has more than two children.')}
-        valueV = int(filter_orig_name(v))
+                    'feedback': 'Not a binary tree: node {0} has more than two children.'.format(filter_orig_name(v))}
+        try:
+            valueV = int(filter_orig_name(v))
+        except:
+            return {'correct': False,
+                    'feedback': "The label {0} is not numerical.".format(filter_orig_name(v))}
         for w in chil:
             valueW = int(filter_orig_name(w))
             vIsLeft    = v['x'] < w['x']
@@ -84,10 +88,10 @@ def BinarySearchTree(student_answer, sample_answer, preload_answer, downwards):
                     direction = 'right'
                     size      = ' < '
                 return {'correct': False,
-                        'feedback': ("Layout mistake: Vertex " + filter_orig_name(w) + ' is a ' + direction + ' child of vertex ' + filter_orig_name(v) + ', but ' + filter_orig_name(w) + size + filter_orig_name(v) + ".")}
+                        'feedback': 'Layout mistake: Vertex {0} is a {1} child of vertex {2} , but {3}{4}[5}.'.format(filter_orig_name(w), direction, filter_orig_name(v),filter_orig_name(w), size, filter_orig_name(v))}
     if root > 1:
         return {'correct': False,
-                'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
+                'feedback': 'Not a binary tree: there is more than one root in the drawing.'}
     return {'correct': True }
 
 def NodeDepth(student_answer, sample_answer, preload_answer, label, depth, downwards):
@@ -106,11 +110,11 @@ def NodeDepth(student_answer, sample_answer, preload_answer, label, depth, downw
                 split = splitParentChildren(v, down)
                 if split == None:
                     return {'correct': False,
-                            'feedback': ('There is a problem with the layout that makes distinguishing the tree impossible.')}
+                            'feedback': 'There is a problem with the layout that makes distinguishing the tree impossible.'}
                 (par, chil) = split
                 if len(par) > 1:
                     return {'correct': False,
-                            'feedback': ('There is a problem with the layout that makes distinguishing the tree impossible.')}
+                            'feedback': 'There is a problem with the layout that makes distinguishing the tree impossible.'}
                 elif len(par) == 1:
                     dep += 1
                     v = par[0]
@@ -118,6 +122,6 @@ def NodeDepth(student_answer, sample_answer, preload_answer, label, depth, downw
                     return {'correct': True}
                 else:
                     return {'correct': False,
-                            'feedback': ('Vertex ' + label + ' should have depth ' + str(depth) + ' but has depth ' + str(dep))}
+                            'feedback': 'Vertex {0} should have depth {1} but has depth {2}'.format(label, depth, dep)}
     return {'correct': False,
-            'feedback': ('Vertex with label ' + label + ' could not be found.')}
+            'feedback': 'Vertex with label {0} could not be found.'.format(label)}

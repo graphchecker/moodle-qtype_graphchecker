@@ -23,17 +23,22 @@ def connected(student_answer, sample_answer, preload_answer):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': ('Graph is not connected')}
+                'feedback': 'Graph is not connected'}
 
 def sumEdgeWeights(student_answer, sample_answer, preload_answer, expected):
     weight = 0
     for e in student_answer.es:
-        edgeweight = int(e['label'])
+        try:
+            edgeweight = int(e['label'])
+        except:
+            return {'correct': False,
+                    'feedback': 'The edge label {0} is not integer.'.format(e['label'])}
         weight = weight + edgeweight
     if weight == expected:
         return {'correct': True}
     else:
-        return {'correct': False, 'feedback': 'The sum of edge weights did not match the required sum of edge weights.'}
+        return {'correct': False,
+                'feedback': 'The sum of edge weights did not match the required sum of edge weights.'}
 
 def layout(student_answer, sample_answer, preload_answer):
     if not student_answer.isomorphic(sample_answer):
@@ -50,5 +55,5 @@ def layout(student_answer, sample_answer, preload_answer):
     for ((stud1, stud2), (samp1, samp2)) in zip((zip(xListStudent,xListStudent[1:])), zip(yListStudent,yListStudent[1:])):
         if not (stud1["x"] < stud2["x"]) == (samp1["x"] < samp2["x"]):
             return {'correct': False,
-                'feedback': 'The general layout of your graph did not match the sample answer.'}
+                    'feedback': 'The general layout of your graph did not match the sample answer.'}
     return {'correct': True}
