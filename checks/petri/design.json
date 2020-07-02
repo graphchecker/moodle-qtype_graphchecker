@@ -2,7 +2,7 @@
   "name": "Design",
   "checks": {
     "no_forbidden_words": {
-      "name": "Label have no forbidden words",
+      "name": "Labels: no forbidden words",
       "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
       "params": [
         {
@@ -14,7 +14,7 @@
       ]
     },
     "only_mandatory_words": {
-      "name": "Labels only contain mandatory words.",
+      "name": "Labels: only mandatory words.",
       "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of mandatory words. If another word is used then the test fails and reports what illegal word was used.",
       "params": [
         {
@@ -26,18 +26,13 @@
       ]
     },
     "no_duplicate_label": {
-      "name": "No duplicate labels",
+      "name": "Labels: No duplicates",
       "description": "Checks if there are no duplicate labels.",
       "params": []
     },
     "left_to_right": {
       "name": "Left to right",
       "description": "Checks if the modeling is left-to-right. That is, all arcs are left-to-right.",
-      "params": []
-    },
-    "top_to_bottom": {
-      "name": "Top to bottom",
-      "description": "Check if the modeling is top-to-bottom. That is, all arcs are top-to-bottom.",
       "params": []
     },
     "crossing_arcs": {
@@ -104,6 +99,11 @@
           "default": ""
         }
       ]
+    },
+    "top_to_bottom": {
+      "name": "Top to bottom",
+      "description": "Check if the modeling is top-to-bottom. That is, all arcs are top-to-bottom.",
+      "params": []
     }
   }
 }
