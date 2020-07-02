@@ -37,7 +37,7 @@ def findRoot(student_answer):
             return None
     return root
 
-def BinaryTreeStructure(student_answer, sample_answer, preload_answer):
+def BinaryTreeStructure(student_answer):
     root = 0
     for v in student_answer.vs:
         split = splitParentChildren(v)
@@ -58,7 +58,7 @@ def BinaryTreeStructure(student_answer, sample_answer, preload_answer):
                 'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
     return {'correct': True }
 
-def NodeDepth(student_answer, sample_answer, preload_answer, label, depth):
+def NodeDepth(student_answer, label, depth):
     for v in student_answer.vs:
         if filter_orig_name(v) == label:
             vertex = v

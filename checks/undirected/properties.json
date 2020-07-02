@@ -55,7 +55,14 @@
         },
         "isomorphism": {
             "name": "Isomorphism",
-            "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices)."
+            "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices).",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "answer isomorphic to",
+                    "type": "graph"
+                }
+            ]
         },
         "radius": {
             "name": "Radius",

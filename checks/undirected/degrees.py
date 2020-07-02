@@ -1,4 +1,4 @@
-def vertex_degree_at_most(student_answer, sample_answer, preload_answer, max_degree):
+def vertex_degree_at_most(student_answer, max_degree):
     for v in student_answer.vs:
         if v.degree() > max_degree:
             v_name = 'Some vertex' if not v['name'] else 'Vertex ' + v['name']
@@ -8,7 +8,7 @@ def vertex_degree_at_most(student_answer, sample_answer, preload_answer, max_deg
                                  v_name, v.degree(), max_degree)}
     return {'correct': True}
     
-def number_vertices_of_degree(student_answer, sample_answer, preload_answer, number_of_verts, degree):
+def number_vertices_of_degree(student_answer, number_of_verts, degree):
     found = 0
     for v in student_answer.vs:
         if v.degree() == degree:
@@ -22,7 +22,7 @@ def number_vertices_of_degree(student_answer, sample_answer, preload_answer, num
     else:
         return {'correct': True}
 
-def vertex_degree_sequence(student_answer, sample_answer, preload_answer, degree_sequence):
+def vertex_degree_sequence(student_answer, degree_sequence):
 	sequence = degree_sequence.split(",")
 	if (len(student_answer.vs) != len(sequence)):
 		return {'correct': False,
@@ -33,12 +33,8 @@ def vertex_degree_sequence(student_answer, sample_answer, preload_answer, degree
 	
 	sequence.sort()
 	student_degs.sort()
-	print(sequence)
-	print(student_degs)
 	for deg, stu_deg in zip(sequence, student_degs):
 		if (int(deg) != stu_deg):
-			#print(sequence)
-			#print(student_degs)
 			return {'correct': False,
 				'feedback': ('Degree sequence does not match expected degree sequence '+str(deg) + '  '+ str(stu_deg))}
 	return {'correct': True}

@@ -5,7 +5,7 @@ import igraph
 def filter_orig_name(v):
     return v['name'].split("_")[1]
 
-def BST_layout(student_answer, sample_answer, preload_answer):
+def BST_layout(student_answer):
     for v in student_answer.vs:
         #throw an error if the label is not numerical
         if not (filter_orig_name(v).isnumeric()):
