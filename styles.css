@@ -451,6 +451,9 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
 .graph_ui_container_div button.toolbar_button.clicked,
 .graph_ui_container_div button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb !important;
+    box-shadow: 0px 2px 6px inset rgba(0, 0, 0, 0.3);
+    border-color: #a0a0a0;
+    border-bottom-color: #b0b0b0;
 }
 
 .graph_ui_container_div button.toolbar_button.disabled {
