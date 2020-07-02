@@ -1,6 +1,5 @@
 from pm4py.objects.petri import check_soundness, utils, semantics
 from pm4py.objects.petri.petrinet import PetriNet, Marking
-from pm4py.visualization.petrinet import visualizer
 
 
 # Gets the initial marking encoded in the PetriNet properties dict
@@ -11,7 +10,8 @@ def get_marking(net):
     return marking
 
 
-def number_of_tokens(student_answer, sample_answer, preload_answer, num_tokens):
+def number_of_tokens(student_answer, num_tokens):
+    num_tokens = int(num_tokens)
     for place in student_answer.places:
         if place.properties['tokens'] == num_tokens:
             return {'correct': True}
@@ -52,12 +52,12 @@ def is_sequence_possible(net, transition_sequence):
     return [True, 0, False]
 
 
-def possible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def possible_sequence(student_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
-    if result[2]:
+    if result[2] or result[2] == '':
         return {'correct': False,
-                'feedback': 'Transition with label {0} in the transition sequence was not present'
-                            'in the given petri net.'.format(result[2])}
+                'feedback': 'Transition with label \'{0}\' in the transition sequence was not present'
+                            ' in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': True}
     else:
@@ -68,36 +68,39 @@ def possible_sequence(student_answer, sample_answer, preload_answer, transition_
                                                   transition_sequence, index)}
 
 
-def impossible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def impossible_sequence(student_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2]:
         return {'correct': False,
                 'feedback': 'Transition with label {0} in the transition sequence was not present'
-                            'in the given petri net.'.format(result[2])}
+                            ' in the given petri net.'.format(result[2])}
     if result[0]:
         return {'correct': False,
                 'feedback': 'The transition sequence {0} was possible. Expected'
-                            'it to be impossible.'.format(transition_sequence)}
+                            ' it to be impossible.'.format(transition_sequence)}
     else:
         return {'correct': True}
 
 
-def marking_given(student_answer, sample_answer, preload_answer, marking_list):
-    # TODO: needs to be updated in the future:
-    # Change this to a parameter where a graph is given and the student answer is compared to the given graph (by labels).
+def marking_given(student_answer, correct_graph):
+    student_place_names = [p.name for p in student_answer.places]
 
-    for (label, n) in marking_list:
-        for place in student_answer.places:
-            if place.name == label:
-                if place.properties['tokens'] != n:
-                    return {'correct': False,
-                            'feedback': 'Place {0} has {1} tokens, expected {2} tokens.'
-                                        ''.format(place.name, place.properties['tokens'], n)}
+    # Check if all tokens in the given answer exist and have the right amount of tokens.
+    for their_p in correct_graph.places:
+        if their_p.name not in student_place_names:
+            return {'correct': False,
+                    'feedback': 'The place with name {0} was not present in the given petri net.'.format(their_p.name)}
+        student_p = [p for p in student_answer.places if p.name == their_p.name][0]
+        if their_p.properties['tokens'] != student_p.properties['tokens']:
+            return {'correct': False,
+                    'feedback': 'The place with name {0} has {1} tokens. Expected {2} '
+                                'tokens.'.format(their_p.name, student_p.properties['tokens'],
+                                                 their_p.properties['tokens'])}
 
     return {'correct': True}
 
 
-def workflow_net(student_answer, sample_answer, preload_answer):
+def workflow_net(student_answer):
     if check_soundness.check_wfnet(student_answer):
         return {'correct': True}
     else:

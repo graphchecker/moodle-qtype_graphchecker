@@ -29,11 +29,11 @@ def findRoot(student_answer):
             return None
         (par, chil) = split
         if len(par) == 0 and root == None:
-            print(filter_orig_name(v))
+            #print(filter_orig_name(v))
             root = v
         elif len(par) == 0 and not root == None:
-            print("double")
-            print(filter_orig_name(v))
+            #print("double")
+            #print(filter_orig_name(v))
             return None
     return root
 

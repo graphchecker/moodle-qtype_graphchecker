@@ -86,7 +86,26 @@
     "node_on_shortest_path": {
       "name": "Node on shortest path",
       "description": "Check if a node is on the shortest path from one node to another node.",
-      "params": []
+      "params": [
+        {
+          "param": "label_a",
+          "name": "source node",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_b",
+          "name": "middle node",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_c",
+          "name": "target node",
+          "type": "string",
+          "default": ""
+        }
+      ]
     },
     "strongly_connected": {
       "name": "Is strongly connected",

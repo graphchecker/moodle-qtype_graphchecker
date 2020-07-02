@@ -23,18 +23,18 @@ def number_vertices_of_degree(student_answer, number_of_verts, degree):
         return {'correct': True}
 
 def vertex_degree_sequence(student_answer, degree_sequence):
-	sequence = degree_sequence.split(",")
-	if (len(student_answer.vs) != len(sequence)):
-		return {'correct': False,
-				'feedback': ('Number of vertices does not match the expected number of vertices')}
-	student_degs = []
-	for v in student_answer.vs:
-			student_degs.append(v.degree())
-	
-	sequence.sort()
-	student_degs.sort()
-	for deg, stu_deg in zip(sequence, student_degs):
-		if (int(deg) != stu_deg):
-			return {'correct': False,
-				'feedback': ('Degree sequence does not match expected degree sequence '+str(deg) + '  '+ str(stu_deg))}
-	return {'correct': True}
+    sequence = degree_sequence.split(",")
+    if (len(student_answer.vs) != len(sequence)):
+        return {'correct': False,
+                'feedback': ('Number of vertices does not match the expected number of vertices')}
+    student_degs = []
+    for v in student_answer.vs:
+            student_degs.append(v.degree())
+
+    sequence.sort()
+    student_degs.sort()
+    for deg, stu_deg in zip(sequence, student_degs):
+        if (int(deg) != stu_deg):
+            return {'correct': False,
+                'feedback': ('Degree sequence does not match expected degree sequence '+str(deg) + '  '+ str(stu_deg))}
+    return {'correct': True}
