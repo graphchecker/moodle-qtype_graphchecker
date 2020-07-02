@@ -28,7 +28,7 @@
                     "type": "graph"
                 }
             ]
-        }
+        },
         "vertex_count": {
             "name": "Vertex count",
             "description": "Checks if the graph has the given number of vertices.",
@@ -41,6 +41,6 @@
                     "min": 0
                 }
             ]
-        },
+        }
     }
 }
