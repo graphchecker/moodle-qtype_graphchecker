@@ -90,6 +90,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return parent.keydown(e);
         });
 
+        this.canvas.on('keyup', function(e) {
+            return parent.keyup(e);
+        });
+
         this.canvas.on('mousemove', function(e) {
             return parent.mousemove(e);
         });
@@ -114,7 +118,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, h, buttonSize, uiMode, helpOverlay) {
+    function GraphToolbar(parent, divId, w, h, uiMode, helpOverlay) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
@@ -285,7 +289,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.removeSelectionOptions();
 
         // Create the label textfield
-        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label:', this.onInteractTextField);
+        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
         labelTextField.create();
         this.labelTextField = labelTextField;
 
@@ -631,7 +635,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
 
-            // If the graph type is Petri net,
+            // If the graph type is Petri net
             if (this.isPetri()) {
                 this.toolbar.addPetriNodeTypeOptions();
             }
@@ -714,7 +718,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        if(key === 8 || key === 0x20 || key === 9) {
+        if (key === 8 || key === 0x20 || key === 9) {
             // Disable scrolling on backspace, tab and space.
             return false;
         }
@@ -823,22 +827,44 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.keydown = function(e) {
+        var key = util.crossBrowserKey(e);
+
+        if (this.readOnly) {
+            return;
+        }
+
+        if (key === 8) { // Backspace key.
+            // Backspace is a shortcut for the back button, but do NOT want to change pages.
+            return false;
+        } else if (key === 46) { // Delete key.
+            this.deleteSelectedObject(this);
+        } else if (key === 13) { // Enter key.
+            if(this.selectedObject !== null) {
+                // Deselect the object.
+                this.selectedObject = null;
+                this.draw();
+            }
+        }
+
+        if (key === 17) { // Control key
+            // Set the mode to Draw if it is not set already
+            if (this.uiMode !== elements.ModeType.DRAW) {
+                this.setUIMode(elements.ModeType.DRAW);
+            }
+        }
+    };
+
+    Graph.prototype.keyup = function(e) {
         var key = util.crossBrowserKey(e), i;
 
         if (this.readOnly) {
             return;
         }
 
-        if(key === 8) { // Backspace key.
-            // Backspace is a shortcut for the back button, but do NOT want to change pages.
-            return false;
-        } else if(key === 46) { // Delete key.
-            this.deleteSelectedObject(this);
-        } else if(key === 13) { // Enter key.
-            if(this.selectedObject !== null) {
-                // Deselect the object.
-                this.selectedObject = null;
-                this.draw();
+        if (key === 17) { // Control key
+            // Set the mode to Edit if it is not set already
+            if (this.uiMode !== elements.ModeType.EDIT) {
+                this.setUIMode(elements.ModeType.EDIT);
             }
         }
     };
@@ -876,7 +902,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 } else if (targetNode !== null) {
                     this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
                 } else {
-                    closestPoint = this.clickedObject.closestPointOnCircle(mouse.x, mouse.y);
+                    closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
                     this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
                 }
             }
@@ -950,6 +976,17 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         if(this.currentLink !== null) {
             if(!(this.currentLink instanceof elements.TemporaryLink)) {
+                // Remove the created link if the graph is of type 'Petri' and a link is made to a node of the same
+                // Petri type (e.g. place->place, or transition->transition).
+                // Also display a warning in the form of an alert
+                let isValidPetriLink = this.currentLink.nodeA.petriNodeType !== this.currentLink.nodeB.petriNodeType;
+                if (this.isPetri() && !isValidPetriLink) {
+                    let nodeType = this.currentLink.nodeA.petriNodeType;
+                    this.currentLink = null;
+                    this.draw();
+                    window.alert('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
+                    return;
+                }
                 this.addLink(this.currentLink);
             }
             this.currentLink = null;

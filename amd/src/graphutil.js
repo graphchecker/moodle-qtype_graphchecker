@@ -101,6 +101,11 @@ define(function() {
         };
     };
 
+    Util.prototype.degToRad = function(deg) {
+        // Converts degrees to radians
+        return deg * (Math.PI/180.0);
+    }
+
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
         return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
@@ -144,6 +149,11 @@ define(function() {
             'y': mouse.y - element.y
         };
     };
+
+    Util.prototype.calculateAngle = function(v1, v2) {
+        // Return an angle a, where 0 <= a <= 2*PI, in radians
+        return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
+    }
 
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
         let angles = [];

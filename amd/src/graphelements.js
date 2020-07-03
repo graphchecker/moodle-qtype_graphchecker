@@ -131,14 +131,51 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
     };
 
-    Node.prototype.closestPointOnCircle = function(x, y) {
-        var dx = x - this.x;
-        var dy = y - this.y;
-        var scale = Math.sqrt(dx * dx + dy * dy);
-        return {
-            'x': this.x + dx * this.parent.nodeRadius() / scale,
-            'y': this.y + dy * this.parent.nodeRadius() / scale,
-        };
+    Node.prototype.closestPointOnNode = function(x, y) {
+        let dx = x - this.x;
+        let dy = y - this.y;
+        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+            // Calculate the closest point on the node's circle
+            let scale = Math.sqrt(dx * dx + dy * dy);
+            return {
+                x: this.x + dx * this.parent.nodeRadius() / scale,
+                y: this.y + dy * this.parent.nodeRadius() / scale,
+            };
+        } else {
+            // Calculate the closest point on the node's square
+            // Calculate the angle between the vector of the link's midpoint (x, y) and the midpoint of the node, and
+            // the right vector (1, 0)
+            let nodeToLinkVector = {
+                x: dx,
+                y: dy
+            };
+            let rightVector = {
+                x: 1,
+                y: 0
+            };
+            let angle = util.calculateAngle(nodeToLinkVector, rightVector);
+
+            // The length of half the side of the square
+            let sideHalfLength = this.parent.nodeRadius();
+            if (angle < util.degToRad(45) || angle >= util.degToRad(315)) {
+                x = this.x - sideHalfLength;
+                y = this.y + sideHalfLength * Math.sin(angle);
+            } else if (util.degToRad(45) <= angle && angle < util.degToRad(135)) {
+                x = this.x - sideHalfLength * Math.cos(angle);
+                y = this.y + sideHalfLength;
+            } else if (util.degToRad(135) <= angle && angle < util.degToRad(225)) {
+                x = this.x + sideHalfLength;
+                y = this.y + sideHalfLength * Math.sin(angle);
+            } else if (util.degToRad(225) <= angle && angle < util.degToRad(315)) {
+                x = this.x - sideHalfLength * Math.cos(angle);
+                y = this.y - sideHalfLength;
+            }
+
+            return {
+                x: x,
+                y: y,
+            };
+        }
     };
 
     Node.prototype.containsPoint = function(x, y) {
@@ -237,10 +274,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Link.prototype.getEndPointsAndCircle = function() {
         if(this.perpendicularPart === 0) {
-            var midX = (this.nodeA.x + this.nodeB.x) / 2;
-            var midY = (this.nodeA.y + this.nodeB.y) / 2;
-            var start = this.nodeA.closestPointOnCircle(midX, midY);
-            var end = this.nodeB.closestPointOnCircle(midX, midY);
+            let midX = (this.nodeA.x + this.nodeB.x) / 2;
+            let midY = (this.nodeA.y + this.nodeB.y) / 2;
+            let start = this.nodeA.closestPointOnNode(midX, midY);
+            let end = this.nodeB.closestPointOnNode(midX, midY);
             return {
                 'hasCircle': false,
                 'startX': start.x,
@@ -249,23 +286,46 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 'endY': end.y,
             };
         }
-        var anchor = this.getAnchorPoint();
-        var circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
-        var isReversed = (this.perpendicularPart > 0);
-        var reverseScale = isReversed ? 1 : -1;
-        var rRatio = reverseScale * this.parent.nodeRadius() / circle.radius;
-        var startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) - rRatio;
-        var endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatio;
-        var startX = circle.x + circle.radius * Math.cos(startAngle);
-        var startY = circle.y + circle.radius * Math.sin(startAngle);
-        var endX = circle.x + circle.radius * Math.cos(endAngle);
-        var endY = circle.y + circle.radius * Math.sin(endAngle);
+        let anchor = this.getAnchorPoint();
+        let circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
+        let isReversed = (this.perpendicularPart > 0);
+        let reverseScale = isReversed ? 1 : -1;
+        let rRatio = reverseScale * this.parent.nodeRadius() / circle.radius;
+        let startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) - rRatio;
+        let endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatio;
+
+        // Calculate the start and end positions of the link
+        let startX = circle.x + circle.radius * Math.cos(startAngle);
+        let startY = circle.y + circle.radius * Math.sin(startAngle);
+        let start = this.nodeA.closestPointOnNode(startX, startY);
+        let endX = circle.x + circle.radius * Math.cos(endAngle);
+        let endY = circle.y + circle.radius * Math.sin(endAngle);
+        let end = this.nodeB.closestPointOnNode(endX, endY);
+
+        // Recalculate the circle
+        circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, end.x, end.y, anchor.x, anchor.y);
+
+        // Recalculate the start and end angle, if the according node is a Petri net transition
+        if (this.nodeA.petriNodeType === PetriNodeType.TRANSITION) {
+            let dxA = this.nodeA.x - start.x;
+            let dyA = this.nodeA.y - start.y;
+            let rRatioA = reverseScale * Math.hypot(dxA, dyA) / circle.radius;
+            startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) + rRatioA;
+        }
+
+        if (this.nodeB.petriNodeType === PetriNodeType.TRANSITION) {
+            let dxB = this.nodeB.x - end.x;
+            let dyB = this.nodeB.y - end.y;
+            let rRatioB = reverseScale * Math.hypot(dxB, dyB) / circle.radius;
+            endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatioB;
+        }
+
         return {
             'hasCircle': true,
-            'startX': startX,
-            'startY': startY,
-            'endX': endX,
-            'endY': endY,
+            'startX': start.x,
+            'startY': start.y,
+            'endX': end.x,
+            'endY': end.y,
             'startAngle': startAngle,
             'endAngle': endAngle,
             'circleX': circle.x,
@@ -378,7 +438,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             return;
         }
 
-        let nodeToLinkVector = { //TODO: maybe noramlize in length? mb it's not needed
+        let nodeToLinkVector = {
             x: node.x - linkPoint.x,
             y: node.y - linkPoint.y
         };
@@ -387,8 +447,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             y: 0
         };
 
-        return (Math.atan2(rightVector.y, rightVector.x) - Math.atan2(nodeToLinkVector.y, nodeToLinkVector.x)
-            + Math.PI) % (2*Math.PI);
+        return util.calculateAngle(nodeToLinkVector, rightVector);
     };
 
     /***********************************************************************
@@ -509,7 +568,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     StartLink.prototype.getEndPoints = function() {
         var startX = this.node.x + this.deltaX;
         var startY = this.node.y + this.deltaY;
-        var end = this.node.closestPointOnCircle(startX, startY);
+        var end = this.node.closestPointOnNode(startX, startY);
         return {
             'startX': startX,
             'startY': startY,
@@ -869,7 +928,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         let $textfield = $('<label/>')
             .attr({
                 'class':    'toolbar_label',
-            }).append(this.placeholderText)
+            }).append(this.placeholderText + ':')
             .append($('<input/>')
                 .attr({
                     'id':           this.id,
