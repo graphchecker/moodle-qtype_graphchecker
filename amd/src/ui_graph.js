@@ -723,6 +723,46 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
+    Graph.prototype.enableTemporaryDrawMode = function() {
+        // Assign the latest selected object
+        this.previousSelectedObject = this.selectedObject;
+
+        // Set the mode to Draw
+        this.setUIMode(elements.ModeType.DRAW);
+        this.isTempDrawModeActive = true;
+
+        // Style the buttons correctly
+        this.toolbar.leftButtons['draw'].setSelected();
+        this.toolbar.leftButtons['select'].setDeselected();
+
+        // Remove the buttons for Select mode
+        this.toolbar.removeSelectionOptions();
+        if (this.isPetri()) {
+            this.toolbar.removePetriPlaceSelectionOptions();
+            this.toolbar.onClickPetriNodeTypeButton(this.toolbar.middleInput['place']);
+        }
+        if (this.isFsm()) {
+            this.toolbar.removeFSMNodeSelectionOptions();
+        }
+    };
+
+    Graph.prototype.disableTemporaryDrawMode = function() {
+        this.setUIMode(elements.ModeType.SELECT);
+        this.selectedObject = this.previousSelectedObject;
+        this.isTempDrawModeActive = false;
+
+        // Style the buttons correctly
+        this.toolbar.leftButtons['select'].setSelected();
+        this.toolbar.leftButtons['draw'].setDeselected();
+
+        // Enable the buttons for Select mode
+        this.toolbar.addSelectionOptions(this.selectedObject);
+        if (this.isPetri()) {
+            this.toolbar.addPetriPlaceSelectionOptions(this.selectedObject);
+        }
+        this.draw();
+    };
+
     // Copy the serialised version of the graph to the TextArea.
     Graph.prototype.sync = function() {
         // Nothing to do ... always sync'd.
@@ -872,27 +912,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if (key === 17) { // Control key
-            // Assign the latest selected object
-            this.previousSelectedObject = this.selectedObject;
 
             // Set the mode to Draw if it is not set already
             if (this.uiMode !== elements.ModeType.DRAW) {
-                this.setUIMode(elements.ModeType.DRAW);
-                this.isTempDrawModeActive = true;
-
-                // Style the buttons correctly
-                this.toolbar.leftButtons['draw'].setSelected();
-                this.toolbar.leftButtons['select'].setDeselected();
-
-                // Remove the buttons for Select mode
-                this.toolbar.removeSelectionOptions();
-                if (this.isPetri()) {
-                    this.toolbar.removePetriPlaceSelectionOptions();
-                    this.toolbar.onClickPetriNodeTypeButton(this.toolbar.middleInput['place']);
-                }
-                if (this.isFsm()) {
-                    this.toolbar.removeFSMNodeSelectionOptions();
-                }
+                this.enableTemporaryDrawMode();
             }
         }
     };
@@ -907,21 +930,17 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (key === 17) { // Control key
             // Set the mode to SELECT if it is not set already
             if (this.uiMode !== elements.ModeType.SELECT && this.isTempDrawModeActive) {
-                this.setUIMode(elements.ModeType.SELECT);
-                this.selectedObject = this.previousSelectedObject;
-                this.isTempDrawModeActive = false;
-
-                // Style the buttons correctly
-                this.toolbar.leftButtons['select'].setSelected();
-                this.toolbar.leftButtons['draw'].setDeselected();
-
-                // Enable the buttons for Select mode
-                this.toolbar.addSelectionOptions(this.selectedObject);
-                if (this.isPetri()) {
-                    this.toolbar.addPetriPlaceSelectionOptions(this.selectedObject);
-                }
-                this.draw();
+                this.disableTemporaryDrawMode();
             }
+        }
+    };
+
+    // This function is executed to check for certain key presses
+    Graph.prototype.checkKeyPressed = function(e) {
+        if (!e.ctrlKey && this.isTempDrawModeActive) {
+            // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
+            // This happens for example when releasing the CTRL key on an alert box popup
+            this.disableTemporaryDrawMode();
         }
     };
 
@@ -985,56 +1004,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         this.draw();
-
-        /*
-        if(this.currentLink !== null) {
-            var targetNode = this.getMouseOverObject(mouse.x, mouse.y);
-            if(!(targetNode instanceof elements.Node)) {
-                targetNode = null;
-            }
-
-            if(this.selectedObject === null) {
-                if(targetNode !== null) {
-                    this.currentLink = new elements.StartLink(this, targetNode, this.originalClick);
-                } else {
-                    this.currentLink = new elements.TemporaryLink(this, this.originalClick, mouse);
-                }
-            } else {
-                if(targetNode === this.selectedObject) {
-                    this.currentLink = new elements.SelfLink(this, this.selectedObject, mouse);
-                } else if(targetNode !== null) {
-                    this.currentLink = new elements.Link(this, this.selectedObject, targetNode);
-                } else {
-                    closestPoint = this.selectedObject.closestPointOnCircle(mouse.x, mouse.y);
-                    this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
-                }
-            }
-            this.draw();
-        }
-        if (this.movingGraph) {
-            var nodes = this.movingNodes;
-            for (var i = 0; i < nodes.length; i++) {
-                 nodes[i].trackMouse(mouse.x, mouse.y);
-                 this.snapNode(nodes[i]);
-            }
-            this.draw();
-        } else if(this.movingObject) {
-            this.selectedObject.setAnchorPoint(mouse.x, mouse.y);
-            if(this.selectedObject instanceof elements.Node) {
-                this.snapNode(this.selectedObject);
-            }
-            this.draw();
-        }
-        */
     };
 
-    Graph.prototype.mouseup = function() {
+    Graph.prototype.mouseup = function(e) {
         if (this.readOnly) {
             return;
         }
+        // After an alert popup (e.g. originating from this function), this function is called again
+        // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
+        this.checkKeyPressed(e);
 
-        if(this.currentLink !== null) {
-            if(!(this.currentLink instanceof elements.TemporaryLink)) {
+        if (this.currentLink !== null) {
+            if (!(this.currentLink instanceof elements.TemporaryLink)) {
                 // Remove the created link if the graph is of type 'Petri' and a link is made to a node of the same
                 // Petri type (e.g. place->place, or transition->transition).
                 // Also display a warning in the form of an alert
@@ -1046,18 +1027,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
                 if (this.isPetri() && node.petriNodeType === this.currentLink.nodeB.petriNodeType) {
                     let nodeType = this.currentLink.nodeA.petriNodeType;
-                    this.currentLink = null;
-                    this.draw();
-                    window.alert('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
+                    this.alertPopup('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
                     return;
                 } else if (!this.isDirected()) {
                     // In case of an undirected graph, only 1 edge in between two nodes is permitted
                     for (let i = 0; i < this.links.length; i++) {
                         if ((this.links[i].nodeA === this.currentLink.nodeA && this.links[i].nodeB === this.currentLink.nodeB) ||
                             (this.links[i].nodeA === this.currentLink.nodeB && this.links[i].nodeB === this.currentLink.nodeA)) {
-                            this.currentLink = null;
-                            this.draw();
-                            window.alert('Two edges between two nodes is not permitted.');
+                            this.alertPopup('Two edges between two nodes is not permitted.');
                             return;
                         }
                     }
@@ -1067,16 +1044,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     for (let i = 0; i < this.links.length; i++) {
                         if (!(this.currentLink instanceof elements.SelfLink)) {
                             if (this.links[i].nodeA === this.currentLink.nodeA && this.links[i].nodeB === this.currentLink.nodeB) {
-                                this.currentLink = null;
-                                this.draw();
-                                window.alert('Two edges from one node to another is not permitted.');
+                                this.alertPopup('Two edges from one node to another is not permitted.');
                                 return;
                             }
                         } else {
                             if (this.links[i].node === this.currentLink.node) {
-                                this.currentLink = null;
-                                this.draw();
-                                window.alert('Two self-loops for a node is not permitted.');
+                                this.alertPopup('Two self-loops for a node is not permitted.');
                                 return;
                             }
                         }
@@ -1094,6 +1067,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.clickedObject = null;
         this.draw();
     };
+
+    Graph.prototype.alertPopup = function(message) {
+        this.currentLink = null;
+        this.draw();
+        window.alert(message);
+    }
 
     // This function returns the first encountered object on which the user has clicked
     // A margin is added such that creating links is easier
@@ -1143,21 +1122,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     }
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
-        /*
-        TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
-         number of input vertices
-        // Set all vertices to not be an initial vertex
-        for (let i = 0; i < this.nodes.length; i++) {
-            this.nodes[i].isInitial = false;
-        }
-
-        // Remove all initial links
-        for (let i = 0; i < this.links.length; i++) {
-            if (this.links[i] instanceof elements.StartLink) {
-                this.links.splice(i--, 1);
-            }
-        }
-         */
+        // TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
+        //  number of input vertices
 
         // Set the selected vertex as the initial vertex, and draw it
         if (this.isFsm() && vertex instanceof elements.Node) {
