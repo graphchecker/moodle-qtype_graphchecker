@@ -451,7 +451,7 @@ button.toolbar_button:active:not(.disabled) {
 }
 
 button.toolbar_button.petri_node_type {
-    margin-top: 2px;
+    margin-top: 2px !important;
 }
 
 body#page-question-type-graphchecker .tests-ui .button .icon {

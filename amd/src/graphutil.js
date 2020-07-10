@@ -250,5 +250,28 @@ define(function() {
         }
     };
 
+    Util.prototype.quadraticFormula = function(a, b, c) {
+        let D = Math.pow(b, 2) - 4*a*c;
+
+        let res1 = (-b - Math.sqrt(D))/(2*a);
+        let res2 = (-b + Math.sqrt(D))/(2*a);
+        return [res1, res2];
+    };
+
+    // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
+    // link, and the start and end angles.
+    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
+        let rRatio = reverseScale * distance / circle.radius;
+        let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;
+        let endAngle = Math.atan2(nodeB.y - circle.y, nodeB.x - circle.x) + rRatio;
+        let startX = circle.x + circle.radius * Math.cos(startAngle);
+        let startY = circle.y + circle.radius * Math.sin(startAngle);
+        let endX = circle.x + circle.radius * Math.cos(endAngle);
+        let endY = circle.y + circle.radius * Math.sin(endAngle);
+
+        return {startAngle: startAngle, endAngle: endAngle, startX: startX, startY: startY, endX: endX, endY:endY};
+    };
+
     return new Util();
 });

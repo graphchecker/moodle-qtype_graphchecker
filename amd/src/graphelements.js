@@ -56,7 +56,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     // An enum for defining the mode type of the graph UI
     const ModeType = Object.freeze({
-        EDIT: 'edit',               // Indicates that the UI is in edit mode
+        SELECT: 'select',           // Indicates that the UI is in select mode
         DRAW: 'draw'                // Indicates that the UI is in draw mode
     });
 
@@ -155,31 +155,158 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             };
             let angle = util.calculateAngle(nodeToLinkVector, rightVector);
 
+            // Determine the equation of the line of the link's midpoint to the node's midpoint, in the form:
+            // y = a*x + b
+            let a = nodeToLinkVector.y/nodeToLinkVector.x;
+            let b = y - a*x;
+
             // The length of half the side of the square
             let sideHalfLength = this.parent.nodeRadius();
+            let xRes, yRes;
             if (angle < util.degToRad(45) || angle >= util.degToRad(315)) {
-                x = this.x - sideHalfLength;
-                y = this.y + sideHalfLength * Math.sin(angle);
+                xRes = this.x - sideHalfLength;
+                yRes = a*xRes + b;
             } else if (util.degToRad(45) <= angle && angle < util.degToRad(135)) {
-                x = this.x - sideHalfLength * Math.cos(angle);
-                y = this.y + sideHalfLength;
+                yRes = this.y + sideHalfLength;
+                if (Math.abs(a) !== Infinity) {
+                    xRes = (yRes - b) / a;
+                } else {
+                    xRes = this.x;
+                }
             } else if (util.degToRad(135) <= angle && angle < util.degToRad(225)) {
-                x = this.x + sideHalfLength;
-                y = this.y + sideHalfLength * Math.sin(angle);
+                xRes = this.x + sideHalfLength;
+                yRes = a*xRes + b;
             } else if (util.degToRad(225) <= angle && angle < util.degToRad(315)) {
-                x = this.x - sideHalfLength * Math.cos(angle);
-                y = this.y - sideHalfLength;
+                yRes = this.y - sideHalfLength;
+                if (Math.abs(a) !== Infinity) {
+                    xRes = (yRes - b) / a;
+                } else {
+                    xRes = this.x;
+                }
             }
 
             return {
-                x: x,
-                y: y,
+                x: xRes,
+                y: yRes,
             };
         }
     };
 
+    // Method of a Node, being of PetriNodeType 'TRANSITION', that given a circle, calculates
+    // the points of intersection
+    Node.prototype.calculateIntersectionsCircle = function(circleX, circleY, circleR) {
+        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+            // Currently no functionality is implemented to calculate the intersections of
+            // non 'TRANSITION' type nodes
+            return;
+        }
+        // The half side length of the square
+        let halfSideLength = this.parent.nodeRadius();
+
+        // An array of valid points at which the circle intersects the square
+        let points = [];
+
+        // Intersections of the circle, in the form (x-circleX)^2 + (y-circleY)^2 - circleR^2 = 0,
+        // with the top side of the square. Using the Quadratic Formula (i.e. the abc formula)
+        let y = this.y - halfSideLength;
+        let a = 1;
+        let b = -circleX*2;
+        let c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
+        let results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
+                points.push({x: results[i], y: y});
+            }
+        }
+
+        // Intersections with the bottom side. The variables a and b remain the same
+        y = this.y + halfSideLength;
+        c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
+                points.push({x: results[i], y: y});
+            }
+        }
+
+        // Intersections with the right side
+        let x = this.x + halfSideLength;
+        a = 1;
+        b = -circleY*2;
+        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
+                points.push({x: x, y: results[i]});
+            }
+        }
+
+        // Intersections with the left side. The variables a and b remain the same
+        x = this.x - halfSideLength;
+        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
+                points.push({x: x, y: results[i]});
+            }
+        }
+
+        return points;
+    };
+
+    Node.prototype.getadjustedLinkInfo = function(circle, linkInfo, reverseScale, nodeA, nodeB, isStart) {
+        // Calculate the intersections of the circle with the square
+        let intersections = this.calculateIntersectionsCircle(circle.x, circle.y, circle.radius);
+
+        // Choose the one which is the closest to the original location of the intersection with the circle
+        let closestPoint = null;
+        let closestPointDistance = Infinity;
+        for (let i = 0; i < intersections.length; i++) {
+            let dx, dy;
+            if (isStart) {
+                dx = linkInfo.startX - intersections[i].x;
+                dy = linkInfo.startY - intersections[i].y;
+            } else {
+                dx = linkInfo.endX - intersections[i].x;
+                dy = linkInfo.endY - intersections[i].y;
+            }
+            let dist = Math.sqrt( Math.pow(dx, 2) + Math.pow(dy, 2));
+            if (dist < closestPointDistance) {
+                closestPointDistance = dist;
+                closestPoint = intersections[i];
+            }
+        }
+
+        // Recalculate other variables,
+        // using the distance from this node, the TRANSITION node, to the calculated closest point
+        if (closestPoint !== null) {
+            let dx = this.x - closestPoint.x;
+            let dy = this.y - closestPoint.y;
+            let transitionNodeDist = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            let adjustedLinkInfo = util.calculateLinkInfo(nodeA, nodeB, circle, reverseScale, transitionNodeDist);
+            if (isStart) {
+                linkInfo.startAngle = adjustedLinkInfo.startAngle;
+                linkInfo.startX = adjustedLinkInfo.startX;
+                linkInfo.startY = adjustedLinkInfo.startY;
+            } else {
+                linkInfo.endAngle = adjustedLinkInfo.endAngle;
+                linkInfo.endX = adjustedLinkInfo.endX;
+                linkInfo.endY = adjustedLinkInfo.endY;
+            }
+        }
+
+        return linkInfo;
+    };
+
     Node.prototype.containsPoint = function(x, y) {
-        return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) < this.parent.nodeRadius() * this.parent.nodeRadius();
+        let radius = this.parent.nodeRadius() + this.parent.HIT_TARGET_PADDING;
+        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+            // Check for a circle
+            return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= radius * radius;
+        } else {
+            // Check for a square
+            return this.x - radius <= x && x <= this.x + radius && this.y - radius <= y && y <= this.y + radius;
+        }
     };
 
     // Method of a Node that, given a list of all links in a graph, returns
@@ -274,10 +401,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Link.prototype.getEndPointsAndCircle = function() {
         if(this.perpendicularPart === 0) {
-            let midX = (this.nodeA.x + this.nodeB.x) / 2;
-            let midY = (this.nodeA.y + this.nodeB.y) / 2;
-            let start = this.nodeA.closestPointOnNode(midX, midY);
-            let end = this.nodeB.closestPointOnNode(midX, midY);
+            var midX = (this.nodeA.x + this.nodeB.x) / 2;
+            var midY = (this.nodeA.y + this.nodeB.y) / 2;
+            var start = this.nodeA.closestPointOnNode(midX, midY);
+            var end = this.nodeB.closestPointOnNode(midX, midY);
             return {
                 'hasCircle': false,
                 'startX': start.x,
@@ -286,48 +413,27 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 'endY': end.y,
             };
         }
-        let anchor = this.getAnchorPoint();
-        let circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
-        let isReversed = (this.perpendicularPart > 0);
-        let reverseScale = isReversed ? 1 : -1;
-        let rRatio = reverseScale * this.parent.nodeRadius() / circle.radius;
-        let startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) - rRatio;
-        let endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatio;
-
-        // Calculate the start and end positions of the link
-        let startX = circle.x + circle.radius * Math.cos(startAngle);
-        let startY = circle.y + circle.radius * Math.sin(startAngle);
-        let start = this.nodeA.closestPointOnNode(startX, startY);
-        let endX = circle.x + circle.radius * Math.cos(endAngle);
-        let endY = circle.y + circle.radius * Math.sin(endAngle);
-        let end = this.nodeB.closestPointOnNode(endX, endY);
-
-        // Recalculate the circle
-        circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, end.x, end.y, anchor.x, anchor.y);
-
-        // Recalculate the start and end angle, if the according node is a Petri net transition
+        var anchor = this.getAnchorPoint();
+        var circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
+        var isReversed = (this.perpendicularPart > 0);
+        var reverseScale = isReversed ? 1 : -1;
+        let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius());
+        // If the start node is a TRANSITION node, adjust the start of the link
         if (this.nodeA.petriNodeType === PetriNodeType.TRANSITION) {
-            let dxA = this.nodeA.x - start.x;
-            let dyA = this.nodeA.y - start.y;
-            let rRatioA = reverseScale * Math.hypot(dxA, dyA) / circle.radius;
-            startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) + rRatioA;
+            linkInfo = this.nodeA.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, true);
         }
-
+        // If the end node is a TRANSITION node
         if (this.nodeB.petriNodeType === PetriNodeType.TRANSITION) {
-            let dxB = this.nodeB.x - end.x;
-            let dyB = this.nodeB.y - end.y;
-            let rRatioB = reverseScale * Math.hypot(dxB, dyB) / circle.radius;
-            endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatioB;
+            linkInfo = this.nodeB.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, false);
         }
-
         return {
             'hasCircle': true,
-            'startX': start.x,
-            'startY': start.y,
-            'endX': end.x,
-            'endY': end.y,
-            'startAngle': startAngle,
-            'endAngle': endAngle,
+            'startX': linkInfo.startX,
+            'startY': linkInfo.startY,
+            'endX': linkInfo.endX,
+            'endY': linkInfo.endY,
+            'startAngle': linkInfo.startAngle,
+            'endAngle': linkInfo.endAngle,
             'circleX': circle.x,
             'circleY': circle.y,
             'circleRadius': circle.radius,
@@ -631,7 +737,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) { //TODO: put a button in a button group (used for draw/edit mode buttons, or place/transition buttons) to easily switch between buttons in a group
+    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) { //TODO: put a button in a button group (used for draw/select mode buttons, or place/transition buttons) to easily switch between buttons in a group
         this.toolbar = toolbar;
         this.parent = parent;
         this.width = w; //In px.
@@ -662,17 +768,29 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 }));
         $(this.parent[0]).append($button);
         this.object = $button;
+
+        // Add the event function to this button
+        let self = this;
+        $(this.object).click(function () {
+            self.onClick(this.eventFunction, this);
+        });
     };
 
-    Button.prototype.onClick = function(eventFunction, object) {
+    Button.prototype.onClick = function(eventFunction, eventObject) {
         if (eventFunction !== null) {
-            if (object === null) {
+            if (eventObject === null) {
                 eventFunction();
             } else {
-                eventFunction(object);
+                eventFunction(eventObject);
             }
         }
     };
+
+    // This function should be called before the object is removed
+    Button.prototype.end = function() {
+        // Focus on the toolbar, such that the CTRL-mode switch can work
+        $(this.toolbar.div).focus();
+    }
 
     /***********************************************************************
      *
@@ -709,7 +827,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.object.removeClass('not_clicked');
     };
 
-    ModeButton.prototype.setDeselected = function() {
+        ModeButton.prototype.setDeselected = function() {
         this.object.removeClass('clicked');
         this.object.addClass('not_clicked');
     };
@@ -741,12 +859,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Add the not_clicked class name by default, based on the button type
         this.object.addClass('not_clicked');
-
-        // Add the event function to this button
-        let self = this;
-        $(this.object).click(function () {
-            self.onClick();
-        });
     };
 
     PetriNodeTypeButton.prototype.onClick = function() {
@@ -864,10 +976,16 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Add the event listener
         $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
         this.object = $number_input;
-    }
+    };
 
     NumberInputField.prototype.handleInteraction = function(event) {
         this.eventFunction(event, this.toolbar);
+    };
+
+    // This function should be called before the object is removed
+    NumberInputField.prototype.end = function() {
+        // Focus on the toolbar, such that the CTRL-mode switch can work
+        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -905,7 +1023,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Checkbox.prototype.handleInteraction = function(event) {
         this.eventFunction(event);
-    }
+    };
+
+    // This function should be called before the object is removed
+    Checkbox.prototype.end = function() {
+        // Focus on the toolbar, such that the CTRL-mode switch can work
+        $(this.toolbar.div).focus();
+    };
 
     /***********************************************************************
      *
@@ -919,7 +1043,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.w = w;
         this.placeholderText = placeholderText;
         this.eventFunction = eventFunction;
-    //<input type="text" id="pin" name="pin" maxlength="4" size="4" placeholder="Hello0000008808080">
     }
 
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
@@ -947,6 +1070,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     TextField.prototype.handleInteraction = function(event) {
         this.eventFunction(event, this.toolbar);
     }
+
+    // This function should be called before the object is removed
+    TextField.prototype.end = function() {
+        // Focus on the toolbar, such that the CTRL-mode switch can work
+        $(this.toolbar.div).focus();
+    };
 
     return {
         PetriNodeType: PetriNodeType,
