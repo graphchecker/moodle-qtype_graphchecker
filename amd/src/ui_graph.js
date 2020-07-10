@@ -543,7 +543,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
-        this.uiMode = this.getUIModeBeginning(); // Set the UI mode type depending on whether there is a graph or not
+        this.uiMode = elements.ModeType.SELECT; // Set the UI mode to be 'Select' initially
         this.isTempDrawModeActive = false;
         this.petriNodeType = elements.PetriNodeType.NONE;
         this.readOnly = this.textArea.prop('readonly');
@@ -614,24 +614,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
-    };
-
-    Graph.prototype.getUIModeBeginning = function() {
-        var content = $(this.textArea).val();
-        if (content) {
-            // Load up the student's previous answer if non-empty.
-            var input = JSON.parse(content), i;
-
-            if (input.vertices.length === 0) {
-                // If there is no vertex (and thus no edge), return draw mode
-                return elements.ModeType.DRAW;
-            } else {
-                return elements.ModeType.SELECT;
-            }
-        } else {
-            // If there is no content yet, return draw mode
-            return elements.ModeType.DRAW;
-        }
     };
 
     Graph.prototype.setUIMode = function(modeType) {
@@ -1025,7 +1007,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 } else {
                     node = this.currentLink.nodeA;
                 }
-                if (this.isPetri() && node.petriNodeType === this.currentLink.nodeB.petriNodeType) {
+                if (this.isPetri() && node.petriNodeType === this.currentLink.nodeB.petriNodeType &&
+                    this.currentLink.nodeA !== this.currentLink.nodeB) {
                     let nodeType = this.currentLink.nodeA.petriNodeType;
                     this.alertPopup('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
                     return;
