@@ -1,5 +1,6 @@
 import networkx as nx
 from pm4py.objects.petri.networkx_graph import create_networkx_directed_graph, create_networkx_undirected_graph
+from pm4py.objects.petri.utils import *
 
 
 def connected(student_answer, sample_answer, preload_answer):
@@ -47,9 +48,44 @@ def transition_degree_one(student_answer, sample_answer, preload_answer):
 
 
 def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a, label_b, label_c):
-    # TODO try their implementation and see what it does
+    # Create networkx graph
+    graph, inv_dict = create_networkx_directed_graph(student_answer)
+
+    transitions_and_places = student_answer.places.union(student_answer.transitions)
+
+    # Check if the given labels have a corresponding node
+    names = [p.name for p in transitions_and_places]
+    if label_a not in names or label_b not in names or label_c not in names:
+        return {'correct': False,
+                'feedback': 'The given labels ({0}, {1}, {2}) do not all correspond to nodes in the graph. '
+                            'Cannot find shortest path.'.format(label_a, label_b, label_c)}
+
+    # Get the places associated to the labels
+    place_a = [p for p in transitions_and_places if p.name == label_a][0]
+    place_b = [p for p in transitions_and_places if p.name == label_b][0]
+    place_c = [p for p in transitions_and_places if p.name == label_c][0]
+
+    # Get the numerical code of the networkx node related to a given label
+    node_a = list(inv_dict.keys())[list(inv_dict.values()).index(place_a)]
+    node_b = list(inv_dict.keys())[list(inv_dict.values()).index(place_b)]
+    node_c = list(inv_dict.keys())[list(inv_dict.values()).index(place_c)]
+
+    # Get all shortest paths between A and C
+    all_paths = nx.algorithms.shortest_paths.all_shortest_paths(graph, node_a, node_c)
+
+    try:
+        for path in all_paths:
+            if node_b in path:
+                return {'correct': True}
+            [print(inv_dict[n]) for n in path]
+            print(path)
+    except nx.exception.NetworkXException:
+        return {'correct': False,
+                'feedback': 'There is no shortest path between node {0} and node {1}.'.format(label_a, label_c)}
+
     return {'correct': False,
-            'feedback': 'Not implemented yet.'}
+            'feedback': 'Node with label {0} is not on a shortest path between nodes'
+                        ' with labels {1} and {2}'.format(label_b, label_a, label_c)}
 
 
 def node_label_exists(student_answer, sample_answer, preload_answer, label):

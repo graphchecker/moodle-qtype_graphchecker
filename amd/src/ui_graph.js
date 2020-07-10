@@ -243,7 +243,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
                 let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
-                let canvasWidth = $(this.parent.graphCanvas.canvas).width()
+                let canvasWidth = $(this.parent.graphCanvas.canvas).width();
                 let middleWidth = canvasWidth - leftWidth - rightWidth - middlePadding;
                 $(this.toolbarMiddlePart).width(middleWidth);
             }
@@ -428,7 +428,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Draw the number of tokens
         this.toolbar.parent.draw();
         // TODO: display the token value, using this.toolbar.parent.draw() and another method
-    }
+    };
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
         if (event.target.checked) {
@@ -441,7 +441,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
+    GraphToolbar.prototype.onClickFSMFinalCheckbox = function() {
         if (this.toolbar.parent.selectedObject instanceof elements.Node && this.toolbar.parent.isFsm()) {
             this.toolbar.parent.selectedObject.isFinal = !this.toolbar.parent.selectedObject.isFinal;
             this.toolbar.parent.draw();
@@ -468,7 +468,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         clickedButton.setSelected();
         otherButton.setDeselected();
 
-    }
+    };
 
     /***********************************************************************
      *
@@ -538,7 +538,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
             min: 0,
             max: 100,
-        }       //TODO: assure that these values are met when saving (double check). if > 100, set to 100. If <0 or a char, set to 0
+        };       //TODO: assure that these values are met when saving (double check). if > 100, set to 100. If <0 or a char, set to 0
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
         this.canvasId = 'graphcanvas_' + textareaId;
@@ -555,7 +555,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT, this.uiMode, this.helpOverlay);
+        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT,
+            this.uiMode, this.helpOverlay);
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
@@ -1102,7 +1103,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             graphUI.toolbar.removeFSMNodeSelectionOptions();
             graphUI.toolbar.removePetriPlaceSelectionOptions();
         }
-    }
+    };
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
         // TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
@@ -1188,7 +1189,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.links.splice(i--, 1);
             }
         }
-    }
+    };
 
     Graph.prototype.snapNode = function(node) {
         for(var i = 0; i < this.nodes.length; i++) {

@@ -32,27 +32,24 @@
 
 define('AJAX_SCRIPT', true);
 
-require_once('../../../config.php');
+require_once('../../../../config.php');
 require_once($CFG->dirroot . '/question/engine/lib.php');
-require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
+require_once($CFG->dirroot . '/question/type/graphchecker/question.php');
 
 require_login();
-require_sesskey();
 
-$qtype  = required_param('qtype', PARAM_RAW_TRIMMED);
-$courseid = required_param('courseid', PARAM_INT);
+$type = required_param('answertype', PARAM_RAW_TRIMMED);
 
 header('Content-type: application/json; charset=utf-8');
 
-$coursecontext = context_course::instance($courseid);
-$questiontype = qtype_graphchecker::get_prototype($qtype, $coursecontext);
-if ($questiontype === null) {
-    $questiontype = new stdClass();
-    $questiontype->success = false;
-    $questiontype->error = "Error fetching prototype '$qtype'.";
-} else {
-    $questiontype->success = true;
-    $questiontype->error = '';
+$json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
+$types = json_decode($json, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    throw new Exception("Invalid JSON types file");
 }
-echo json_encode($questiontype);
+$response = $types[$type];
+$response['available_checks'] = qtype_graphchecker_check::get_available_checks($type);
+echo(json_encode($response));
+
 die();
+

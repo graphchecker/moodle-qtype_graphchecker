@@ -1,0 +1,25 @@
+{
+    "name": "Binary tree properties",
+    "checks": {
+        "NodeDepth": {
+            "name": "Depth of node",
+            "description": "Check if the node with the given unique label is at the given depth.",
+            "params": [
+                    {
+                        "param": "label",
+                        "name": "The vertex with label ",
+                        "type": "string"
+                    },
+                    {
+                        "param": "depth",
+                        "name": "has depth ",
+                        "type": "integer"
+                    }
+            ]
+        },
+        "BinaryTreeStructure": {
+            "name": "Has binary tree structure.",
+            "description": "Check if the given drawing is a (downwards) binary tree."
+        }
+    }
+}
