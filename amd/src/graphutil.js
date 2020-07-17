@@ -153,7 +153,7 @@ define(function() {
     Util.prototype.calculateAngle = function(v1, v2) {
         // Return an angle a, where 0 <= a <= 2*PI, in radians
         return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
-    }
+    };
 
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
         let angles = [];
@@ -271,6 +271,36 @@ define(function() {
         let endY = circle.y + circle.radius * Math.sin(endAngle);
 
         return {startAngle: startAngle, endAngle: endAngle, startX: startX, startY: startY, endX: endX, endY:endY};
+    };
+
+    // Function used to test whether rectInner (rectangle) lies completely inside rectOuter (rectangle)
+    // Rect1 and rect2 are both of the form: [{x: corner1X, y: corner1Y}, {x: corner2X, y: corner2Y}]
+    Util.prototype.isRectInsideRect = function(rectOuter, rectInner) {
+        // Find out top-left and bottom-right corner of rectOuter //TODO
+        // Determine the lowest and highest x and y coordinates of the outer rectangle
+        let minXRectOuter, maxXRectOuter;
+        if (rectOuter[0].x <= rectOuter[1].x) {
+            minXRectOuter = rectOuter[0].x;
+            maxXRectOuter = rectOuter[1].x;
+        } else {
+            minXRectOuter = rectOuter[1].x;
+            maxXRectOuter = rectOuter[0].x;
+        }
+
+        let minYRectOuter, maxYRectOuter;
+        if (rectOuter[0].y <= rectOuter[1].y) {
+            minYRectOuter = rectOuter[0].y;
+            maxYRectOuter = rectOuter[1].y;
+        } else {
+            minYRectOuter = rectOuter[1].y;
+            maxYRectOuter = rectOuter[0].y;
+        }
+
+        // Now check if each point of the inner rectangle lies within these coordinates
+        return (minXRectOuter <= rectInner[0].x && rectInner[0].x <= maxXRectOuter &&
+            minXRectOuter <= rectInner[1].x && rectInner[1].x <= maxXRectOuter &&
+            minYRectOuter <= rectInner[0].y && rectInner[0].y <= maxYRectOuter &&
+            minYRectOuter <= rectInner[1].y && rectInner[1].y <= maxYRectOuter);
     };
 
     return new Util();

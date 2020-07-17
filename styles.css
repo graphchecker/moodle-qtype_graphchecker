@@ -579,22 +579,90 @@ div#toolbar_part_middle {
 
 label.checkbox_label {
     position: relative;
-    font-size: 14px;
-    margin-right: 10px;
+    margin-right: 30px;
     margin-bottom: 0;
     color: black;
 }
 
-input.toolbar_checkbox {
-    margin-right: 5px;
+div.checkbox_label {
+    padding-right: 5px;
 }
 
-label.textfield_label {
+input.toolbar_checkbox {
+    margin: 0;
+
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 16.6px;
+    width: 16.6px;
+}
+
+span.toolbar_checkbox {
+    /* Create a custom checkbox */
+    position: absolute;
+    height: 15px;
+    width: 15px;
+    background-color: white;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+/* On hover over the input checkbox, add a border color to the span checkbox */
+div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
+    border-color: #0078D7;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+span.toolbar_checkbox:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark in the span when checked */
+input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
+input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after{
+    display: block;
+}
+
+/* Styling of the checkmark */
+span.toolbar_checkbox_black:after {
+    left: 4px;
+    top: 0px;
+    width: 5px;
+    height: 10px;
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+span.toolbar_checkbox_gray:after {
+    left: 4px;
+    top: 0px;
+    width: 5px;
+    height: 10px;
+    border: solid darkgray;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+label.field_label {
     position: relative;
     font-size: 14px;
     margin-bottom: 0;
     margin-left: 5px;
     color: black;
+}
+
+input.toolbar_numberinput {
+    height: 14px;
+    width: 45px;
+    margin-left: 5px;
 }
 
 input.toolbar_textfield {

@@ -386,6 +386,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         };
     };
 
+    // Method to set the anchor point of a link. It returns whether the link is snapped (true) or not (false)
     Link.prototype.setAnchorPoint = function(x, y) {
         var dx = this.nodeB.x - this.nodeA.x;
         var dy = this.nodeB.y - this.nodeA.y;
@@ -396,6 +397,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < this.parent.SNAP_TO_PADDING) {
             this.lineAngleAdjust = (this.perpendicularPart < 0) * Math.PI;
             this.perpendicularPart = 0;
+            return true;
+        } else {
+            return false;
         }
     };
 
@@ -960,7 +964,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         let $number_input = $('<label/>')
             .attr({
-                'class':    'toolbar_label',
+                'class':    'field_label',
             }).append(this.labelText).append($('<input/>')
             .attr({
                 'id':       this.id,
@@ -1007,13 +1011,20 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.id = 'checkbox_' + this.text.split(' ').join('_');
         let $checkbox = $('<label/>')
             .attr({
-                'class':    'toolbar_label',
-            }).append($('<input/>')
-            .attr({
-                'id':       this.id,
-                'class':    'toolbar_checkbox',
-                'type':     'checkbox',
-            })).append(this.text);
+                'class':    'checkbox_label',
+            }).append($('<div/>').text(this.text)
+                .attr({
+                    'class':    'checkbox_label',
+                    'style':    'display: inline',
+                })).append($('<input/>')
+                .attr({
+                    'id':       this.id,
+                    'class':    'toolbar_checkbox',
+                    'type':     'checkbox',
+                })).append($('<span/>')
+                .attr({
+                    'class':    'toolbar_checkbox toolbar_checkbox_black',
+            }));
         $(this.parent[0]).append($checkbox);
 
         // Add the event listener
@@ -1050,7 +1061,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
         let $textfield = $('<label/>')
             .attr({
-                'class':    'toolbar_label',
+                'class':    'field_label',
             }).append(this.placeholderText + ':')
             .append($('<input/>')
                 .attr({
