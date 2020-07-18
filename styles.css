@@ -586,6 +586,7 @@ label.checkbox_label {
 
 div.checkbox_label {
     padding-right: 5px;
+    margin-left: 5px;
 }
 
 input.toolbar_checkbox {
@@ -667,7 +668,7 @@ input.toolbar_numberinput {
 
 input.toolbar_textfield {
     margin-left: 5px;
-    margin-right: 13px;
+    margin-right: 8px;
     height: 14px;
 }
 

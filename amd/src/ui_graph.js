@@ -276,9 +276,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.addSelectionOptions = function(selectedObjects) {
-        // Clear the selection options, and re-add them below
-        if (selectedObjects.length) {
-            this.removeSelectionOptions();
+        // Clear the selection options, and re-add them below when there is only 1 object
+        this.removeSelectionOptions();
+        if (selectedObjects.length === 1) {
 
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
@@ -286,7 +286,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['label'] = labelTextField;
 
             // Fill the value of the label text field according to the selected object
-            this.middleInput['label'].object[0].childNodes[1].value = selectedObjects.text;
+            this.middleInput['label'].object[0].childNodes[1].value = selectedObjects[0].text;
         }
     };
 
@@ -299,8 +299,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.onInteractTextField = function(event, toolbar) {
-        // Add or remove one character to the label of the selected object (i.e. node or link)
-        toolbar.parent.selectedObjects.text = event.target.value;
+        // Add or remove one character to the label of the only selected object (i.e. node or link)
+        // This function is only called when there is 1 selected object
+        toolbar.parent.selectedObjects[0].text = event.target.value;
         toolbar.parent.draw();
     };
 
@@ -314,7 +315,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             if (selectedObjects[i] instanceof elements.Node) {
                 if (selectedObjects[i].hasStartLink(this.parent.links)) {
                     numberOfInitialVertices++;
-                } else if (selectedObjects[i].isFinal) {
+                }
+                if (selectedObjects[i].isFinal) {
                     numberOfFinalVertices++;
                 }
                 numberOfVertices++;
@@ -402,9 +404,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.middleInput['transition'] = null;
     };
 
-    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function(selectedObjects) {
+    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function(selectedObjects, listSelectedPlaces) {
         if (selectedObjects.length) {
-            this.removePetriPlaceSelectionOptions()
+            this.removePetriPlaceSelectionOptions();
 
             // Create the token number input field
             let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
@@ -416,7 +418,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['tokens'] = tokenInputField;
 
             // Set the value of the number input field depending on the selected object
-            $(this.middleInput['tokens'].object)[0].childNodes[1].value = selectedObjects.petriTokens;
+            if (listSelectedPlaces.length === 1) {
+                // Set the value of the only selected node object
+                $(this.middleInput['tokens'].object)[0].childNodes[1].value = listSelectedPlaces[0].petriTokens;
+            } else {
+                // In case of countNodesSelected >= 2
+                // Set the value to be empty if the token values do not correspond. Otherwise set it to the value
+                let areTokenValuesEqual = true;
+                for (let i = 0; i < listSelectedPlaces.length - 1; i++) {
+                    if (listSelectedPlaces[i].petriTokens !== listSelectedPlaces[i + 1].petriTokens) {
+                        areTokenValuesEqual = false;
+                    }
+                }
+                $(this.middleInput['tokens'].object)[0].childNodes[1].value =
+                    (areTokenValuesEqual)? listSelectedPlaces[0].petriTokens : '';
+            }
         }
     };
 
@@ -433,7 +449,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Determine the token value
         let min = this.minValue;
         let max = this.maxValue;
-        let tokenValue = min;
+        let tokenValue;
         if (isNaN(event.target.valueAsNumber) || event.target.valueAsNumber < min) {
             tokenValue = min;
         } else if (event.target.valueAsNumber > max) {
@@ -444,12 +460,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             tokenValue = event.target.valueAsNumber;
         }
 
-        // Set the token value in the node
-        this.toolbar.parent.selectedObjects.petriTokens = tokenValue;
+        // Set the token value in all objects which are place nodes
+        for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+            let object = this.toolbar.parent.selectedObjects[i];
+            if (object instanceof elements.Node &&
+                object.petriNodeType === elements.PetriNodeType.PLACE) {
+                // Set the value
+                object.petriTokens = tokenValue;
+            }
+        }
 
         // Draw the number of tokens
         this.toolbar.parent.draw();
-        // TODO: display the token value, using this.toolbar.parent.draw() and another method
     };
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
@@ -458,22 +480,65 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 let vertex = this.toolbar.parent.selectedObjects[i];
                 this.toolbar.parent.setInitialFSMVertex(vertex);
             }
+            // Set the styling of the checkbox
+            event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
+            event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
             this.toolbar.parent.draw();
         } else {
             //TODO: Possibly fix for cases where there must be an initial vertex, depending on the input parameter
-            for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
-                let vertex = this.toolbar.parent.selectedObjects[i];
-                this.toolbar.parent.removeInitialFSMVertex(vertex);
+            if (event.target.nextElementSibling.classList.contains('toolbar_checkbox_gray')) {
+                // If a gray checkmark was just clicked, set this the checkbox to check and create a black checkmark
+                event.target.checked = true;
+                event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
+                event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
+
+                // Remove all start links from the selected objects and create new ones
+                for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+                    let vertex = this.toolbar.parent.selectedObjects[i];
+                    this.toolbar.parent.removeInitialFSMVertex(vertex);
+                    this.toolbar.parent.setInitialFSMVertex(vertex);
+                }
+            } else {
+                for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+                    let vertex = this.toolbar.parent.selectedObjects[i];
+                    this.toolbar.parent.removeInitialFSMVertex(vertex);
+                }
             }
             this.toolbar.parent.draw();
         }
     };
 
-    GraphToolbar.prototype.onClickFSMFinalCheckbox = function() {F
-        if (this.toolbar.parent.selectedObjects instanceof elements.Node && this.toolbar.parent.isFsm()) {
-            this.toolbar.parent.selectedObjects.isFinal = !this.toolbar.parent.selectedObjects.isFinal;
-            this.toolbar.parent.draw();
+    GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
+        if (this.toolbar.parent.isFsm()) {
+            // Variables to denoting the state before incorporating the change made by this function
+            let areAllNodesFinal = true;
+            let hasOneFinalNode = false;
+            for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+                if (this.toolbar.parent.selectedObjects[i] instanceof elements.Node) {
+                    if (this.toolbar.parent.selectedObjects[i].isFinal) {
+                        hasOneFinalNode = true;
+                    } else {
+                        areAllNodesFinal = false;
+                    }
+                }
+            }
+            for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+                if (this.toolbar.parent.selectedObjects[i] instanceof elements.Node) {
+                    if (!areAllNodesFinal) {
+                        this.toolbar.parent.selectedObjects[i].isFinal = true;
+                        // Enable the check
+                        event.target.checked = true;
+                    } else {
+                        this.toolbar.parent.selectedObjects[i].isFinal = false;
+                    }
+                }
+            }
+
+            // Set black tick mark
+            event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
+            event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
         }
+        this.toolbar.parent.draw();
     };
 
     GraphToolbar.prototype.onClickPetriNodeTypeButton = function(object) {
@@ -656,11 +721,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         if (this.uiMode === elements.ModeType.DRAW) {
             // Disable the delete button
-            for(let key in this.toolbar.rightButtons) {
-                if (this.toolbar.rightButtons[key] instanceof elements.DeleteButton) {
-                    this.toolbar.rightButtons[key].setDisabled();
-                }
-            }
+            this.toolbar.rightButtons['delete'].setDisabled();
 
             // If the graph type is Petri net
             if (this.isPetri()) {
@@ -772,6 +833,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Enable the buttons for Select mode
         this.toolbar.addSelectionOptions(this.selectedObjects);
+        if (this.isFsm()) {
+            this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+        }
         if (this.isPetri()) {
             this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects);
         }
@@ -844,18 +908,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                 }
 
-                // If an object is selected (apart from TemporaryLinks),
+                // If a new object is selected (apart from TemporaryLinks),
                 // display the according input elements in the toolbar
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
                     this.clickedObject instanceof elements.SelfLink) {
-                    this.toolbar.addSelectionOptions(this.clickedObject);
+                    this.toolbar.addSelectionOptions(this.selectedObjects);
                 } else {
                     this.toolbar.removeSelectionOptions();
                 }
 
                 // If the type is FSM, display the according buttons in the toolbar, depending on the situation
                 if (this.isFsm()) {
-                    if (this.clickedObject instanceof elements.Node) {
+                    let hasSelectionOneNode = false;
+                    for (let i = 0; i < this.selectedObjects.length; i++) {
+                        if (this.selectedObjects[i] instanceof elements.Node) {
+                            hasSelectionOneNode = true;
+                        }
+                    }
+                    if (hasSelectionOneNode) {
                         this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
                     } else {
                         this.toolbar.removeFSMNodeSelectionOptions();
@@ -864,9 +934,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
                 // If the type is Petri, display the according token input field in the toolbar
                 if (this.isPetri()) {
-                    if (this.clickedObject instanceof elements.Node &&
-                        this.clickedObject.petriNodeType === elements.PetriNodeType.PLACE) {
-                        this.toolbar.addPetriPlaceSelectionOptions(this.clickedObject);
+                    // Only add the petri place selection options (e.g. the token input field) when at least 1 place
+                    // node is selected, and when no transition nodes are selected
+                    let listSelectedPlaces = [];
+                    let areTransitionsSelected = false;
+                    for (let i = 0; i < this.selectedObjects.length; i++) {
+                        if (this.selectedObjects[i] instanceof elements.Node &&
+                            this.selectedObjects[i].petriNodeType === elements.PetriNodeType.PLACE) {
+                            listSelectedPlaces.push(this.selectedObjects[i]);
+                        }
+                        if (this.selectedObjects[i] instanceof elements.Node &&
+                            this.selectedObjects[i].petriNodeType === elements.PetriNodeType.TRANSITION) {
+                            areTransitionsSelected = true;
+                        }
+                    }
+                    if (listSelectedPlaces.length >= 1 && !areTransitionsSelected) {
+                        this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects, listSelectedPlaces);
                     } else {
                         this.toolbar.removePetriPlaceSelectionOptions();
                     }
@@ -884,21 +967,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
 
                 // If an object is selected, activate the delete button.
-                // Else, deactivate it //TODO: incorporate multiple selections
+                // Else, deactivate it
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
                     this.clickedObject instanceof elements.SelfLink ||
                     this.clickedObject instanceof elements.StartLink) {
-                    for (let key in this.toolbar.rightButtons) {
-                        if (this.toolbar.rightButtons[key] instanceof elements.DeleteButton) {
-                            this.toolbar.rightButtons[key].setEnabled();
-                        }
-                    }
+                    this.toolbar.rightButtons['delete'].setEnabled();
                 } else {
-                    for (let key in this.toolbar.rightButtons) {
-                        if (this.toolbar.rightButtons[key] instanceof elements.DeleteButton) {
-                            this.toolbar.rightButtons[key].setDisabled();
-                        }
-                    }
+                    this.toolbar.rightButtons['delete'].setDisabled();
                 }
 
                 if (this.clickedObject === null) {
@@ -1108,15 +1183,37 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.currentLink = null;
         }
 
-        // Remove the selection field, and select all elements in it
+        // Remove the selection rectangle, and select or deselect all elements in it
+        // Also set appropriate property selection options (e.g. initial state or final state for FSMs)
         if (this.selectionRectangle !== null) {
             let objects = this.getObjectsInRectangle(this.selectionRectangle);
             if (e.shiftKey) {
+                // If all selected objects (within the rectangle) are already selected, deselect these
+                // Otherwise, add all items to the selection
+                let areAllObjectsAlreadySelected = true;
                 for (let i = 0; i < objects.length; i++) {
-                    this.selectedObjects.push(objects[i]);
+                    if (!this.selectedObjects.includes(objects[i])) {
+                        areAllObjectsAlreadySelected = false;
+                    }
+                }
+
+                // Perform the addition/deletion
+                for (let i = 0; i < objects.length; i++) {
+                    if (!areAllObjectsAlreadySelected) {
+                        this.selectedObjects.push(objects[i]);
+                    } else {
+                        this.selectedObjects = this.selectedObjects.filter(e => e !== objects[i]);
+                    }
                 }
             } else {
                 this.selectedObjects = objects;
+            }
+
+            if (this.selectedObjects.length) {
+                this.toolbar.rightButtons['delete'].setEnabled();
+                if (this.isFsm()) {
+                    this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+                }
             }
             this.selectionRectangle = null;
         }
@@ -1128,6 +1225,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.alertPopup = function(message) {
         this.currentLink = null;
+        this.clickedObject = null;
         this.draw();
         window.alert(message);
     }
@@ -1153,42 +1251,45 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // If the link is a straight line, check if the two endpoints are located inside the rectangle
             // If the link is an arc, generate 'steps' number of points on the arc,
             // and check if they are all located inside the rectangle
-            //TODO: check for startlinks and selflinks
-            let l = this.links[i].getEndPointsAndCircle(); // Get information about the link
-            let r = l.circleRadius;
-            let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
-            let circleEndAngle = Math.atan2(((l.endY - l.circleY) / r), ((l.endX - l.circleX) /r));
-            let steps = 100;
-
-            let angleDifference = Math.abs(circleEndAngle - circleStartAngle);
             let points = [];
-            if (!l.isReversed && this.links[i].perpendicularPart !== 0) {
-                // When the link is an arc which goes clockwise
-                // Generate the 'steps' number of points on the arc
-                circleEndAngle = (circleEndAngle < circleStartAngle)? circleEndAngle + 2*Math.PI: circleEndAngle;
-                for (let j = circleStartAngle; j < circleEndAngle; j += angleDifference / steps) {
-                    let x = r*Math.cos(j) + l.circleX;
-                    let y = r*Math.sin(j) + l.circleY;
-                    points.push({x: x, y: y});
+            if (this.links[i] instanceof elements.StartLink) {
+                let l = this.links[i].getEndPoints(); // Get information about the link
+                points.push({x: l.startX, y: l.startY});
+                points.push({x: l.endX, y: l.endY});
+            } else {
+                // Else if normal link or self link
+                let l = this.links[i].getEndPointsAndCircle(); // Link info
+                let r = l.circleRadius;
+                let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
+                let circleEndAngle = Math.atan2(((l.endY - l.circleY) / r), ((l.endX - l.circleX) / r));
+                let steps = 100;
+
+                let angleDifference = Math.abs(circleEndAngle - circleStartAngle);
+                if (!l.isReversed && this.links[i].perpendicularPart !== 0) {
+                    // When the link is an arc which goes clockwise
+                    // Generate the 'steps' number of points on the arc
+                    circleEndAngle = (circleEndAngle < circleStartAngle) ? circleEndAngle + 2 * Math.PI : circleEndAngle;
+                    for (let j = circleStartAngle; j < circleEndAngle; j += angleDifference / steps) {
+                        let x = r * Math.cos(j) + l.circleX;
+                        let y = r * Math.sin(j) + l.circleY;
+                        points.push({x: x, y: y});
+                    }
+                } else if (l.isReversed) {
+                    // When the link is an arc which goes counterclockwise
+                    // Generate the 'steps' number of points on the arc
+                    circleEndAngle = (circleEndAngle > circleStartAngle) ? circleEndAngle - 2 * Math.PI : circleEndAngle;
+                    for (let j = circleStartAngle; j > circleEndAngle; j -= angleDifference / steps) {
+                        let x = r * Math.cos(j) + l.circleX;
+                        let y = r * Math.sin(j) + l.circleY;
+                        points.push({x: x, y: y});
+                    }
+                } else if (!l.isReversed && this.links[i].perpendicularPart === 0) {
+                    // When the link is a straight line
+                    let startPoint = {x: l.startX, y: l.startY};
+                    let endPoint = {x: l.endX, y: l.endY};
+                    points.push(startPoint);
+                    points.push(endPoint);
                 }
-            } else if (l.isReversed) {
-                // When the link is an arc which goes counterclockwise
-                // Generate the 'steps' number of points on the arc
-                circleEndAngle = (circleEndAngle > circleStartAngle)? circleEndAngle - 2*Math.PI: circleEndAngle;
-                for (let j = circleStartAngle; j > circleEndAngle; j -= angleDifference / steps) {
-                    let x = r*Math.cos(j) + l.circleX;
-                    let y = r*Math.sin(j) + l.circleY;
-                    points.push({x: x, y: y});
-                }
-            } else if (!l.isReversed && this.links[i].perpendicularPart === 0) {
-                // When the link is a straight line
-                let startPoint = {x: l.startX, y: l.startY};
-                let endPoint = {x: l.endX, y: l.endY};
-                if (util.isRectInsideRect(rect, [startPoint, startPoint]) &&
-                    util.isRectInsideRect(rect, [endPoint, endPoint])) {
-                    objects.push(this.links[i]);
-                }
-                continue;
             }
 
             // If all points of the arc are inside the input rectangle, return this link
@@ -1205,7 +1306,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         return objects;
-    }
+    };
 
     // This function returns the first encountered object on which the user has clicked
     // A margin is added such that creating links is easier

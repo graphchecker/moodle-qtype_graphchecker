@@ -276,7 +276,7 @@ define(function() {
     // Function used to test whether rectInner (rectangle) lies completely inside rectOuter (rectangle)
     // Rect1 and rect2 are both of the form: [{x: corner1X, y: corner1Y}, {x: corner2X, y: corner2Y}]
     Util.prototype.isRectInsideRect = function(rectOuter, rectInner) {
-        // Find out top-left and bottom-right corner of rectOuter //TODO
+        // Find out top-left and bottom-right corner of rectOuter
         // Determine the lowest and highest x and y coordinates of the outer rectangle
         let minXRectOuter, maxXRectOuter;
         if (rectOuter[0].x <= rectOuter[1].x) {
