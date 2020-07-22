@@ -278,32 +278,166 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     GraphToolbar.prototype.addSelectionOptions = function(selectedObjects) {
         // Clear the selection options, and re-add them below when there is only 1 object
         this.removeSelectionOptions();
-        if (selectedObjects.length === 1) {
+        if (selectedObjects.length === 0) {
+            return;
+        }
 
+        // Creating the color selection options
+        // Check whether all selected objects are either nodes or edges
+        let areOnlyNodes = true;
+        let areOnlyEdges = true;
+        for (let i = 0; i < selectedObjects.length; i++) {
+            if (!(selectedObjects[i] instanceof elements.Node)) {
+                areOnlyNodes = false;
+            }
+            if (!(selectedObjects[i] instanceof elements.Link ||
+                selectedObjects[i] instanceof elements.SelfLink ||
+                selectedObjects[i] instanceof elements.StartLink)) {
+                areOnlyEdges = false;
+            }
+        }
+
+        let colors;
+        if (areOnlyNodes && !areOnlyEdges) {
+            colors = this.parent.templateParams.vertex_colors;
+        } else if (!areOnlyNodes && areOnlyEdges) {
+            colors = this.parent.templateParams.edge_colors;
+        }
+
+        if ((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges) && colors != null) {
+            // Create the color dropdown menu
+            let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
+            for (let i = 0; i < colors.length; i++) {
+                if (colors[i] === 'white') {
+                    faIcons.push({icon: 'fa-circle-thin', color: 'black'});
+                } else {
+                    faIcons.push({icon: 'fa-circle', color: colors[i]});
+                }
+            }
+
+            let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart, 'Color', colors, faIcons, this.onClickColorDropdown);
+            colorDropdown.create();
+            this.middleInput['color'] = colorDropdown;
+            this.middleInput['color'].setInitialFieldValue(selectedObjects);
+        }
+
+
+        if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink)) {
             // Create the label textfield
-            let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractTextField);
+            let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractLabelTextField);
             labelTextField.create();
             this.middleInput['label'] = labelTextField;
 
             // Fill the value of the label text field according to the selected object
             this.middleInput['label'].object[0].childNodes[1].value = selectedObjects[0].text;
         }
+
+        // For the highlight checkbox, do the following
+        // Check whether the selection contains nodes or links (or both). Also check the number of objects which
+        // have the ability to be highlighted
+        let containsVertices = false;
+        let containsEdges = false;
+        let nrOfPotentialObjects = 0;
+        for (let i = 0; i < selectedObjects.length; i++) {
+            if (selectedObjects[i] instanceof elements.Node) {
+                containsVertices = true;
+                if (this.parent.templateParams.highlight_vertices) {
+                    nrOfPotentialObjects++;
+                }
+            } else if (selectedObjects[i] instanceof elements.Link ||
+                selectedObjects[i] instanceof elements.SelfLink ||
+                selectedObjects[i] instanceof elements.StartLink) {
+                containsEdges = true;
+                if (this.parent.templateParams.highlight_edges) {
+                    nrOfPotentialObjects++;
+                }
+            }
+        }
+
+        if (!((!this.parent.templateParams.highlight_vertices && containsVertices) ||
+            (!this.parent.templateParams.highlight_edges && containsEdges))) {
+            // Create the highlight checkbox
+            let highlightCheckbox = new elements.Checkbox(this, this.toolbarMiddlePart, elements.CheckboxType.HIGHLIGHT,
+                'Highlight', this.onClickHighlightCheckbox);
+            highlightCheckbox.create();
+
+            // Find out the number of highlighted objects, from the current selection
+            let nrOfHighlightedObjects = 0;
+            for (let i = 0; i < selectedObjects.length; i++) {
+                if (selectedObjects[i].isHighlighted) {
+                    nrOfHighlightedObjects++;
+                }
+            }
+
+            // Fill the value of the highlight checkbox according to the selected objects
+            highlightCheckbox.setChecked(nrOfHighlightedObjects, nrOfPotentialObjects);
+            this.middleInput['highlight'] = highlightCheckbox;
+        }
     };
 
     GraphToolbar.prototype.removeSelectionOptions = function() {
+        if (this.middleInput['color'] != null) {
+            this.middleInput['color'].end();
+            $(this.middleInput['color'].object).remove();
+        }
+        this.middleInput['color'] = null;
+
         if (this.middleInput['label'] != null) {
             this.middleInput['label'].end();
             $(this.middleInput['label'].object).remove();
         }
         this.middleInput['label'] = null;
+
+        if (this.middleInput['highlight'] != null) {
+            this.middleInput['highlight'].end();
+            $(this.middleInput['highlight'].object).remove();
+        }
+        this.middleInput['highlight'] = null;
     };
 
-    GraphToolbar.prototype.onInteractTextField = function(event, toolbar) {
+    GraphToolbar.prototype.onClickColorDropdown = function(event) {
+        // Set the color of the selected objects
+        for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+            this.toolbar.parent.selectedObjects[i].color = this.dropDownOptions[$(event.target).index()];
+        }
+
+        // Display the colored icon and text in the dropdownFieldElement
+        this.toolbar.middleInput['color'].displayInDropdownField(event.target);
+    };
+
+    GraphToolbar.prototype.onInteractLabelTextField = function(event, toolbar) {
         // Add or remove one character to the label of the only selected object (i.e. node or link)
         // This function is only called when there is 1 selected object
         toolbar.parent.selectedObjects[0].text = event.target.value;
         toolbar.parent.draw();
     };
+
+    GraphToolbar.prototype.onClickHighlightCheckbox = function(event) {
+        // Variables to denoting the state before incorporating the change made by this function
+        let areAllHighlighted = true;
+        let hasOneHighlightedNode = false;
+        for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+            if (this.toolbar.parent.selectedObjects[i].isHighlighted) {
+                hasOneHighlightedNode = true;
+            } else {
+                areAllHighlighted = false;
+            }
+        }
+        for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
+            if (!areAllHighlighted) {
+                this.toolbar.parent.selectedObjects[i].isHighlighted = true;
+                // Enable the check
+                event.target.checked = true;
+            } else {
+                this.toolbar.parent.selectedObjects[i].isHighlighted = false;
+            }
+        }
+
+        // Set black tick mark
+        event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
+        event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
+        this.toolbar.parent.draw();
+    }
 
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function(selectedObjects) {
         // Clear the selection options, and re-add them below
@@ -330,12 +464,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         fsmInitialCheckbox.create();
 
         // Set the initial checkbox value accordingly (in case it was pressed before) and save it
-        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked = numberOfInitialVertices;
-        if (numberOfInitialVertices !== numberOfVertices) {
-            // If not all of the selected vertices are initial, create a gray tick mark
-            $($(fsmInitialCheckbox).attr('object').get(0)).find('span').removeClass('toolbar_checkbox_black');
-            $($(fsmInitialCheckbox).attr('object').get(0)).find('span').addClass('toolbar_checkbox_gray');
-        }
+        fsmInitialCheckbox.setChecked(numberOfInitialVertices, numberOfVertices);
         this.middleInput['initial'] = fsmInitialCheckbox;
 
         // Create the FSM final checkbox
@@ -345,12 +474,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         fsmFinalCheckbox.create();
 
         // Set the final checkbox value accordingly (in case it was pressed before) and save it
-        $($(fsmFinalCheckbox).attr('object').get(0)).find('input').get(0).checked = numberOfFinalVertices;
-        if (numberOfFinalVertices !== numberOfVertices) {
-            // If not all of the selected vertices are final, create a gray tick mark
-            $($(fsmFinalCheckbox).attr('object').get(0)).find('span').removeClass('toolbar_checkbox_black');
-            $($(fsmFinalCheckbox).attr('object').get(0)).find('span').addClass('toolbar_checkbox_gray');
-        }
+        fsmFinalCheckbox.setChecked(numberOfFinalVertices, numberOfVertices);
         this.middleInput['final'] = fsmFinalCheckbox;
     };
 
@@ -404,9 +528,30 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.middleInput['transition'] = null;
     };
 
-    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function(selectedObjects, listSelectedPlaces) {
+    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function(selectedObjects) {
+        // Remove any fields if present
+        this.removePetriPlaceSelectionOptions();
+
+        // Only add the petri place selection options (e.g. the token input field) when at least 1 place
+        // node is selected, and when no transition nodes are selected
+        // The listSelectedPlaces variable is also later used to set the token field
+        let listSelectedPlaces = [];
+        let areTransitionsSelected = false;
+        for (let i = 0; i < selectedObjects.length; i++) {
+            if (selectedObjects[i] instanceof elements.Node &&
+                selectedObjects[i].petriNodeType === elements.PetriNodeType.PLACE) {
+                listSelectedPlaces.push(selectedObjects[i]);
+            }
+            if (selectedObjects[i] instanceof elements.Node &&
+                selectedObjects[i].petriNodeType === elements.PetriNodeType.TRANSITION) {
+                areTransitionsSelected = true;
+            }
+        }
+        if (!(listSelectedPlaces.length >= 1 && !areTransitionsSelected)) {
+            return;
+        }
+
         if (selectedObjects.length) {
-            this.removePetriPlaceSelectionOptions();
 
             // Create the token number input field
             let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
@@ -422,7 +567,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // Set the value of the only selected node object
                 $(this.middleInput['tokens'].object)[0].childNodes[1].value = listSelectedPlaces[0].petriTokens;
             } else {
-                // In case of countNodesSelected >= 2
+                // In case of listSelectedPlaces >= 2
                 // Set the value to be empty if the token values do not correspond. Otherwise set it to the value
                 let areTokenValuesEqual = true;
                 for (let i = 0; i < listSelectedPlaces.length - 1; i++) {
@@ -475,6 +620,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
+        if (!this.toolbar.parent.isFsm()) {
+            return
+        }
+
         if (event.target.checked) {
             for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
                 let vertex = this.toolbar.parent.selectedObjects[i];
@@ -911,7 +1060,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // If a new object is selected (apart from TemporaryLinks),
                 // display the according input elements in the toolbar
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
-                    this.clickedObject instanceof elements.SelfLink) {
+                    this.clickedObject instanceof elements.SelfLink ||
+                    this.clickedObject instanceof elements.StartLink) {
                     this.toolbar.addSelectionOptions(this.selectedObjects);
                 } else {
                     this.toolbar.removeSelectionOptions();
@@ -934,22 +1084,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
                 // If the type is Petri, display the according token input field in the toolbar
                 if (this.isPetri()) {
-                    // Only add the petri place selection options (e.g. the token input field) when at least 1 place
-                    // node is selected, and when no transition nodes are selected
-                    let listSelectedPlaces = [];
-                    let areTransitionsSelected = false;
-                    for (let i = 0; i < this.selectedObjects.length; i++) {
-                        if (this.selectedObjects[i] instanceof elements.Node &&
-                            this.selectedObjects[i].petriNodeType === elements.PetriNodeType.PLACE) {
-                            listSelectedPlaces.push(this.selectedObjects[i]);
-                        }
-                        if (this.selectedObjects[i] instanceof elements.Node &&
-                            this.selectedObjects[i].petriNodeType === elements.PetriNodeType.TRANSITION) {
-                            areTransitionsSelected = true;
-                        }
-                    }
-                    if (listSelectedPlaces.length >= 1 && !areTransitionsSelected) {
-                        this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects, listSelectedPlaces);
+                    if (this.selectedObjects.length) {
+                        this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects);
                     } else {
                         this.toolbar.removePetriPlaceSelectionOptions();
                     }
@@ -1209,10 +1345,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.selectedObjects = objects;
             }
 
+            // Add the appropriate selection functions
             if (this.selectedObjects.length) {
                 this.toolbar.rightButtons['delete'].setEnabled();
+                this.toolbar.addSelectionOptions(this.selectedObjects);
                 if (this.isFsm()) {
                     this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+                }
+                if (this.isPetri()) {
+                    this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects);
                 }
             }
             this.selectionRectangle = null;
@@ -1496,6 +1637,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     var inputNode = input.vertices[i];
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
                     node.text = inputNode['label'];
+                    if (this.templateParams.vertex_colors) {
+                        node.color = inputNode['color'];
+                    }
+                    if (this.templateParams.highlight_vertices) {
+                        node.isHighlighted = inputNode['highlighted'];
+                    }
                     if (this.isFsm()) {
                         node.isInitial = inputNode['initial'];
                         node.isFinal = inputNode['final'];
@@ -1516,14 +1663,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         // Self link has two identical nodes.
                         link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
                         link.text = inputLink['label'];
+                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
-                    } else if(inputLink['from'] === -1) {  // TODO [ws] should be removed
+                    } else if(inputLink['from'] === -1) {
                         link = new elements.StartLink(this, this.nodes[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
+                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
                         link = new elements.Link(this, this.nodes[inputLink['from']], this.nodes[inputLink['to']]);
                         link.text = inputLink['label'];
+                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.parallelPart = inputLink['bend']['parallelPart'];
                         link.perpendicularPart = inputLink['bend']['perpendicularPart'];
                         link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
@@ -1550,12 +1703,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;  // Don't save if we have an empty textbox and no graphic content.
         }
 
-        for(i = 0; i < this.nodes.length; i++) {
+        for (i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];
             let vertex = {
                 'label': node.text,
                 'position': [node.x, node.y],
             };
+            if (this.templateParams.vertex_colors != null) {
+                vertex['color'] = node.color;
+            }
+            if (this.templateParams.highlight_vertices) {
+                vertex['highlighted'] = node.isHighlighted;
+            }
             if (this.isFsm()) {
                 vertex['initial'] = node.isInitial;
                 vertex['final'] = node.isFinal;
@@ -1569,38 +1728,61 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             output.vertices.push(vertex);
         }
 
-        for(i = 0; i < this.links.length; i++) {
+        for (i = 0; i < this.links.length; i++) {
             var link = this.links[i];
-
             if(link instanceof elements.SelfLink) {
-                output.edges.push({
+                let linkObject = {
                     'from': this.nodes.indexOf(link.node),
                     'to': this.nodes.indexOf(link.node),
-                    'label': link.text,
                     'bend': {
                         'anchorAngle': link.anchorAngle
-                    }
-                });
-            } else if(link instanceof elements.StartLink) {  // TODO [ws] these should be removed
-                output.edges.push({
+                    },
+                    'label': link.text
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.color;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
+            } else if(link instanceof elements.StartLink) {
+                let linkObject = {
                     'from': -1,
                     'to': this.nodes.indexOf(link.node),
                     'bend': {
                         'deltaX': link.deltaX,
                         'deltaY': link.deltaY
                     }
-                });
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.color;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
             } else if(link instanceof elements.Link) {
-                output.edges.push({
+                let linkObject = {
                     'from': this.nodes.indexOf(link.nodeA),
                     'to': this.nodes.indexOf(link.nodeB),
-                    'label': link.text,
                     'bend': {
                         'lineAngleAdjust': link.lineAngleAdjust,
                         'parallelPart': link.parallelPart,
                         'perpendicularPart': link.perpendicularPart
-                    }
-                });
+                    },
+                    'label': link.text
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.color;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
             }
         }
         this.textArea.val(JSON.stringify(output));

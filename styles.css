@@ -587,6 +587,7 @@ label.checkbox_label {
 div.checkbox_label {
     padding-right: 5px;
     margin-left: 5px;
+    font-size: 14px;
 }
 
 input.toolbar_checkbox {
@@ -595,15 +596,15 @@ input.toolbar_checkbox {
     position: absolute;
     opacity: 0;
     cursor: pointer;
-    height: 16.6px;
-    width: 16.6px;
+    height: 15px;
+    width: 15px;
 }
 
 span.toolbar_checkbox {
     /* Create a custom checkbox */
     position: absolute;
-    height: 15px;
-    width: 15px;
+    height: 14px;
+    width: 14px;
     background-color: white;
     border: 1px solid black;
     cursor: pointer;
@@ -631,8 +632,8 @@ input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after{
 span.toolbar_checkbox_black:after {
     left: 4px;
     top: 0px;
-    width: 5px;
-    height: 10px;
+    width: 4.5px;
+    height: 9px;
     border: solid black;
     border-width: 0 3px 3px 0;
     -webkit-transform: rotate(45deg);
@@ -681,3 +682,69 @@ ul.dialog-help {
     margin-bottom: 0;
 }
 
+/* Styling for the custom dropdown menu */
+i.dropdown_item_icon {
+    font-size: 12px;
+    /* Used to center the icons in their direct parent div */
+    top: calc(50% - 9px);
+    position: relative;
+}
+
+.hide {
+    display: none;
+}
+
+div.custom_dropdown_field {
+    width: 80px;
+    height: 17.2px;
+    background-color: white;
+    border: 1px solid #7A7A7A;
+}
+
+div.custom_dropdown_field:hover {
+    border-color: #171717;
+}
+
+div.custom_dropdown_field:hover i.custom_dropdown_icon {
+    background-color: #E5F1FB;
+    border: 1px solid #0078D7;
+}
+
+div.dropdown_item {
+    height: 18.4px;
+    padding: 0 5px;
+}
+
+div.dropdown_item:hover {
+    background-color: dodgerblue;
+}
+
+i.custom_dropdown_icon {
+    position: relative;
+    width: 15px;
+    height: 100%;
+    font-size: 12px;
+    text-align: center;
+    float: right;
+    right: -1px;
+    top: -1px;
+    border: 1px solid transparent;
+}
+
+span.dropdown_item {
+    font-size: 14px;
+}
+
+div.custom_dropdown_itemlist_wrapper {
+    position: relative;
+}
+
+div.custom_dropdown_itemlist {
+    position: absolute;
+    width: 80px;
+    z-index: 99;
+    background-color: white;
+    border: 1px solid #7A7A7A;
+    cursor: default;
+    user-select: none;
+}

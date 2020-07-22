@@ -5,7 +5,11 @@
         "ui_params": {
             "isdirected": false,
             "isfsm": false,
-            "ispetri": false
+            "ispetri": false,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
+            "highlight_vertices": true,
+            "highlight_edges": true
         },
         "python_modules": ["igraph"]
     },
@@ -15,7 +19,11 @@
         "ui_params": {
             "isdirected": true,
             "isfsm": false,
-            "ispetri": false
+            "ispetri": false,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
+            "highlight_vertices": true,
+            "highlight_edges": true
         },
         "python_modules": ["igraph"]
     },
@@ -25,7 +33,11 @@
         "ui_params": {
             "isdirected": true,
             "isfsm": true,
-            "ispetri": false
+            "ispetri": false,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
+            "highlight_vertices": true,
+            "highlight_edges": true
         }
     },
     "petri": {
@@ -34,7 +46,11 @@
         "ui_params": {
             "isdirected": true,
             "isfsm": false,
-            "ispetri": true
+            "ispetri": true,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
+            "highlight_vertices": true,
+            "highlight_edges": true
         }
     }
 }
