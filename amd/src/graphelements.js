@@ -107,6 +107,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = this.mouseOffsetY + mouseY;
     };
 
+    // This function draws the node on the canvas.
     Node.prototype.draw = function(c) {
         // Draw the node.
         c.beginPath();
@@ -1242,8 +1243,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 }));
         $(this.parent[0]).append($textfield);
 
-        // Add the event listener
+        // Add the event listeners, for the regular input and for checking the CTRL and enter key
         $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
+        $textfield[0].addEventListener('keydown', (event) => this.handleInteraction(event));
         this.object = $textfield;
     };
 

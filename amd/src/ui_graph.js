@@ -83,7 +83,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
         this.canvas.on('mouseleave', function(e) {
-            return parent.mouseup(e);
+            return parent.mouseleave(e);
         });
 
         this.canvas.on('keydown', function(e) {
@@ -321,7 +321,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['color'].setInitialFieldValue(selectedObjects);
         }
 
-
         if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink)) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractLabelTextField);
@@ -330,6 +329,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Fill the value of the label text field according to the selected object
             this.middleInput['label'].object[0].childNodes[1].value = selectedObjects[0].text;
+
+            // Enable autofocus of the label (so that you can type immediately), except if we are in temporary draw mode
+            // This is disabled in the latter case, since typing with the CTRL button pressed can cause
+            // keyboard shortcuts to be activated
+            if (!this.parent.isTempDrawModeActive) {
+                // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
+                let self = this;
+                setTimeout(function () {
+                    if (self.middleInput['label'] != null) {
+                        $(self.middleInput['label'].object[0].childNodes[1]).focus();
+                    }
+                },10);
+            }
         }
 
         // For the highlight checkbox, do the following
@@ -406,9 +418,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.onInteractLabelTextField = function(event, toolbar) {
-        // Add or remove one character to the label of the only selected object (i.e. node or link)
-        // This function is only called when there is 1 selected object
-        toolbar.parent.selectedObjects[0].text = event.target.value;
+        if (event instanceof KeyboardEvent) {
+            if (event.key === 'Enter') {
+                // Set the focus to be the graph canvas when the enter button is pressed
+                $(toolbar.parent.graphCanvas.canvas).focus();
+            } else if (event.key === 'Escape') {
+                // Also set focus, and deselect the objects
+                $(toolbar.parent.graphCanvas.canvas).focus();
+                toolbar.parent.selectedObjects = [];
+            }
+        } else if (event instanceof InputEvent) {
+            // Add or remove character(s) to the label of the only selected object (i.e. node or link)
+            // This function is only called when there is 1 selected object
+            toolbar.parent.selectedObjects[0].text = event.target.value;
+        }
         toolbar.parent.draw();
     };
 
@@ -814,6 +837,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // used in the form [{x: null, y: null}, {x: null, y: null}]
         this.selectionRectangleOffset = 0; // Used for animating the border of the rectangle (marching ants)
         this.currentLink = null;
+        this.mousePosition = null; // A variable to denote the position of the mouse on the canvas.
+        // Format: {x: numbe, y: numbe}
         this.canMoveObjects = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
@@ -866,9 +891,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.setUIMode = function(modeType) {
         this.uiMode = modeType;
         this.clickedObject = null;
-        this.selectedObjects = [];
 
         if (this.uiMode === elements.ModeType.DRAW) {
+            // Deselect all selected objects
+            this.selectedObjects = [];
+
+            // Set the mouse position to null
+            this.mousePosition = null;
+
             // Disable the delete button
             this.toolbar.rightButtons['delete'].setDisabled();
 
@@ -982,6 +1012,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Enable the buttons for Select mode
         this.toolbar.addSelectionOptions(this.selectedObjects);
+
+        // Enable the delete button as well
+        this.toolbar.rightButtons['delete'].setEnabled();
+
+        // Enable FSM/Petri net options
         if (this.isFsm()) {
             this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
         }
@@ -1031,11 +1066,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         newNode.petriNodeType = this.petriNodeType;
                     }
                     this.nodes.push(newNode);
-                    this.draw();
 
                     // Set as initial node if it is the first node, and if the type is FSM
                     if (this.nodes.length === 1 && this.isFsm()) {
                         this.setInitialFSMVertex(newNode);
+                    }
+
+                    // Set this node as the only selected object, so it shows a blue outline
+                    this.selectedObjects = [newNode];
+                    this.previousSelectedObjects = this.selectedObjects;
+
+                    // Also enable the editing fields
+                    this.toolbar.addSelectionOptions(this.selectedObjects);
+                    this.toolbar.rightButtons['delete'].setEnabled();
+                    if (this.isFsm()) {
+                        this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+                    }
+                    if (this.isPetri()) {
+                        this.toolbar.addPetriPlaceSelectionOptions(this.selectedObjects);
                     }
                 }
 
@@ -1146,7 +1194,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return false;
         } else if (key === 46) { // Delete key.
             this.deleteSelectedObjects(this);
-        } else if (key === 13) { // Enter key.
+        } else if (key === 27) { // Escape key.
             // Deselect the objects
             this.selectedObjects = [];
             this.draw();
@@ -1203,6 +1251,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
+        this.mousePosition = {x: mouse.x, y: mouse.y};
+
         // Depending on the mode, perform different tasks
         if (this.uiMode === elements.ModeType.DRAW) {
             if (this.clickedObject instanceof elements.Node) {
@@ -1221,6 +1271,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
                     this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
                 }
+            }
+
+            if (this.isTempDrawModeActive) {
+                this.selectionRectangle = null;
             }
         } else if (this.uiMode === elements.ModeType.SELECT) {
             if (this.selectedObjects.length) {
@@ -1315,6 +1369,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                 }
                 this.addLink(this.currentLink);
+
+                // Set this link as the only selected object, so it shows a blue outline
+                this.selectedObjects = [this.currentLink];
+                this.previousSelectedObjects = this.selectedObjects;
+
+                // Also enable the editing fields
+                this.toolbar.addSelectionOptions(this.selectedObjects);
+
+                // Enable the delete button as well
+                this.toolbar.rightButtons['delete'].setEnabled();
             }
             this.currentLink = null;
         }
@@ -1347,8 +1411,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Add the appropriate selection functions
             if (this.selectedObjects.length) {
-                this.toolbar.rightButtons['delete'].setEnabled();
                 this.toolbar.addSelectionOptions(this.selectedObjects);
+                this.toolbar.rightButtons['delete'].setEnabled();
                 if (this.isFsm()) {
                     this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
                 }
@@ -1364,12 +1428,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.draw();
     };
 
+    // This event function is activated when the mouse leaves the graph canvas
+    Graph.prototype.mouseleave = function(e) {
+        // Set the mouse position to null
+        this.mousePosition = null;
+        this.mouseup(e);
+    };
+
     Graph.prototype.alertPopup = function(message) {
         this.currentLink = null;
         this.clickedObject = null;
         this.draw();
         window.alert(message);
-    }
+    };
 
     // This function returns all objects which are completely located in a rectangle
     // The input rectangle should be of the form: [{x: null, y: null}, {x: null, y: null}]
@@ -1450,18 +1521,27 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     // This function returns the first encountered object on which the user has clicked
-    // A margin is added such that creating links is easier
+    // A margin is used such that creating links is easier
     Graph.prototype.getMouseOverObject = function(x, y) {
-        let i;
 
-        for (i = 0; i < this.nodes.length; i++) {
-            if (this.nodes[i].containsPoint(x, y)) {
-                return this.nodes[i];
-            }
+        // First check if the mouse hovers over a node
+        let node = this.getMouseOverNode(x, y);
+        if (node != null) {
+            return node;
         }
-        for (i = 0; i < this.links.length; i++) {
+
+        for (let i = 0; i < this.links.length; i++) {
             if (this.links[i].containsPoint(x, y)) {
                 return this.links[i];
+            }
+        }
+        return null;
+    };
+
+    Graph.prototype.getMouseOverNode = function(x, y) {
+        for (let i = 0; i < this.nodes.length; i++) {
+            if (this.nodes[i].containsPoint(x, y)) {
+                return this.nodes[i];
             }
         }
         return null;
@@ -1807,11 +1887,52 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
 
+        // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
+        // can create a node here
+        if (this.uiMode === elements.ModeType.DRAW && this.mousePosition != null && this.currentLink === null &&
+            this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === null) {
+            let shadowAlpha = 0.5;
+            c.shadowColor = 'rgb(220,220,220,' + shadowAlpha + ')';
+            c.shadowBlur = 10;
+
+            let shadowNode = new elements.Node(this, this.mousePosition.x, this.mousePosition.y);
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
+            shadowNode.draw(c);
+
+            c.shadowBlur = 0;
+            c.globalAlpha = 1;
+        }
+
+        // Draw the nodes, links and currentLink
         for(i = 0; i < this.nodes.length; i++) {
+            let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition != null &&
+                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === this.nodes[i];
+            if (drawNodeShadow) {
+                // Enable the shadow
+                let shadowAlpha = 0.5;
+                c.shadowColor = 'rgb(150,150,150,' + shadowAlpha + ')';
+                c.shadowBlur = 10;
+
+                // If the node is highlighted, draw another node below it, so the shadow is visible
+                if (this.nodes[i].isHighlighted) {
+                    let shadowNode = new elements.Node(this, this.nodes[i].x, this.nodes[i].y);
+                    c.lineWidth = 1;
+                    c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
+                    shadowNode.draw(c);
+                }
+            }
+
             c.lineWidth = 1;
             c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
                 this.selectedObjects.includes(this.nodes[i])) ? 'blue' : 'black';
             this.nodes[i].draw(c);
+
+            if (drawNodeShadow) {
+                // Disable the shadow
+                c.shadowBlur = 0;
+                c.globalAlpha = 1;
+            }
         }
         for(i = 0; i < this.links.length; i++) {
             c.lineWidth = 1;
@@ -1824,6 +1945,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             c.fillStyle = c.strokeStyle = 'black';
             this.currentLink.draw(c);
         }
+
         // Draw the selection rectangle, if it exists
         let sRect = this.selectionRectangle;
         if (sRect !== null) {
