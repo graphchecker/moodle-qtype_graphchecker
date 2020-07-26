@@ -733,6 +733,7 @@ i.custom_dropdown_icon {
 
 span.dropdown_item {
     font-size: 14px;
+    user-select: none;
 }
 
 div.custom_dropdown_itemlist_wrapper {

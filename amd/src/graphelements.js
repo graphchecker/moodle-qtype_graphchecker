@@ -386,6 +386,64 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         return visited;
     };
 
+    // This function determines which sides of a node have an incoming or outgoing edge.
+    // The sides are: right, top, left, and bottom.
+    Node.prototype.getLinkIntersectionSides = function(links) {
+        // Get all angles of the incoming/outgoing links w.r.t. the node
+        let angles = [];
+        for (let i = 0; i < links.length; i++) {
+            let v1 = {x: 1, y: 0};
+            let v2 = [{x: 0, y: 0}];
+            let isAdjacentLink = false;
+            if (links[i] instanceof Link) {
+                let linkInfo = links[i].getEndPointsAndCircle();
+                if (links[i].nodeA === this) {
+                    v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
+                    isAdjacentLink = true;
+                } else if (links[i].nodeB === this) {
+                    v2[0] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            } else if (links[i] instanceof SelfLink) {
+                let linkInfo = links[i].getEndPointsAndCircle();
+                if (links[i].node === this) {
+                    v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
+                    v2[1] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            } else if (links[i] instanceof StartLink) {
+                let linkInfo = links[i].getEndPoints();
+                if (links[i].node === this) {
+                    v2[0] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            }
+
+            if (isAdjacentLink) {
+                for (let j = 0; j < v2.length; j++) {
+                    angles.push(util.calculateAngle(v1, v2[j]));
+                }
+            }
+        }
+
+        // Determine whether there are intersections for each of the 45degree-rotated quadrants:
+        // right, top, left, and bottom
+        let result = {right: false, top: false, left: false, bottom: false};
+        for (let i = 0; i < angles.length; i++) {
+            if ((0 <= angles[i] && angles[i] <= 1/4 * Math.PI) || (7/4 * Math.PI <= angles[i] && angles[i] <= 2 * Math.PI)) {
+                result.right = true;
+            } else if (1/4 * Math.PI <= angles[i] && angles[i] <= 3/4 * Math.PI) {
+                result.top = true;
+            } else if (3/4 * Math.PI <= angles[i] && angles[i] <= 5/4 * Math.PI) {
+                result.left = true;
+            } else if (5/4 * Math.PI <= angles[i] && angles[i] <= 7/4 * Math.PI) {
+                result.bottom = true;
+            }
+        }
+
+        return result;
+    }
+
     /***********************************************************************
      *
      * Define a class Link that represents a connection between two nodes.
@@ -1138,6 +1196,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Add the event listener
         $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
+        $number_input[0].addEventListener('keydown', (event) => this.handleInteraction(event));
         this.object = $number_input;
     };
 

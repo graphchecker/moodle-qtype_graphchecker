@@ -303,5 +303,21 @@ define(function() {
             minYRectOuter <= rectInner[1].y && rectInner[1].y <= maxYRectOuter);
     };
 
+    // Checks if all elements in a1 occur in a2, and vice versa
+    // This function assumes that both arrays do not have repeating elements, and are of equal length
+    Util.prototype.checkSameElementsArrays = function(a1, a2) {
+        if (a1.length !== a2.length) {
+            return false;
+        }
+
+        for (let i = 0; i < a1.length; i++) {
+            if (!a1.includes(a2[i]) || !a2.includes(a1[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     return new Util();
 });
