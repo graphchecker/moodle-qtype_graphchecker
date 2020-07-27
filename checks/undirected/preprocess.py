@@ -7,8 +7,16 @@ def preprocess(graph):
     count = 0
     for vertex in graph['vertices']:
         label = "v" + str(count) + "_" + vertex['label']
-        v = g.add_vertex(name = label, x = vertex['position'][0], y = vertex['position'][1])
+        if 'highlighted' not in v:
+            highlight = False
+        else:
+            highlight = v['highlighted']
+        v = g.add_vertex(name = label, x = vertex['position'][0], y = vertex['position'][1], highlight = highlight)
         count += 1
     for edge in graph['edges']:
-        g.add_edge(edge['from'], edge['to'], label=edge['label'])
+        if 'highlighted' not in e:
+            highlight = False
+        else:
+            highlight = edge['highlighted']
+        g.add_edge(edge['from'], edge['to'], label=edge['label'], highlight = highlight)
     return g

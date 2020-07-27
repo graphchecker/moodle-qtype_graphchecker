@@ -26,15 +26,11 @@ def findRoot(student_answer):
     for v in student_answer.vs:
         split = splitParentChildren(v)
         if split == None:
-            #print("none")
             return None
         (par, chil) = split
         if len(par) == 0 and root == None:
-            #print(filter_orig_name(v))
             root = v
         elif len(par) == 0 and not root == None:
-            #print("double")
-            #print(filter_orig_name(v))
             return None
     return root
 

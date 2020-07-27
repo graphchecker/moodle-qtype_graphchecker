@@ -49,6 +49,25 @@
                     "default": "top"
                 }
             ]
+        },
+        "InOrderTraversal": {
+            "name": "In-order traversal.",
+            "description": "Check if an in-order traversal gives the required order.",
+            "params": [
+                {
+                    "param": "labels",
+                    "name": "Labels encountered in in-order traversal",
+                    "type": "string_list",
+                    "default": ""
+                },
+                {
+                    "param": "downwards",
+                    "name": "Root placed at the",
+                    "type": "choice",
+                    "options": ["top", "bottom"],
+                    "default": "top"
+                }
+            ]
         }
     }
 }
