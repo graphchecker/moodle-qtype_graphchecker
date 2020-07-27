@@ -35,16 +35,19 @@
                     "param": "expected",
                     "name": "should be",
                     "type": "integer"
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Sum",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
         },
         "connected": {
             "name": "Graph is connected",
             "description": "Check if the graph is connected"
-        },
-        "layout": {
-            "name": "Graph layout identical",
-            "description": "Supplied answer has the same layout as the sample answer (x- y-order of vertices is identical)"
         }
     }
 }

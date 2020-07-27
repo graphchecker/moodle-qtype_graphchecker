@@ -2,6 +2,10 @@
 
 import igraph
 
+#helper
+def filter_orig_name(v):
+    return v['name'].split("_")[1]
+
 # helper methods
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer, sample_answer, preload_answer,
@@ -25,7 +29,12 @@ def connected(student_answer, sample_answer, preload_answer):
         return {'correct': False,
                 'feedback': 'Graph is not connected'}
 
-def sumEdgeWeights(student_answer, sample_answer, preload_answer, expected):
+def sumEdgeWeights(student_answer, sample_answer, preload_answer, expected, highlighted):
+    if highlighted == "only highlighted edges":
+        onlyHighlighted = True
+    else:
+        onlyHighlighted = False
+        
     weight = 0
     for e in student_answer.es:
         try:
@@ -33,27 +42,10 @@ def sumEdgeWeights(student_answer, sample_answer, preload_answer, expected):
         except:
             return {'correct': False,
                     'feedback': 'The edge label {0} is not integer.'.format(e['label'])}
-        weight = weight + edgeweight
+        if (not onlyHighlighted or e['highlighted']):
+            weight = weight + edgeweight
     if weight == expected:
         return {'correct': True}
     else:
         return {'correct': False,
                 'feedback': 'The sum of edge weights did not match the required sum of edge weights.'}
-
-def layout(student_answer, sample_answer, preload_answer):
-    if not student_answer.isomorphic(sample_answer):
-        return {'correct': False,
-                'feedback': 'Your graph was not isomorphic to the given answer'}
-
-    #check x-order and y-order layout is the same
-    xListStudent = sorted(student_answer.vs, key=lambda v: v["x"], reverse=False)
-    yListStudent = sorted(student_answer.vs, key=lambda v: v["y"], reverse=False)
-    
-    xListSample = sorted(sample_answer.vs, key=lambda v: v["x"], reverse=False)
-    yListSample = sorted(sample_answer.vs, key=lambda v: v["y"], reverse=False)
-    
-    for ((stud1, stud2), (samp1, samp2)) in zip((zip(xListStudent,xListStudent[1:])), zip(yListStudent,yListStudent[1:])):
-        if not (stud1["x"] < stud2["x"]) == (samp1["x"] < samp2["x"]):
-            return {'correct': False,
-                    'feedback': 'The general layout of your graph did not match the sample answer.'}
-    return {'correct': True}
