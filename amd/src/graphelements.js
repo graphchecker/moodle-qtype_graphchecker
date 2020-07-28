@@ -109,36 +109,46 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     // This function draws the node on the canvas.
     Node.prototype.draw = function(c) {
+
+        const drawShape = function () {
+            if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
+                c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+            } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
+                c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
+                    this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+            }
+        }.bind(this);
+
         // Draw the node.
-        c.beginPath();
 
-        // Enable the highlight effect when applicable
-        if (this.isHighlighted) {
-            c.shadowColor = (this.parent.selectedObjects.includes(this))? 'blue' : 'red';
+        // Selection shadow
+        if (this.parent.selectedObjects.includes(this)) {
+            c.shadowColor = '#1f78b4';
             c.shadowBlur = 15;
-        }
-
-        // Draw the node, which is a circle or a square
-        if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
-            c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
-            c.fill();
-        } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
-            c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
-                this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
-            c.fill();
-        }
-
-        // Disable the highlight effect when applicable
-        if (this.isHighlighted) {
+        } else {
             c.shadowBlur = 0;
         }
-        // Use the color to fill the node
-        let fillColor = this.color;
-        if (fillColor === null) {
-            fillColor = 'white'; // white is the default color
+
+        // Highlight ring
+        if (this.isHighlighted) {
+            c.strokeStyle = '#fb9a99';
+            c.lineWidth = 15;
+            c.beginPath();
+            drawShape();
+            c.stroke();
+            c.shadowBlur = 0;
         }
-        c.fillStyle = fillColor;
+
+        // Actual node fill
+        c.strokeStyle = 'black';
+        c.fillStyle = this.color ? this.color : 'white';
+        c.lineWidth = 1;
+        c.beginPath();
+        drawShape();
         c.fill();
+
+        // Node border
+        c.shadowBlur = 0;
         c.stroke();
 
         // Draw the label.

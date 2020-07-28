@@ -2032,8 +2032,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
 
             c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
-                this.selectedObjects.includes(this.nodes[i])) ? 'blue' : 'black';
+            c.fillStyle = 'black';
             this.nodes[i].draw(c);
 
             if (drawNodeShadow) {
