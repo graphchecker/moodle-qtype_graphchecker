@@ -126,7 +126,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let self = this;
         this.parent = parent;
         this.buttonSize = {     //px. The pre-set size of the buttons (width, w, and height, h)
-            w:  35,             //TODO: set this in the style.css file instead of as a variable (a generic button class for this plugin)
+            //TODO: set this in the style.css file instead of as a variable (a generic button class for this plugin)
+            w:  35,
             h:  25,
         };
         this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
@@ -322,7 +323,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
 
-            let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart, 'Color', colors, faIcons, this.onClickColorDropdown);
+            let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart,
+                    'Color', colors, faIcons, this.onClickColorDropdown);
             colorDropdown.create();
             this.middleInput['color'] = colorDropdown;
             this.middleInput['color'].setInitialFieldValue(selectedObjects);
@@ -331,7 +333,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink ||
             (selectedObjects[0] instanceof elements.Link && this.parent.isPetri()))) {
             // Create the label textfield
-            let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractLabelTextField);
+            let labelTextField = new elements.TextField(this, this.toolbarMiddlePart,
+                    8, 'Label', this.onInteractLabelTextField);
             labelTextField.create();
             this.middleInput['label'] = labelTextField;
 
@@ -510,16 +513,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Draw the new label
         this.toolbar.parent.draw();
-    }
+    };
 
     GraphToolbar.prototype.onClickHighlightCheckbox = function(event) {
         // Variables to denoting the state before incorporating the change made by this function
         let areAllHighlighted = true;
-        let hasOneHighlightedNode = false;
         for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
-            if (this.toolbar.parent.selectedObjects[i].isHighlighted) {
-                hasOneHighlightedNode = true;
-            } else {
+            if (!this.toolbar.parent.selectedObjects[i].isHighlighted) {
                 areAllHighlighted = false;
             }
         }
@@ -537,7 +537,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
         event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
         this.toolbar.parent.draw();
-    }
+    };
 
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function(selectedObjects) {
         // Clear the selection options, and re-add them below
@@ -719,7 +719,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
         if (!this.toolbar.parent.isFsm()) {
-            return
+            return;
         }
 
         if (event.target.checked) {
@@ -759,12 +759,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (this.toolbar.parent.isFsm()) {
             // Variables to denoting the state before incorporating the change made by this function
             let areAllNodesFinal = true;
-            let hasOneFinalNode = false;
             for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
                 if (this.toolbar.parent.selectedObjects[i] instanceof elements.Node) {
-                    if (this.toolbar.parent.selectedObjects[i].isFinal) {
-                        hasOneFinalNode = true;
-                    } else {
+                    if (!this.toolbar.parent.selectedObjects[i].isFinal) {
                         areAllNodesFinal = false;
                     }
                 }
@@ -882,7 +879,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
             min: 0,
             max: 100,
-        };       //TODO: assure that these values are met when saving (double check). if > 100, set to 100. If <0 or a char, set to 0
+        };       //TODO: assure that these values are met when saving (double check).
+                 //if > 100, set to 100. If <0 or a char, set to 0
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
 
         this.canvasId = 'graphcanvas_' + textareaId;
@@ -1019,32 +1017,42 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
     Graph.prototype.getHelpText = function() {
         // Create the first part of the help text
-        let introductoryText =
-        "<div class = 'dialog-header'>Graph Help</div>\
-                    To create and modify graphs you can use two modes:\
-                    'Select mode' and 'Draw mode'.\
-                    <br><br>";
+        let introductoryText = "<div class='dialog-header'>Graph Help</div>"
+            + "<p>To enter your answer as a graph, you can use Select mode (to edit existing nodes/edges) "
+            + "and Draw mode (to draw new nodes/edges).</p>"
+            + "<p>Toggle between the modes by clicking "
+            + "<i class=\"fa fa-mouse-pointer\"></i>"
+            + " and "
+            + "<i class=\"fa fa-pencil\"></i>. "
+            + "Additionally, while in Select mode you can temporarily use Draw mode "
+            + "by pressing the Ctrl key.</p>";
 
         // Create the help text for the select mode
-        let selectModeText = "<div class = 'dialog-section'>Select mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>\
-                      <li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>\
-                      <li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field in the toolbar. You can add a one-character subscript by adding an underscore followed by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by the letter name (i.e., \\alpha).</li>\
-                      <li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click the delete button (<i class=\"fa fa-trash\"></i>), or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
+        let selectModeText = "<div class='dialog-section'>Select mode:</div>"
+            + "<ul class='dialog-help'>"
+            + "<li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>"
+            + "<li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>"
+            + "<li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field "
+            + "in the toolbar. You can add a one-character subscript by adding an underscore followed "
+            + "by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by "
+            + "the letter name (i.e., \\alpha).</li>"
+            + "<li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click "
+            + "<i class=\"fa fa-trash\"></i>, or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
+
         if (this.isFsm()) {
             // If the current graph type is FSM, add specific help for FSMs
-            selectModeText += "<li><b>Mark node as initial or final state:</b> &nbsp;Select a node to show the corresponding checkboxes.</li>";
+            selectModeText += "<li><b>Mark node as initial or final state:</b> &nbsp;"
+                + "Select a node to show the corresponding checkboxes.</li>";
         }
         selectModeText += "</ul><br>";
 
         // Create the help text for the draw mode
-        let drawModeText = "<div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Create new node:</b> &nbsp;Click on an empty space.</li>\
-                      <li><b>Create new edge:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>\
-                    </ul>";
+        let drawModeText = "<div class='dialog-section'>Draw mode:</div>"
+            + "<ul class='dialog-help'>"
+            + "<li><b>Create new node:</b> &nbsp;Click on an empty space.</li>"
+            + "<li><b>Create new edge:</b> &nbsp;Click on a node and drag to another node.</li>"
+            + "<li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>"
+            + "</ul>";
 
         // Return the concatenation
         return introductoryText + selectModeText + drawModeText;
@@ -1289,7 +1297,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.keyup = function(e) {
-        var key = util.crossBrowserKey(e), i;
+        var key = util.crossBrowserKey(e);
 
         if (this.readOnly) {
             return;
@@ -1541,7 +1549,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     // This function returns all objects which are completely located in a rectangle
     // The input rectangle should be of the form: [{x: null, y: null}, {x: null, y: null}]
     Graph.prototype.getObjectsInRectangle = function(rect) {
-        let objects = []
+        let objects = [];
         // Check all nodes
         for (let i = 0; i < this.nodes.length; i++) {
             // Calculate the top-left corner of the circle/square
@@ -1867,7 +1875,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         }
     };
-    
+
     Graph.prototype.save = function() {
         var output = {
             '_version': 1,
