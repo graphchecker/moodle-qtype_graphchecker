@@ -84,7 +84,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
         this.petriNodeType = PetriNodeType.NONE;
         this.petriTokens = 0;
-        this.color = (this.parent.templateParams.vertex_colors != null)? this.parent.templateParams.vertex_colors[0] : null;
+        this.color = (this.parent.templateParams.vertex_colors !== null)? this.parent.templateParams.vertex_colors[0] : null;
         this.isHighlighted = false;
         this.text = '';
     }
@@ -442,7 +442,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
 
         return result;
-    }
+    };
 
     /***********************************************************************
      *
@@ -454,7 +454,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.nodeA = a;
         this.nodeB = b;
         this.text = '';
-        this.color = (this.parent.templateParams.edge_colors != null)? this.parent.templateParams.edge_colors[0] : null;
+        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
         this.isHighlighted = false;
         this.lineAngleAdjust = 0; // Value to add to textAngle when link is straight line.
 
@@ -699,7 +699,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.anchorAngle = 0;
         this.mouseOffsetAngle = 0;
-        this.color = (this.parent.templateParams.edge_colors != null)? this.parent.templateParams.edge_colors[0] : null;
+        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
         this.isHighlighted = false;
         this.text = '';
 
@@ -825,7 +825,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.deltaX = 0;
         this.deltaY = 0;
-        this.color = (this.parent.templateParams.edge_colors != null)? this.parent.templateParams.edge_colors[0] : null;
+        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
         this.isHighlighted = false;
 
         if(start) {
@@ -928,7 +928,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent = parent;
         this.from = from;
         this.to = to;
-        this.color = (this.parent.templateParams.edge_colors != null)? this.parent.templateParams.edge_colors[0] : null;
+        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
     }
 
     TemporaryLink.prototype.draw = function(c) {
@@ -1011,7 +1011,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Button.prototype.end = function() {
         // Focus on the toolbar, such that the CTRL-mode switch can work
         $(this.toolbar.div).focus();
-    }
+    };
 
     /***********************************************************************
      *
@@ -1227,23 +1227,27 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
     Checkbox.prototype.create = function () {
         this.id = 'checkbox_' + this.text.split(' ').join('_');
-        let $checkbox = $('<label/>')
-            .attr({
-                'class':    'checkbox_label',
-            }).append($('<div/>').text(this.text)
-                .attr({
-                    'class':    'checkbox_label',
-                    'style':    'display: inline',
-                })).append($('<input/>')
+
+        let $checkbox = $('<div/>')
+            .addClass('toolbar_field')
+            .append($('<label/>')
+                .attr('for', this.id)
+                .addClass('checkbox_label')
+                .text(this.text)
+            )
+            .append($('<input/>')
                 .attr({
                     'id':       this.id,
                     'class':    'toolbar_checkbox',
                     'type':     'checkbox',
-                })).append($('<span/>')
+                })
+            )
+            .append($('<span/>')
                 .attr({
                     'class':    'toolbar_checkbox toolbar_checkbox_black',
-            }));
-        $(this.parent[0]).append($checkbox);
+                })
+            )
+            .appendTo(this.parent[0]);
 
         // Add the event listener
         $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
@@ -1391,7 +1395,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Dropdown.prototype.handleDropdownMenuClick = function(event, dropdownFieldElement) {
         // Hide/unhide the sibling element, to show or hide the dropdown items
         dropdownFieldElement.nextElementSibling.classList.toggle('hide');
-    }
+    };
 
     // An event function to handle the case when a user clicks a dropdown item
     Dropdown.prototype.handleDropdownItemClick = function(event, dropdownFieldElement) {

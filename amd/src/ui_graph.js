@@ -311,7 +311,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if ((((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges)) ||
-            (areSameColors)) && colors != null) {
+            (areSameColors)) && colors !== null) {
             // Create the color dropdown menu
             let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
             for (let i = 0; i < colors.length; i++) {
@@ -345,7 +345,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
                 let self = this;
                 setTimeout(function () {
-                    if (self.middleInput['label'] != null) {
+                    if (self.middleInput['label'] !== null) {
                         $(self.middleInput['label'].object[0].childNodes[1]).focus();
                     }
                 },10);
@@ -367,7 +367,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
             let self = this;
             setTimeout(function () {
-                if (self.middleInput['label'] != null) {
+                if (self.middleInput['label'] !== null) {
                     $(self.middleInput['label'].object[0].childNodes[1]).focus();
                 }
             },10);
@@ -417,19 +417,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.removeSelectionOptions = function() {
-        if (this.middleInput['color'] != null) {
+        if (this.middleInput['color'] !== null) {
             this.middleInput['color'].end();
             $(this.middleInput['color'].object).remove();
         }
         this.middleInput['color'] = null;
 
-        if (this.middleInput['label'] != null) {
+        if (this.middleInput['label'] !== null) {
             this.middleInput['label'].end();
             $(this.middleInput['label'].object).remove();
         }
         this.middleInput['label'] = null;
 
-        if (this.middleInput['highlight'] != null) {
+        if (this.middleInput['highlight'] !== null) {
             this.middleInput['highlight'].end();
             $(this.middleInput['highlight'].object).remove();
         }
@@ -580,13 +580,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     GraphToolbar.prototype.removeFSMNodeSelectionOptions = function() {
         // Remove the FSM initial checkboxes if they are present
-        if (this.middleInput['initial'] != null) {
+        if (this.middleInput['initial'] !== null) {
             this.middleInput['initial'].end();
             $(this.middleInput['initial'].object).remove();
         }
         this.middleInput['initial'] = null;
 
-        if (this.middleInput['final'] != null) {
+        if (this.middleInput['final'] !== null) {
             this.middleInput['final'].end();
             $(this.middleInput['final'].object).remove();
         }
@@ -614,14 +614,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     GraphToolbar.prototype.removePetriNodeTypeOptions = function() {
         // Remove the PetriNodeType buttons if they are present
-        if (this.middleInput['place'] != null) {
+        if (this.middleInput['place'] !== null) {
             // Using != tests for 'null' and for 'undefined'
             this.middleInput['place'].end();
             $(this.middleInput['place'].object).remove();
         }
         this.middleInput['place'] = null;
 
-        if (this.middleInput['transition'] != null) {
+        if (this.middleInput['transition'] !== null) {
             this.middleInput['transition'].end();
             $(this.middleInput['transition'].object).remove();
         }
@@ -680,7 +680,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     GraphToolbar.prototype.removePetriSelectionOptions = function() {
-        if (this.middleInput['tokens'] != null) {
+        if (this.middleInput['tokens'] !== null) {
             // Remove the input field from the DOM
             this.middleInput['tokens'].end();
             $(this.middleInput['tokens'].object).remove();
@@ -1622,7 +1622,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // First check if the mouse hovers over a node
         let node = this.getMouseOverNode(x, y);
-        if (node != null) {
+        if (node !== null) {
             return node;
         }
 
@@ -1841,19 +1841,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         // Self link has two identical nodes.
                         link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
                         link.text = inputLink['label'];
-                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.color = (this.templateParams.edge_colors !== null)? inputLink['color'] : null;
                         link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
                     } else if(inputLink['from'] === -1) {
                         link = new elements.StartLink(this, this.nodes[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
-                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.color = (this.templateParams.edge_colors !== null)? inputLink['color'] : null;
                         link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
                         link = new elements.Link(this, this.nodes[inputLink['from']], this.nodes[inputLink['to']]);
                         link.text = inputLink['label'];
-                        link.color = (this.templateParams.edge_colors != null)? inputLink['color'] : null;
+                        link.color = (this.templateParams.edge_colors !== null)? inputLink['color'] : null;
                         link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.parallelPart = inputLink['bend']['parallelPart'];
                         link.perpendicularPart = inputLink['bend']['perpendicularPart'];
@@ -1886,7 +1886,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 'label': node.text,
                 'position': [node.x, node.y],
             };
-            if (this.templateParams.vertex_colors != null) {
+            if (this.templateParams.vertex_colors !== null) {
                 vertex['color'] = node.color;
             }
             if (this.templateParams.highlight_vertices) {
@@ -1986,7 +1986,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
         // can create a node here
-        if (this.uiMode === elements.ModeType.DRAW && this.mousePosition != null && this.currentLink === null &&
+        if (this.uiMode === elements.ModeType.DRAW && this.mousePosition !== null && this.currentLink === null &&
             this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y) === null) {
             let shadowAlpha = 0.5;
             c.shadowColor = 'rgb(220,220,220,' + shadowAlpha + ')';
@@ -2006,7 +2006,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Draw the nodes, links and currentLink
         for(i = 0; i < this.nodes.length; i++) {
-            let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition != null &&
+            let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition !== null &&
                 this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === this.nodes[i];
             if (drawNodeShadow) {
                 // Enable the shadow

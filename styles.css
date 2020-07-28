@@ -347,11 +347,6 @@ body#page-question-type-graphchecker input#id_memlimitmb {
     width: auto;
 }
 
-body#page-question-type-graphchecker label + select,
-body#page-question-type-graphchecker label + input {
-    margin-right: 1em;
-}
-
 body#page-question-type-graphchecker div.testcaseexpression {
     padding-top: 10px;
     border-top: 1px solid lightgrey;
@@ -451,7 +446,7 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
 .graph_ui_container_div button.toolbar_button.clicked,
 .graph_ui_container_div button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb !important;
-    box-shadow: 0px 2px 6px inset rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px inset rgba(0, 0, 0, 0.3);
     border-color: #a0a0a0;
     border-bottom-color: #b0b0b0;
 }
@@ -557,6 +552,14 @@ li.bulktest.graphchecker.context.quiz {
     list-style-type: none;
 }
 
+
+/* Graph UI */
+
+body#page-question-type-graphchecker .graph_ui_container_div button .icon {
+    padding: 0;
+    margin: 2px 0;
+}
+
 /* Styling for the subparts of the graph UI toolbar */
 div.toolbar_part {
     display: inline-block;
@@ -577,9 +580,16 @@ div#toolbar_part_middle {
     align-items: center;
 }
 
-label.checkbox_label {
+/* Checkboxes */
+
+.toolbar_field {
     position: relative;
-    margin-right: 30px;
+}
+
+.toolbar_field label.checkbox_label {
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
     margin-bottom: 0;
     color: black;
 }
@@ -592,8 +602,9 @@ div.checkbox_label {
 
 input.toolbar_checkbox {
     margin: 0;
-
     position: absolute;
+    top: 4px;
+
     opacity: 0;
     cursor: pointer;
     height: 15px;
@@ -601,18 +612,24 @@ input.toolbar_checkbox {
 }
 
 span.toolbar_checkbox {
-    /* Create a custom checkbox */
+    /* create a custom checkbox positioned on top of the actual input
+       field */
     position: absolute;
+    top: 4px;
+
     height: 14px;
     width: 14px;
     background-color: white;
     border: 1px solid black;
     cursor: pointer;
+
+    /* make sure mouse clicks end up on the underlying input element */
+    pointer-events: none;
 }
 
 /* On hover over the input checkbox, add a border color to the span checkbox */
 div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
-    border-color: #0078D7;
+    border-color: #0078d7;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -624,14 +641,14 @@ span.toolbar_checkbox:after {
 
 /* Show the checkmark in the span when checked */
 input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
-input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after{
+input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after {
     display: block;
 }
 
 /* Styling of the checkmark */
 span.toolbar_checkbox_black:after {
     left: 4px;
-    top: 0px;
+    top: 0;
     width: 4.5px;
     height: 9px;
     border: solid black;
@@ -643,7 +660,7 @@ span.toolbar_checkbox_black:after {
 
 span.toolbar_checkbox_gray:after {
     left: 4px;
-    top: 0px;
+    top: 0;
     width: 5px;
     height: 10px;
     border: solid darkgray;
@@ -698,7 +715,7 @@ div.custom_dropdown_field {
     width: 80px;
     height: 17.2px;
     background-color: white;
-    border: 1px solid #7A7A7A;
+    border: 1px solid #7a7a7a;
 }
 
 div.custom_dropdown_field:hover {
@@ -706,8 +723,8 @@ div.custom_dropdown_field:hover {
 }
 
 div.custom_dropdown_field:hover i.custom_dropdown_icon {
-    background-color: #E5F1FB;
-    border: 1px solid #0078D7;
+    background-color: #e5f1fb;
+    border: 1px solid #0078d7;
 }
 
 div.dropdown_item {
@@ -745,7 +762,7 @@ div.custom_dropdown_itemlist {
     width: 80px;
     z-index: 99;
     background-color: white;
-    border: 1px solid #7A7A7A;
+    border: 1px solid #7a7a7a;
     cursor: default;
     user-select: none;
 }
