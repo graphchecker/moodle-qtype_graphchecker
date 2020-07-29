@@ -1992,6 +1992,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
 
+        // use Segoe UI as that is the default Moodle font
+        // (at least on Windows)
+        c.font = this.fontSize() + 'px "Segoe UI"';
+
         // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
         // can create a node here
         if (this.uiMode === elements.ModeType.DRAW && this.mousePosition && !this.currentLink &&
@@ -2079,7 +2083,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             width,
             dy;
 
-        c.font = this.fontSize() + 'px Arial';
         c.fillStyle = 'black';
         width = c.measureText(text).width;
 
