@@ -53,7 +53,42 @@ define(function() {
                                 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda',
                                 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma',
                                 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega' ];
+
+        // A dictionary containing the color code and whether the color is considered dark or not of the specified color
+        this.colors = {
+            'black': {name: 'black', colorCode: '#444444', isDark: true},
+            'red': {name: 'red', colorCode: '#fb9a99', isDark: false},
+            'blue': {name: 'blue', colorCode: '#a6cee3', isDark: false},
+            'green': {name: 'green', colorCode: '#b2df8a', isDark: false},
+            'yellow': {name: 'yellow', colorCode: '#ffff99', isDark: false},
+            'orange': {name: 'orange', colorCode: '#fdbf6f', isDark: false},
+            'purple': {name: 'purple', colorCode: '#cab2d6', isDark: false},
+            'white': {name: 'white', colorCode: '#ffffff', isDark: false},
+        };
     }
+
+    // An enum for defining the different colors that can be used to color vertices and/or edges
+    Util.prototype.Color = Object.freeze({
+        BLACK: 'black',
+        RED: 'red',
+        BLUE: 'blue',
+        GREEN: 'green',
+        YELLOW: 'yellow',
+        ORANGE: 'orange',
+        PURPLE: 'purple',
+        WHITE: 'white',
+    });
+
+    // A function to find the according color object from the given color code, if the object exists
+    Util.prototype.colorObjectFromColorCode = function(colorCode) {
+        for (let key in this.colors) {
+            if (this.colors[key].colorCode === colorCode) {
+                return this.colors[key];
+            }
+        }
+
+        return null;
+    };
 
     Util.prototype.convertLatexShortcuts = function(text) {
         // Html greek characters.
