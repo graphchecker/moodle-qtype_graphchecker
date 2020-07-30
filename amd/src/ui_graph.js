@@ -49,8 +49,20 @@
  */
 
 
-
 define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'], function($, util, elements) {
+
+    // An enum for defining the type of edits that can be set to allowed or disallowed
+    const Edit = Object.freeze({
+        MOVE: 'move',
+        ADD: 'add',
+        DELETE: 'delete',
+        VERTEX_LABELS: 'vertex_labels',
+        EDGE_LABELS: 'edge_labels',
+        VERTEX_COLORS: 'vertex_colors',
+        EDGE_COLORS: 'edge_colors',
+        FSM_FLAGS: 'fsm_flags',
+        PETRI_MARKING: 'petri_marking'
+    });
 
     /***********************************************************************
      *
@@ -147,34 +159,40 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         $(document).ready(function() {
             // Create the 3 parts of the toolbar: left, middle and right
-            self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
-                self.div[0].style.height, 'left');
+            if (self.parent.allowEdits(Edit.ADD)) {
+                self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
+                    self.div[0].style.height, 'left');
+            }
             self.toolbarMiddlePart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'middle');
             self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'right');
 
-            // Left buttons
-            // Create the select button
-            let selectButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Select mode", elements.ModeType.SELECT,
-                self.onModeButtonPressed);
-            selectButton.create();
-            self.leftButtons['select'] = selectButton; //TODO: change all keywords, e.g. 'select', to ENUMs
+            if (self.parent.allowEdits(Edit.ADD)) {
+                // Left buttons
+                // Create the select button
+                let selectButton = new elements.ModeButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Select mode", elements.ModeType.SELECT,
+                    self.onModeButtonPressed);
+                selectButton.create();
+                self.leftButtons['select'] = selectButton;
 
-            // Create the draw button
-            let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
-                self.onModeButtonPressed);
-            drawButton.create();
-            self.leftButtons['draw'] = drawButton;
+                // Create the draw button
+                let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
+                    self.onModeButtonPressed);
+                drawButton.create();
+                self.leftButtons['draw'] = drawButton;
+            }
 
             // Right buttons
             // Create the delete button
-            let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects);
-            deleteButton.create();
-            self.rightButtons['delete'] = deleteButton;
+            if (self.parent.allowEdits(Edit.DELETE)) {
+                let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects);
+                deleteButton.create();
+                self.rightButtons['delete'] = deleteButton;
+            }
 
             // Create the help button
             let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
@@ -240,7 +258,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Update the width of the middle part of the toolbar
             if (this.toolbarMiddlePart !== undefined) {
-                let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
+                let leftWidth = 0;
+                if (this.parent.allowEdits(Edit.ADD)) {
+                    leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
+                }
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
                 let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
                 let canvasWidth = $(this.parent.graphCanvas.canvas).width();
@@ -289,18 +310,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.parent.templateParams.edge_colors);
         let areOnlyNodes = true;
         let areOnlyEdges = true;
-        if (!areSameColors) {
-            for (let i = 0; i < selectedObjects.length; i++) {
-                if (!(selectedObjects[i] instanceof elements.Node)) {
-                    areOnlyNodes = false;
-                }
-                if (!(selectedObjects[i] instanceof elements.Link ||
-                    selectedObjects[i] instanceof elements.SelfLink ||
-                    selectedObjects[i] instanceof elements.StartLink)) {
-                    areOnlyEdges = false;
-                }
+        for (let i = 0; i < selectedObjects.length; i++) {
+            if (!(selectedObjects[i] instanceof elements.Node)) {
+                areOnlyNodes = false;
             }
+            if (!(selectedObjects[i] instanceof elements.Link ||
+                selectedObjects[i] instanceof elements.SelfLink ||
+                selectedObjects[i] instanceof elements.StartLink)) {
+                areOnlyEdges = false;
+            }
+        }
 
+        if (!areSameColors) {
             if (areOnlyNodes && !areOnlyEdges) {
                 colors = this.parent.templateParams.vertex_colors;
             } else if (!areOnlyNodes && areOnlyEdges) {
@@ -311,7 +332,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if ((((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges)) ||
-            (areSameColors)) && colors != null) {
+            (areSameColors)) && colors != null && !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_COLORS)) &&
+            !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_COLORS))) {
             // Create the color dropdown menu
             let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
             for (let i = 0; i < colors.length; i++) {
@@ -328,8 +350,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['color'].setInitialFieldValue(selectedObjects);
         }
 
+        let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_LABELS));
+        let allow_edge_labels = !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_LABELS));
         if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink ||
-            (selectedObjects[0] instanceof elements.Link && this.parent.isPetri()))) {
+            (selectedObjects[0] instanceof elements.Link && this.parent.isPetri())) && allow_vertex_labels && allow_edge_labels) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label', this.onInteractLabelTextField);
             labelTextField.create();
@@ -350,7 +374,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                 },10);
             }
-        } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof elements.Link && this.parent.isPetri()) {
+        } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof elements.Link && this.parent.isPetri()
+            && allow_edge_labels) {
             // Create the spinner to set the label
             let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
             let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
@@ -455,7 +480,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // Also set focus, and deselect the objects
                 $(toolbar.parent.graphCanvas.canvas).focus();
                 toolbar.parent.selectedObjects = [];
-            } else if (event.key === 'Control') {
+            } else if (event.key === 'Control' && toolbar.parent.allowEdits(Edit.ADD)) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 $(toolbar.parent.graphCanvas.canvas).focus();
                 if (toolbar.parent.uiMode !== elements.ModeType.DRAW) {
@@ -499,7 +524,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // Also set focus, and deselect the objects
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 this.toolbar.parent.selectedObjects = [];
-            } else if (event.key === 'Control') {
+            } else if (event.key === 'Control' && this.toolbar.parent.allowEdits(Edit.ADD)) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 if (this.toolbar.parent.uiMode !== elements.ModeType.DRAW) {
@@ -542,6 +567,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function(selectedObjects) {
         // Clear the selection options, and re-add them below
         this.removeFSMNodeSelectionOptions();
+
+        if (!this.parent.allowEdits(Edit.FSM_FLAGS)) {
+            return;
+        }
 
         // Count the number of initial and final vertices
         let numberOfVertices = 0, numberOfInitialVertices = 0, numberOfFinalVertices = 0;
@@ -597,19 +626,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Clear the existing petri node type options, and re-add them below
         this.removePetriNodeTypeOptions();
 
-        // Create the place PetriNodeType button
-        let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
-            this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
-            this.onClickPetriNodeTypeButton);
-        petriNodeTypePlaceButton.create();
-        this.middleInput['place'] = petriNodeTypePlaceButton;
+        if (this.parent.allowEdits(Edit.ADD)) {
+            // Create the place PetriNodeType button
+            let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
+                this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
+                this.onClickPetriNodeTypeButton);
+            petriNodeTypePlaceButton.create();
+            this.middleInput['place'] = petriNodeTypePlaceButton;
 
-        // Create the transition PetriNodeType button
-        let petriNodeTypeTransitionButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
-            this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', elements.PetriNodeType.TRANSITION,
-            this.onClickPetriNodeTypeButton);
-        petriNodeTypeTransitionButton.create();
-        this.middleInput['transition'] = petriNodeTypeTransitionButton;
+            // Create the transition PetriNodeType button
+            let petriNodeTypeTransitionButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
+                this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', elements.PetriNodeType.TRANSITION,
+                this.onClickPetriNodeTypeButton);
+            petriNodeTypeTransitionButton.create();
+            this.middleInput['transition'] = petriNodeTypeTransitionButton;
+        }
     };
 
     GraphToolbar.prototype.removePetriNodeTypeOptions = function() {
@@ -651,7 +682,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        if (selectedObjects.length) {
+        if (selectedObjects.length && this.parent.allowEdits(Edit.PETRI_MARKING)) {
             let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
             let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
             let tokenInputField = new elements.NumberInputField(this, this.toolbarMiddlePart,
@@ -710,6 +741,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 object.petriNodeType === elements.PetriNodeType.PLACE) {
                 // Set the value
                 object.petriTokens = tokenValue;
+            }
+        }
+
+        // If some pre-defined buttons are pressed, execute different actions
+        if (event instanceof KeyboardEvent) {
+            if (event.key === 'Enter') {
+                // Set the focus to be the graph canvas when the enter button is pressed
+                $(this.toolbar.parent.graphCanvas.canvas).focus();
+            } else if (event.key === 'Escape') {
+                // Also set focus, and deselect the objects
+                $(this.toolbar.parent.graphCanvas.canvas).focus();
+                this.toolbar.parent.selectedObjects = [];
+            } else if (event.key === 'Control' && this.toolbar.parent.allowEdits(Edit.ADD)) {
+                // Also set focus, and activate temporary draw mode if draw mode is not active already
+                $(this.toolbar.parent.graphCanvas.canvas).focus();
+                if (this.toolbar.parent.uiMode !== elements.ModeType.DRAW) {
+                    this.toolbar.parent.enableTemporaryDrawMode();
+                }
             }
         }
 
@@ -979,7 +1028,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.mousePosition = null;
 
             // Disable the delete button
-            this.toolbar.rightButtons['delete'].setDisabled();
+            if (this.allowEdits(Edit.DELETE)) {
+                this.toolbar.rightButtons['delete'].setDisabled();
+            }
 
             // If the graph type is Petri net
             if (this.isPetri()) {
@@ -1014,6 +1065,40 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.isPetri = function() {
         return this.templateParams.ispetri !== undefined ? this.templateParams.ispetri : true;
+    };
+
+    // A function to return whether the graph allows the edits specified by the parameter.
+    // This parameter can be a single enum value, or an array of enums, to denote either 1 or more allowed edits
+    Graph.prototype.allowEdits = function(edits) {
+        let editsArray = [];
+        let allowed_edits = this.templateParams.allow_edits;
+
+        // If the input parameter is undefined (or equal to null), or it is an empty array, then allow everything
+        if (allowed_edits == null || (Array.isArray(allowed_edits) && !allowed_edits.length)) {
+            return true;
+        }
+
+        // Else, check whether the supplied arguments (i.e. edits) are allowed
+        if (typeof edits === 'string') {
+            // Check if the variable is a single enum (string)
+            editsArray.push(edits);
+        } else if (Array.isArray(edits) && edits.every(x => (typeof x === "string"))) {
+            // Check if the variable is an array of enums (strings)
+            editsArray = edits;
+        } else {
+            return false;
+        }
+
+        // For each of the edits, check if the enum is valid, and whether it is present as an input parameter
+        for (let i = 0; i < editsArray.length; i++) {
+            if (!(typeof editsArray[i] === 'string' &&
+                Object.values(Edit).includes(editsArray[i]) &&
+                allowed_edits.includes(editsArray[i]))) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
     // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
@@ -1058,51 +1143,57 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.enableTemporaryDrawMode = function() {
-        // Assign the latest selected object
-        this.previousSelectedObjects = this.selectedObjects;
+        if (this.allowEdits(Edit.ADD)) {
+            // Assign the latest selected object
+            this.previousSelectedObjects = this.selectedObjects;
 
-        // Set the mode to Draw
-        this.setUIMode(elements.ModeType.DRAW);
-        this.isTempDrawModeActive = true;
+            // Set the mode to Draw
+            this.setUIMode(elements.ModeType.DRAW);
+            this.isTempDrawModeActive = true;
 
-        // Style the buttons correctly
-        this.toolbar.leftButtons['draw'].setSelected();
-        this.toolbar.leftButtons['select'].setDeselected();
+            // Style the buttons correctly
+            this.toolbar.leftButtons['draw'].setSelected();
+            this.toolbar.leftButtons['select'].setDeselected();
 
-        // Remove the buttons for Select mode
-        this.toolbar.removeSelectionOptions();
-        if (this.isPetri()) {
-            this.toolbar.removePetriSelectionOptions();
-            this.toolbar.onClickPetriNodeTypeButton(this.toolbar.middleInput['place']);
-        }
-        if (this.isFsm()) {
-            this.toolbar.removeFSMNodeSelectionOptions();
+            // Remove the buttons for Select mode
+            this.toolbar.removeSelectionOptions();
+            if (this.isPetri()) {
+                this.toolbar.removePetriSelectionOptions();
+                this.toolbar.onClickPetriNodeTypeButton(this.toolbar.middleInput['place']);
+            }
+            if (this.isFsm()) {
+                this.toolbar.removeFSMNodeSelectionOptions();
+            }
         }
     };
 
     Graph.prototype.disableTemporaryDrawMode = function() {
-        this.setUIMode(elements.ModeType.SELECT);
-        this.selectedObjects = this.previousSelectedObjects;
-        this.isTempDrawModeActive = false;
+        if (this.allowEdits(Edit.ADD)) {
+            this.setUIMode(elements.ModeType.SELECT);
+            this.selectedObjects = this.previousSelectedObjects;
+            this.isTempDrawModeActive = false;
 
-        // Style the buttons correctly
-        this.toolbar.leftButtons['select'].setSelected();
-        this.toolbar.leftButtons['draw'].setDeselected();
+            // Style the buttons correctly
+            this.toolbar.leftButtons['select'].setSelected();
+            this.toolbar.leftButtons['draw'].setDeselected();
 
-        // Enable the buttons for Select mode
-        this.toolbar.addSelectionOptions(this.selectedObjects);
+            // Enable the buttons for Select mode
+            this.toolbar.addSelectionOptions(this.selectedObjects);
 
-        // Enable the delete button as well
-        this.toolbar.rightButtons['delete'].setEnabled();
+            // Enable the delete button as well
+            if (this.allowEdits(Edit.DELETE)) {
+                this.toolbar.rightButtons['delete'].setEnabled();
+            }
 
-        // Enable FSM/Petri net options
-        if (this.isFsm()) {
-            this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+            // Enable FSM/Petri net options
+            if (this.isFsm()) {
+                this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+            }
+            if (this.isPetri()) {
+                this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+            }
+            this.draw();
         }
-        if (this.isPetri()) {
-            this.toolbar.addPetriSelectionOptions(this.selectedObjects);
-        }
-        this.draw();
     };
 
     // Copy the serialised version of the graph to the TextArea.
@@ -1138,7 +1229,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (e.button === 0) {
             // Depending on the mode, perform different tasks
             if (this.uiMode === elements.ModeType.DRAW) {
-                if (this.clickedObject === null && this.currentLink === null) {
+                if (this.clickedObject === null && this.currentLink === null && this.allowEdits(Edit.ADD)) {
                     // Draw a node
                     let newNode = new elements.Node(this, mouse.x, mouse.y);
                     if (this.isPetri()) { // Consider the node a place if it is a petri net
@@ -1157,7 +1248,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
                     // Also enable the editing fields
                     this.toolbar.addSelectionOptions(this.selectedObjects);
-                    this.toolbar.rightButtons['delete'].setEnabled();
+                    if (this.allowEdits(Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setEnabled();
+                    }
                     if (this.isFsm()) {
                         this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
                     }
@@ -1234,9 +1327,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
                     this.clickedObject instanceof elements.SelfLink ||
                     this.clickedObject instanceof elements.StartLink) {
-                    this.toolbar.rightButtons['delete'].setEnabled();
+                    if (this.allowEdits(Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setEnabled();
+                    }
                 } else {
-                    this.toolbar.rightButtons['delete'].setDisabled();
+                    if (this.allowEdits(Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setDisabled();
+                    }
                 }
 
                 if (this.clickedObject === null) {
@@ -1272,7 +1369,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Backspace is a shortcut for the back button, but do NOT want to change pages.
             return false;
         } else if (key === 46) { // Delete key.
-            this.deleteSelectedObjects(this);
+            if (this.allowEdits(Edit.DELETE)) {
+                this.deleteSelectedObjects(this);
+            }
         } else if (key === 27) { // Escape key.
             // Deselect the objects
             this.selectedObjects = [];
@@ -1281,8 +1380,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         if (key === 17) { // Control key
 
-            // Set the mode to Draw if it is not set already
-            if (this.uiMode !== elements.ModeType.DRAW) {
+            // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
+            if (this.uiMode !== elements.ModeType.DRAW && this.allowEdits(Edit.ADD)) {
                 this.enableTemporaryDrawMode();
             }
         }
@@ -1334,7 +1433,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Depending on the mode, perform different tasks
         if (this.uiMode === elements.ModeType.DRAW) {
-            if (this.clickedObject instanceof elements.Node) {
+            if (this.clickedObject instanceof elements.Node && this.allowEdits(Edit.ADD)) {
                 let targetNode = this.getMouseOverObject(mouse.x, mouse.y);
                 if(!(targetNode instanceof elements.Node)) {
                     // If the target node is not a node (e.g. an edge) set it to null
@@ -1385,20 +1484,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     let selectedObjectsSet = new Set(this.selectedObjects);
                     let nodesNotSelected = [...nodesSet].filter(x => !selectedObjectsSet.has(x));
 
-                    for (let i = 0; i < this.selectedObjects.length; i++) {
-                        let object = this.selectedObjects[i];
-                        if (this.clickedObject instanceof elements.Node && object instanceof elements.Node) {
-                            object.setAnchorPoint(mouse.x, mouse.y);
-                            this.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
-                        } else if ((this.clickedObject instanceof elements.Link ||
-                            this.clickedObject instanceof elements.SelfLink ||
-                            this.clickedObject instanceof elements.StartLink) && this.clickedObject === object) {
-                            let isSnapped = object.setAnchorPoint(mouse.x, mouse.y);
-                            if (!isSnapped) {
-                                // Deselect all other objects if the link has moved.
-                                // In case of SelfLinks and StartLinks, which cannot be snapped,
-                                // all objects are also deselected
-                                this.selectedObjects = [this.clickedObject];
+                    if (this.allowEdits(Edit.MOVE)) {
+                        for (let i = 0; i < this.selectedObjects.length; i++) {
+                            let object = this.selectedObjects[i];
+                            if (this.clickedObject instanceof elements.Node && object instanceof elements.Node) {
+                                object.setAnchorPoint(mouse.x, mouse.y);
+                                this.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
+                            } else if ((this.clickedObject instanceof elements.Link ||
+                                this.clickedObject instanceof elements.SelfLink ||
+                                this.clickedObject instanceof elements.StartLink) && this.clickedObject === object) {
+                                let isSnapped = object.setAnchorPoint(mouse.x, mouse.y);
+                                if (!isSnapped) {
+                                    // Deselect all other objects if the link has moved.
+                                    // In case of SelfLinks and StartLinks, which cannot be snapped,
+                                    // all objects are also deselected
+                                    this.selectedObjects = [this.clickedObject];
+                                }
                             }
                         }
                     }
@@ -1423,11 +1524,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.checkKeyPressed(e);
 
         if (this.currentLink !== null) {
-            if (!(this.currentLink instanceof elements.TemporaryLink)) {
+            if (!(this.currentLink instanceof elements.TemporaryLink) && this.allowEdits(Edit.ADD)) {
                 // Remove the created link if the graph is of type 'Petri' and a link is made to a node of the same
                 // Petri type (e.g. place->place, or transition->transition).
                 // Also display a warning in the form of an alert
-                let node = null;
+                let node;
                 if (this.currentLink instanceof elements.SelfLink) {
                     node = this.currentLink.node;
                 } else {
@@ -1474,7 +1575,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.toolbar.addSelectionOptions(this.selectedObjects);
 
                 // Enable the delete button as well
-                this.toolbar.rightButtons['delete'].setEnabled();
+                if (this.allowEdits(Edit.DELETE)) {
+                    this.toolbar.rightButtons['delete'].setEnabled();
+                }
             }
             this.currentLink = null;
         }
@@ -1508,7 +1611,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Add the appropriate selection functions
             if (this.selectedObjects.length) {
                 this.toolbar.addSelectionOptions(this.selectedObjects);
-                this.toolbar.rightButtons['delete'].setEnabled();
+                if (this.allowEdits(Edit.DELETE)) {
+                    this.toolbar.rightButtons['delete'].setEnabled();
+                }
                 if (this.isFsm()) {
                     this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
                 }
@@ -1663,7 +1768,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             graphUI.draw();
 
             // Set the deleted button as disabled
-            graphUI.toolbar.rightButtons['delete'].setDisabled();
+            if (graphUI.allowEdits(Edit.DELETE)) {
+                graphUI.toolbar.rightButtons['delete'].setDisabled();
+            }
 
             // Remove the options in the toolbar based on the selected object
             graphUI.toolbar.removeSelectionOptions();
@@ -1987,7 +2094,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
         // can create a node here
         if (this.uiMode === elements.ModeType.DRAW && this.mousePosition != null && this.currentLink === null &&
-            this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y) === null) {
+            this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y) === null && this.allowEdits(Edit.ADD)) {
             let shadowAlpha = 0.5;
             c.shadowColor = 'rgb(220,220,220,' + shadowAlpha + ')';
             c.shadowBlur = 10;
@@ -2007,7 +2114,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Draw the nodes, links and currentLink
         for(i = 0; i < this.nodes.length; i++) {
             let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition != null &&
-                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === this.nodes[i];
+                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === this.nodes[i] &&
+                this.allowEdits(Edit.ADD);
             if (drawNodeShadow) {
                 // Enable the shadow
                 let shadowAlpha = 0.5;
@@ -2028,7 +2136,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.selectedObjects.includes(this.nodes[i])) ? 'blue' : 'black';
             this.nodes[i].draw(c);
 
-            if (drawNodeShadow) {
+            if (drawNodeShadow && this.allowEdits(Edit.ADD)) {
                 // Disable the shadow
                 c.shadowBlur = 0;
                 c.globalAlpha = 1;

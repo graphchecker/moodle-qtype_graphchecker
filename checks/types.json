@@ -9,7 +9,8 @@
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         },
         "python_modules": ["igraph"]
     },
@@ -23,7 +24,8 @@
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         },
         "python_modules": ["igraph"]
     },
@@ -37,7 +39,8 @@
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         }
     },
     "petri": {
@@ -50,7 +53,8 @@
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         }
     }
 }
