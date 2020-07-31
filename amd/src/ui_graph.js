@@ -990,7 +990,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         // Call the draw function at a fixed interval
-        window.setInterval(function(){ self.draw(); }, 50);
+        this.drawTimer = window.setInterval(function(){ self.draw(); }, 50);
     }
 
     Graph.prototype.failed = function() {
@@ -2088,6 +2088,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.helpOverlay.div.off();
         this.helpOverlay.div.remove();
+
+        this.containerDiv.remove();
+
+        if (this.drawTimer) {
+            clearInterval(this.drawTimer);
+        }
     };
 
     Graph.prototype.draw = function () {
