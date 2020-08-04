@@ -27,20 +27,27 @@
                 }
             ]
         },
-		"connected": {
-			"name": "Graph is connected",
-			"description": "Check if the graph is connected"
-		},
-		"exact_same": {
-			"name": "Exact answer",
-			"description": "Check if exactly the specified graph is given. (excluding embedding)",
+        "sumEdgeWeights": {
+            "name": "Sum edge weights",
+            "description": "Checks if the sum of edge weights matches a given integer.",
             "params": [
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "graph"
+                    "type": "integer"
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Sum",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
-		}
+        },
+        "connected": {
+            "name": "Graph is connected",
+            "description": "Check if the graph is connected"
+        }
     }
 }
