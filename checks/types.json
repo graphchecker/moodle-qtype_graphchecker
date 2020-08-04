@@ -3,13 +3,14 @@
         "name": "Undirected graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": false,
-            "isfsm": false,
-            "ispetri": false,
+            "type": "undirected",
+            "vertex_labels": true,
+            "edge_labels": true,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         },
         "python_modules": ["igraph"]
     },
@@ -17,13 +18,14 @@
         "name": "Directed graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": false,
-            "ispetri": false,
+            "type": "directed",
+            "vertex_labels": true,
+            "edge_labels": true,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         },
         "python_modules": ["igraph"]
     },
@@ -31,26 +33,29 @@
         "name": "Finite state machine",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": true,
-            "ispetri": false,
+            "type": "fsm",
+            "vertex_labels": true,
+            "edge_labels": true,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"],
+            "single_initial_state": false
         }
     },
     "petri": {
         "name": "Petri net",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": false,
-            "ispetri": true,
+            "type": "petri",
+            "vertex_labels": true,
+            "edge_labels": true,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
             "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
             "highlight_vertices": true,
-            "highlight_edges": true
+            "highlight_edges": true,
+            "allow_edits": ["move", "add", "delete", "vertex_labels", "edge_labels", "vertex_colors", "edge_colors", "fsm_flags", "petri_marking"]
         }
     }
 }

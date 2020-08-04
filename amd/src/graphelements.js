@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * A module for use by ui_graph, defining classes Node, Link, SelfLink,
- * StartLink and TemporaryLink
+ * StartLink, TemporaryLink, and HTML elements
  *
  ******************************************************************************/
 // This code is a modified version of Finite State Machine Designer
@@ -84,7 +84,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
         this.petriNodeType = PetriNodeType.NONE;
         this.petriTokens = 0;
-        this.color = (this.parent.templateParams.vertex_colors !== null)? this.parent.templateParams.vertex_colors[0] : null;
+        this.colorObject = (this.parent.templateParams.vertex_colors) ?
+            util.colors[this.parent.templateParams.vertex_colors[0]] : null;
         this.isHighlighted = false;
         this.text = '';
     }
@@ -121,9 +122,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Draw the node.
 
-        // Selection shadow
-        if (this.parent.selectedObjects.includes(this)) {
-            c.shadowColor = '#1f78b4';
+        // Enable the highlight effect when applicable
+        if (this.isHighlighted) {
+            c.shadowColor = (this.parent.selectedObjects.includes(this))? util.Color.BLUE : util.Color.RED;
             c.shadowBlur = 15;
         } else {
             c.shadowBlur = 0;
@@ -138,13 +139,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             c.stroke();
             c.shadowBlur = 0;
         }
-
-        // Actual node fill
-        c.strokeStyle = 'black';
-        c.fillStyle = this.color ? this.color : 'white';
-        c.lineWidth = 1;
-        c.beginPath();
-        drawShape();
+        // Use the color to fill the node
+        let fillColor = this.colorObject.colorCode;
+        if (!fillColor) {
+            fillColor = util.colors[util.Color.WHITE].colorCode; // white is the default color
+        }
+        c.fillStyle = fillColor;
         c.fill();
 
         // Node border
@@ -152,7 +152,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
 
         // Draw the label.
-        c.fillStyle = 'black';
+        c.fillStyle = util.Color.BLACK;
         this.parent.drawText(this, this.text, this.x, this.y, null);
 
         if (this.petriNodeType === PetriNodeType.PLACE && this.petriTokens > 0) {
@@ -335,8 +335,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         return linkInfo;
     };
 
-    Node.prototype.containsPoint = function(x, y) {
-        let radius = this.parent.nodeRadius() + this.parent.HIT_TARGET_PADDING;
+    Node.prototype.containsPoint = function(x, y, usePadding) {
+        let radius = this.parent.nodeRadius();
+        if (usePadding) {
+            radius += this.parent.HIT_TARGET_PADDING;
+        }
         if (this.petriNodeType !== PetriNodeType.TRANSITION) {
             // Check for a circle
             return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= radius * radius;
@@ -464,7 +467,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.nodeA = a;
         this.nodeB = b;
         this.text = '';
-        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
         this.isHighlighted = false;
         this.lineAngleAdjust = 0; // Value to add to textAngle when link is straight line.
 
@@ -551,15 +555,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Use the color to draw the link if it is not selected
         let drawColor = c.strokeStyle;
         if (!this.parent.selectedObjects.includes(this)) {
-            drawColor = this.color;
+            drawColor = this.colorObject.colorCode;
             if (drawColor === null) {
-                drawColor = 'black'; // black is the default color
+                drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
             }
         }
 
         // Enable the highlight effect when applicable
         if (this.isHighlighted) {
-            c.shadowColor = (this.parent.selectedObjects.includes(this))? 'blue' : 'red';
+            c.shadowColor = (this.parent.selectedObjects.includes(this))? util.Color.BLUE : util.Color.RED;
             c.shadowBlur = 10;
         }
 
@@ -578,16 +582,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // If the highlight effect is active, draw the line three times,
         // such that the highlight effect is better visible
         if (this.isHighlighted) {
-            c.strokeStyle = 'white';
-            c.fillStyle = 'white';
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
             c.stroke();
             c.stroke();
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         } else {
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         }
 
@@ -610,8 +611,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
 
         // Draw the text.
-        c.strokeStyle = 'black';
-        c.fillStyle = 'black';
+        c.strokeStyle = c.fillStyle = util.Color.BLACK;
         if(linkInfo.hasCircle) {
             var startAngle = linkInfo.startAngle;
             var endAngle = linkInfo.endAngle;
@@ -709,7 +709,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.anchorAngle = 0;
         this.mouseOffsetAngle = 0;
-        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
         this.isHighlighted = false;
         this.text = '';
 
@@ -770,15 +771,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Use the color to draw the link if it is not selected
         let drawColor = c.strokeStyle;
         if (!this.parent.selectedObjects.includes(this)) {
-            drawColor = this.color;
+            drawColor = this.colorObject.colorCode;
             if (drawColor === null) {
-                drawColor = 'black'; // black is the default color
+                drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
             }
         }
 
         // Enable the highlight effect when applicable
         if (this.isHighlighted) {
-            c.shadowColor = (this.parent.selectedObjects.includes(this))? 'blue' : 'red';
+            c.shadowColor = (this.parent.selectedObjects.includes(this))? util.Color.BLUE : util.Color.RED;
             c.shadowBlur = 10;
         }
 
@@ -787,16 +788,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // If the highlight effect is active, draw the line three times,
         // such that the highlight effect is better visible
         if (this.isHighlighted) {
-            c.strokeStyle = 'white';
-            c.fillStyle = 'white';
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
             c.stroke();
             c.stroke();
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         } else {
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         }
 
@@ -809,8 +807,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
 
         // Draw the text on the loop farthest from the node.
-        c.strokeStyle = 'black';
-        c.fillStyle = 'black';
+        c.strokeStyle = c.fillStyle = util.Color.BLACK;
         var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
         var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
         this.parent.drawText(this, this.text, textX, textY, this.anchorAngle);
@@ -835,7 +832,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.deltaX = 0;
         this.deltaY = 0;
-        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
         this.isHighlighted = false;
 
         if(start) {
@@ -877,15 +875,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Use the color to draw the link if it is not selected
         let drawColor = c.strokeStyle;
         if (!this.parent.selectedObjects.includes(this)) {
-            drawColor = this.color;
+            drawColor = this.colorObject.colorCode;
             if (drawColor === null) {
-                drawColor = 'black'; // black is the default color
+                drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
             }
         }
 
         // Enable the highlight effect when applicable
         if (this.isHighlighted) {
-            c.shadowColor = (this.parent.selectedObjects.includes(this))? 'blue' : 'red';
+            c.shadowColor = (this.parent.selectedObjects.includes(this))? util.Color.BLUE : util.Color.RED;
             c.shadowBlur = 10;
         }
 
@@ -895,16 +893,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // If the highlight effect is active, draw the line three,
         // such that the hightlight effect is better visible
         if (this.isHighlighted) {
-            c.strokeStyle = 'white';
-            c.fillStyle = 'white';
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
             c.stroke();
             c.stroke();
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         } else {
-            c.strokeStyle = drawColor;
-            c.fillStyle = drawColor;
+            c.strokeStyle = c.fillStyle = drawColor;
             c.stroke();
         }
 
@@ -938,7 +933,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent = parent;
         this.from = from;
         this.to = to;
-        this.color = (this.parent.templateParams.edge_colors !== null)? this.parent.templateParams.edge_colors[0] : null;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
     }
 
     TemporaryLink.prototype.draw = function(c) {
@@ -946,12 +942,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.beginPath();
 
         // Use the color to draw the link
-        let drawColor = this.color;
+        let drawColor = this.colorObject.colorCode;
         if (drawColor === null) {
-            drawColor = 'black'; // black is the default color
+            drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
         }
-        c.strokeStyle = drawColor;
-        c.fillStyle = drawColor;
+        c.strokeStyle = c.fillStyle = drawColor;
 
         c.moveTo(this.to.x, this.to.y);
         c.lineTo(this.from.x, this.from.y);
@@ -1371,7 +1366,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 .append($('<i/>')
                     .addClass('icon fa ' + this.icons[i].icon + ' dropdown_item_icon')
                     .attr({
-                        'style':    'pointer-events: none; color: ' + this.icons[i].color +';',
+                        'style':    'pointer-events: none; color: ' + this.icons[i].color.colorCode +';',
                     }))
                 .append($('<span/>')
                     .addClass('dropdown_item')
@@ -1420,15 +1415,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if (selectedObjects.length === 0) {
             return;
         } else if (selectedObjects.length >= 1) {
-            // Get the colors of the object(s)
+            // Get the color names of the object(s)
             let objectColors = [];
             for (let i = 0; i < selectedObjects.length; i++) {
-                if (!objectColors.includes(selectedObjects[i].color)) {
-                    objectColors.push(selectedObjects[i].color);
+                if (!objectColors.includes(selectedObjects[i].colorObject.name)) {
+                    objectColors.push(selectedObjects[i].colorObject.name);
                 }
             }
 
-            // Find the indices in the dropdown options which correspond to the selected objects' colors
+            // Find the indices in the dropdown options which correspond to the selected objects' color names
             for (let i = 0; i < this.dropDownOptions.length ; i++) {
                 if (objectColors.includes(this.dropDownOptions[i])) {
                     indices.push(i);
