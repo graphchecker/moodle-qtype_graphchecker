@@ -51,7 +51,7 @@ def splitParentChildren(v, down):
             return None
     return (parents, children)
 
-def BinaryTree(student_answer, sample_answer, preload_answer, downwards):
+def BinaryTree(student_answer, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
@@ -178,7 +178,7 @@ def traverse(node, labels, downwards):
         labels = traverse(right, labels, downwards)
     return labels
 
-def InOrderTraversal(student_answer, sample_answer, preload_answer, labels, downwards):
+def InOrderTraversal(student_answer, labels, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
