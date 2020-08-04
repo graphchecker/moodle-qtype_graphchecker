@@ -79,14 +79,14 @@ def BinaryTree(student_answer, sample_answer, preload_answer, downwards):
                 'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
     return {'correct': True }
 
-def BinarySearchTree(student_answer, sample_answer, preload_answer, downwards):
+def BinarySearchTree(student_answer, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
         down = False
     else:
         raise Exception('Unknown parameter value supplied. Contact support.')
-    
+
     root = 0
     for v in student_answer.vs:
         split = splitParentChildren(v, down)
@@ -125,7 +125,7 @@ def BinarySearchTree(student_answer, sample_answer, preload_answer, downwards):
                 'feedback': 'Not a binary tree: there is more than one root in the drawing.'}
     return {'correct': True }
 
-def NodeDepth(student_answer, sample_answer, preload_answer, label, depth, downwards):
+def NodeDepth(student_answer, label, depth, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":

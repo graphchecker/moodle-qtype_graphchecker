@@ -1,7 +1,7 @@
 import math
 
 
-def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
+def no_forbidden_words(student_answer, words):
     for place in student_answer.places:
         if place.name in words:
             return {'correct': False,
@@ -15,7 +15,7 @@ def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
     return {'correct': True}
 
 
-def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
+def only_mandatory_words(student_answer, words):
     for place in student_answer.places:
         if place.name not in words:
             return {'correct': False,
@@ -29,7 +29,7 @@ def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
     return {'correct': True}
 
 
-def no_duplicate_label(student_answer, sample_answer, preload_answer):
+def no_duplicate_label(student_answer):
     used_labels = set()
     for place in student_answer.places:
         if place.name in used_labels:
@@ -46,7 +46,7 @@ def no_duplicate_label(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def left_to_right(student_answer, sample_answer, preload_answer):
+def left_to_right(student_answer):
     for arc in student_answer.arcs:
         a_pos = arc.source.properties['position'][0]
         b_pos = arc.target.properties['position'][0]
@@ -58,7 +58,7 @@ def left_to_right(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def top_to_bottom(student_answer, sample_answer, preload_answer):
+def top_to_bottom(student_answer):
     for arc in student_answer.arcs:
         a_pos = arc.source.properties['position'][1]
         b_pos = arc.target.properties['position'][1]
@@ -296,7 +296,7 @@ def geom_intersect(geom_a, geom_b, share_node):
     return line_circle_intersect(line, circle)
 
 
-def crossing_arcs(student_answer, sample_answer, preload_answer, max_crossings):
+def crossing_arcs(student_answer, max_crossings):
     intersects = 0
     for arc_a in student_answer.arcs:
         for arc_b in student_answer.arcs:
@@ -350,11 +350,11 @@ def adjacent_helper(net, labels, axis):
     return {'correct': True}
 
 
-def horizontally_adjacent(student_answer, sample_answer, preload_answer, labels):
+def horizontally_adjacent(student_answer, labels):
     return adjacent_helper(student_answer, labels, 1)
 
 
-def vertically_adjacent(student_answer, sample_answer, preload_answer, labels):
+def vertically_adjacent(student_answer, labels):
     return adjacent_helper(student_answer, labels, 0)
 
 
@@ -379,7 +379,7 @@ def get_node_list(net, label_list):
     return my_list
 
 
-def list_left_of(student_answer, sample_answer, preload_answer, labels_a, labels_b):
+def list_left_of(student_answer, labels_a, labels_b):
     if labels_overlap(labels_a, labels_b):
         return {'correct': False,
                 'feedback': 'Overlapping labels in group A and B.'}
@@ -398,7 +398,7 @@ def list_left_of(student_answer, sample_answer, preload_answer, labels_a, labels
     return {'correct': True}
 
 
-def list_above_of(student_answer, sample_answer, preload_answer, labels_a, labels_b):
+def list_above_of(student_answer, labels_a, labels_b):
     if labels_overlap(labels_a, labels_b):
         return {'correct': False,
                 'feedback': 'Overlapping labels in group A and B.'}

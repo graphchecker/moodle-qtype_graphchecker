@@ -4,7 +4,7 @@ import igraph
 
 # helper methods
 def _make_integer_checker(method_name, readable_name):
-    def result(student_answer, sample_answer, preload_answer,
+    def result(student_answer,
         expected):
         actual = getattr(student_answer, method_name)()
         if actual == expected:
@@ -21,9 +21,10 @@ girth = _make_integer_checker('girth', 'Girth')
 independence_number = _make_integer_checker('independence_number', 'Independence number')
 radius = _make_integer_checker('radius', 'Radius')
 
-def isomorphism(student_answer, sample_answer, preload_answer, graph_answer):
+def isomorphism(student_answer, graph_answer):
     if student_answer.isomorphic(graph_answer):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': 'Your graph was not isomorphic to the given answer'}
+                'feedback': 'The graph is not isomorphic to the expected answer'}
+

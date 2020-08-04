@@ -23,9 +23,6 @@ def run(graph_type, graph, checks):
 			'feedback': str(e)
 		}
 
-	empty_graph = {'_version': 1, 'vertices': [], 'edges': []}
-	empty_graph = preprocess.preprocess(empty_graph)
-
 	check_data = available_checks(graph_type)
 
 	checks = json.loads(checks)
@@ -35,7 +32,7 @@ def run(graph_type, graph, checks):
 			check_module = importlib.import_module(check['module'])
 			check_method = getattr(check_module, check['method'])
 			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
-			result = check_method(graph, empty_graph, empty_graph, **argument)
+			result = check_method(graph, **argument)
 			result['module'] = check['module']
 			result['method'] = check['method']
 			results.append(result)

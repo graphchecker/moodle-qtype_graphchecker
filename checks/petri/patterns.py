@@ -1,4 +1,4 @@
-def has_sub_graph(student_answer, sample_answer, preload_answer, sub_graph):
+def has_sub_graph(student_answer, sub_graph):
     # Maps labels to the object in the student graph
     node_map = {}
     for p in student_answer.places:

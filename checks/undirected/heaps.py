@@ -96,14 +96,14 @@ def check_heap_structure(student_answer, comparator, textual):
                         'feedback': 'Vertex {0} is {1} than it\'s child {2}.'.format(filter_orig_name(v), textual, filter_orig_name(w))}
     return {'correct': True}
 
-def MaxHeap_structure(student_answer, sample_answer, preload_answer):
+def MaxHeap_structure(student_answer):
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout
 
     return check_heap_structure(student_answer, lambda a,b : a < b, "smaller")
     
-def MinHeap_structure(student_answer, sample_answer, preload_answer):
+def MinHeap_structure(student_answer):
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout

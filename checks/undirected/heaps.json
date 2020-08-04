@@ -1,13 +1,13 @@
 {
     "name": "Heap properties",
     "checks": {
-        "MinHeap_structure": {
-            "name": "Min-heap structure",
-            "description": "Check if the given graph is valid for a min-heap (layout + contents)"
-        },
         "MaxHeap_structure": {
             "name": "Max-heap structure",
             "description": "Check if the given graph is valid for a max-heap (layout + contents)"
+        },
+        "MinHeap_structure": {
+            "name": "Min-heap structure",
+            "description": "Check if the given graph is valid for a min-heap (layout + contents)"
         }
     }
 }
