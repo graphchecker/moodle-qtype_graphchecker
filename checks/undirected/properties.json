@@ -58,8 +58,8 @@
             "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices).",
             "params": [
                 {
-                    "param": "expected",
-                    "name": "answer isomorphic to",
+                    "param": "graph_answer",
+                    "name": "Graph to be matched",
                     "type": "graph"
                 }
             ]

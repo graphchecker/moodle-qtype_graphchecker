@@ -2,6 +2,10 @@
 
 import igraph
 
+#helper
+def filter_orig_name(v):
+    return v['name'].split("_")[1]
+
 # helper methods
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer, expected):
@@ -22,11 +26,32 @@ def connected(student_answer):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': ('Graph is not connected')}
+                'feedback': 'Graph is not connected'}
 
 def exact_same(student_answer, expected):
     if (student_answer.isomorphic(expected)):
         return {'correct': True}
+else:
+    return {'correct': False,
+            'feedback': 'Incorrect answer given'}
+
+def sumEdgeWeights(student_answer, expected, highlighted):
+    if highlighted == "only highlighted edges":
+        onlyHighlighted = True
+    else:
+        onlyHighlighted = False
+        
+    weight = 0
+    for e in student_answer.es:
+        try:
+            edgeweight = int(e['label'])
+        except:
+            return {'correct': False,
+                    'feedback': 'The edge label {0} is not integer.'.format(e['label'])}
+        if (not onlyHighlighted or e['highlighted']):
+            weight = weight + edgeweight
+    if weight == expected:
+        return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': ('Incorrect answer given')}
+                'feedback': 'The sum of edge weights did not match the required sum of edge weights.'}

@@ -14,12 +14,60 @@
                         "param": "depth",
                         "name": "has depth ",
                         "type": "integer"
+                    },
+                    {
+                        "param": "downwards",
+                        "name": "Tree root is placed at the",
+                        "type": "choice",
+                        "options": ["top", "bottom"],
+                        "default": "top"
                     }
             ]
         },
-        "BinaryTreeStructure": {
-            "name": "Has binary tree structure.",
-            "description": "Check if the given drawing is a (downwards) binary tree."
+        "BinaryTree": {
+            "name": "Is binary tree.",
+            "description": "Check if the given drawing is a binary tree.",
+            "params": [
+                {
+                    "param": "downwards",
+                    "name": "Root placed at the",
+                    "type": "choice",
+                    "options": ["top", "bottom"],
+                    "default": "top"
+                }
+            ]
+        },
+        "BinarySearchTree": {
+            "name": "Is binary search tree.",
+            "description": "Check if the given drawing is a valid binary SEARCH tree.",
+            "params": [
+                {
+                    "param": "downwards",
+                    "name": "Root placed at the",
+                    "type": "choice",
+                    "options": ["top", "bottom"],
+                    "default": "top"
+                }
+            ]
+        },
+        "InOrderTraversal": {
+            "name": "In-order traversal.",
+            "description": "Check if an in-order traversal gives the required order.",
+            "params": [
+                {
+                    "param": "labels",
+                    "name": "Labels encountered in in-order traversal",
+                    "type": "string_list",
+                    "default": ""
+                },
+                {
+                    "param": "downwards",
+                    "name": "Root placed at the",
+                    "type": "choice",
+                    "options": ["top", "bottom"],
+                    "default": "top"
+                }
+            ]
         }
     }
 }

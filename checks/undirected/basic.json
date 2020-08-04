@@ -29,18 +29,27 @@
                 }
             ]
         },
-        "vertex_count": {
-            "name": "Vertex count",
-            "description": "Checks if the graph has the given number of vertices.",
+        "sumEdgeWeights": {
+            "name": "Sum edge weights",
+            "description": "Checks if the sum of edge weights matches a given integer.",
             "params": [
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
+                    "type": "integer"
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Sum",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
+        },
+        "connected": {
+            "name": "Graph is connected",
+            "description": "Check if the graph is connected"
         }
     }
 }

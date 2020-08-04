@@ -101,6 +101,11 @@ define(function() {
         };
     };
 
+    Util.prototype.degToRad = function(deg) {
+        // Converts degrees to radians
+        return deg * (Math.PI/180.0);
+    }
+
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
         return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
@@ -143,6 +148,11 @@ define(function() {
             'x': mouse.x - element.x,
             'y': mouse.y - element.y
         };
+    };
+
+    Util.prototype.calculateAngle = function(v1, v2) {
+        // Return an angle a, where 0 <= a <= 2*PI, in radians
+        return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
     };
 
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
@@ -239,6 +249,75 @@ define(function() {
             }
         }
     };
+
+    Util.prototype.quadraticFormula = function(a, b, c) {
+        let D = Math.pow(b, 2) - 4*a*c;
+
+        let res1 = (-b - Math.sqrt(D))/(2*a);
+        let res2 = (-b + Math.sqrt(D))/(2*a);
+        return [res1, res2];
+    };
+
+    // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
+    // link, and the start and end angles.
+    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
+        let rRatio = reverseScale * distance / circle.radius;
+        let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;
+        let endAngle = Math.atan2(nodeB.y - circle.y, nodeB.x - circle.x) + rRatio;
+        let startX = circle.x + circle.radius * Math.cos(startAngle);
+        let startY = circle.y + circle.radius * Math.sin(startAngle);
+        let endX = circle.x + circle.radius * Math.cos(endAngle);
+        let endY = circle.y + circle.radius * Math.sin(endAngle);
+
+        return {startAngle: startAngle, endAngle: endAngle, startX: startX, startY: startY, endX: endX, endY:endY};
+    };
+
+    // Function used to test whether rectInner (rectangle) lies completely inside rectOuter (rectangle)
+    // Rect1 and rect2 are both of the form: [{x: corner1X, y: corner1Y}, {x: corner2X, y: corner2Y}]
+    Util.prototype.isRectInsideRect = function(rectOuter, rectInner) {
+        // Find out top-left and bottom-right corner of rectOuter
+        // Determine the lowest and highest x and y coordinates of the outer rectangle
+        let minXRectOuter, maxXRectOuter;
+        if (rectOuter[0].x <= rectOuter[1].x) {
+            minXRectOuter = rectOuter[0].x;
+            maxXRectOuter = rectOuter[1].x;
+        } else {
+            minXRectOuter = rectOuter[1].x;
+            maxXRectOuter = rectOuter[0].x;
+        }
+
+        let minYRectOuter, maxYRectOuter;
+        if (rectOuter[0].y <= rectOuter[1].y) {
+            minYRectOuter = rectOuter[0].y;
+            maxYRectOuter = rectOuter[1].y;
+        } else {
+            minYRectOuter = rectOuter[1].y;
+            maxYRectOuter = rectOuter[0].y;
+        }
+
+        // Now check if each point of the inner rectangle lies within these coordinates
+        return (minXRectOuter <= rectInner[0].x && rectInner[0].x <= maxXRectOuter &&
+            minXRectOuter <= rectInner[1].x && rectInner[1].x <= maxXRectOuter &&
+            minYRectOuter <= rectInner[0].y && rectInner[0].y <= maxYRectOuter &&
+            minYRectOuter <= rectInner[1].y && rectInner[1].y <= maxYRectOuter);
+    };
+
+    // Checks if all elements in a1 occur in a2, and vice versa
+    // This function assumes that both arrays do not have repeating elements, and are of equal length
+    Util.prototype.checkSameElementsArrays = function(a1, a2) {
+        if (a1.length !== a2.length) {
+            return false;
+        }
+
+        for (let i = 0; i < a1.length; i++) {
+            if (!a1.includes(a2[i]) || !a2.includes(a1[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     return new Util();
 });
