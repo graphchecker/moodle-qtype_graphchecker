@@ -109,8 +109,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     // This function draws the node on the canvas.
-    Node.prototype.draw = function(c) {
+    Node.prototype.draw = function(c, isShadowNode) {
 
+        // A function used to draw the node
         const drawShape = function () {
             if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
                 c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
@@ -120,35 +121,62 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             }
         }.bind(this);
 
-        // Draw the node.
-
         // Enable the highlight effect when applicable
-        if (this.isHighlighted) {
-            c.shadowColor = (this.parent.selectedObjects.includes(this))? util.Color.BLUE : util.Color.RED;
+        let isSelected = this.parent.selectedObjects.includes(this);
+        if (isSelected) {
+            // Set the shadow color to be primary blue (the custom blue was not very visible)
+            //TODO: possibly change selection color
+            c.shadowColor = util.Color.BLUE;
             c.shadowBlur = 15;
-        } else {
-            c.shadowBlur = 0;
         }
 
-        // Highlight ring
+        // If the node is highlighted, draw a highlight ring around it
         if (this.isHighlighted) {
-            c.strokeStyle = '#fb9a99';
+            // Set the stroke color and the line width
+            let oldStrokeStyle = c.strokeStyle;
+            c.strokeStyle = util.colors[util.Color.RED].colorCode;
+            let oldLineWidth = c.lineWidth;
             c.lineWidth = 15;
+
+            // Draw the shape
             c.beginPath();
             drawShape();
             c.stroke();
+
+            if (isShadowNode) {
+                // Draw a special shadow if it is a highlighted node
+                c.shadowColor = 'rgb(150,150,150,0.7)';
+                c.shadowBlur = 10;
+                c.stroke();
+            }
+
+            // Reset the draw parameters
+            c.strokeStyle = oldStrokeStyle;
+            c.lineWidth = oldLineWidth;
             c.shadowBlur = 0;
         }
+
+        // Draw the node itself, on top of the highlighting
+        c.beginPath();
+        drawShape();
+
         // Use the color to fill the node
         let fillColor = this.colorObject.colorCode;
         if (!fillColor) {
-            fillColor = util.colors[util.Color.WHITE].colorCode; // white is the default color
+            fillColor = util.colors[util.Color.WHITE].colorCode; // White is the default color
         }
         c.fillStyle = fillColor;
         c.fill();
 
-        // Node border
+        // If the node is a shadow node, apply the effect more to enhance the visibility
+        if (isShadowNode) {
+            c.fill();
+        }
+
+        // Reset the shadow parameter, in case the node was selected
         c.shadowBlur = 0;
+
+        // Draw the node border
         c.stroke();
 
         // Draw the label.

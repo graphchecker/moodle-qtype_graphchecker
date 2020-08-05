@@ -1030,9 +1030,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Deselect all selected objects
             this.selectedObjects = [];
 
-            // Set the mouse position to null
-            this.mousePosition = null;
-
             // Disable the delete button
             if (this.allowEdits(Edit.DELETE)) {
                 this.toolbar.rightButtons['delete'].setDisabled();
@@ -1582,7 +1579,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.selectedObjects = [this.currentLink];
                 this.previousSelectedObjects = this.selectedObjects;
 
-                // Also enable the editing fields
+                // Remove FSM/Petri fields
+                if (this.isType(Type.FSM)) {
+                    this.toolbar.removeFSMNodeSelectionOptions();
+                }
+                if (this.isType(Type.PETRI)) {
+                    this.toolbar.removePetriNodeTypeOptions();
+                    this.toolbar.removePetriSelectionOptions();
+                }
+
+                // Enable the editing fields
                 this.toolbar.addSelectionOptions(this.selectedObjects);
 
                 // Enable the delete button as well
@@ -1955,7 +1961,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 for (i = 0; i < input.edges.length; i++) {
                     var inputLink = input.edges[i];
                     var link = null;
-                    console.log(inputLink['color']);
+
                     if(inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
                         link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
@@ -2106,8 +2112,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.draw = function () {
         var canvas = this.getCanvas(),
-            c = canvas.getContext('2d'),
-            i;
+            c = canvas.getContext('2d');
 
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
@@ -2130,7 +2135,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
             c.lineWidth = 1;
             c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
-            shadowNode.draw(c);
+            shadowNode.draw(c, true);
 
             c.shadowBlur = 0;
             c.globalAlpha = 1;
@@ -2139,7 +2144,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Draw the nodes, links and currentLink
         for(i = 0; i < this.nodes.length; i++) {
             let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition &&
-                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y) === this.nodes[i] &&
+                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y, true) === this.nodes[i] &&
                 this.allowEdits(Edit.ADD);
             if (drawNodeShadow) {
                 // Enable the shadow
@@ -2152,14 +2157,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     let shadowNode = new elements.Node(this, this.nodes[i].x, this.nodes[i].y);
                     c.lineWidth = 1;
                     c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
-                    shadowNode.draw(c);
+                    shadowNode.draw(c, drawNodeShadow);
                 }
             }
 
             c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
-                this.selectedObjects.includes(this.nodes[i])) ? util.Color.BLUE : util.Color.BLACK;
-            this.nodes[i].draw(c);
+            c.fillStyle = c.strokeStyle = util.Color.BLACK;
+            this.nodes[i].draw(c, drawNodeShadow);
 
             if (drawNodeShadow && this.allowEdits(Edit.ADD)) {
                 // Disable the shadow
