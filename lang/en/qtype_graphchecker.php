@@ -29,8 +29,8 @@ $string['answerprompt'] = 'Answer:';
 $string['answer_help'] = 'A sample answer can be entered here, so that it can be shown to students during review. The correctness of a non-empty answer is checked when saving unless \'Validate on save\' is unchecked.';
 $string['answer'] = 'Sample answer';
 $string['answerbox_group'] = 'Answer box';
-$string['answerpreload'] = 'Answer box preload';
-$string['answerpreload_help'] = 'The student\'s answer box will be pre-filled with the contents of this field.';
+$string['answerpreload'] = 'Preloaded answer';
+$string['answerpreload_help'] = 'The student\'s answer box will be pre-filled with the contents of this field. If the student is intended to draw a graph from scratch, this should be left empty.';
 $string['answertype'] = 'Answer type';
 $string['answertype_help'] = 'Change which type of answer the student is required to give. Depending on the selection, the proper editor will be shown. Changing the answer type will clear the Answer box preload, Checks, and Sample answer sections below.';
 $string['answertype_changed'] = 'Changing the answer type will clear the Answer box preload, Checks, and Sample answer sections. Are you sure you want to continue?';
@@ -43,6 +43,8 @@ $string['checks'] = 'Checks';
 $string['checks_help'] = 'Checks used to verify if the student\'s answer is correct.';
 $string['confirmreset'] = 'Are you sure you want reset the answer box to the original value? This will discard all your work on the question.';
 
+$string['edge_highlight'] = 'Edge highlighting';
+$string['edge_highlight_help'] = 'Selecting this checkbox allows the student to highlight edges in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight edges in the given graph without being allowed to modify the graph itself.)';
 $string['enable'] = 'Enable';
 $string['enable_sandbox_desc'] = 'Permit use of the specified sandbox for running student submissions';
 $string['errorstring-ok'] = 'OK';
@@ -118,4 +120,9 @@ $string['syntax_errors'] = 'Syntax Error(s)';
 $string['ui_fallback'] = 'Falling back to raw text area.';
 $string['unknownerror'] = 'An unexpected error occurred. The sandbox may be down. Try again shortly.';
 $string['unserializefailed'] = 'Stored test results could not be deserialised. Perhaps try regrading?';
+
+$string['vertexedits'] = 'Allowed edits';
+$string['vertexedits_help'] = 'Specify if students should be able to edit the nodes / edges of the preloaded graph. Various values are possible:<ul><li><b>none</b>: prohibit any edits (in this case you probably want to allow highlighting);<li><b>layout</b>: allow dragging the nodes / edges around, but nothing else;<li><b>attributes</b>: additionally allow changing vertex and edge labels, colors, etc.;<li><b>all</b>: allow all edits, including adding new nodes / edges or deleting existing ones.</ul>';
+$string['vertex_highlight'] = 'Node highlighting';
+$string['vertex_highlight_help'] = 'Selecting this checkbox allows the student to highlight nodes in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight nodes in the given graph without being allowed to modify the graph itself.)';
 
