@@ -1,7 +1,7 @@
 from pm4py.objects.petri.check_soundness import *
 
 
-def bounded(student_answer, sample_answer, preload_answer):
+def bounded(student_answer):
     has_loops = check_loops_generating_tokens(student_answer)
     if has_loops:
         return {'correct': False,
@@ -10,7 +10,7 @@ def bounded(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def infinite(student_answer, sample_answer, preload_answer):
+def infinite(student_answer):
     has_loops = check_loops_generating_tokens(student_answer)
     if has_loops:
         return {'correct': True}
@@ -19,9 +19,10 @@ def infinite(student_answer, sample_answer, preload_answer):
             'feedback': 'The petri net is not infinite.'}
 
 
-def deadlock_free(student_answer, sample_answer, preload_answer):
-    print(student_answer.places)
-    print(student_answer.arcs)
+def deadlock_free(student_answer):
+    """
+    This check does not work. The pm4py functionality does not work.
+    """
     # TODO: does not seem to work. Simple example of 2 places and 1 transition fails.
     is_workflow = check_wfnet(student_answer)
 
@@ -43,7 +44,7 @@ def deadlock_free(student_answer, sample_answer, preload_answer):
             'feedback': 'The petri net is not deadlock free.'}
 
 
-def live(student_answer, sample_answer, preload_answer):
+def live(student_answer):
     is_workflow = check_wfnet(student_answer)
     if not is_workflow:
         return {'correct': False,
