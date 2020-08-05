@@ -1,62 +1,6 @@
 {
   "name": "Graph properties",
   "checks": {
-    "connected": {
-      "name": "Is connected",
-      "description": "Checks if the graph is connected.",
-      "params": []
-    },
-    "strongly_connected": {
-      "name": "Is strongly connected",
-      "description": "Checks if the graph is strongly connected.",
-      "params": []
-    },
-    "transition_degree_one": {
-      "name": "Transition Degree 1",
-      "description": "Checks if every transition has in/out degree 1.",
-      "params": []
-    },
-    "node_on_shortest_path": {
-      "name": "Node on shortest path",
-      "description": "Check if a node is on the shortest path from one node to another node.",
-      "params": [
-        {
-          "param": "label_a",
-          "name": "source node",
-          "type": "string",
-          "default": ""
-        },
-        {
-          "param": "label_b",
-          "name": "middle node",
-          "type": "string",
-          "default": ""
-        },
-        {
-          "param": "label_c",
-          "name": "target node",
-          "type": "string",
-          "default": ""
-        }
-      ]
-    },
-    "node_label_exists": {
-      "name": "Node label exists",
-      "description": "Checks if a node with a particular label exists.",
-      "params": [
-        {
-          "param": "label",
-          "name": "should be",
-          "type": "string",
-          "default": ""
-        }
-      ]
-    },
-    "node_empty_label": {
-      "name": "Node empty label",
-      "description": "Checks if a node with an empty label exists.",
-      "params": []
-    },
     "arc_missing": {
       "name": "Arc missing",
       "description": "Checks if an arc is missing between two nodes.",
@@ -116,6 +60,62 @@
           "default": ""
         }
       ]
+    },
+    "connected": {
+      "name": "Is connected",
+      "description": "Checks if the graph is connected.",
+      "params": []
+    },
+    "node_empty_label": {
+      "name": "Node empty label",
+      "description": "Checks if a node with an empty label exists.",
+      "params": []
+    },
+    "node_label_exists": {
+      "name": "Node label exists",
+      "description": "Checks if a node with a particular label exists.",
+      "params": [
+        {
+          "param": "label",
+          "name": "should be",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "node_on_shortest_path": {
+      "name": "Node on shortest path",
+      "description": "Check if a node is on the shortest path from one node to another node.",
+      "params": [
+        {
+          "param": "label_a",
+          "name": "source node",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_b",
+          "name": "middle node",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "param": "label_c",
+          "name": "target node",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    "strongly_connected": {
+      "name": "Is strongly connected",
+      "description": "Checks if the graph is strongly connected.",
+      "params": []
+    },
+    "transition_degree_one": {
+      "name": "Transition Degree 1",
+      "description": "Checks if every transition has in/out degree 1.",
+      "params": []
     }
   }
 }

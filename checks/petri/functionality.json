@@ -1,19 +1,6 @@
 {
   "name": "Basic petri-net functionality",
   "checks": {
-    "number_of_tokens": {
-      "name": "Node with number of tokens",
-      "description": "Checks if a node with a particular number of tokens exists.",
-      "params": [
-        {
-          "param": "num_tokens",
-          "name": "should exist",
-          "type": "integer",
-          "default": 1,
-          "min": 0
-        }
-      ]
-    },
     "possible_sequence": {
       "name": "Is firing sequence possible",
       "description": "Checks if a specific sequence of firing transitions is possible.",
@@ -36,6 +23,11 @@
         }
       ]
     },
+    "workflow_net": {
+      "name": "Is workflow net",
+      "description": "Checks if a petri-net is workflow net (there is a unique initial and final state and every node is between the initial and final state).",
+      "params": []
+    },
     "marking_given": {
       "name": "Marking is given",
       "description": "Checks if a particular marking is given for a known petri-net. Given a petri-net checks if the markings in the student answer are the same.",
@@ -47,10 +39,18 @@
         }
       ]
     },
-    "workflow_net": {
-      "name": "Is workflow net",
-      "description": "Checks if a petri-net is workflow net (there is a unique initial and final state and every node is between the initial and final state).",
-      "params": []
+    "number_of_tokens": {
+      "name": "Node with number of tokens",
+      "description": "Checks if a node with a particular number of tokens exists.",
+      "params": [
+        {
+          "param": "num_tokens",
+          "name": "should exist",
+          "type": "integer",
+          "default": 1,
+          "min": 0
+        }
+      ]
     }
   }
 }

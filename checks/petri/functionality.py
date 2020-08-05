@@ -10,7 +10,7 @@ def get_marking(net):
     return marking
 
 
-def number_of_tokens(student_answer, sample_answer, preload_answer, num_tokens):
+def number_of_tokens(student_answer, num_tokens):
     num_tokens = int(num_tokens)
     for place in student_answer.places:
         if place.properties['tokens'] == num_tokens:
@@ -52,7 +52,7 @@ def is_sequence_possible(net, transition_sequence):
     return [True, 0, False]
 
 
-def possible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def possible_sequence(student_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2] or result[2] == '':
         return {'correct': False,
@@ -68,7 +68,7 @@ def possible_sequence(student_answer, sample_answer, preload_answer, transition_
                                                   transition_sequence, index)}
 
 
-def impossible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def impossible_sequence(student_answer, transition_sequence):
     result = is_sequence_possible(student_answer, transition_sequence)
     if result[2]:
         return {'correct': False,
@@ -82,7 +82,7 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
         return {'correct': True}
 
 
-def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
+def marking_given(student_answer, correct_graph):
     student_place_names = [p.name for p in student_answer.places]
 
     # Check if all tokens in the given answer exist and have the right amount of tokens.
@@ -100,7 +100,7 @@ def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
     return {'correct': True}
 
 
-def workflow_net(student_answer, sample_answer, preload_answer):
+def workflow_net(student_answer):
     if check_soundness.check_wfnet(student_answer):
         return {'correct': True}
     else:
