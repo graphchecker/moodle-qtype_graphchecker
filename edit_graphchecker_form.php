@@ -117,7 +117,8 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+        );
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
@@ -158,7 +159,8 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+        );
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
@@ -171,7 +173,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
 
         $mform->addElement('advcheckbox', 'vertex_highlight',
-                'Vertex highlighting', 'Allow', null);
+                'Node highlighting', 'Allow', null);
         $mform->addHelpButton('vertex_highlight', 'vertex_highlight', 'qtype_graphchecker');
 
         $mform->addElement('advcheckbox', 'edge_highlight',

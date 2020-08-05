@@ -218,19 +218,32 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    /**
-     * Returns a JSON string to be handed to the UI plugin, corresponding to
-     * the answer type of this question.
-     */
-    public static function get_ui_params($type) {
+    public static function get_ui_params_for_type($type) {
         global $CFG;
         $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
         $types = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception("Invalid JSON types file");
         }
+        $params = $types[$type]["ui_params"];
+        return $params;
+    }
 
-        return json_encode($types[$type]["ui_params"]);
+    /**
+     * Returns a JSON string to be handed to the UI plugin, corresponding to
+     * the answer type of this question.
+     */
+    public function get_ui_params() {
+        $params = qtype_graphchecker_question::get_ui_params_for_type($this->answertype);
+
+        if ($this->vertex_highlight) {
+            $params['highlight_vertices'] = true;
+        }
+        if ($this->edge_highlight) {
+            $params['highlight_edges'] = true;
+        }
+
+        return json_encode($params);
     }
 
 
