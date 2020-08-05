@@ -226,6 +226,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
             throw new Exception("Invalid JSON types file");
         }
         $params = $types[$type]["ui_params"];
+        $params['type'] = $type;
         return $params;
     }
 

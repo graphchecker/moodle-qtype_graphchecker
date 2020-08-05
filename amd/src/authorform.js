@@ -89,8 +89,11 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                         $preloadField.val('');
                         $checksField.val('');
 
-                        $sampleAnswerField.attr('data-params', JSON.stringify(data['ui_params']));
-                        $preloadField.attr('data-params', JSON.stringify(data['ui_params']));
+                        let params = data['ui_params'];
+                        params['type'] = type;
+                        params = JSON.stringify(params);
+                        $sampleAnswerField.attr('data-params', params);
+                        $preloadField.attr('data-params', params);
                         $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
 
                         setUis();
