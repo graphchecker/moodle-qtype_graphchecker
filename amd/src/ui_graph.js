@@ -188,7 +188,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
                 // Create the draw button
                 let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode (Ctrl)", elements.ModeType.DRAW,
                     self.onModeButtonPressed);
                 drawButton.create();
                 self.leftButtons['draw'] = drawButton;
@@ -594,6 +594,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         }
 
+        if (numberOfVertices === 0) {
+            return;
+        }
+
         // Create the FSM initial checkbox
         let fsmInitialCheckbox = new elements.Checkbox(
             this, this.toolbarMiddlePart, elements.CheckboxType.FSM_INITIAL, 'Initial',
@@ -954,8 +958,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT,
-            this.uiMode, this.helpOverlay);
+        this.toolbar = null;
+        if (!this.readOnly) {
+            // Set the toolbar only if readonly is disabled
+            this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT,
+                this.uiMode, this.helpOverlay);
+        }
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
@@ -1015,7 +1023,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getToolbar = function() {
-        return this.toolbar.div[0];
+        if (this.toolbar !== null) {
+            return this.toolbar.div[0];
+        } else {
+            return null;
+        }
     };
 
     Graph.prototype.getHelpOverlay = function() {
@@ -1068,9 +1080,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let editsArray = [];
         let allowed_edits = this.templateParams.allow_edits;
 
-        // If the input parameter is undefined (or equal to null), or it is an empty array, then allow everything
-        if (allowed_edits == null || (Array.isArray(allowed_edits) && !allowed_edits.length)) {
+        if (allowed_edits == null) {
+            // If the input parameter is undefined (or equal to null) then allow everything
             return true;
+        } else if ((Array.isArray(allowed_edits) && !allowed_edits.length) || (this.readOnly)) {
+            // If the array is empty, or the graph is readonly, don't allow anything
+            return false;
         }
 
         // Else, check whether the supplied arguments (i.e. edits) are allowed
@@ -1421,8 +1436,17 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         w = w+1;
         // Setting h to h-7, in order to not make the canvas change size when the help button is pressed (which causes
         // the screen to resize). TODO: not sure why this happens, but -7 seems to fix it
-        this.graphCanvas.resize(w, h-7);
-        this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
+        let isToolbarNull = this.toolbar === null;
+        let additionalHeight = 0;
+        if (isToolbarNull) {
+            additionalHeight += this.TOOLBAR_HEIGHT;
+        }
+
+        // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
+        this.graphCanvas.resize(w, h-7 + additionalHeight);
+        if (!isToolbarNull) {
+            this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
+        }
         this.draw();
     };
 

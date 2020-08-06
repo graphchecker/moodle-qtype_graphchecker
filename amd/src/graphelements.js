@@ -502,7 +502,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Make anchor point relative to the locations of nodeA and nodeB.
         this.parallelPart = 0.5;    // Percentage from nodeA to nodeB.
-        this.perpendicularPart = 0; // Pixels from line between nodeA and nodeB.
+        this.perpendicularPart = 0.1; // Pixels from line between nodeA and nodeB.
+        // This is set to 0.1, to enable the tweaking of links (when there are multiple links present) to enhance visibility
     }
 
     Link.prototype.getAnchorPoint = function() {
