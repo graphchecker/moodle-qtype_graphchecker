@@ -582,16 +582,31 @@ div#toolbar_part_middle {
 
 /* Checkboxes */
 
-.toolbar_field {
+div.toolbar_field {
     position: relative;
+    font-size: 14px;
+    color: black;
+    margin: 0.0px 7px;
 }
 
-.toolbar_field label.checkbox_label {
+div.toolbar_field label.checkbox_label {
     display: inline-block;
     position: relative;
     margin-right: 10px;
     margin-bottom: 0;
     color: black;
+}
+
+div.checkbox_Highlight {
+    width: 80px;
+}
+
+div.checkbox_Initial {
+    width: 57px;
+}
+
+div.checkbox_Final {
+    width: 55px;
 }
 
 div.checkbox_label {
@@ -670,24 +685,25 @@ span.toolbar_checkbox_gray:after {
     transform: rotate(45deg);
 }
 
-label.field_label {
+body#page-question-type-graphchecker .graph_ui_container_div div.field_label {
     position: relative;
+    height: 100%;
     font-size: 14px;
-    margin-bottom: 0;
-    margin-left: 5px;
+    margin: 0.0px 7px;
     color: black;
 }
 
 input.toolbar_numberinput {
-    height: 14px;
+    height: 17.5px;
     width: 45px;
     margin-left: 5px;
 }
 
-input.toolbar_textfield {
-    margin-left: 5px;
-    margin-right: 8px;
-    height: 14px;
+body#page-question-type-graphchecker .graph_ui_container_div input.toolbar_textfield {
+    top: -2px;
+    position: relative;
+    margin: 0;
+    height: 17.5px;
 }
 
 button.disabled {
@@ -700,11 +716,12 @@ ul.dialog-help {
 }
 
 /* Styling for the custom dropdown menu */
-i.dropdown_item_icon {
+body#page-question-type-graphchecker .graph_ui_container_div i.dropdown_item_icon {
     font-size: 12px;
     /* Used to center the icons in their direct parent div */
-    top: calc(50% - 9px);
+    top: calc(50% - 11px);
     position: relative;
+    margin-right: 0px;
 }
 
 .hide {
@@ -712,17 +729,17 @@ i.dropdown_item_icon {
 }
 
 div.custom_dropdown_field {
-    width: 80px;
-    height: 17.2px;
+    width: 95px;
+    height: 17.5px;
     background-color: white;
     border: 1px solid #7a7a7a;
 }
 
-div.custom_dropdown_field:hover {
+body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover {
     border-color: #171717;
 }
 
-div.custom_dropdown_field:hover i.custom_dropdown_icon {
+body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover i.custom_dropdown_icon {
     background-color: #e5f1fb;
     border: 1px solid #0078d7;
 }
@@ -736,7 +753,7 @@ div.dropdown_item:hover {
     background-color: dodgerblue;
 }
 
-i.custom_dropdown_icon {
+body#page-question-type-graphchecker .graph_ui_container_div i.custom_dropdown_icon {
     position: relative;
     width: 15px;
     height: 100%;
@@ -746,9 +763,12 @@ i.custom_dropdown_icon {
     right: -1px;
     top: -1px;
     border: 1px solid transparent;
+    margin-right: 0px;
 }
 
 span.dropdown_item {
+    position: relative;
+    top: calc(50% - 11px);
     font-size: 14px;
     user-select: none;
 }
@@ -759,7 +779,7 @@ div.custom_dropdown_itemlist_wrapper {
 
 div.custom_dropdown_itemlist {
     position: absolute;
-    width: 80px;
+    width: 95px;
     z-index: 99;
     background-color: white;
     border: 1px solid #7a7a7a;

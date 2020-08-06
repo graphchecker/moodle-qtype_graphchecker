@@ -1190,7 +1190,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     /***********************************************************************
      *
      * Define a class NumberInputField for the number input field
-     * This can be used to set the number of tokens in a petri net's place
+     * This can be used to set the number of tokens in a petri net's place,
      * for example
      *
      ***********************************************************************/
@@ -1212,9 +1212,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Create the number input field
         this.id = 'numberinput_' + this.title.split(' ').join('_');
 
-        let $number_input = $('<label/>')
+        let $number_input = $('<div/>')
             .attr({
-                'class':    'field_label',
+                'class':    'toolbar_field',
             }).append(this.labelText).append($('<input/>')
             .attr({
                 'id':       this.id,
@@ -1262,7 +1262,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.id = 'checkbox_' + this.text.split(' ').join('_');
 
         let $checkbox = $('<div/>')
-            .addClass('toolbar_field')
+            .addClass('toolbar_field' + ' ' + this.id)
             .append($('<label/>')
                 .attr('for', this.id)
                 .addClass('checkbox_label')
@@ -1325,10 +1325,14 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
     TextField.prototype.create = function () {
         this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
-        let $textfield = $('<label/>')
+        let $textfield = $('<div/>')
             .attr({
                 'class':    'field_label',
             }).append(this.placeholderText + ':')
+            .append($('<div/>')
+                .attr({
+                    'class':    'field_label_wrapper',
+                })
             .append($('<input/>')
                 .attr({
                     'id':           this.id,
@@ -1336,7 +1340,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                     'type':         'text',
                     'placeholder':  this.placeholderText,
                     'size':         this.w,
-                }));
+                })));
         $(this.parent[0]).append($textfield);
 
         // Add the event listeners, for the regular input and for checking the CTRL and enter key
@@ -1415,8 +1419,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         let outerDivHeight = $($dropdownField[0]).height();
         $($dropdownMenu).css({left: -outerDivWidth, top: outerDivHeight/2.0 - 1});
 
-        // Append both divs to an outer wrapper label
-        let $outerDiv = $('<label/>')
+        // Append both divs to an outer wrapper div
+        let $outerDiv = $('<div/>')
             .attr({
                 'class':    'field_label',
             }).append(this.labelText + ':')
