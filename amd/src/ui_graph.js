@@ -2165,46 +2165,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             c.globalAlpha = 1;
         }
 
-        // Draw the nodes, links and currentLink
-        for(i = 0; i < this.nodes.length; i++) {
-            let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition &&
-                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y, true) === this.nodes[i] &&
-                this.allowEdits(Edit.ADD);
-            if (drawNodeShadow) {
-                // Enable the shadow
-                let shadowAlpha = 0.5;
-                c.shadowColor = 'rgb(150,150,150,' + shadowAlpha + ')';
-                c.shadowBlur = 10;
+        // Draw all selections of the nodes, and links
+        this.drawNodes(c, elements.DrawOption.SELECTION);
+        this.drawLinks(c, elements.DrawOption.SELECTION);
 
-                // If the node is highlighted, draw another node below it, so the shadow is visible
-                if (this.nodes[i].isHighlighted) {
-                    let shadowNode = new elements.Node(this, this.nodes[i].x, this.nodes[i].y);
-                    c.lineWidth = 1;
-                    c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
-                    shadowNode.draw(c, drawNodeShadow);
-                }
-            }
+        // Draw all highlights of the nodes and the nodes themselves, and links
+        this.drawNodes(c, elements.DrawOption.OBJECT);
+        this.drawLinks(c, elements.DrawOption.OBJECT);
 
-            c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = util.Color.BLACK;
-            this.nodes[i].draw(c, drawNodeShadow);
+        // Draw all nodes and links themselves
+        //this.drawNodesAndLinks(c, elements.DrawOption.OBJECT);
 
-            if (drawNodeShadow && this.allowEdits(Edit.ADD)) {
-                // Disable the shadow
-                c.shadowBlur = 0;
-                c.globalAlpha = 1;
-            }
-        }
-        for(i = 0; i < this.links.length; i++) {
-            c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
-                this.selectedObjects.includes(this.links[i])) ? util.Color.BLUE : util.Color.BLACK;
-            this.links[i].draw(c);
-        }
+        // Draw the current link
         if (this.currentLink) {
             c.lineWidth = 1;
             c.fillStyle = c.strokeStyle = util.Color.BLACK;
-            this.currentLink.draw(c);
+            this.currentLink.draw(c, elements.DrawOption.OBJECT);
         }
 
         // Draw the selection rectangle, if it exists
@@ -2225,6 +2201,59 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         c.restore();
         this.save();
+    };
+
+    // A function to draw (a part of) the nodes
+    Graph.prototype.drawNodes = function(c, drawOption) {
+        // If the option is not defined, don't draw anything
+        if (!Object.values(elements.DrawOption).includes(drawOption)) {
+            return;
+        }
+
+        // Draw the nodes with the draw option
+        for (let i = 0; i < this.nodes.length; i++) {
+            let drawNodeShadow = this.uiMode === elements.ModeType.DRAW && this.mousePosition &&
+                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y, true) === this.nodes[i] &&
+                this.allowEdits(Edit.ADD);
+            if (drawNodeShadow) {
+                // Enable the shadow
+                let shadowAlpha = 0.5;
+                c.shadowColor = 'rgb(150,150,150,' + shadowAlpha + ')';
+                c.shadowBlur = 10;
+
+                // If the node is highlighted, draw another node below it, so the shadow is visible
+                if (this.nodes[i].isHighlighted) {
+                    let shadowNode = new elements.Node(this, this.nodes[i].x, this.nodes[i].y);
+                    c.lineWidth = 1;
+                    c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
+                    shadowNode.draw(c, drawNodeShadow, null);
+                }
+            }
+
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = util.Color.BLACK;
+            this.nodes[i].draw(c, drawNodeShadow, drawOption);
+
+            if (drawNodeShadow && this.allowEdits(Edit.ADD)) {
+                // Disable the shadow
+                c.shadowBlur = 0;
+                c.globalAlpha = 1;
+            }
+        }
+    };
+
+    // A function to draw (a part of) the links
+    Graph.prototype.drawLinks = function(c, drawOption) {
+        // Draw the links with the draw option
+        for (let i = 0; i < this.links.length; i++) {
+            c.lineWidth = 1;
+            /*
+            TODO: remove?
+            c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
+                this.selectedObjects.includes(this.links[i])) ? util.Color.BLUE : util.Color.BLACK;
+             */
+            this.links[i].draw(c, drawOption);
+        }
     };
 
     Graph.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
