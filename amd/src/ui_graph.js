@@ -2247,11 +2247,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Draw the links with the draw option
         for (let i = 0; i < this.links.length; i++) {
             c.lineWidth = 1;
-            /*
-            TODO: remove?
-            c.fillStyle = c.strokeStyle = (this.selectedObjects.length &&
-                this.selectedObjects.includes(this.links[i])) ? util.Color.BLUE : util.Color.BLACK;
-             */
             this.links[i].draw(c, drawOption);
         }
     };
