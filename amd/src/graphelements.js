@@ -154,9 +154,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.drawSelection = function(c, drawShape, isShadowNode) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
-            // Set the shadow color to be primary blue (the custom blue was not very visible)
-            //TODO: possibly change selection color
-            c.shadowColor = util.Color.BLUE;
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
             c.shadowBlur = 15;
         }
 
@@ -661,9 +660,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Enable the selection effect
         let isSelected = this.parent.selectedObjects.includes(this);
         if (isSelected) {
-            // Set the shadow color to be primary blue (the custom blue was not very visible)
-            //TODO: possibly change selection color
-            c.shadowColor = util.Color.BLUE;
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
             c.shadowBlur = 15;
         }
 
@@ -880,9 +878,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     SelfLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
-            // Set the shadow color to be primary blue (the custom blue was not very visible)
-            //TODO: possibly change selection color
-            c.shadowColor = util.Color.BLUE;
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
             c.shadowBlur = 15;
         }
 
@@ -1014,9 +1011,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     StartLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
-            // Set the shadow color to be primary blue (the custom blue was not very visible)
-            //TODO: possibly change selection color
-            c.shadowColor = util.Color.BLUE;
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
             c.shadowBlur = 15;
         }
 
