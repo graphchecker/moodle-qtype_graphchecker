@@ -31,9 +31,9 @@ def connected(student_answer):
 def exact_same(student_answer, expected):
     if (student_answer.isomorphic(expected)):
         return {'correct': True}
-else:
-    return {'correct': False,
-            'feedback': 'Incorrect answer given'}
+    else:
+        return {'correct': False,
+                'feedback': 'Incorrect answer given'}
 
 def sumEdgeWeights(student_answer, expected, highlighted):
     if highlighted == "only highlighted edges":
