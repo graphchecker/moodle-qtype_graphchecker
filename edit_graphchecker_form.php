@@ -99,7 +99,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
         // add other sections
-        $this->add_preload_answer_field($mform);
+        $this->add_student_interaction_field($mform);
         $this->add_checks_field($mform);
         $this->add_sample_answer_field($mform);
     }
@@ -117,7 +117,8 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+        );
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
@@ -149,23 +150,35 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('checks', 'checks', 'qtype_graphchecker');
     }
 
-    /**
-     * Add a field for a text to be preloaded into the answer box.
-     * @param object $mform the form being built
-     */
-    protected function add_preload_answer_field($mform) {
-        $mform->addElement('header', 'answerpreloadhdr',
-                    get_string('answerpreload', 'qtype_graphchecker'), '');
-        $expanded = !empty($this->question->options->answerpreload);
-        $mform->setExpanded('answerpreloadhdr', $expanded);
+    protected function add_student_interaction_field($mform) {
+        $mform->addElement('header', 'studentinteractionhdr',
+                    'Student interaction', '');
+        $mform->setExpanded('studentinteractionhdr', 1);
+
+        // preload field
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+        );
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
+
+        $mform->addElement('select', 'allowed_vertex_edits',
+                'Allowed edits',
+                ['none', 'layout', 'attributes', 'all']);
+        $mform->setDefault('allowed_vertex_edits', 'all');
+        $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
+
+        $mform->addElement('advcheckbox', 'vertex_highlight',
+                'Node highlighting', 'Allow', null);
+        $mform->addHelpButton('vertex_highlight', 'vertex_highlight', 'qtype_graphchecker');
+
+        $mform->addElement('advcheckbox', 'edge_highlight',
+                'Edge highlighting', 'Allow', null);
+        $mform->addHelpButton('edge_highlight', 'edge_highlight', 'qtype_graphchecker');
     }
 
 

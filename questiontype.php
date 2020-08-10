@@ -64,7 +64,13 @@ class qtype_graphchecker extends question_type {
             'answerpreload',
             'answer',
             'validateonsave',
-            'checks'
+            'checks',
+            'allowed_vertex_edits',
+            'allowed_edge_edits',
+            'vertex_highlight',
+            'edge_highlight',
+            'vertex_labels',
+            'edge_labels'
         );
     }
 
