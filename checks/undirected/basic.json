@@ -18,6 +18,19 @@
                 }
             ]
         },
+        "vertex_count": {
+            "name": "Vertex count",
+            "description": "Checks if the graph has the given number of vertices.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
+                }
+            ]
+        },
         "exact_same": {
             "name": "Exact answer",
             "description": "Check if exactly the specified graph is given. (excluding embedding)",
