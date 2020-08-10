@@ -347,11 +347,6 @@ body#page-question-type-graphchecker input#id_memlimitmb {
     width: auto;
 }
 
-body#page-question-type-graphchecker label + select,
-body#page-question-type-graphchecker label + input {
-    margin-right: 1em;
-}
-
 body#page-question-type-graphchecker div.testcaseexpression {
     padding-top: 10px;
     border-top: 1px solid lightgrey;
@@ -451,7 +446,7 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
 .graph_ui_container_div button.toolbar_button.clicked,
 .graph_ui_container_div button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb !important;
-    box-shadow: 0px 2px 6px inset rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px inset rgba(0, 0, 0, 0.3);
     border-color: #a0a0a0;
     border-bottom-color: #b0b0b0;
 }
@@ -557,6 +552,14 @@ li.bulktest.graphchecker.context.quiz {
     list-style-type: none;
 }
 
+
+/* Graph UI */
+
+body#page-question-type-graphchecker .graph_ui_container_div button .icon {
+    padding: 0;
+    margin: 2px 0;
+}
+
 /* Styling for the subparts of the graph UI toolbar */
 div.toolbar_part {
     display: inline-block;
@@ -577,11 +580,33 @@ div#toolbar_part_middle {
     align-items: center;
 }
 
-label.checkbox_label {
+/* Checkboxes */
+
+div.toolbar_field {
     position: relative;
-    margin-right: 30px;
+    font-size: 14px;
+    color: black;
+    margin: 0.0px 7px;
+}
+
+div.toolbar_field label.checkbox_label {
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
     margin-bottom: 0;
     color: black;
+}
+
+div.checkbox_Highlight {
+    width: 80px;
+}
+
+div.checkbox_Initial {
+    width: 57px;
+}
+
+div.checkbox_Final {
+    width: 55px;
 }
 
 div.checkbox_label {
@@ -592,8 +617,9 @@ div.checkbox_label {
 
 input.toolbar_checkbox {
     margin: 0;
-
     position: absolute;
+    top: 4px;
+
     opacity: 0;
     cursor: pointer;
     height: 15px;
@@ -601,18 +627,24 @@ input.toolbar_checkbox {
 }
 
 span.toolbar_checkbox {
-    /* Create a custom checkbox */
+    /* create a custom checkbox positioned on top of the actual input
+       field */
     position: absolute;
+    top: 4px;
+
     height: 14px;
     width: 14px;
     background-color: white;
     border: 1px solid black;
     cursor: pointer;
+
+    /* make sure mouse clicks end up on the underlying input element */
+    pointer-events: none;
 }
 
 /* On hover over the input checkbox, add a border color to the span checkbox */
 div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
-    border-color: #0078D7;
+    border-color: #0078d7;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -624,14 +656,14 @@ span.toolbar_checkbox:after {
 
 /* Show the checkmark in the span when checked */
 input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
-input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after{
+input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after {
     display: block;
 }
 
 /* Styling of the checkmark */
 span.toolbar_checkbox_black:after {
     left: 4px;
-    top: 0px;
+    top: 0;
     width: 4.5px;
     height: 9px;
     border: solid black;
@@ -643,7 +675,7 @@ span.toolbar_checkbox_black:after {
 
 span.toolbar_checkbox_gray:after {
     left: 4px;
-    top: 0px;
+    top: 0;
     width: 5px;
     height: 10px;
     border: solid darkgray;
@@ -653,24 +685,25 @@ span.toolbar_checkbox_gray:after {
     transform: rotate(45deg);
 }
 
-label.field_label {
+body#page-question-type-graphchecker .graph_ui_container_div div.field_label {
     position: relative;
+    height: 100%;
     font-size: 14px;
-    margin-bottom: 0;
-    margin-left: 5px;
+    margin: 0.0px 7px;
     color: black;
 }
 
 input.toolbar_numberinput {
-    height: 14px;
+    height: 17.5px;
     width: 45px;
     margin-left: 5px;
 }
 
-input.toolbar_textfield {
-    margin-left: 5px;
-    margin-right: 8px;
-    height: 14px;
+body#page-question-type-graphchecker .graph_ui_container_div input.toolbar_textfield {
+    top: -2px;
+    position: relative;
+    margin: 0;
+    height: 17.5px;
 }
 
 button.disabled {
@@ -683,11 +716,12 @@ ul.dialog-help {
 }
 
 /* Styling for the custom dropdown menu */
-i.dropdown_item_icon {
+body#page-question-type-graphchecker .graph_ui_container_div i.dropdown_item_icon {
     font-size: 12px;
     /* Used to center the icons in their direct parent div */
-    top: calc(50% - 9px);
+    top: calc(50% - 11px);
     position: relative;
+    margin-right: 0px;
 }
 
 .hide {
@@ -695,19 +729,19 @@ i.dropdown_item_icon {
 }
 
 div.custom_dropdown_field {
-    width: 80px;
-    height: 17.2px;
+    width: 95px;
+    height: 17.5px;
     background-color: white;
-    border: 1px solid #7A7A7A;
+    border: 1px solid #7a7a7a;
 }
 
-div.custom_dropdown_field:hover {
+body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover {
     border-color: #171717;
 }
 
-div.custom_dropdown_field:hover i.custom_dropdown_icon {
-    background-color: #E5F1FB;
-    border: 1px solid #0078D7;
+body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover i.custom_dropdown_icon {
+    background-color: #e5f1fb;
+    border: 1px solid #0078d7;
 }
 
 div.dropdown_item {
@@ -719,7 +753,7 @@ div.dropdown_item:hover {
     background-color: dodgerblue;
 }
 
-i.custom_dropdown_icon {
+body#page-question-type-graphchecker .graph_ui_container_div i.custom_dropdown_icon {
     position: relative;
     width: 15px;
     height: 100%;
@@ -729,9 +763,12 @@ i.custom_dropdown_icon {
     right: -1px;
     top: -1px;
     border: 1px solid transparent;
+    margin-right: 0px;
 }
 
 span.dropdown_item {
+    position: relative;
+    top: calc(50% - 11px);
     font-size: 14px;
     user-select: none;
 }
@@ -742,10 +779,10 @@ div.custom_dropdown_itemlist_wrapper {
 
 div.custom_dropdown_itemlist {
     position: absolute;
-    width: 80px;
+    width: 95px;
     z-index: 99;
     background-color: white;
-    border: 1px solid #7A7A7A;
+    border: 1px solid #7a7a7a;
     cursor: default;
     user-select: none;
 }
