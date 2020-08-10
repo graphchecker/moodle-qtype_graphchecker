@@ -244,6 +244,18 @@ class qtype_graphchecker_question extends question_graded_automatically {
             $params['highlight_edges'] = true;
         }
 
+        if ($this->allowed_vertex_edits === 'none') {
+            $params['allow_edits'] = [];
+        } else if ($this->allowed_vertex_edits === 'layout') {
+            $params['allow_edits'] = ['move'];
+        } else if ($this->allowed_vertex_edits === 'attributes') {
+            $params['allow_edits'] = [
+                'move', 'vertex_labels', 'edge_labels',
+                'vertex_colors', 'edge_colors',
+                'fsm_flags', 'petri_marking'
+            ];
+        }
+
         return json_encode($params);
     }
 

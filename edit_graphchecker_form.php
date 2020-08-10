@@ -166,9 +166,13 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 $attributes);
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
 
+        $edit_choices = [];
+        $edit_choices['none'] = 'none';
+        $edit_choices['layout'] = 'layout';
+        $edit_choices['attributes'] = 'attributes';
+        $edit_choices['all'] = 'all';
         $mform->addElement('select', 'allowed_vertex_edits',
-                'Allowed edits',
-                ['none', 'layout', 'attributes', 'all']);
+                'Allowed edits', $edit_choices);
         $mform->setDefault('allowed_vertex_edits', 'all');
         $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
 
