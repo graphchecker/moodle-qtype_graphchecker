@@ -555,7 +555,7 @@ li.bulktest.graphchecker.context.quiz {
 
 /* Graph UI */
 
-body#page-question-type-graphchecker .graph_ui_container_div button .icon {
+.graph_ui_container_div button .icon {
     padding: 0;
     margin: 2px 0;
 }
@@ -685,7 +685,7 @@ span.toolbar_checkbox_gray:after {
     transform: rotate(45deg);
 }
 
-body#page-question-type-graphchecker .graph_ui_container_div div.field_label {
+.graph_ui_container_div div.field_label {
     position: relative;
     height: 100%;
     font-size: 14px;
@@ -699,7 +699,7 @@ input.toolbar_numberinput {
     margin-left: 5px;
 }
 
-body#page-question-type-graphchecker .graph_ui_container_div input.toolbar_textfield {
+.graph_ui_container_div input.toolbar_textfield {
     top: -2px;
     position: relative;
     margin: 0;
@@ -716,7 +716,7 @@ ul.dialog-help {
 }
 
 /* Styling for the custom dropdown menu */
-body#page-question-type-graphchecker .graph_ui_container_div i.dropdown_item_icon {
+.graph_ui_container_div i.dropdown_item_icon {
     font-size: 12px;
     /* Used to center the icons in their direct parent div */
     top: calc(50% - 11px);
@@ -735,11 +735,11 @@ div.custom_dropdown_field {
     border: 1px solid #7a7a7a;
 }
 
-body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover {
+.graph_ui_container_div div.custom_dropdown_field:hover {
     border-color: #171717;
 }
 
-body#page-question-type-graphchecker .graph_ui_container_div div.custom_dropdown_field:hover i.custom_dropdown_icon {
+.graph_ui_container_div div.custom_dropdown_field:hover i.custom_dropdown_icon {
     background-color: #e5f1fb;
     border: 1px solid #0078d7;
 }
@@ -753,7 +753,7 @@ div.dropdown_item:hover {
     background-color: dodgerblue;
 }
 
-body#page-question-type-graphchecker .graph_ui_container_div i.custom_dropdown_icon {
+.graph_ui_container_div i.custom_dropdown_icon {
     position: relative;
     width: 15px;
     height: 100%;
