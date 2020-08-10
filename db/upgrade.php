@@ -26,17 +26,48 @@ function xmldb_qtype_graphchecker_upgrade($oldversion) {
     global $CFG, $DB;
     $dbman = $DB->get_manager();
 
-    /*if ($oldversion < 2019111900) {
+    if ($oldversion < 2020080400) {
+        $table = new xmldb_table('question_graphchecker_opts');
 
-        // Conditionally drop the tests table.
-        if ($dbman->table_exists('question_graphchecker_tests')) {
-            $table = new xmldb_table('question_graphchecker_tests');
-            $dbman->drop_table($table);
+        // Conditionally launch add field allowed_vertex_edits.
+        $field = new xmldb_field('allowed_vertex_edits', XMLDB_TYPE_TEXT, null, null, null, null, null, 'checks');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
         }
 
-        // Coderunner savepoint reached.
-        upgrade_plugin_savepoint(true, 2019111900, 'qtype', 'graphchecker');
-    }*/
+        // Conditionally launch add field allowed_edge_edits.
+        $field = new xmldb_field('allowed_edge_edits', XMLDB_TYPE_TEXT, null, null, null, null, null, 'allowed_vertex_edits');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field vertex_highlight.
+        $field = new xmldb_field('vertex_highlight', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'allowed_edge_edits');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field edge_highlight.
+        $field = new xmldb_field('edge_highlight', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'vertex_highlight');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field vertex_labels.
+        $field = new xmldb_field('vertex_labels', XMLDB_TYPE_TEXT, null, null, null, null, null, 'edge_highlight');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field edge_labels.
+        $field = new xmldb_field('edge_labels', XMLDB_TYPE_TEXT, null, null, null, null, null, 'vertex_labels');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Graphchecker savepoint reached.
+        upgrade_plugin_savepoint(true, 2020080400, 'qtype', 'graphchecker');
+    }
 
     return true;
 }

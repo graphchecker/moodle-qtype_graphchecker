@@ -7,9 +7,7 @@
             "isfsm": false,
             "ispetri": false,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
-            "highlight_vertices": true,
-            "highlight_edges": true
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         },
         "python_modules": ["igraph"]
     },
@@ -21,9 +19,7 @@
             "isfsm": false,
             "ispetri": false,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
-            "highlight_vertices": true,
-            "highlight_edges": true
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         },
         "python_modules": ["igraph"]
     },
@@ -35,9 +31,7 @@
             "isfsm": true,
             "ispetri": false,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
-            "highlight_vertices": true,
-            "highlight_edges": true
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         }
     },
     "petri": {
@@ -48,9 +42,7 @@
             "isfsm": false,
             "ispetri": true,
             "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"],
-            "highlight_vertices": true,
-            "highlight_edges": true
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         }
     }
 }
