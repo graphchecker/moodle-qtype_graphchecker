@@ -340,24 +340,31 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             colors = this.parent.templateParams.vertex_colors;
         }
 
-        if ((((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges)) ||
-            (areSameColors)) && colors && !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_COLORS)) &&
-            !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_COLORS))) {
-            // Create the color dropdown menu
-            let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
-            for (let i = 0; i < colors.length; i++) {
-                if (colors[i] === util.Color.WHITE) {
-                    faIcons.push({icon: 'fa-circle-thin', color: util.colors[util.Color.BLACK]});
-                } else {
-                    faIcons.push({icon: 'fa-circle', color: util.colors[colors[i]]});
-                }
-            }
+        // TODO FIXME: This outer if statement is a temporary (and incorrect) quick-fix for issue #101!
+        // This prevents the color dropdown from showing up if both nodes and edges are selected.
+        // Right now on the server-side it is not possible anyway to allow VERTEX_COLORS and disallow
+        // EDGE_COLORS or the other way round.
+        if (areOnlyNodes || areOnlyEdges) {
 
-            let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart,
-                    'Color', colors, faIcons, this.onClickColorDropdown);
-            colorDropdown.create();
-            this.middleInput['color'] = colorDropdown;
-            this.middleInput['color'].setInitialFieldValue(selectedObjects);
+            if ((((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges)) ||
+                (areSameColors)) && colors && !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_COLORS)) &&
+                !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_COLORS))) {
+                // Create the color dropdown menu
+                let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
+                for (let i = 0; i < colors.length; i++) {
+                    if (colors[i] === util.Color.WHITE) {
+                        faIcons.push({icon: 'fa-circle-thin', color: util.colors[util.Color.BLACK]});
+                    } else {
+                        faIcons.push({icon: 'fa-circle', color: util.colors[colors[i]]});
+                    }
+                }
+
+                let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart,
+                        'Color', colors, faIcons, this.onClickColorDropdown);
+                colorDropdown.create();
+                this.middleInput['color'] = colorDropdown;
+                this.middleInput['color'].setInitialFieldValue(selectedObjects);
+            }
         }
 
         let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_LABELS));
