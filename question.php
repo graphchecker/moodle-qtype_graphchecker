@@ -116,7 +116,22 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return string the message.
      */
     public function get_validation_error(array $response) {
-        return '';
+        $error = 'This answer could not be graded because an error occurred while checking.<br>Details:';
+        $testoutcomeserial = $response['_testoutcome'];
+        $testoutcome = unserialize($testoutcomeserial);
+        if ($testoutcome instanceof qtype_graphchecker_testing_outcome) {
+            $error .= "<ul>";
+            foreach ($testoutcome->testresults as $result) {
+                if (array_key_exists('error', $result)) {
+                    $error .= "<li>";
+                    $error .= "Check <b>" . $testoutcome->get_test_name($this->answertype, $result['module'], $result['method']) . "</b> produced error:<pre>" . $result['error'] . "</pre>";
+                }
+            }
+            $error .= "</ul>";
+        } else {
+            $error .= "Unknown error.";
+        }
+        return $error;
     }
 
 
@@ -193,7 +208,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
         }
 
         $datatocache = array('_testoutcome' => $testoutcomeserial);
-        if ($testoutcome->run_failed()) {
+        if ($testoutcome->is_ungradable()) {
             return array(0, question_state::$invalid, $datatocache);
         } else if ($testoutcome->all_correct()) {
              return array(1, question_state::$gradedright, $datatocache);

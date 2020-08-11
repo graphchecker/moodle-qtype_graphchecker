@@ -79,16 +79,29 @@ class qtype_graphchecker_testing_outcome {
         return $this->status === self::STATUS_BAD_COMBINATOR;
     }
 
+    public function check_error() {
+        if ($this->status === self::STATUS_VALID) {
+            foreach ($this->testresults as $result) {
+                if (array_key_exists('error', $result)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
+
     public function preprocessor_error() {
         return $this->status === self::STATUS_PREPROCESSOR_ERROR;
     }
 
     public function is_ungradable() {
-        return $this->run_failed() || $this->combinator_error();
+        return $this->run_failed() || $this->combinator_error() || $this->check_error();
     }
 
     public function mark_as_fraction() {
-        if ($this->status === self::STATUS_VALID) {
+        if ($this->status === self::STATUS_VALID && !$this->check_error()) {
             foreach ($this->testresults as $result) {
                 if (!$result["correct"]) {
                     return 0;
@@ -188,7 +201,7 @@ class qtype_graphchecker_testing_outcome {
      * specifier is '%h' denoting that the result object field value should be
      * treated as ready-to-output html. Empty columns are suppressed.
      */
-    protected function build_results_table(qtype_graphchecker_question $question) {
+    public function build_results_table(qtype_graphchecker_question $question) {
         $table = array();
         $table[] = array('iscorrect', 'Test', 'Result');
 
@@ -198,6 +211,8 @@ class qtype_graphchecker_testing_outcome {
             $tablerow[] = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
             if (array_key_exists('feedback', $result)) {
                 $tablerow[] = $result["feedback"];
+            } elseif (array_key_exists('error', $result)) {
+                $tablerow[] = "Error while checking:\n" . $result["error"];
             } elseif ($result["correct"]) {
                 $tablerow[] = "Correct!";
             } else {
@@ -209,7 +224,7 @@ class qtype_graphchecker_testing_outcome {
         return $table;
     }
 
-    private function get_test_name($answertype, $module, $method) {
+    public function get_test_name($answertype, $module, $method) {
 
         global $CFG;
 

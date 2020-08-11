@@ -153,7 +153,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
         // Summarise the status of the response in a paragraph at the end.
         // Suppress when previous errors have already said enough.
-        if (!$outcome->is_ungradable() &&
+        if (!$outcome->combinator_error() &&
              !$outcome->run_failed()) {
 
             $fb .= $this->build_feedback_summary($qa, $outcome);
@@ -228,6 +228,8 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                     "&nbsp;" . $this->feedback_image(1.0);
         } else if ($outcome->preprocessor_error()) {
             $lines[] = 'Your answer must pass the sanity checks to earn any marks. Try again.';
+        } else if ($outcome->check_error()) {
+            $lines[] = 'Your answer could not be graded because an error occurred while checking. Please ask your teacher for assistance.';
         } else {
             $lines[] = 'Your answer must pass all checks to earn any marks. Try again.';
         }
