@@ -49,7 +49,7 @@ def vertex_count(student_answer, expected, highlighted):
                 'feedback': 'Number of vertices does not match expected number'}
 
 def no_cycles(student_answer, highlighted):
-    if highlighted == "only highlighted vertices":
+    if highlighted == "only highlighted edges":
         onlyHighlighted = True
     else:
         onlyHighlighted = False
@@ -67,6 +67,28 @@ def no_cycles(student_answer, highlighted):
     else:
         return {'correct': False,
                 'feedback': 'Your answer contains a cycle'}
+
+def mst(student_answer):
+    weights = [int(e['label']) for e in student_answer.es]
+    span_tree = student_answer.spanning_tree(weights)
+    weight = 0
+    for e in span_tree.es:
+        try:
+            edgeweight = int(e['label'])
+        except:
+            return {'correct': False,
+                    'feedback': 'The edge label {0} is not integer.'.format(e['label'])}
+        weight = weight + edgeweight
+
+    highlightSelect = "only highlighted edges"
+    firstCheck = sumEdgeWeights(student_answer, weight, highlightSelect)
+    if not firstCheck['correct']:
+        return firstCheck
+    secondCheck = no_cycles(student_answer, highlightSelect)
+    if not secondCheck['correct']:
+        return secondCheck
+    thirdCheck = edge_count(student_answer, len(span_tree.es), highlightSelect)
+    return thirdCheck
 
 def connected(student_answer):
     if (student_answer.is_connected(False)):
@@ -101,4 +123,4 @@ def sumEdgeWeights(student_answer, expected, highlighted):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': 'The sum of edge weights did not match the required sum of edge weights.'}
+                'feedback': 'The sum of edge weights {0} did not match the required sum of edge weights {1}.'.format(weight,expected)}

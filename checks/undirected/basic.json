@@ -25,23 +25,14 @@
                 }
             ]
         },
-        "vertex_count": {
-            "name": "Vertex count",
-            "description": "Checks if the graph has the given number of vertices.",
+        "exact_same": {
+            "name": "Exact answer",
+            "description": "Check if exactly the specified graph is given. (excluding embedding)",
             "params": [
                 {
                     "param": "expected",
                     "name": "should be",
-                    "type": "integer",
-                    "default": 1,
-                    "min": 0
-                },
-                {
-                    "param": "highlighted",
-                    "name": "Count",
-                    "type": "choice",
-                    "options": ["all vertices", "only highlighted vertices"],
-                    "default": "all vertices"
+                    "type": "graph"
                 }
             ]
         },
@@ -53,21 +44,14 @@
                     "param": "highlighted",
                     "name": "Use",
                     "type": "choice",
-                    "options": ["all vertices", "only highlighted vertices"],
-                    "default": "all vertices"
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
         },
-        "exact_same": {
-            "name": "Exact answer",
-            "description": "Check if exactly the specified graph is given. (excluding embedding)",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "graph"
-                }
-            ]
+        "mst": {
+            "name": "Is MST highlighted",
+            "description": "Checks if the highlighted edges form a MST."
         },
         "sumEdgeWeights": {
             "name": "Sum edge weights",
@@ -87,9 +71,25 @@
                 }
             ]
         },
-        "connected": {
-            "name": "Graph is connected",
-            "description": "Check if the graph is connected"
+        "vertex_count": {
+            "name": "Vertex count",
+            "description": "Checks if the graph has the given number of vertices.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer",
+                    "default": 1,
+                    "min": 0
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Count",
+                    "type": "choice",
+                    "options": ["all vertices", "only highlighted vertices"],
+                    "default": "all vertices"
+                }
+            ]
         }
     }
 }
