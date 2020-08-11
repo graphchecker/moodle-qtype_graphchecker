@@ -15,6 +15,13 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Count",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
         },
@@ -28,6 +35,26 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Count",
+                    "type": "choice",
+                    "options": ["all vertices", "only highlighted vertices"],
+                    "default": "all vertices"
+                }
+            ]
+        },
+        "no_cycles": {
+            "name": "No cycles",
+            "description": "Checks if the graph has no cycles.",
+            "params": [
+                {
+                    "param": "highlighted",
+                    "name": "Use",
+                    "type": "choice",
+                    "options": ["all vertices", "only highlighted vertices"],
+                    "default": "all vertices"
                 }
             ]
         },
