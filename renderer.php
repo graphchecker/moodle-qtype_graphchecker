@@ -109,16 +109,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
 
     /**
-     * Override the base class method to force feedback to be shown.
-     */
-    public function feedback(question_attempt $qa, question_display_options $options) {
-        $optionsclone = clone($options);
-        $optionsclone->feedback = 1;
-        return parent::feedback($qa, $optionsclone);
-    }
-
-
-    /**
      * Generate the specific feedback. This is feedback that varies according to
      * the response the student gave.
      * @param question_attempt $qa the question attempt to display.
