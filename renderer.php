@@ -265,7 +265,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                 'name'  => $fieldname,
                 'id'    => $fieldid,
                 'readonly' => true,
-                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype)
+                'data-params' => $question->get_ui_params($question->answertype)
         );
 
         $html .= html_writer::tag('textarea', s($answer), $taattributes);
