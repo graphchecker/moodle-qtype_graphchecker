@@ -340,9 +340,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             colors = this.parent.templateParams.vertex_colors;
         }
 
-        if ((((areOnlyNodes || areOnlyEdges) && !(areOnlyNodes && areOnlyEdges)) ||
-            (areSameColors)) && colors && !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_COLORS)) &&
-            !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_COLORS))) {
+        // Create the color dropdown under the conditions specified by the following variables:
+        let areOnlyNodesAndAllowed = areOnlyNodes && !areOnlyEdges && this.parent.allowEdits(Edit.VERTEX_COLORS);
+        let areOnlyEdgesAndAllowed = !areOnlyNodes && areOnlyEdges && this.parent.allowEdits(Edit.EDGE_COLORS);
+        let nodesEdgesSameColorsAndAllowed = areSameColors && this.parent.allowEdits(Edit.VERTEX_COLORS) &&
+            this.parent.allowEdits(Edit.EDGE_COLORS);
+        if (colors && (areOnlyNodesAndAllowed || areOnlyEdgesAndAllowed || nodesEdgesSameColorsAndAllowed)) {
             // Create the color dropdown menu
             let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
             for (let i = 0; i < colors.length; i++) {
@@ -371,7 +374,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['label'] = labelTextField;
 
             // Fill the value of the label text field according to the selected object
-            this.middleInput['label'].object[0].childNodes[1].value = selectedObjects[0].text;
+            this.middleInput['label'].object[0].children[0].children[0].value = selectedObjects[0].text;
 
             // Enable autofocus of the label (so that you can type immediately), except if we are in temporary draw mode
             // This is disabled in the latter case, since typing with the CTRL button pressed can cause
