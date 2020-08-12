@@ -164,15 +164,12 @@ class IncorrectLabelsException(Exception):
     
 #helper
 def traverse(node, labels, downwards):
-    print(filter_orig_name(node) + "  " + str(len(labels)))
     (left,right) = children(node, downwards)
-    print (str(left) + "  " + str(right))
     if (not left == None):
         labels = traverse(left, labels, downwards)
     if (filter_orig_name(node) == labels[0]):
         labels.pop(0)
     else:
-        print(len(labels))
         raise IncorrectLabelsException("Labels do not match at node: "+filter_orig_name(node) + " and label: " + str(labels[0]))
     if (not right == None):
         labels = traverse(right, labels, downwards)
