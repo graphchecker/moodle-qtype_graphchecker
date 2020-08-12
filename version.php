@@ -22,7 +22,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2020081000;
+$plugin->version  = 2020081200;
 $plugin->requires = 2015051200;
 $plugin->cron = 0;
 $plugin->component = 'qtype_graphchecker';
