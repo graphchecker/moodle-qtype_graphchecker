@@ -76,7 +76,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                 'class' => 'graphchecker-answer edit_code',
                 'name'  => $responsefieldname,
                 'id'    => $responsefieldid,
-                'data-params' => qtype_graphchecker_question::get_ui_params($question->answertype)
+                'data-params' => $question->get_ui_params()
         );
 
         if ($options->readonly) {
