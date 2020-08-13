@@ -23,7 +23,7 @@ def vertex_degree_sequence(student_answer, degree_sequence):
     if len(student_answer.vs) != len(sequence):
         return {'correct': False,
                 'feedback': 'Number of vertices does not match the expected number of vertices'}
-        student_degs = []
+    student_degs = []
     for v in student_answer.vs:
         student_degs.append(v.degree())
 

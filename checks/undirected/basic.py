@@ -69,7 +69,11 @@ def no_cycles(student_answer, highlighted):
                 'feedback': 'Your answer contains a cycle'}
 
 def mst(student_answer):
-    weights = [int(e['label']) for e in student_answer.es]
+    try:
+        weights = [int(e['label']) for e in student_answer.es]
+    except:
+        return {'correct': False,
+                'feedback': 'Not all edge labels are integer.'}
     span_tree = student_answer.spanning_tree(weights)
     weight = 0
     for e in span_tree.es:
