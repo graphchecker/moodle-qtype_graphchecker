@@ -180,16 +180,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             if (self.parent.allowEdits(Edit.ADD)) {
                 // Left buttons
                 // Create the select button
-                let selectButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Select mode", elements.ModeType.SELECT,
-                    self.onModeButtonPressed);
+                let selectButton = new elements.ToggleButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Select mode", self.onModeButtonPressed,
+                    elements.ModeType.SELECT);
                 selectButton.create();
                 self.leftButtons['select'] = selectButton;
 
                 // Create the draw button
-                let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode (Ctrl)", elements.ModeType.DRAW,
-                    self.onModeButtonPressed);
+                let drawButton = new elements.ToggleButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode (Ctrl)", self.onModeButtonPressed,
+                    elements.ModeType.DRAW);
                 drawButton.create();
                 self.leftButtons['draw'] = drawButton;
             }
@@ -197,21 +197,38 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Right buttons
             // Create the delete button
             if (self.parent.allowEdits(Edit.DELETE)) {
-                let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects);
+                let deleteButton = new elements.GrayOutButton(self, self.toolbarRightPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects,
+                    self.parent);
                 deleteButton.create();
                 self.rightButtons['delete'] = deleteButton;
             }
 
+            // Create the undo button
+            if (self.parent.allowsOneEdit()) {
+                let undoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-undo', "Undo", self.parent.undo, self.parent)
+                undoButton.create();
+                self.rightButtons['undo'] = undoButton;
+            }
+
+            // Create the redo button
+            if (self.parent.allowsOneEdit()) {
+                let redoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent)
+                redoButton.create();
+                self.rightButtons['redo'] = redoButton;
+            }
+
             // Create the help button
-            let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu", null);
+            let helpButton = new elements.Button(self, self.toolbarRightPart,
+                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu", self.displayHelpOverlay, self);
             helpButton.create();
             self.rightButtons['help'] = helpButton;
 
             // Enable one of the mode buttons at the start, depending on the UI mode
             for(let key in self.leftButtons) {
-                if (self.leftButtons[key] instanceof elements.ModeButton &&
+                if (self.leftButtons[key] instanceof elements.ToggleButton &&
                     self.leftButtons[key].buttonModeType === self.uiMode) {
                     self.leftButtons[key].setSelected();
                 }
@@ -227,6 +244,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
 
             self.resize(w, h);
+            self.parent.setUIMode(elements.ModeType.SELECT);
         });
 
         this.div.on('keydown', function(e) {
@@ -237,20 +255,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return parent.keyup(e);
         });
 
-        this.onModeButtonPressed = function(button) {
+        this.onModeButtonPressed = function(buttonModeType) {
             // Activate the pressed mode
-            self.parent.setUIMode(button.buttonModeType);
-
-            // Display the other mode button(s) accordingly
-            for(let key in self.leftButtons) {
-                if (self.leftButtons[key] instanceof elements.ModeButton &&
-                    self.leftButtons[key] !== button) {
-                    self.leftButtons[key].setDeselected();
-                }
-            }
+            self.parent.setUIMode(buttonModeType);
 
             // Remove the FSM options from display if the mode is switched to draw mode
-            if (button.buttonModeType === elements.ModeType.DRAW) {
+            if (buttonModeType === elements.ModeType.DRAW) {
                 self.removeSelectionOptions();
                 self.removeFSMNodeSelectionOptions();
                 self.removePetriSelectionOptions();
@@ -282,14 +292,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.resize(w, h);
     }
 
-    GraphToolbar.prototype.displayHelpOverlay = function() {
+    GraphToolbar.prototype.displayHelpOverlay = function(toolbar) {
         // Display a help overlay on the entire graph UI
-        this.helpOverlay.div[0].style.display = 'block';
-        this.helpOverlay.div.addClass('visible');
+        toolbar.helpOverlay.div[0].style.display = 'block';
+        toolbar.helpOverlay.div.addClass('visible');
         $('body').addClass('unscrollable');
 
         // Disable resizing of the graphUI wrapper
-        this.helpOverlay.graphUIWrapper.disableResize();
+        toolbar.helpOverlay.graphUIWrapper.disableResize();
     };
 
     GraphToolbar.prototype.createToolbarPartObject = function(parentDiv, parentHeight, side) {
@@ -483,6 +493,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Display the colored icon and text in the dropdownFieldElement
         this.toolbar.middleInput['color'].displayInDropdownField(event.target);
+
+        this.toolbar.parent.onGraphChange();
     };
 
     GraphToolbar.prototype.onInteractLabelTextField = function(event, toolbar) {
@@ -505,6 +517,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Add or remove character(s) to the label of the only selected object (i.e. node or link)
             // This function is only called when there is 1 selected object
             toolbar.parent.selectedObjects[0].text = event.target.value;
+
+            this.toolbar.parent.onGraphChange();
         }
         toolbar.parent.draw();
     };
@@ -530,6 +544,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Furthermore, if the value is 0, display it as an empty string '', to easily be able to edit it
             $(this.toolbar.middleInput['label'].object)[0].childNodes[1].value = labelValue;
+
+            this.toolbar.parent.onGraphChange();
         } else if (event instanceof KeyboardEvent) {
             if (event.key === 'Enter') {
                 // Set the focus to be the graph canvas when the enter button is pressed
@@ -572,6 +588,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Set black tick mark
         event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
         event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
+
+        this.toolbar.parent.onGraphChange();
+
         this.toolbar.parent.draw();
     };
 
@@ -775,6 +794,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.toolbar.parent.enableTemporaryDrawMode();
                 }
             }
+        } else {
+            this.toolbar.parent.onGraphChange();
         }
 
         // Draw the number of tokens
@@ -794,7 +815,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Set the styling of the checkbox
             event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
             event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
-            this.toolbar.parent.draw();
         } else {
             //TODO: Possibly fix for cases where there must be an initial vertex, depending on the input parameter
             if (event.target.nextElementSibling.classList.contains('toolbar_checkbox_gray')) {
@@ -815,8 +835,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.toolbar.parent.removeInitialFSMVertex(vertex);
                 }
             }
-            this.toolbar.parent.draw();
         }
+
+        this.toolbar.parent.onGraphChange();
+
+        this.toolbar.parent.draw();
     };
 
     GraphToolbar.prototype.onClickFSMFinalCheckbox = function(event) {
@@ -846,6 +869,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             event.target.nextElementSibling.classList.remove('toolbar_checkbox_gray');
             event.target.nextElementSibling.classList.add('toolbar_checkbox_black');
         }
+
+        this.toolbar.parent.onGraphChange();
+
         this.toolbar.parent.draw();
     };
 
@@ -972,7 +998,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.containerDiv = $(document.createElement('div'));
         $(this.containerDiv).addClass('graph_ui_container_div');
 
-        this.originalClick = null;
         this.nodes = [];
         this.links = [];
         this.selectedObjects = []; // One or more elements.Link or elements.Node objects. Default: empty array
@@ -993,13 +1018,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             let newHelpString = self.getHelpText();
             this.helpOverlay.insertHelpText(newHelpString);
         }
+
+        // A variable denoting the edit-history of the graph, in the form of a stack (LIFO), used in the undo/redo mechanism
+        this.historyStack = [];
+        this.historyStackPointer = -1; // A pointer pointing to an entry in the historyStack
+
         this.reload();
         if (!this.fail) {
             this.draw();
         }
 
         // Call the draw function at a fixed interval
-        this.drawTimer = window.setInterval(function(){ self.draw(); }, 50);
+        this.drawTimer = window.setInterval(function(){ self.update(); }, 50);
     }
 
     Graph.prototype.failed = function() {
@@ -1054,11 +1084,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             if (this.isType(Type.PETRI)) {
                 this.toolbar.addPetriNodeTypeOptions();
             }
+
+            // Style the buttons correctly
+            this.toolbar.leftButtons['draw'].setSelected();
+            this.toolbar.leftButtons['select'].setDeselected();
         } else if (this.uiMode === elements.ModeType.SELECT) {
             if (this.isType(Type.PETRI)) {
                 this.toolbar.removePetriNodeTypeOptions();
             }
+
+            // Style the buttons correctly
+            this.toolbar.leftButtons['draw'].setDeselected();
+            this.toolbar.leftButtons['select'].setSelected();
         }
+
 
         // Unselect a (possibly) selected item when going from select to draw mode
         this.draw();
@@ -1112,6 +1151,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         return true;
+    };
+
+    // This function returns whether the graph allows at least one edit (true) or not (false)
+    Graph.prototype.allowsOneEdit = function() {
+        for (let i = 0; i < Object.values(Edit).length; i++) {
+            let edit = Object.values(Edit)[i];
+            if (this.allowEdits(edit)) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
@@ -1174,10 +1225,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.setUIMode(elements.ModeType.DRAW);
             this.isTempDrawModeActive = true;
 
-            // Style the buttons correctly
-            this.toolbar.leftButtons['draw'].setSelected();
-            this.toolbar.leftButtons['select'].setDeselected();
-
             // Remove the buttons for Select mode
             this.toolbar.removeSelectionOptions();
             if (this.isType(Type.PETRI)) {
@@ -1196,15 +1243,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.selectedObjects = this.previousSelectedObjects;
             this.isTempDrawModeActive = false;
 
-            // Style the buttons correctly
-            this.toolbar.leftButtons['select'].setSelected();
-            this.toolbar.leftButtons['draw'].setDeselected();
-
             // Enable the buttons for Select mode
             this.toolbar.addSelectionOptions(this.selectedObjects);
 
-            // Enable the delete button as well
-            if (this.allowEdits(Edit.DELETE)) {
+            // Enable the delete button if something is selected
+            if (this.allowEdits(Edit.DELETE) && this.selectedObjects.length) {
                 this.toolbar.rightButtons['delete'].setEnabled();
             }
 
@@ -1280,6 +1323,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     if (this.isType(Type.PETRI)) {
                         this.toolbar.addPetriSelectionOptions(this.selectedObjects);
                     }
+                    this.onGraphChange();
                 }
 
             } else if (this.uiMode === elements.ModeType.SELECT) {
@@ -1536,6 +1580,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                                     this.selectedObjects = [this.clickedObject];
                                 }
                             }
+
+                            // Set the object to have moved
+                            object.hasMoved = true;
                         }
                     }
                 }
@@ -1622,6 +1669,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.allowEdits(Edit.DELETE)) {
                     this.toolbar.rightButtons['delete'].setEnabled();
                 }
+
+                this.onGraphChange();
             }
             this.currentLink = null;
         }
@@ -1640,7 +1689,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                 }
 
-                // Perform the addition/deletion
+                // Perform the addition/deletion of the selected objects
                 for (let i = 0; i < objects.length; i++) {
                     if (!areAllObjectsAlreadySelected) {
                         this.selectedObjects.push(objects[i]);
@@ -1667,6 +1716,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
             this.selectionRectangle = null;
         }
+
+        // Save the graph when selected nodes and/or edges have moved
+        let hasSelectionMoved = false;
+        this.selectedObjects.forEach(element => hasSelectionMoved = (element.hasMoved)? true : hasSelectionMoved);
+
+        // Save a different graph state if applicable
+        if (this.clickedObject && hasSelectionMoved) {
+            this.onGraphChange();
+        }
+
+        // Reset the 'hasMoved' parameter of all selected objects
+        this.selectedObjects.forEach(element => element.resetHasMoved());
 
         this.clickedObject = null;
         this.canMoveObjects = false;
@@ -1951,6 +2012,82 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.links.push(newLink);
     };
 
+    // A function to add a new graph instance, upon a change of the graph, to the history stack
+    Graph.prototype.onGraphChange = function() {
+        // Remove the part of the stack above the pointer, so the 'redo-able' graph instances are lost
+        this.historyStack.length = this.historyStackPointer + 1;
+
+        // Save the graph, so the new graph instance can be used. This instance will be added to the end of the array.
+        // Furthermore, increase the pointer
+        this.save();
+        let graphInstance = $(this.textArea).val();
+        this.historyStack.push(graphInstance);
+        this.historyStackPointer++;
+
+        // Enable the undo button, and disable the redo button
+        this.toolbar.rightButtons['undo'].setEnabled();
+        this.toolbar.rightButtons['redo'].setDisabled();
+    };
+
+    // A function to handle the undo operation of the graph UI
+    Graph.prototype.undo = function(graphUI) {
+        let g = graphUI;
+
+        // If there is something on the stack, retrieve it
+        if (g.historyStackPointer >= 0) {
+            // Decrease the stack pointer, and queue the (previous) graph instance
+            g.historyStackPointer--;
+            let graphInstance = g.historyStack[g.historyStackPointer];
+
+            // Update the graph
+            g.updateGraph(g, graphInstance);
+
+            // Set the buttons accordingly
+            if (g.historyStackPointer < 0) {
+                g.toolbar.rightButtons['undo'].setDisabled();
+            } else {
+                g.toolbar.rightButtons['undo'].setEnabled();
+            }
+            g.toolbar.rightButtons['redo'].setEnabled();
+        }
+    };
+
+    // A function to handle the redo operation of the graph UI
+    Graph.prototype.redo = function(graphUI) {
+        let g = graphUI;
+
+        // Check if there is an operation to be redone
+        if (g.historyStackPointer < g.historyStack.length - 1) {
+            // Update the pointer and update the graph with the new graph
+            g.historyStackPointer++;
+            let graphInstance = g.historyStack[g.historyStackPointer];
+
+            g.updateGraph(g, graphInstance);
+
+            if (g.historyStackPointer >= g.historyStack.length - 1) {
+                g.toolbar.rightButtons['redo'].setDisabled();
+            } else {
+                g.toolbar.rightButtons['redo'].setEnabled();
+            }
+            g.toolbar.rightButtons['undo'].setEnabled();
+        }
+    };
+
+    // A function to update the graph with a new graph
+    Graph.prototype.updateGraph = function(graphUI, graphInstance) {
+        // Update the value:
+        $(this.textArea).val(graphInstance);
+
+        // Clear all objects
+        this.nodes = [];
+        this.links = [];
+        this.selectedObjects = [];
+        this.previousSelectedObjects = [];
+
+        // Save and reload the graphUI
+        this.reload();
+    }
+
     Graph.prototype.reload = function() {
         var content = $(this.textArea).val();
         if (content) {
@@ -2016,9 +2153,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                     this.links.push(link);
                 }
+
+                // Update the history stack if it's empty
+                if (this.historyStack.length === []) {
+                    this.historyStack.push(content);
+                    this.historyStackPointer++;
+                }
             } catch(e) {
                 this.fail = true;
                 this.failString = 'graph_ui_invalidserialisation';
+            }
+        } else {
+            // Push an empty graph to the history stack if it's empty
+            if (this.historyStack.length === []) {
+                this.historyStack.push("");
+                this.historyStackPointer++;
             }
         }
     };
@@ -2120,6 +2269,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.textArea.val(JSON.stringify(output));
     };
 
+    // A function which is configured to be ran periodically
+    Graph.prototype.update = function() {
+        // Draw the graph
+        this.draw();
+    }
+
     Graph.prototype.destroy = function () {
         this.graphCanvas.canvas.off();  // Stop all events.
         this.graphCanvas.canvas.remove();
@@ -2137,7 +2292,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.draw = function () {
+    Graph.prototype.draw = function() {
         var canvas = this.getCanvas(),
             c = canvas.getContext('2d');
 
