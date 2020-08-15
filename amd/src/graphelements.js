@@ -1447,12 +1447,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function TextField(toolbar, parent, w, placeholderText, eventFunction) {
+    function TextField(toolbar, parent, w, placeholderText, eventFunction, onFocusInFunction, onFocusOutFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.w = w;
         this.placeholderText = placeholderText;
         this.eventFunction = eventFunction;
+        this.labelOnFocusIn = "";   // The value of the label right after the focusin event has fired
+        this.onFocusInFunction = onFocusInFunction
+        this.onFocusOutFunction = onFocusOutFunction;
     }
 
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
@@ -1476,9 +1479,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 })));
         $(this.parent[0]).append($textfield);
 
-        // Add the event listeners, for the regular input and for checking the CTRL and enter key
+        // Add the event listeners, for the regular input and for checking the CTRL and enter key, and for focus events
         $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
         $textfield[0].addEventListener('keydown', (event) => this.handleInteraction(event));
+        $textfield[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
+        $textfield[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
         this.object = $textfield;
     };
 

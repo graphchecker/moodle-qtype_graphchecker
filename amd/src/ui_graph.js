@@ -379,7 +379,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             (selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI))) && allow_vertex_labels && allow_edge_labels) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart,
-                    8, 'Label', this.onInteractLabelTextField);
+                8, 'Label', this.onInteractLabelTextField, this.onFocusInLabelTextfield, this.onFocusOutLabelTextfield);
             labelTextField.create();
             this.middleInput['label'] = labelTextField;
 
@@ -517,10 +517,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Add or remove character(s) to the label of the only selected object (i.e. node or link)
             // This function is only called when there is 1 selected object
             toolbar.parent.selectedObjects[0].text = event.target.value;
-
-            this.toolbar.parent.onGraphChange();
         }
         toolbar.parent.draw();
+    };
+
+    GraphToolbar.prototype.onFocusInLabelTextfield = function(textfieldObject, event) {
+        // Save the value of the label, upon selecting (focussing) it
+        textfieldObject.labelOnFocusIn = event.target.value;
+    };
+
+    GraphToolbar.prototype.onFocusOutLabelTextfield = function(textfieldObject, event) {
+        // If the label has changed, between the selecting and deselecting the label (focussing), update the graph stack
+        if (event.target.value !== textfieldObject.labelOnFocusIn) {
+            this.toolbar.parent.onGraphChange();
+        }
     };
 
     GraphToolbar.prototype.onEnterPetriLinkLabelInput = function(event) {
