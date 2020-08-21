@@ -369,13 +369,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 } else {
                     faIcons.push({icon: 'fa-circle', color: util.colors[colors[i]]});
                 }
-
-                let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart,
-                        'Color', colors, faIcons, this.onClickColorDropdown);
-                colorDropdown.create();
-                this.middleInput['color'] = colorDropdown;
-                this.middleInput['color'].setInitialFieldValue(selectedObjects);
             }
+
+            let colorDropdown = new elements.Dropdown(this, this.toolbarMiddlePart,
+                    'Color', colors, faIcons, this.onClickColorDropdown);
+            colorDropdown.create();
+            this.middleInput['color'] = colorDropdown;
+            this.middleInput['color'].setInitialFieldValue(selectedObjects);
         }
 
         let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_LABELS));
