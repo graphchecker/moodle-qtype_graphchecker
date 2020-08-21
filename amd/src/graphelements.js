@@ -70,7 +70,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // An enum for defining the type of draw operations that can be done on objects
     const DrawOption = Object.freeze({
         SELECTION: 'selection',
-        OBJECT: 'object'
+        OBJECT: 'object',
+        HOVER: 'hover'
     });
 
     /***********************************************************************
@@ -85,6 +86,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = y;
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
+        this.hasMoved = false;
         this.isInitial = false;
         this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
@@ -105,6 +107,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.setAnchorPoint = function(x, y) {
         this.x = x + this.mouseOffsetX;
         this.y = y + this.mouseOffsetY;
+        this.hasMoved = true;
+    };
+
+    Node.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     // Given a new mouse position during a drag, move to the appropriate
@@ -147,6 +154,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
                 c.stroke();
             }
+        } else if (drawOption === DrawOption.HOVER) {
+            this.drawHoverObject(c, drawShape);
         }
     };
 
@@ -197,9 +206,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         drawShape();
 
         // Use the color to fill the node
-        let fillColor = this.colorObject.colorCode;
+        let fillColor = (this.colorObject) ? this.colorObject.colorCode : null;
         if (!fillColor) {
             fillColor = util.colors[util.Color.WHITE].colorCode; // White is the default color
+            this.colorObject = util.colorObjectFromColorCode(fillColor);
         }
         c.fillStyle = fillColor;
         c.fill();
@@ -214,6 +224,29 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Draw the node border
         c.stroke();
+    };
+
+    Node.prototype.drawHoverObject = function(c, drawShape) {
+        // Draw the hover node
+        c.beginPath();
+
+        // Set the styles
+        c.shadowColor = 'rgb(220,220,220,1)';
+        c.shadowBlur = 10;
+        c.lineWidth = 1;
+        c.strokeStyle = 'rgb(192,192,192,0.5)';
+
+        // Draw the shape of the shadow
+        drawShape();
+        c.stroke();
+
+        // Draw a white circle, to not show the inner shadow
+        c.fillStyle = util.Color.WHITE;
+        c.fill();
+
+        // Unset the styles
+        c.shadowBlur = 0;
+        c.globalAlpha = 1;
     };
 
     Node.prototype.closestPointOnNode = function(x, y) {
@@ -549,8 +582,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             this.perpendicularPart = 0;
             return true;
         } else {
+            this.hasMoved = true;
             return false;
         }
+    };
+
+    Link.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     Link.prototype.getEndPointsAndCircle = function() {
@@ -692,7 +730,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Draw the link itself, on top of the highlighting
         // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
         // is drawn visibly
-        if (this.colorObject !== util.colors[util.Color.BLACK]) {
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
             c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
         } else {
             c.strokeStyle = c.fillStyle = util.Color.WHITE;
@@ -703,8 +741,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         c.stroke();
-        if (this.colorObject === util.colors[util.Color.BLACK]) {
-            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -799,7 +837,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.isHighlighted = false;
         this.text = '';
 
-        if(mouse) {
+        if (mouse) {
             this.setAnchorPoint(mouse.x, mouse.y);
         }
     }
@@ -822,6 +860,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(this.anchorAngle > Math.PI) {
             this.anchorAngle -= 2 * Math.PI;
         }
+
+        this.hasMoved = true;
+    };
+
+    SelfLink.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     SelfLink.prototype.getEndPointsAndCircle = function() {
@@ -910,7 +954,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Draw the link itself, on top of the highlighting
         // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
         // is drawn visibly
-        if (this.colorObject !== util.colors[util.Color.BLACK]) {
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
             c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
         } else {
             c.strokeStyle = c.fillStyle = util.Color.WHITE;
@@ -921,8 +965,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         c.stroke();
-        if (this.colorObject === util.colors[util.Color.BLACK]) {
-            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -972,6 +1016,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(Math.abs(this.deltaY) < this.parent.SNAP_TO_PADDING) {
             this.deltaY = 0;
         }
+
+        this.hasMoved = true;
+    };
+
+    StartLink.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     StartLink.prototype.getEndPoints = function() {
@@ -1043,7 +1093,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Draw the link itself, on top of the highlighting
         // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
         // is drawn visibly
-        if (this.colorObject !== util.colors[util.Color.BLACK]) {
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
             c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
         } else {
             c.strokeStyle = c.fillStyle = util.Color.WHITE;
@@ -1054,8 +1104,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         c.stroke();
-        if (this.colorObject === util.colors[util.Color.BLACK]) {
-            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -1096,9 +1146,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.beginPath();
 
         // Use the color to draw the link
-        let drawColor = this.colorObject.colorCode;
-        if (drawColor === null) {
+        let drawColor = (this.colorObject) ? this.colorObject.colorCode : null;
+        if (!drawColor) {
             drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
+            this.colorObject = util.colorObjectFromColorCode(drawColor);
         }
         c.strokeStyle = c.fillStyle = drawColor;
 
@@ -1117,7 +1168,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) {
+    function Button(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.width = w; //In px.
@@ -1125,10 +1176,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.icon = iconClass;
         this.title = title;
         this.eventFunction = eventFunction;
+        this.functionArg = functionArg;
     }
 
     // The create function should be called explicitly in order to create the HTML element(s) of the button
-    Button.prototype.create = function () {
+    Button.prototype.create = function (addAsFirst) {
         // Create the button, and add an unclickable icon
         this.id = 'button_' + this.title.split(' ').join('_');
 
@@ -1146,22 +1198,29 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             .addClass('icon fa ' + this.icon).attr({
                     "style":    "pointer-events: none",
                 }));
-        $(this.parent[0]).append($button);
+
+        // Add the element to the end or to the beginning of the parent
+        if (!addAsFirst) {
+            $(this.parent[0]).append($button);
+        } else {
+            this.parent[0].insertAdjacentElement('afterbegin', $button.get(0));
+        }
+
         this.object = $button;
 
         // Add the event function to this button
         let self = this;
         $(this.object).click(function () {
-            self.onClick(this.eventFunction, this);
+            self.onClick(self.eventFunction, self.functionArg, this);
         });
     };
 
-    Button.prototype.onClick = function(eventFunction, eventObject) {
+    Button.prototype.onClick = function(eventFunction, functionArg, eventObject) {
         if (eventFunction !== null) {
             if (eventObject === null) {
-                eventFunction();
+                eventFunction(functionArg);
             } else {
-                eventFunction(eventObject);
+                eventFunction(functionArg, eventObject);
             }
         }
     };
@@ -1174,40 +1233,39 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
-     * Define a class ModeButton for the buttons used to switch modes,
-     * which are based on the general Button class
+     * Define a class ToggleButton, used for buttons which can be set to
+     * on/enabled or off/disabled. This is based on the general Button class
      *
      ***********************************************************************/
 
-    function ModeButton(toolbar, parent, w, h, iconClass, title, buttonModeType, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-        this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
+    function ToggleButton(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction, functionArg);
     }
 
-    ModeButton.prototype = Object.create(Button.prototype);
-    ModeButton.prototype.constructor = ModeButton;
+    ToggleButton.prototype = Object.create(Button.prototype);
+    ToggleButton.prototype.constructor = ToggleButton;
 
-    ModeButton.prototype.create = function() {
+    ToggleButton.prototype.create = function() {
         Button.prototype.create.call(this);
 
         // Add 'toggle' to the class
         this.object.addClass('toggle');
 
-        // Add the not_clicked class name by default, based on the button type
+        // Add the not_clicked class name by default
         this.object.addClass('not_clicked');
     };
 
-    ModeButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this);
+    ToggleButton.prototype.onClick = function() {
+        Button.prototype.onClick(this.eventFunction, this.functionArg);
         this.setSelected();
     };
 
-    ModeButton.prototype.setSelected = function() {
+    ToggleButton.prototype.setSelected = function() {
         this.object.addClass('clicked');
         this.object.removeClass('not_clicked');
     };
 
-        ModeButton.prototype.setDeselected = function() {
+    ToggleButton.prototype.setDeselected = function() {
         this.object.removeClass('clicked');
         this.object.addClass('not_clicked');
     };
@@ -1229,7 +1287,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     PetriNodeTypeButton.prototype.constructor = PetriNodeTypeButton;
 
     PetriNodeTypeButton.prototype.create = function() {
-        Button.prototype.create.call(this);
+        Button.prototype.create.call(this, true);
 
         // Add 'toggle' to the class
         this.object.addClass('toggle');
@@ -1258,59 +1316,39 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     /***********************************************************************
      *
-     * Define a class DeleteButton for the delete button, which is based on
-     * the general Button class
+     * Define a class GrayOutButton for buttons which can be grayed out
+     * (disabled). This class is based on the general Button class
      *
      ***********************************************************************/
 
-    function DeleteButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
+    function GrayOutButton(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
+        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction, functionArg);
     }
 
-    DeleteButton.prototype = Object.create(Button.prototype);
-    DeleteButton.prototype.constructor = DeleteButton;
+    GrayOutButton.prototype = Object.create(Button.prototype);
+    GrayOutButton.prototype.constructor = GrayOutButton;
 
-    DeleteButton.prototype.create = function() {
+    GrayOutButton.prototype.create = function() {
         Button.prototype.create.call(this);
 
         // Set the button as disabled
         this.setDisabled();
     };
 
-    DeleteButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this.toolbar.parent);
+    GrayOutButton.prototype.onClick = function() {
+        Button.prototype.onClick(this.eventFunction, this.functionArg);
     };
 
-    DeleteButton.prototype.setEnabled = function() {
+    GrayOutButton.prototype.setEnabled = function() {
         $(this.object[0]).attr('disabled', false);
 
         this.object.removeClass('disabled');
     };
 
-    DeleteButton.prototype.setDisabled = function() {
+    GrayOutButton.prototype.setDisabled = function() {
         $(this.object[0]).attr('disabled', true);
 
         this.object.addClass('disabled');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class HelpButton for the help button, which is based on
-     * the general Button class
-     *
-     ***********************************************************************/
-
-    function HelpButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-    }
-
-    HelpButton.prototype = Object.create(Button.prototype);
-    HelpButton.prototype.constructor = HelpButton;
-
-    HelpButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction);
-
-        this.toolbar.displayHelpOverlay();
     };
 
     /***********************************************************************
@@ -1440,12 +1478,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function TextField(toolbar, parent, w, placeholderText, eventFunction) {
+    function TextField(toolbar, parent, w, placeholderText, eventFunction, onFocusInFunction, onFocusOutFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.w = w;
         this.placeholderText = placeholderText;
         this.eventFunction = eventFunction;
+        this.labelOnFocusIn = "";   // The value of the label right after the focusin event has fired
+        this.onFocusInFunction = onFocusInFunction;
+        this.onFocusOutFunction = onFocusOutFunction;
     }
 
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
@@ -1469,14 +1510,16 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 })));
         $(this.parent[0]).append($textfield);
 
-        // Add the event listeners, for the regular input and for checking the CTRL and enter key
+        // Add the event listeners, for the regular input and for checking the CTRL and enter key, and for focus events
         $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
         $textfield[0].addEventListener('keydown', (event) => this.handleInteraction(event));
+        $textfield[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
+        $textfield[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
         this.object = $textfield;
     };
 
     TextField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this.toolbar);
+        this.eventFunction(event, this, this.toolbar);
     };
 
     // This function should be called before the object is removed
@@ -1640,11 +1683,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
         StartLink: StartLink,
-        ModeButton: ModeButton,
+        Button: Button,
+        ToggleButton: ToggleButton,
         PetriNodeTypeButton: PetriNodeTypeButton,
-        HelpButton: HelpButton,
         NumberInputField: NumberInputField,
-        DeleteButton: DeleteButton,
+        GrayOutButton: GrayOutButton,
         Checkbox: Checkbox,
         TextField: TextField,
         Dropdown: Dropdown,
