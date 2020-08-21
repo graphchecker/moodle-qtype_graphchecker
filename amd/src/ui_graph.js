@@ -325,8 +325,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Creating the color selection options
         // Check whether all selected objects are either nodes or edges, or whether the color options are the same
         let colors;
-        let areSameColors = util.checkSameElementsArrays(this.parent.templateParams.vertex_colors,
-            this.parent.templateParams.edge_colors);
+        let areSameColors;
+        if (this.parent.templateParams.vertex_colors && this.parent.templateParams.edge_colors) {
+            areSameColors = util.checkSameElementsArrays(this.parent.templateParams.vertex_colors,
+                this.parent.templateParams.edge_colors);
+        } else {
+            areSameColors = false;
+        }
         let areOnlyNodes = true;
         let areOnlyEdges = true;
         for (let i = 0; i < selectedObjects.length; i++) {
@@ -384,20 +389,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.middleInput['label'] = labelTextField;
 
             // Fill the value of the label text field according to the selected object
-            this.middleInput['label'].object[0].children[0].children[0].value = selectedObjects[0].text;
+            let labelInput = this.middleInput['label'].object[0].children[0].children[0];
+            labelInput.value = selectedObjects[0].text;
 
-            // Enable autofocus of the label (so that you can type immediately), except if we are in temporary draw mode
-            // This is disabled in the latter case, since typing with the CTRL button pressed can cause
-            // keyboard shortcuts to be activated
-            if (!this.parent.isTempDrawModeActive) {
-                // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
-                let self = this;
-                setTimeout(function () {
-                    if (self.middleInput['label']) {
-                        $(self.middleInput['label'].object[0].childNodes[1]).focus();
-                    }
-                },10);
-            }
         } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI)
             && allow_edge_labels) {
             // Create the spinner to set the label
@@ -412,14 +406,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Set the value of the number input field, or an empty value
             let labelNumber = Number(selectedObjects[0].text);
             $(this.middleInput['label'].object)[0].childNodes[1].value = (labelNumber !== 0)? labelNumber : '';
-
-            // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
-            let self = this;
-            setTimeout(function () {
-                if (self.middleInput['label']) {
-                    $(self.middleInput['label'].object[0].childNodes[1]).focus();
-                }
-            },10);
         }
 
         // For the highlight checkbox, do the following
@@ -497,7 +483,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.toolbar.parent.onGraphChange();
     };
 
-    GraphToolbar.prototype.onInteractLabelTextField = function(event, toolbar) {
+    GraphToolbar.prototype.onInteractLabelTextField = function(event, labelObject, toolbar) {
         if (event instanceof KeyboardEvent) {
             if (event.key === 'Enter') {
                 // Set the focus to be the graph canvas when the enter button is pressed
@@ -508,7 +494,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' && toolbar.parent.allowEdits(Edit.ADD)) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
-                $(toolbar.parent.graphCanvas.canvas).focus();
                 if (toolbar.parent.uiMode !== elements.ModeType.DRAW) {
                     toolbar.parent.enableTemporaryDrawMode();
                 }
@@ -516,7 +501,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         } else if (event instanceof InputEvent) {
             // Add or remove character(s) to the label of the only selected object (i.e. node or link)
             // This function is only called when there is 1 selected object
-            toolbar.parent.selectedObjects[0].text = event.target.value;
+            let selectedObject = toolbar.parent.selectedObjects[0];
+            selectedObject.text = event.target.value;
         }
         toolbar.parent.draw();
     };
@@ -566,7 +552,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' && this.toolbar.parent.allowEdits(Edit.ADD)) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
-                $(this.toolbar.parent.graphCanvas.canvas).focus();
                 if (this.toolbar.parent.uiMode !== elements.ModeType.DRAW) {
                     this.toolbar.parent.enableTemporaryDrawMode();
                 }
@@ -671,26 +656,30 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.removePetriNodeTypeOptions();
 
         if (this.parent.allowEdits(Edit.ADD)) {
-            // Create the place PetriNodeType button
-            let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
-                this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
-                this.onClickPetriNodeTypeButton);
-            petriNodeTypePlaceButton.create();
-            this.middleInput['place'] = petriNodeTypePlaceButton;
-
             // Create the transition PetriNodeType button
             let petriNodeTypeTransitionButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
                 this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', elements.PetriNodeType.TRANSITION,
                 this.onClickPetriNodeTypeButton);
             petriNodeTypeTransitionButton.create();
+            petriNodeTypeTransitionButton.setDeselected();
             this.middleInput['transition'] = petriNodeTypeTransitionButton;
+
+            // Create the place PetriNodeType button
+            let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
+                this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
+                this.onClickPetriNodeTypeButton);
+            petriNodeTypePlaceButton.create();
+            petriNodeTypePlaceButton.setSelected();
+            this.middleInput['place'] = petriNodeTypePlaceButton;
+
+            // Reset the active petri node type to be 'Place'
+            this.parent.petriNodeType = elements.PetriNodeType.PLACE;
         }
     };
 
     GraphToolbar.prototype.removePetriNodeTypeOptions = function() {
         // Remove the PetriNodeType buttons if they are present
         if (this.middleInput['place']) {
-            // Using != tests for 'null' and for 'undefined'
             this.middleInput['place'].end();
             $(this.middleInput['place'].object).remove();
         }
@@ -982,6 +971,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         };       //TODO: assure that these values are met when saving (double check).
                  //if > 100, set to 100. If <0 or a char, set to 0
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
+        this.MAX_UNDO_REDO = 100; // The maximum number of undo-redo comands the user can issue
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
@@ -1030,8 +1020,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         // A variable denoting the edit-history of the graph, in the form of a stack (LIFO), used in the undo/redo mechanism
-        this.historyStack = [];
-        this.historyStackPointer = -1; // A pointer pointing to an entry in the historyStack
+        // Load it with the initial graph
+        this.historyStack = [$(this.textArea).val()];
+        this.historyStackPointer = 0; // A pointer pointing to an entry in the historyStack
 
         this.reload();
         if (!this.fail) {
@@ -1107,10 +1098,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.toolbar.leftButtons['draw'].setDeselected();
             this.toolbar.leftButtons['select'].setSelected();
         }
-
-
-        // Unselect a (possibly) selected item when going from select to draw mode
-        this.draw();
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -1233,40 +1220,39 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Set the mode to Draw
             this.setUIMode(elements.ModeType.DRAW);
+            this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
             this.isTempDrawModeActive = true;
-
-            // Remove the buttons for Select mode
-            this.toolbar.removeSelectionOptions();
-            if (this.isType(Type.PETRI)) {
-                this.toolbar.removePetriSelectionOptions();
-                this.toolbar.onClickPetriNodeTypeButton(this.toolbar.middleInput['place']);
-            }
-            if (this.isType(Type.FSM)) {
-                this.toolbar.removeFSMNodeSelectionOptions();
-            }
         }
     };
 
     Graph.prototype.disableTemporaryDrawMode = function() {
         if (this.allowEdits(Edit.ADD)) {
+            // A variable denoting whether the label input has focus or not
+            let hasLabelFocus = false;
+            let label = this.toolbar.middleInput['label'];
+            let inputElement = null;
+            if (label && label instanceof elements.TextField) {
+                inputElement = label.object[0].childNodes[1].childNodes[0];
+                hasLabelFocus = $(inputElement).is(":focus");
+            } else if (label && label instanceof elements.NumberInputField) {
+                inputElement = label.object[0].childNodes[1];
+                hasLabelFocus = $(inputElement).is(":focus");
+            }
+
+            // Set the UI mode, and set the selected objects
             this.setUIMode(elements.ModeType.SELECT);
             this.selectedObjects = this.previousSelectedObjects;
             this.isTempDrawModeActive = false;
-
-            // Enable the buttons for Select mode
-            this.toolbar.addSelectionOptions(this.selectedObjects);
 
             // Enable the delete button if something is selected
             if (this.allowEdits(Edit.DELETE) && this.selectedObjects.length) {
                 this.toolbar.rightButtons['delete'].setEnabled();
             }
 
-            // Enable FSM/Petri net options
-            if (this.isType(Type.FSM)) {
-                this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
-            }
-            if (this.isType(Type.PETRI)) {
-                this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+            // Set the label focus for Petri net graphs
+            if (this.isType(Type.PETRI) && hasLabelFocus) {
+                // If the element was previously focused on, re-add the focus
+                this.focusElement(inputElement);
             }
             this.draw();
         }
@@ -1275,6 +1261,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     // Copy the serialised version of the graph to the TextArea.
     Graph.prototype.sync = function() {
         // Nothing to do ... always sync'd.
+    };
+
+    Graph.prototype.focusElement = function(element) {
+        // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
+        setTimeout(function () {
+            if (element) {
+                $(element).focus();
+            }
+        },0);
     };
 
     Graph.prototype.keypress = function(e) {
@@ -1460,6 +1455,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
             if (this.uiMode !== elements.ModeType.DRAW && this.allowEdits(Edit.ADD)) {
                 this.enableTemporaryDrawMode();
+            }
+        }
+
+        // If an object, having a label or token input field, is selected in SELECT mode, and the user presses a key
+        // which produces a character, then focus the input field and add the typed character to the input field.
+        // This enables the delete key to delete the item, instead of deleting the input field text
+        // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
+        let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
+        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key)) && !e.originalEvent.ctrlKey) {
+            let inputField = this.toolbar.middleInput['label']; //TODO: number input field
+            if (inputField) {
+                let element = inputField.object[0].childNodes[1].childNodes[0];
+
+                // Add the typed character to the input field and to the object's label
+                element.value += e.key;
+                this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
             }
         }
     };
@@ -1683,11 +1694,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.onGraphChange();
             }
             this.currentLink = null;
-        }
-
-        // Remove the selection rectangle, and select or deselect all elements in it
-        // Also set appropriate property selection options (e.g. initial state or final state for FSMs)
-        if (this.selectionRectangle) {
+            this.clickedObject = null;
+        } else if (this.selectionRectangle) {
+            // Remove the selection rectangle, and select or deselect all elements in it
+            // Also set appropriate property selection options (e.g. initial state or final state for FSMs)
             let objects = this.getObjectsInRectangle(this.selectionRectangle);
             if (e.shiftKey) {
                 // If all selected objects (within the rectangle) are already selected, deselect these
@@ -1725,23 +1735,30 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
             this.selectionRectangle = null;
+        } else {
+
+            // Save the graph when selected nodes and/or edges have moved
+            let hasSelectionMoved = false;
+            this.selectedObjects.forEach(element => hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved);
+
+            // Save a different graph state if applicable
+            if (this.clickedObject && hasSelectionMoved) {
+                this.onGraphChange();
+            }
+
+            // If none of the selected objects has moved, and shift is not pressed,
+            // set the selected object to the clicked object. I.e., unselect all other selected objects
+            if (this.clickedObject && !hasSelectionMoved && !e.shiftKey) {
+                this.selectedObjects = [this.clickedObject];
+            }
+
+            // Reset the 'hasMoved' parameter of all selected objects
+            this.selectedObjects.forEach(element => element.resetHasMoved());
+
+            this.clickedObject = null;
+            this.canMoveObjects = false;
+            this.draw();
         }
-
-        // Save the graph when selected nodes and/or edges have moved
-        let hasSelectionMoved = false;
-        this.selectedObjects.forEach(element => hasSelectionMoved = (element.hasMoved)? true : hasSelectionMoved);
-
-        // Save a different graph state if applicable
-        if (this.clickedObject && hasSelectionMoved) {
-            this.onGraphChange();
-        }
-
-        // Reset the 'hasMoved' parameter of all selected objects
-        this.selectedObjects.forEach(element => element.resetHasMoved());
-
-        this.clickedObject = null;
-        this.canMoveObjects = false;
-        this.draw();
     };
 
     // This event function is activated when the mouse leaves the graph canvas
@@ -2032,7 +2049,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.save();
         let graphInstance = $(this.textArea).val();
         this.historyStack.push(graphInstance);
-        this.historyStackPointer++;
+        if (this.historyStack.length > this.MAX_UNDO_REDO + 1) {
+            this.historyStack.shift();
+        } else {
+            this.historyStackPointer++;
+        }
 
         // Enable the undo button, and disable the redo button
         this.toolbar.rightButtons['undo'].setEnabled();
@@ -2044,7 +2065,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let g = graphUI;
 
         // If there is something on the stack, retrieve it
-        if (g.historyStackPointer >= 0) {
+        if (g.historyStackPointer >= 1) {
             // Decrease the stack pointer, and queue the (previous) graph instance
             g.historyStackPointer--;
             let graphInstance = g.historyStack[g.historyStackPointer];
@@ -2053,7 +2074,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             g.updateGraph(g, graphInstance);
 
             // Set the buttons accordingly
-            if (g.historyStackPointer < 0) {
+            if (g.historyStackPointer <= 0) {
                 g.toolbar.rightButtons['undo'].setDisabled();
             } else {
                 g.toolbar.rightButtons['undo'].setEnabled();
@@ -2317,20 +2338,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // can create a node here
         if (this.uiMode === elements.ModeType.DRAW && this.mousePosition && !this.currentLink &&
             !this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y, true) && this.allowEdits(Edit.ADD)) {
-            let shadowAlpha = 0.5;
-            c.shadowColor = 'rgb(220,220,220,' + shadowAlpha + ')';
-            c.shadowBlur = 10;
 
+            // Create the shadow node and draw it
             let shadowNode = new elements.Node(this, this.mousePosition.x, this.mousePosition.y);
             if (this.isType(Type.PETRI) && this.petriNodeType === elements.PetriNodeType.TRANSITION) {
                 shadowNode.petriNodeType = elements.PetriNodeType.TRANSITION;
             }
-            c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
-            shadowNode.draw(c, true);
-
-            c.shadowBlur = 0;
-            c.globalAlpha = 1;
+            shadowNode.draw(c, true, elements.DrawOption.HOVER);
         }
 
         // Draw all selections of the nodes, and links
