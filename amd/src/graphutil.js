@@ -139,7 +139,7 @@ define(function() {
     Util.prototype.degToRad = function(deg) {
         // Converts degrees to radians
         return deg * (Math.PI/180.0);
-    }
+    };
 
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
@@ -283,6 +283,8 @@ define(function() {
                 candidateAngle = candidateAngles[i];
             }
         }
+
+        return candidateAngle;
     };
 
     Util.prototype.quadraticFormula = function(a, b, c) {
@@ -352,7 +354,7 @@ define(function() {
         }
 
         return true;
-    }
+    };
 
     return new Util();
 });

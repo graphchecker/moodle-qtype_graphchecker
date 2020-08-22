@@ -207,7 +207,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Create the undo button
             if (self.parent.allowsOneEdit()) {
                 let undoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-undo', "Undo", self.parent.undo, self.parent)
+                    self.buttonSize.w, self.buttonSize.h, 'fa-undo', "Undo", self.parent.undo, self.parent);
                 undoButton.create();
                 self.rightButtons['undo'] = undoButton;
             }
@@ -215,7 +215,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Create the redo button
             if (self.parent.allowsOneEdit()) {
                 let redoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent)
+                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent);
                 redoButton.create();
                 self.rightButtons['redo'] = redoButton;
             }
@@ -381,7 +381,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_LABELS));
         let allow_edge_labels = !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_LABELS));
         if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink ||
-            (selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI))) && allow_vertex_labels && allow_edge_labels) {
+            (selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI))) &&
+            allow_vertex_labels && allow_edge_labels) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart,
                 8, 'Label', this.onInteractLabelTextField, this.onFocusInLabelTextfield, this.onFocusOutLabelTextfield);
@@ -399,7 +400,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
             let labelInputField = new elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriLinkLable', 'Label:', 'Edge label',
-                this.onEnterPetriLinkLabelInput);
+                this.onEnterPetriLinkLabelInput, this.onFocusInPetriLinkLabelInput, this.onFocusOutPetriLinkLabelInput);
             labelInputField.create();
             this.middleInput['label'] = labelInputField;
 
@@ -541,7 +542,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Furthermore, if the value is 0, display it as an empty string '', to easily be able to edit it
             $(this.toolbar.middleInput['label'].object)[0].childNodes[1].value = labelValue;
 
-            this.toolbar.parent.onGraphChange();
         } else if (event instanceof KeyboardEvent) {
             if (event.key === 'Enter') {
                 // Set the focus to be the graph canvas when the enter button is pressed
@@ -560,6 +560,18 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Draw the new label
         this.toolbar.parent.draw();
+    };
+
+    GraphToolbar.prototype.onFocusInPetriLinkLabelInput = function(inputfieldObject, event) {
+        // Save the value of the label, upon selecting (focussing) it
+        inputfieldObject.labelOnFocusIn = event.target.value;
+    };
+
+    GraphToolbar.prototype.onFocusOutPetriLinkLabelInput = function(inputfieldObject, event) {
+        // If the label has changed, between the selecting and deselecting the label (focussing), update the graph stack
+        if (event.target.value !== inputfieldObject.labelOnFocusIn) {
+            this.toolbar.parent.onGraphChange();
+        }
     };
 
     GraphToolbar.prototype.onClickHighlightCheckbox = function(event) {
@@ -1127,7 +1139,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let editsArray = [];
         let allowed_edits = this.templateParams.allow_edits;
 
-        if (allowed_edits == null) {
+        if (!allowed_edits) {
             // If the input parameter is undefined (or equal to null) then allow everything
             return true;
         } else if ((Array.isArray(allowed_edits) && !allowed_edits.length) || (this.readOnly)) {
@@ -1445,10 +1457,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        if (key === 8) { // Backspace key.
-            // Backspace is a shortcut for the back button, but do NOT want to change pages.
-            return false;
-        } else if (key === 46) { // Delete key.
+        if (key === 46) { // Delete key.
             if (this.allowEdits(Edit.DELETE)) {
                 this.deleteSelectedObjects(this);
             }
@@ -1478,18 +1487,45 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // This enables the delete key to delete the item, instead of deleting the input field text
         // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
         let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
-        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key)) && !e.originalEvent.ctrlKey) {
-            let inputField = this.toolbar.middleInput['label']; //TODO: number input field
-            if (inputField) {
-                let element = inputField.object[0].childNodes[1].childNodes[0];
+        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key) || e.key === "Backspace") &&
+            !e.originalEvent.ctrlKey) {
+            let inputField = this.toolbar.middleInput['label'];
 
-                // Add the typed character to the input field and to the object's label
-                element.value += e.key;
-                this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+            // If the input field exists, and a number (or backspace) is entered for a number input field, continue
+            if (inputField && (!(isNaN(parseInt(e.key, 10)) && inputField instanceof elements.NumberInputField) ||
+                e.key === "Backspace")) {
+                // Find the input field
+                let element;
+                if (inputField instanceof elements.TextField) {
+                    element = inputField.object[0].childNodes[1].childNodes[0];
+                } else if (inputField instanceof elements.NumberInputField) {
+                    element = inputField.object[0].childNodes[1];
+                }
+
+                if (e.key !== "Backspace") {
+                    // Add the typed character to the input field and to the object's label
+                    element.value += e.key;
+                    this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+
+                    if (element.value > inputField.maxValue) {
+                        // Set to the max value
+                        element.value = inputField.maxValue + '';
+                        this.selectedObjects[0].text = inputField.maxValue + '';
+                    }
+                } else {
+                    // Remove the last character from the input field
+                    element.value = element.value.slice(0, -1);
+                    this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
+                }
 
                 // Focus the label
                 this.focusElement(element, 100);
             }
+        }
+
+        if (e.key === "Backspace") {
+            // Backspace is a shortcut for the back button, but do NOT want to change pages. Therefore return false
+            return false;
         }
     };
 
@@ -1561,7 +1597,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.currentLink = new elements.SelfLink(this, this.clickedObject, mouse);
                 } else if (targetNode && targetNode !== this.clickedObject) {
                     this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
-                } else if (targetNodeStrict == null) {
+                } else if (!targetNodeStrict) {
                     closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
                     this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
                 } else {
@@ -1757,7 +1793,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Save the graph when selected nodes and/or edges have moved
             let hasSelectionMoved = false;
-            this.selectedObjects.forEach(element => hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved);
+            this.selectedObjects.forEach(element => {hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved});
 
             // Save a different graph state if applicable
             if (this.clickedObject && hasSelectionMoved) {
@@ -2138,7 +2174,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Save and reload the graphUI
         this.reload();
-    }
+    };
 
     Graph.prototype.reload = function() {
         var content = $(this.textArea).val();
@@ -2325,7 +2361,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.update = function() {
         // Draw the graph
         this.draw();
-    }
+    };
 
     Graph.prototype.destroy = function () {
         this.graphCanvas.canvas.off();  // Stop all events.

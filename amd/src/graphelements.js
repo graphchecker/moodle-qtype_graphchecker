@@ -742,7 +742,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode :
+                util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -909,7 +910,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if (drawOption === DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
         } else if (drawOption === DrawOption.OBJECT) {
-            this.drawObject(c, drawLink, drawArrowHead, false);
+            this.drawObject(c, drawLink, drawArrowHead);
 
             // Draw the text on the loop farthest from the node.
             c.strokeStyle = c.fillStyle = util.Color.BLACK;
@@ -928,10 +929,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
 
         // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead, true); //TODO: this function, and funct below
+        this.drawObject(c, drawLink, drawArrowHead); //TODO: this function, and funct below
     };
 
-    SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead, invisible) {
+    SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
         // Enable the highlight effect
         if (this.isHighlighted) {
             // Set stroke color and line width
@@ -966,7 +967,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode :
+                util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -1105,7 +1107,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode :
+                util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -1114,7 +1117,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Reset the shadow parameter, in case the node was selected
         c.shadowBlur = 0;
-    }
+    };
 
     StartLink.prototype.containsPoint = function(x, y) {
         var endPoints = this.getEndPoints();
@@ -1359,7 +1362,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function NumberInputField(toolbar, parent, w, h, minValue, maxValue, name, labelText, title, eventFunction) {
+    function NumberInputField(toolbar, parent, w, h, minValue, maxValue, name, labelText, title, eventFunction,
+                              onFocusInFunction, onFocusOutFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.width = w;     // In px.
@@ -1370,6 +1374,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.labelText = labelText;
         this.title = title;
         this.eventFunction = eventFunction;
+        this.onFocusInFunction = onFocusInFunction;
+        this.onFocusOutFunction = onFocusOutFunction;
     }
 
     NumberInputField.prototype.create = function() {
@@ -1394,6 +1400,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Add the event listener
         $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
         $number_input[0].addEventListener('keydown', (event) => this.handleInteraction(event));
+        $number_input[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
+        $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
         this.object = $number_input;
     };
 
