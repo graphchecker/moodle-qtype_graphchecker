@@ -1087,16 +1087,24 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
 
             // Style the buttons correctly
-            this.toolbar.leftButtons['draw'].setSelected();
-            this.toolbar.leftButtons['select'].setDeselected();
+            if (this.toolbar.leftButtons['select']) {
+                this.toolbar.leftButtons['select'].setDeselected();
+            }
+            if (this.toolbar.leftButtons['draw']) {
+                this.toolbar.leftButtons['draw'].setSelected();
+            }
         } else if (this.uiMode === elements.ModeType.SELECT) {
             if (this.isType(Type.PETRI)) {
                 this.toolbar.removePetriNodeTypeOptions();
             }
 
             // Style the buttons correctly
-            this.toolbar.leftButtons['draw'].setDeselected();
-            this.toolbar.leftButtons['select'].setSelected();
+            if (this.toolbar.leftButtons['select']) {
+                this.toolbar.leftButtons['select'].setSelected();
+            }
+            if (this.toolbar.leftButtons['draw']) {
+                this.toolbar.leftButtons['draw'].setDeselected();
+            }
         }
     };
 
@@ -1252,7 +1260,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Set the label focus for Petri net graphs
             if (this.isType(Type.PETRI) && hasLabelFocus) {
                 // If the element was previously focused on, re-add the focus
-                this.focusElement(inputElement);
+                this.focusElement(inputElement, 10);
             }
             this.draw();
         }
@@ -1263,13 +1271,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Nothing to do ... always sync'd.
     };
 
-    Graph.prototype.focusElement = function(element) {
+    Graph.prototype.focusElement = function(element, timeout) {
         // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
         setTimeout(function () {
             if (element) {
                 $(element).focus();
             }
-        },0);
+        },timeout);
     };
 
     Graph.prototype.keypress = function(e) {
@@ -1445,8 +1453,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.deleteSelectedObjects(this);
             }
         } else if (key === 27) { // Escape key.
-            // Deselect the objects
+            // Deselect the objects, and remove the select bar
             this.selectedObjects = [];
+            this.toolbar.removeSelectionOptions();
+            if (this.isType(Type.FSM)) {
+                this.toolbar.removeFSMNodeSelectionOptions();
+            }
+            if (this.isType(Type.PETRI)) {
+                this.toolbar.removePetriSelectionOptions();
+            }
             this.draw();
         }
 
@@ -1471,6 +1486,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 // Add the typed character to the input field and to the object's label
                 element.value += e.key;
                 this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+
+                // Focus the label
+                this.focusElement(element, 100);
             }
         }
     };
@@ -1735,7 +1753,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
             this.selectionRectangle = null;
-        } else {
+        } else if (this.uiMode === elements.ModeType.SELECT) {
 
             // Save the graph when selected nodes and/or edges have moved
             let hasSelectionMoved = false;
@@ -1757,8 +1775,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             this.clickedObject = null;
             this.canMoveObjects = false;
-            this.draw();
+        } else {
+            this.clickedObject = null;
+            this.canMoveObjects = false;
         }
+        this.draw();
     };
 
     // This event function is activated when the mouse leaves the graph canvas
