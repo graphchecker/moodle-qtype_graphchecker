@@ -706,6 +706,10 @@ input.toolbar_numberinput {
     height: 17.5px;
 }
 
+.graph_ui_container_div input.toolbar_textfield.invalid {
+    box-shadow: 0 0 5px red;
+}
+
 button.disabled {
     background-color: #d9d9d9;
 }

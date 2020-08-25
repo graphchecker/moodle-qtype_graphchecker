@@ -385,13 +385,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             allow_vertex_labels && allow_edge_labels) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart,
-                8, 'Label', this.onInteractLabelTextField, this.onFocusInLabelTextfield, this.onFocusOutLabelTextfield);
+                8, 'Label', selectedObjects[0], this.onInteractLabelTextField, this.onFocusInLabelTextfield,
+                this.onFocusOutLabelTextfield);
             labelTextField.create();
             this.middleInput['label'] = labelTextField;
 
             // Fill the value of the label text field according to the selected object
             let labelInput = this.middleInput['label'].object[0].children[0].children[0];
             labelInput.value = selectedObjects[0].text;
+
+            // Set the label's initial value
+            labelTextField.labelInitial = labelInput.value;
+
+            // Check for the validity of the label and take corresponding actions
+            this.parent.checkLabelValidity(labelInput, labelInput.value);
 
         } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI)
             && allow_edge_labels) {
@@ -484,7 +491,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.toolbar.parent.onGraphChange();
     };
 
-    GraphToolbar.prototype.onInteractLabelTextField = function(event, labelObject, toolbar) {
+    GraphToolbar.prototype.onInteractLabelTextField = function(event, toolbar) {
         if (event instanceof KeyboardEvent) {
             if (event.key === 'Enter') {
                 // Set the focus to be the graph canvas when the enter button is pressed
@@ -503,20 +510,46 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Add or remove character(s) to the label of the only selected object (i.e. node or link)
             // This function is only called when there is 1 selected object
             let selectedObject = toolbar.parent.selectedObjects[0];
-            selectedObject.text = event.target.value;
+            let labelValue = event.target.value;
+            selectedObject.text = labelValue;
+
+            // Check for the validity of the label and take corresponding actions
+            toolbar.parent.checkLabelValidity(event.target, labelValue);
         }
         toolbar.parent.draw();
     };
 
     GraphToolbar.prototype.onFocusInLabelTextfield = function(textfieldObject, event) {
-        // Save the value of the label, upon selecting (focussing) it
-        textfieldObject.labelOnFocusIn = event.target.value;
+        // Currently this method is empty
     };
 
     GraphToolbar.prototype.onFocusOutLabelTextfield = function(textfieldObject, event) {
-        // If the label has changed, between the selecting and deselecting the label (focussing), update the graph stack
-        if (event.target.value !== textfieldObject.labelOnFocusIn) {
-            this.toolbar.parent.onGraphChange();
+        // If the label has changed, and is valid, between the selecting and deselecting the label (focussing),
+        // then update the graph stack
+        let labelValue = textfieldObject.object[0].childNodes[1].childNodes[0].value;
+        let isValidLabel = this.toolbar.parent.checkStringValidity(labelValue, textfieldObject.selectedObject);
+
+        if (isValidLabel) {
+            if (event.target.value !== textfieldObject.labelInitial && isValidLabel) {
+                this.toolbar.parent.onGraphChange();
+            }
+        } else {
+            // Display a popup
+            this.toolbar.parent.alertPopup('The entered label does not match the regex');
+
+            // Reset the label to a valid regex. This is either the value on focussing, or the empty string
+            let newLabelValue = '';
+            if (this.toolbar.parent.checkStringValidity(textfieldObject.labelInitial,
+                this.toolbar.parent.selectedObjects[0])) {
+                newLabelValue = textfieldObject.labelInitial;
+            }
+
+            // Set the new label value of the selected object, and of the input textfield
+            textfieldObject.selectedObject.text = newLabelValue;
+            event.target.value = newLabelValue;
+
+            // Remove the invalid class
+            $(event.target).removeClass('invalid');
         }
     };
 
@@ -1182,6 +1215,33 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return false;
     };
 
+    // This function checks the validity of a string as per the given regex for one selected object
+    Graph.prototype.checkStringValidity = function(string, selectedObject) {
+        // A variable denoting the used regex, without forward slashes around the regex. /.*/ is the default regex
+        let regexString = '.*';
+        if (selectedObject instanceof elements.Node && this.templateParams.vertex_label_regex) {
+            regexString = this.templateParams.vertex_label_regex;
+        } else if ((selectedObject instanceof elements.Link || selectedObject instanceof elements.SelfLink) &&
+            this.templateParams.edge_label_regex) {
+            regexString = this.templateParams.edge_label_regex;
+        }
+
+        return new RegExp(regexString).test(string);
+    };
+
+    // This function checks the validity of a label as per the given regex, and applies effects
+    Graph.prototype.checkLabelValidity = function(labelInputField, labelText) {
+        let isValid = this.checkStringValidity(labelText, this.selectedObjects[0]);
+
+        if (!isValid) {
+            // Set the textfield border to red by applying a class to the input field
+            $(labelInputField).addClass('invalid');
+        } else {
+            // Remove the red border
+            $(labelInputField).removeClass('invalid');
+        }
+    };
+
     // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
     Graph.prototype.getHelpText = function() {
         // Create the first part of the help text
@@ -1517,6 +1577,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     element.value = element.value.slice(0, -1);
                     this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
                 }
+
+                // Check for the validity of the label and take corresponding actions
+                this.checkLabelValidity(element, element.value);
 
                 // Focus the label
                 this.focusElement(element, 100);
@@ -2174,6 +2237,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Save and reload the graphUI
         this.reload();
+
+        // Reload the toolbar
+        this.toolbar.addSelectionOptions(this.selectedObjects);
+
+        if (this.isType(Type.FSM)) {
+            this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+        }
+        if (this.isType(Type.PETRI)) {
+            this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+        }
     };
 
     Graph.prototype.reload = function() {

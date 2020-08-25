@@ -1486,13 +1486,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
      *
      ***********************************************************************/
 
-    function TextField(toolbar, parent, w, placeholderText, eventFunction, onFocusInFunction, onFocusOutFunction) {
+    function TextField(toolbar, parent, w, placeholderText, selectedObject, eventFunction, onFocusInFunction,
+                       onFocusOutFunction) {
         this.toolbar = toolbar;
         this.parent = parent;
         this.w = w;
         this.placeholderText = placeholderText;
+        this.selectedObject = selectedObject; // The object to which this label belongs
         this.eventFunction = eventFunction;
-        this.labelOnFocusIn = "";   // The value of the label right after the focusin event has fired
+        this.labelInitial = "";   // The value of the label upon creation of this object
         this.onFocusInFunction = onFocusInFunction;
         this.onFocusOutFunction = onFocusOutFunction;
     }
@@ -1527,7 +1529,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     };
 
     TextField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this, this.toolbar);
+        this.eventFunction(event, this.toolbar);
     };
 
     // This function should be called before the object is removed
