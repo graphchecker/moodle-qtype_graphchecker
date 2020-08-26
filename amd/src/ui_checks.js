@@ -395,14 +395,9 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         let $dialog = this.createDialog('Edit graph', $newField, 'OK')
             .appendTo(this.$backdrop);
 
-        let params = {
-            "type":"undirected",
-            "vertex_labels":true,
-            "edge_labels":true,
-            "vertex_colors":["white","black","red","blue","green","yellow","orange","purple"],
-            "edge_colors":["black","red","blue","green","yellow","orange","purple","white"]
-        };  // TODO
-        $graphField.attr('data-params', JSON.stringify(params));
+        let params = $('textarea#id_answer').attr('data-params');
+        $graphField.attr('data-params', params);
+
         let uiWrapper = new ui.InterfaceWrapper('graph', 'graph-editor-field');
         $dialog.find('.btn').on('click', function() {
             uiWrapper.stop();
