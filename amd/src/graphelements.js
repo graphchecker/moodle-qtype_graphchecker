@@ -742,7 +742,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -931,7 +932,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.drawObject(c, drawLink, drawArrowHead, true); //TODO: this function, and funct below
     };
 
-    SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead, invisible) {
+    SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
         // Enable the highlight effect
         if (this.isHighlighted) {
             // Set stroke color and line width
@@ -966,7 +967,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -1105,7 +1107,8 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         c.stroke();
         c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
-            c.strokeStyle = c.fillStyle = (this.colorObject !== null)? this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
         c.stroke();
@@ -1114,7 +1117,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
         // Reset the shadow parameter, in case the node was selected
         c.shadowBlur = 0;
-    }
+    };
 
     StartLink.prototype.containsPoint = function(x, y) {
         var endPoints = this.getEndPoints();

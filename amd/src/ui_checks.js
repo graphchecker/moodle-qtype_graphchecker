@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery'], function($) {
+define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
     function ChecksUi(textareaId, width, height, templateParams) {
         this.$textArea = $('#' + textareaId);
@@ -79,18 +79,17 @@ define(['jquery'], function($) {
         this.$checksPanel = $('<div/>')
             .addClass('tests-ui');
 
+        let modulesJson = this.$textArea.attr('data-available-checks');
+        this.modules = JSON.parse(modulesJson);
+
         this.$activeChecksList = $('<div/>')
             .addClass('active-tests-list')
             .appendTo(this.$checksPanel);
         this.$backdrop = $('<div/>')
             .addClass('backdrop')
             .css('display', 'none')
-            .on('click', this.hideAddCheckDialog.bind(this))
+            .on('click', this.hideDialogs.bind(this))
             .appendTo(this.$checksPanel);
-        this.$availableChecksList = $('<div/>')
-            .addClass('available-tests-list');
-        this.$dialog = this.createDialog('Add check', this.$availableChecksList)
-            .appendTo(this.$backdrop);
 
         let activeChecks = [];
         let activeChecksJson = this.$textArea.val();
@@ -98,28 +97,10 @@ define(['jquery'], function($) {
             activeChecks = JSON.parse(activeChecksJson);
         }
 
-        let modulesJson = this.$textArea.attr('data-available-checks');
-        this.modules = JSON.parse(modulesJson);
-
         for (let i = 0; i < activeChecks.length; i++) {
             let check = activeChecks[i];
             this.createActiveCheckContainer(check)
                 .appendTo(this.$activeChecksList);
-        }
-
-        for (let moduleName in this.modules) {
-            if (this.modules.hasOwnProperty(moduleName)) {
-                let module = this.modules[moduleName];
-                this.createModuleContainer(moduleName, module)
-                    .appendTo(this.$availableChecksList);
-                let checks = module['checks'];
-                for (let checkName in checks) {
-                    if (checks.hasOwnProperty(checkName)) {
-                        this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
-                            .appendTo(this.$availableChecksList);
-                    }
-                }
-            }
         }
 
         this.$addCheckButton = $('<button/>')
@@ -130,20 +111,50 @@ define(['jquery'], function($) {
             .appendTo(this.$checksPanel);
     };
 
+    ChecksUi.prototype.createAvailableChecksList = function() {
+
+        let $result = $('<div/>')
+            .addClass('available-tests-list');
+
+        for (let moduleName in this.modules) {
+            if (this.modules.hasOwnProperty(moduleName)) {
+                let module = this.modules[moduleName];
+                this.createModuleContainer(moduleName, module)
+                    .appendTo($result);
+                let checks = module['checks'];
+                for (let checkName in checks) {
+                    if (checks.hasOwnProperty(checkName)) {
+                        this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
+                            .appendTo($result);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    };
+
     ChecksUi.prototype.showAddCheckDialog = function() {
         this.$backdrop.css('display', 'block')
             .addClass('visible');
         $('body').addClass('unscrollable');
+
+        let $checksList = this.createAvailableChecksList();
+
+        this.createDialog('Add check', $checksList)
+            .appendTo(this.$backdrop);
+
         return false;
     };
 
-    ChecksUi.prototype.hideAddCheckDialog = function() {
+    ChecksUi.prototype.hideDialogs = function() {
         this.$backdrop.removeClass('visible');
         $('body').removeClass('unscrollable');
 
         // hide the element only after the CSS transition has finished
         setTimeout(function() {
             this.$backdrop.css('display', 'none');
+            this.$backdrop.empty();
         }.bind(this), 500);
     };
 
@@ -253,8 +264,7 @@ define(['jquery'], function($) {
                     .appendTo($argumentRow);
 
             } else if (type === 'string_list' ||
-                    type === 'string_multiline' ||
-                    type === 'graph') {
+                    type === 'string_multiline') {
                 $('<textarea/>')
                     .addClass('argument-value')
                     .val(value)
@@ -276,6 +286,20 @@ define(['jquery'], function($) {
                     }
                     $field.val(value);
                 }
+
+            } else if (type === 'graph') {
+                $('<textarea/>')
+                    .addClass('argument-value')
+                    .val(value)
+                    .appendTo($argumentRow);
+
+                let $buttonGroup = $('<div/>')
+                    .addClass('button-group')
+                    .appendTo($argumentRow);
+                this.createButton('fa-pencil')
+                    .attr('title', 'Edit the graph to be used for this check')
+                    .on('click', this.showEditGraphDialog.bind(this))
+                    .appendTo($buttonGroup);
 
             } else {
                 $('<span/>')
@@ -351,7 +375,40 @@ define(['jquery'], function($) {
             .hide()
             .slideDown();
 
-        this.hideAddCheckDialog();
+        this.hideDialogs();
+
+        return false;
+    };
+
+    ChecksUi.prototype.showEditGraphDialog = function(e) {
+        this.$backdrop.css('display', 'block')
+            .addClass('visible');
+        $('body').addClass('unscrollable');
+
+        let $checkContainer = $(e.target).closest('.test-container');
+        let $graphField = $checkContainer.find('.argument-value');
+
+        let $newField = $('<textarea/>')
+            .attr('id', 'graph-editor-field')
+            .val($graphField.val());
+
+        let $dialog = this.createDialog('Edit graph', $newField, 'OK')
+            .appendTo(this.$backdrop);
+
+        let params = {
+            "type":"undirected",
+            "vertex_labels":true,
+            "edge_labels":true,
+            "vertex_colors":["white","black","red","blue","green","yellow","orange","purple"],
+            "edge_colors":["black","red","blue","green","yellow","orange","purple","white"]
+        };  // TODO
+        $graphField.attr('data-params', JSON.stringify(params));
+        let uiWrapper = new ui.InterfaceWrapper('graph', 'graph-editor-field');
+        $dialog.find('.btn').on('click', function() {
+            uiWrapper.stop();
+            $graphField.val($newField.val());
+            this.hideDialogs();
+        }.bind(this));
 
         return false;
     };
@@ -394,8 +451,8 @@ define(['jquery'], function($) {
         return $container;
     };
 
-    ChecksUi.prototype.createDialog = function(title, content) {
-        return $('<div/>')
+    ChecksUi.prototype.createDialog = function(title, content, buttonText) {
+        let $dialog = $('<div/>')
             .addClass('dialog')
             .append($('<div/>')
                 .addClass('dialog-header')
@@ -406,6 +463,15 @@ define(['jquery'], function($) {
             .on('click', function() {
                 return false;  // avoid bubbling to the backdrop
             });
+
+        if (buttonText) {
+            $('<button/>')
+                .addClass('btn btn-primary')
+                .text(buttonText)
+                .appendTo($dialog);
+        }
+
+        return $dialog;
     };
 
     ChecksUi.prototype.createButton = function(iconClass) {

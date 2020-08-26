@@ -207,7 +207,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Create the undo button
             if (self.parent.allowsOneEdit()) {
                 let undoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-undo', "Undo", self.parent.undo, self.parent)
+                    self.buttonSize.w, self.buttonSize.h, 'fa-undo', "Undo", self.parent.undo, self.parent);
                 undoButton.create();
                 self.rightButtons['undo'] = undoButton;
             }
@@ -215,7 +215,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Create the redo button
             if (self.parent.allowsOneEdit()) {
                 let redoButton = new elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent)
+                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent);
                 redoButton.create();
                 self.rightButtons['redo'] = redoButton;
             }
@@ -381,7 +381,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(Edit.VERTEX_LABELS));
         let allow_edge_labels = !(areOnlyEdges && !this.parent.allowEdits(Edit.EDGE_LABELS));
         if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink ||
-            (selectedObjects[0] instanceof elements.Link && this.parent.isType(Type.PETRI))) && allow_vertex_labels && allow_edge_labels) {
+            (selectedObjects[0] instanceof elements.Link
+                && this.parent.isType(Type.PETRI))) && allow_vertex_labels && allow_edge_labels) {
             // Create the label textfield
             let labelTextField = new elements.TextField(this, this.toolbarMiddlePart,
                 8, 'Label', this.onInteractLabelTextField, this.onFocusInLabelTextfield, this.onFocusOutLabelTextfield);
@@ -1012,12 +1013,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.canMoveObjects = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
-        if ('helpmenutext' in templateParams) {
-            this.helpOverlay.insertHelpText(templateParams.helpmenutext);
-        } else {
-            let newHelpString = self.getHelpText();
-            this.helpOverlay.insertHelpText(newHelpString);
-        }
+
+        let newHelpString = self.getHelpText();
+        this.helpOverlay.insertHelpText(newHelpString);
 
         // A variable denoting the edit-history of the graph, in the form of a stack (LIFO), used in the undo/redo mechanism
         // Load it with the initial graph
@@ -1119,7 +1117,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let editsArray = [];
         let allowed_edits = this.templateParams.allow_edits;
 
-        if (allowed_edits == null) {
+        if (!allowed_edits) {
             // If the input parameter is undefined (or equal to null) then allow everything
             return true;
         } else if ((Array.isArray(allowed_edits) && !allowed_edits.length) || (this.readOnly)) {
@@ -1543,7 +1541,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     this.currentLink = new elements.SelfLink(this, this.clickedObject, mouse);
                 } else if (targetNode && targetNode !== this.clickedObject) {
                     this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
-                } else if (targetNodeStrict == null) {
+                } else if (!targetNodeStrict) {
                     closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
                     this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
                 } else {
@@ -1739,7 +1737,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Save the graph when selected nodes and/or edges have moved
             let hasSelectionMoved = false;
-            this.selectedObjects.forEach(element => hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved);
+            this.selectedObjects.forEach(element => {
+                hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved;
+            });
 
             // Save a different graph state if applicable
             if (this.clickedObject && hasSelectionMoved) {
@@ -2117,7 +2117,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Save and reload the graphUI
         this.reload();
-    }
+    };
 
     Graph.prototype.reload = function() {
         var content = $(this.textArea).val();
@@ -2304,7 +2304,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.update = function() {
         // Draw the graph
         this.draw();
-    }
+    };
 
     Graph.prototype.destroy = function () {
         this.graphCanvas.canvas.off();  // Stop all events.
