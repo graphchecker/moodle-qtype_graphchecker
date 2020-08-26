@@ -139,7 +139,7 @@ define(function() {
     Util.prototype.degToRad = function(deg) {
         // Converts degrees to radians
         return deg * (Math.PI/180.0);
-    }
+    };
 
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
@@ -152,36 +152,11 @@ define(function() {
         return e.which || e.keyCode;
     };
 
-    Util.prototype.crossBrowserElementPos = function(e) {
-        // Return the {x, y} location of the element in which event e occurred.
-        e = e || window.event;
-        var obj = e.target || e.srcElement;
-        var x = 0, y = 0;
-        while(obj.offsetParent) {
-            x += obj.offsetLeft;
-            y += obj.offsetTop;
-            obj = obj.offsetParent;
-        }
-        return { 'x': x, 'y': y };
-    };
-
-    Util.prototype.crossBrowserMousePos = function(e) {
-        // Return the {x, y} page coords (?) of the mouse position associated with event e.
-        e = e || window.event;
+    Util.prototype.mousePos = function(e) {
+        let rect = e.target.getBoundingClientRect();
         return {
-            'x': e.pageX || e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
-            'y': e.pageY || e.clientY + document.body.scrollTop + document.documentElement.scrollTop
-        };
-    };
-
-    Util.prototype.crossBrowserRelativeMousePos = function(e) {
-        // Return the {x, y} location relative to the element within which the
-        // event occurred of the mouse position associated with event e.
-        var element = this.crossBrowserElementPos(e);
-        var mouse = this.crossBrowserMousePos(e);
-        return {
-            'x': mouse.x - element.x,
-            'y': mouse.y - element.y
+            'x': e.clientX - rect.x,
+            'y': e.clientY - rect.y
         };
     };
 
@@ -283,6 +258,7 @@ define(function() {
                 candidateAngle = candidateAngles[i];
             }
         }
+        return candidateAngle;
     };
 
     Util.prototype.quadraticFormula = function(a, b, c) {
@@ -352,7 +328,7 @@ define(function() {
         }
 
         return true;
-    }
+    };
 
     return new Util();
 });

@@ -1285,7 +1285,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.mousedown = function(e) {
         //TODO: test all functionality out with lock nodes, I assume these are nodes that cannot be moved/edited?
-        var mouse = util.crossBrowserRelativeMousePos(e);
+        var mouse = util.mousePos(e);
 
         if (this.readOnly) {
             return;
@@ -1517,7 +1517,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.mousemove = function(e) {
-        var mouse = util.crossBrowserRelativeMousePos(e),
+        var mouse = util.mousePos(e),
             closestPoint;
 
         if (this.readOnly) {

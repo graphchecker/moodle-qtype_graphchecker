@@ -291,6 +291,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 $('<textarea/>')
                     .addClass('argument-value')
                     .val(value)
+                    .hide()
                     .appendTo($argumentRow);
 
                 let $buttonGroup = $('<div/>')
@@ -396,7 +397,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo(this.$backdrop);
 
         let params = $('textarea#id_answer').attr('data-params');
-        $graphField.attr('data-params', params);
+        $newField.attr('data-params', params);
 
         let uiWrapper = new ui.InterfaceWrapper('graph', 'graph-editor-field');
         $dialog.find('.btn').on('click', function() {
