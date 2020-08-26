@@ -114,10 +114,16 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('header', 'answerhdr',
                     get_string('answer', 'qtype_graphchecker'), '');
         $mform->setExpanded('answerhdr', 1);
+
+        $params = qtype_graphchecker_question::get_ui_params_for_type($this->answertype);
+        // always allow highlighting in the sample answer field
+        $params['highlight_vertices'] = true;
+        $params['highlight_edges'] = true;
+
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+            'data-params' => json_encode($params)
         );
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
