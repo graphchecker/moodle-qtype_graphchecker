@@ -190,11 +190,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
         $highlightBoxes = [];
         $highlightBoxes[] =& $mform->createElement('advcheckbox', 'vertex_highlight',
-                'Node highlighting', null);
+                'Node highlighting', null, null);
         $highlightBoxes[] =& $mform->createElement('advcheckbox', 'edge_highlight',
-                'Edge highlighting', null);
+                'Edge highlighting', null, null);
         $mform->addGroup($highlightBoxes, 'highlight',
-                'Highlighting');
+                'Highlighting', [''], false);
         $mform->addHelpButton('highlight', 'highlight', 'qtype_graphchecker');
     }
 
