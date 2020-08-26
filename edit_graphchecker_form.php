@@ -176,13 +176,14 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->setDefault('allowed_vertex_edits', 'all');
         $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
 
-        $mform->addElement('advcheckbox', 'vertex_highlight',
-                'Node highlighting', 'Allow', null);
-        $mform->addHelpButton('vertex_highlight', 'vertex_highlight', 'qtype_graphchecker');
-
-        $mform->addElement('advcheckbox', 'edge_highlight',
-                'Edge highlighting', 'Allow', null);
-        $mform->addHelpButton('edge_highlight', 'edge_highlight', 'qtype_graphchecker');
+        $highlightBoxes = [];
+        $highlightBoxes[] =& $mform->createElement('advcheckbox', 'vertex_highlight',
+                'Node highlighting', null);
+        $highlightBoxes[] =& $mform->createElement('advcheckbox', 'edge_highlight',
+                'Edge highlighting', null);
+        $mform->addGroup($highlightBoxes, 'highlight',
+                'Highlighting');
+        $mform->addHelpButton('highlight', 'highlight', 'qtype_graphchecker');
     }
 
 

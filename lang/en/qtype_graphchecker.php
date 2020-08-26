@@ -43,8 +43,6 @@ $string['checks'] = 'Checks';
 $string['checks_help'] = 'Checks used to verify if the student\'s answer is correct.';
 $string['confirmreset'] = 'Are you sure you want reset the answer box to the original value? This will discard all your work on the question.';
 
-$string['edge_highlight'] = 'Edge highlighting';
-$string['edge_highlight_help'] = 'Selecting this checkbox allows the student to highlight edges in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight edges in the given graph without being allowed to modify the graph itself.)';
 $string['enable'] = 'Enable';
 $string['enable_sandbox_desc'] = 'Permit use of the specified sandbox for running student submissions';
 $string['errorstring-ok'] = 'OK';
@@ -61,20 +59,11 @@ $string['errorstring-unknown'] = 'Unexpected error while executing checks. The s
 $string['failedntests'] = 'Failed {$a->numerrors} check(s)';
 $string['failedtesting'] = 'Failed testing.';
 
-$string['graphhelp'] = '- Double click at a blank space to create a new node/state.
-- Double click an existing node to "mark" it e.g. as an accept state for Finite State Machines
-  (FSMs). Double click again to unmark it.
-- Click and drag to move a node.
-- Alt click and drag to move a (sub)graph.
-- Shift click inside one node and drag to another to create a link.
-- Shift click on a blank space, drag to a node to create a start link (FSMs only).
-- Click and drag a link to alter its curve.
-- Click on a link/node to edit its text.
-- Typing _ followed by a digit makes that digit a subscript.
-- Typing \\epsilon creates an epsilon character (and similarly for \\alpha, \\beta etc).
-- Click on a link/node then press the Delete key to remove it (or function-delete on a Mac).';
 $string['graphcheckersettings'] = 'GraphChecker settings';
 $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';
+
+$string['highlight'] = 'Highlighting';
+$string['highlight_help'] = 'Selecting these checkboxes allows the student to highlight nodes / edges in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight nodes / edges in the given graph without being allowed to modify the graph itself.)';
 
 $string['ideone_user'] = 'Ideone server user';
 $string['ideone_user_desc'] = 'The login name to use when connecting to the deprecated Ideone server (if the ideone sandbox is enabled)';
@@ -123,6 +112,4 @@ $string['unserializefailed'] = 'Stored test results could not be deserialised. P
 
 $string['vertexedits'] = 'Allowed edits';
 $string['vertexedits_help'] = 'Specify if students should be able to edit the nodes / edges of the preloaded graph. Various values are possible:<ul><li><b>none</b>: prohibit any edits (in this case you probably want to allow highlighting);<li><b>layout</b>: allow dragging the nodes / edges around, but nothing else;<li><b>attributes</b>: additionally allow changing vertex and edge labels, colors, etc.;<li><b>all</b>: allow all edits, including adding new nodes / edges or deleting existing ones.</ul>';
-$string['vertex_highlight'] = 'Node highlighting';
-$string['vertex_highlight_help'] = 'Selecting this checkbox allows the student to highlight nodes in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight nodes in the given graph without being allowed to modify the graph itself.)';
 
