@@ -126,6 +126,12 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         //        get_string('validateonsave', 'qtype_graphchecker'));
         //$mform->setDefault('validateonsave', false);
         $mform->addHelpButton('answer', 'answer', 'qtype_graphchecker');
+
+        $copyButtons = [];
+        $copyButtons[] =& $mform->createElement('button', 'copyfrompreload', 'Copy from preload');
+        $copyButtons[] =& $mform->createElement('button', 'copytopreload', 'Copy to preload');
+
+        $mform->addGroup($copyButtons);
     }
 
 
