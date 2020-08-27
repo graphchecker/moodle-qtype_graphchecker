@@ -132,7 +132,7 @@ define(['jquery'], function($) {
         var params,
             t = this; // For use by embedded functions.
 
-        this.GUTTER = 40;  // Size of gutter at base of wrapper Node (pixels)
+        this.GUTTER = 0;  // Size of gutter at base of wrapper Node (pixels)
         this.MIN_WRAPPER_HEIGHT = 50;
 
         this.taId = textareaId;
@@ -159,6 +159,7 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
+            height: "350px",
             "background-color": "transparent"
         });
 

@@ -102,6 +102,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         });
 
         // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
+        this.canvas.on('mouseenter', function(e) {
+            return parent.mouseenter(e);
+        });
+
+        // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
         this.canvas.on('mouseleave', function(e) {
             return parent.mouseleave(e);
         });
@@ -138,7 +143,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, h, uiMode, helpOverlay) {
+    function GraphToolbar(parent, divId, w, uiMode, helpOverlay) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
@@ -243,7 +248,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 self.onClickPetriNodeTypeButton(self.middleInput['place']);
             }
 
-            self.resize(w, h);
+            self.resize();
             self.parent.setUIMode(elements.ModeType.SELECT);
         });
 
@@ -270,11 +275,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         };
 
-        this.resize = function(w, h) {
-            // Resize to given dimensions.
-            this.div.css({'width': w});
-            this.div.css({'height': h});
-
+        this.resize = function() {
             // Update the width of the middle part of the toolbar
             if (this.toolbarMiddlePart !== undefined) {
                 let leftWidth = 0;
@@ -289,7 +290,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         };
 
-        this.resize(w, h);
+        this.resize();
     }
 
     GraphToolbar.prototype.displayHelpOverlay = function(toolbar) {
@@ -1009,7 +1010,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.TEXT_NODE_VERTICAL_PADDING = 12;  // Pixels. Denotes the space between the text and the node border
         // (vertically), when the text is on the outside of the node
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.TOOLBAR_HEIGHT = 42.75;       // px. The height of the toolbar above the graphCanvas
         this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
             min: 0,
             max: 100,
@@ -1035,8 +1035,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.toolbar = null;
         if (!this.readOnly) {
             // Set the toolbar only if readonly is disabled
-            this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT,
-                this.uiMode, this.helpOverlay);
+            this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.uiMode, this.helpOverlay);
         }
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
@@ -1349,7 +1348,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             if (element) {
                 $(element).focus();
             }
-        },timeout);
+        }, timeout);
     };
 
     Graph.prototype.keypress = function(e) {
@@ -1619,18 +1618,17 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        // Setting h to h-7, in order to not make the canvas change size when the help button is pressed (which causes
-        // the screen to resize). TODO: not sure why this happens, but -7 seems to fix it
         let isToolbarNull = this.toolbar === null;
         let additionalHeight = 0;
+        let toolbarHeight = $(this.toolbar.div[0]).height();
         if (isToolbarNull) {
-            additionalHeight += this.TOOLBAR_HEIGHT;
+            additionalHeight += toolbarHeight; //TODO: remove additionalHeight var?
         }
 
         // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
-        this.graphCanvas.resize(w, h-7 + additionalHeight);
+        this.graphCanvas.resize(w, h - toolbarHeight);// + (toolbarHeight - this.BASE_TOOLBAR_HEIGHT)));
         if (!isToolbarNull) {
-            this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
+            this.toolbar.resize();
         }
         this.draw();
     };
@@ -1879,6 +1877,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.canMoveObjects = false;
         }
         this.draw();
+    };
+
+    // This event function is activated when the mouse enters the graph canvas
+    Graph.prototype.mouseenter = function(e) {
+        // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
+        this.checkKeyPressed(e);
     };
 
     // This event function is activated when the mouse leaves the graph canvas
@@ -2434,6 +2438,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.update = function() {
         // Draw the graph
         this.draw();
+
+        // Adding the height constant fixes the graphUI from constantly increasing in size
+        let heightConstant = 7; //TODO: not sure why this happens, but 7 seems to fix it
+        this.resize(this.uiWrapper.wrapperNode.innerWidth(), this.uiWrapper.wrapperNode.innerHeight() - heightConstant);
     };
 
     Graph.prototype.destroy = function () {

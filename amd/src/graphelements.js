@@ -1187,15 +1187,13 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         // Create the button, and add an unclickable icon
         this.id = 'button_' + this.title.split(' ').join('_');
 
-        let toolbarContainerHeight = $(this.parent[0]).height();
         let $button = $('<button/>')
             .attr({
                 "id":       this.id,
                 "class":    'toolbar_button',
                 "type":     "button",
                 "title":    this.title,
-                "style":    "width: " + this.width + "px; height: " + this.height + "px; margin-top: " +
-                    (toolbarContainerHeight - this.height)/2 + "px;",
+                "style":    "width: " + this.width + "px; height: " + this.height + "px;",
             })
             .append($('<i/>')
             .addClass('icon fa ' + this.icon).attr({
