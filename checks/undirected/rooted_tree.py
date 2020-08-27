@@ -170,7 +170,7 @@ def traverse(node, labels, downwards):
     if (filter_orig_name(node) == labels[0]):
         labels.pop(0)
     else:
-        raise IncorrectLabelsException("Labels do not match at node: "+filter_orig_name(node) + " and label: " + str(labels[0]))
+        raise IncorrectLabelsException("Labels do not match at node: {0} and label: {1}".format(filter_orig_name(node),labels[0]))
     if (not right == None):
         labels = traverse(right, labels, downwards)
     return labels
@@ -195,8 +195,31 @@ def InOrderTraversal(student_answer, labels, downwards):
     try:
         labels = traverse(root, labels, downwards)
         if (len(labels) > 0):
-            return {'correct': False, 'feedback': "Expected "+str(len(labels)) + " additional labels to be found."}
+            return {'correct': False, 'feedback': "Expected {0} additional labels to be found.".format(len(labels))}
     except IncorrectLabelsException as e:
         return {'correct': False, 'feedback': str(e)}
         
     return {'correct': True}
+
+def InLeaf(student_answer, labels, downwards):
+    if downwards == "top":
+        down = True
+    elif downwards == "bottom":
+        down = False
+    else:
+        raise Exception('Unknown parameter value supplied. Contact support.')
+
+    for v in student_answer.vs:
+        v_orig = filter_orig_name(v);
+        if v_orig in labels:
+            split = splitParentChildren(v, down)
+            if split == None:
+                return None
+            (par, chil) = split
+            if len(chil) != 0:
+                return {'correct': False, 'feedback': "Element {0} was not in a leaf".format(v_orig)}
+            labels.remove(v_orig)
+    if (len(labels) != 0):
+       return {'correct': False, 'feedback': "Not all required elements are in a leaf"}
+    else:
+        return {'correct': True}

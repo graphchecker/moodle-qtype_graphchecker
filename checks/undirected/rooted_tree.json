@@ -56,7 +56,26 @@
             "params": [
                 {
                     "param": "labels",
-                    "name": "Labels encountered in in-order traversal",
+                    "name": "Elements in order as encountered in an in-order traversal",
+                    "type": "string_list",
+                    "default": ""
+                },
+                {
+                    "param": "downwards",
+                    "name": "Root placed at the",
+                    "type": "choice",
+                    "options": ["top", "bottom"],
+                    "default": "top"
+                }
+            ]
+        },
+        "InLeaf": {
+            "name": "Elements in leaves.",
+            "description": "Check if the specified elements are in leaves of the tree.",
+            "params": [
+                {
+                    "param": "labels",
+                    "name": "Elements that should be in a leaf.",
                     "type": "string_list",
                     "default": ""
                 },
