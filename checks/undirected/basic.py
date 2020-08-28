@@ -101,12 +101,31 @@ def connected(student_answer):
         return {'correct': False,
                 'feedback': 'Graph is not connected'}
 
-def exact_same(student_answer, expected):
-    if (student_answer.isomorphic(expected)):
-        return {'correct': True}
-    else:
+def same_highlights(student_answer, expected):
+    if not student_answer.isomorphic(expected):
         return {'correct': False,
-                'feedback': 'Incorrect answer given'}
+                'feedback': 'Error: graph does not match expected graph.'}
+    #inefficient
+    for v in student_answer.vs:
+        vName = filter_orig_name(v)
+        for w in expected.vs:
+            wName = filter_orig_name(w)
+            if vName == wName:
+                if v['highlighted'] != w['highlighted']:
+                    return {'correct': False, 'feedback': 'Highlighted vertices do not match'}
+                break;
+    for e in student_answer.es:
+        eSource = filter_orig_name(student_answer.vs[e.source])
+        eTarget = filter_orig_name(student_answer.vs[e.target])
+        for f in expected.es:
+            fSource = filter_orig_name(expected.vs[f.source])
+            fTarget = filter_orig_name(expected.vs[f.target])
+            if (eSource == fSource and eTarget == fTarget) or (eSource == fTarget and eTarget == fSource):
+                if e['highlighted'] != f['highlighted']:
+                    return {'correct': False, 'feedback': 'Highlighted edges do not match'}
+                break;
+        
+    return {'correct': True}
 
 def sumEdgeWeights(student_answer, expected, highlighted):
     if highlighted == "only highlighted edges":

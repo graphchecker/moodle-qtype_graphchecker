@@ -25,9 +25,9 @@
                 }
             ]
         },
-        "exact_same": {
-            "name": "Exact answer",
-            "description": "Check if exactly the specified graph is given. (excluding embedding)",
+        "same_highlights": {
+            "name": "Match highlighting",
+            "description": "Check if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
             "params": [
                 {
                     "param": "expected",
