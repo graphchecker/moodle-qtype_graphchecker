@@ -225,7 +225,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             .attr({
                 'id': 'toolbar_part_' + side,
                 'class': 'toolbar_part',
-                'style': 'height: ' + parseFloat(parentHeight) + 'px;',
             });
         $(parentDiv).append($part);
         return $part;
@@ -452,7 +451,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         } else {
             // Display a popup
-            this.toolbar.parent.alertPopup('The entered label does not match the regex');
+            this.toolbar.parent.alertPopup('The entered label does not match the regex.');
 
             // Reset the label to a valid regex. This is either the value on focussing, or the empty string
             let newLabelValue = '';

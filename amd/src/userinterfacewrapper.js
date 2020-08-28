@@ -159,9 +159,15 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
-            height: "350px",
             "background-color": "transparent"
         });
+
+        // Set the height to an initial height for the graph UI
+        if (this.taId === "graph-ui-textarea") {
+            this.wrapperNode.css({
+            height: "350px",
+        });
+        }
 
         // Record a reference to this wrapper in the text area's data attribute
         // for use by external javascript that needs to interact with the

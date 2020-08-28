@@ -184,6 +184,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // (horizontally), when the text is on the inside of the node
         this.TEXT_NODE_VERTICAL_PADDING = 12;  // Pixels. Denotes the space between the text and the node border
         // (vertically), when the text is on the outside of the node
+        //this.INITIAL_HEIGHT = 350;  // px. The initial height of the toolbar and the canvas combined
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
         this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
             min: 0,
