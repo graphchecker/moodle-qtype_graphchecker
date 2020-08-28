@@ -79,6 +79,54 @@ define(function() {
         WHITE: 'white',
     });
 
+    // An enum for defining the type of the graph
+    Util.prototype.Type = Object.freeze({
+        UNDIRECTED: 'undirected',
+        DIRECTED: 'directed',
+        FSM: 'fsm',
+        PETRI: 'petri'
+    });
+
+    // An enum for defining the type of edits that can be set to allowed or disallowed
+    Util.prototype.Edit = Object.freeze({
+        MOVE: 'move',
+        ADD: 'add',
+        DELETE: 'delete',
+        VERTEX_LABELS: 'vertex_labels',
+        EDGE_LABELS: 'edge_labels',
+        VERTEX_COLORS: 'vertex_colors',
+        EDGE_COLORS: 'edge_colors',
+        FSM_FLAGS: 'fsm_flags',
+        PETRI_MARKING: 'petri_marking'
+    });
+
+    // An enum for defining the node types of petri nets
+    Util.prototype.PetriNodeType = Object.freeze({
+        NONE: 'none',               // Indicates not a petri node
+        PLACE: 'place',             // Indicates not a petri place
+        TRANSITION: 'transition'    // Indicates not a petri transition
+    });
+
+    // An enum for defining the mode type of the graph UI
+    Util.prototype.ModeType = Object.freeze({
+        SELECT: 'select',           // Indicates that the UI is in select mode
+        DRAW: 'draw'                // Indicates that the UI is in draw mode
+    });
+
+    // An enum for defining the type of the checkboxes graph UI
+    Util.prototype.CheckboxType = Object.freeze({
+        FSM_INITIAL: 'fsm_initial',         // Indicates that the checkbox controls the initial fsm state
+        FSM_FINAL: 'fsm_final',             // Indicates that the checkbox controls the final fsm state
+        HIGHLIGHT: 'highlight'               // Indicates that the checkbox controls the highlighted state
+    });
+
+    // An enum for defining the type of draw operations that can be done on objects
+    Util.prototype.DrawOption = Object.freeze({
+        OBJECT: 'object',           // Solely draw the object
+        SELECTION: 'selection',     // Draw the object and a blue selection halo
+        HOVER: 'hover'              // Draw a shadow vertex when hovering over an empty area
+    });
+
     // A function to find the according color object from the given color code, if the object exists
     Util.prototype.colorObjectFromColorCode = function(colorCode) {
         for (let key in this.colors) {
