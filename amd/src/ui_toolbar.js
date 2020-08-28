@@ -78,6 +78,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             class: "graphchecker_toolbar",
             tabindex: 0
         });
+        //px. A fix for the server such that all three the toolbar parts are positioned on one line
+        this.constMiddleWidthFix = 2;
 
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
         // TODO: make one list per toolbar part (left, middle, right), and index by string, e.g. 'token'
@@ -201,7 +203,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
                 let canvasWidth = $(this.parent.graphCanvas.canvas).width();
                 let middleWidth = canvasWidth - leftWidth - rightWidth - middlePadding;
-                $(this.toolbarMiddlePart).width(middleWidth);
+                $(this.toolbarMiddlePart).width(middleWidth - this.constMiddleWidthFix);
             }
         };
 
