@@ -228,7 +228,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.selectionRectangleOffset = 0; // Used for animating the border of the rectangle (marching ants)
         this.currentLink = null;
         this.mousePosition = null; // A variable to denote the position of the mouse on the canvas.
-        // Format: {x: numbe, y: numbe}
+        // Format: {x: number, y: number}
         this.canMoveObjects = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
@@ -1616,10 +1616,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.update = function() {
         // Draw the graph
         this.draw();
-
-        // Adding the height constant fixes the graphUI from constantly increasing in size
-        let heightConstant = 7; //TODO: not sure why this happens, but 7 seems to fix it
-        this.resize(this.uiWrapper.wrapperNode.innerWidth(), this.uiWrapper.wrapperNode.innerHeight() - heightConstant);
     };
 
     Graph.prototype.destroy = function () {
