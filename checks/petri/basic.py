@@ -10,7 +10,7 @@ It also describes the types of the parameters for those functions.
 """
 
 
-def connected(student_answer, sample_answer, preload_answer):
+def connected(student_answer):
     """
     Checks if the student_answer petri net is a (weakly) connected graph.
     """
@@ -24,7 +24,7 @@ def connected(student_answer, sample_answer, preload_answer):
                 'feedback': 'Graph is not connected.'}
 
 
-def strongly_connected(student_answer, sample_answer, preload_answer):
+def strongly_connected(student_answer):
     """
     Checks if the student_answer petri net is strongly connected. (Has 1 SCC)
     """
@@ -52,7 +52,7 @@ def strongly_connected(student_answer, sample_answer, preload_answer):
                             'It has {0} strongly connected components.'.format(num_components)}
 
 
-def transition_degree_one(student_answer, sample_answer, preload_answer):
+def transition_degree_one(student_answer):
     """
     Checks if the student_answer petri net only has transitions with an in-degree and
     out-degree of 1.
@@ -69,7 +69,7 @@ def transition_degree_one(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a, label_b, label_c):
+def node_on_shortest_path(student_answer, label_a, label_b, label_c):
     """
     Checks if the node (place or transition) with label label_b is on A shortest path between
     the node with label label_a and the node with label label_c.
@@ -116,7 +116,7 @@ def node_on_shortest_path(student_answer, sample_answer, preload_answer, label_a
                         ' with labels {1} and {2}'.format(label_b, label_a, label_c)}
 
 
-def node_label_exists(student_answer, sample_answer, preload_answer, label):
+def node_label_exists(student_answer, label):
     """
     Checks if there is a node (place or transition) with the given label.
     """
@@ -132,7 +132,7 @@ def node_label_exists(student_answer, sample_answer, preload_answer, label):
 
 
 # This check is currently useless because no petri-nets with empty labels get through the pre-process check.
-# def node_empty_label(student_answer, sample_answer, preload_answer):
+# def node_empty_label(student_answer):
 #     """
 #     Checks if there exists a node (place or transition) with no label.
 #     """
@@ -147,7 +147,7 @@ def node_label_exists(student_answer, sample_answer, preload_answer, label):
 #             'feedback': 'Net has no node with an empty label.'}
 
 
-def arc_missing(student_answer, sample_answer, preload_answer, label_a, label_b):
+def arc_missing(student_answer label_a, label_b):
     """
     Checks whether there is no edge from the node with label_a to the node with label_b.
     The check fails if there is an edge from node with label_a to the node with label_b.
@@ -164,7 +164,7 @@ def arc_missing(student_answer, sample_answer, preload_answer, label_a, label_b)
     return {'correct': True}
 
 
-def arc_has_label(student_answer, sample_answer, preload_answer, label_a, label_b, label_arc):
+def arc_has_label(student_answer, label_a, label_b, label_arc):
     """
     Checks if there exists an arc from the node with label_a to the node with label_b that
     has label label_arc.
@@ -184,7 +184,7 @@ def arc_has_label(student_answer, sample_answer, preload_answer, label_a, label_
                         ' with arc label {2}.'.format(label_a, label_b, label_arc)}
 
 
-def at_most_one_arc(student_answer, sample_answer, preload_answer, label_a, label_b):
+def at_most_one_arc(student_answer label_a, label_b):
     """
     Checks if there is at most one arc from the node with label label_a to the node
     with label label_b.

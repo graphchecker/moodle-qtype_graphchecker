@@ -8,7 +8,7 @@ It also describes the types of the parameters for those functions.
 """
 
 
-def bounded(student_answer, sample_answer, preload_answer):
+def bounded(student_answer):
     """
     Checks if the given student_answer petri-net is bounded. It is bounded if there are no
     loops that generate tokens.
@@ -21,7 +21,7 @@ def bounded(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def infinite(student_answer, sample_answer, preload_answer):
+def infinite(student_answer):
     """
     Checks if the given student_answer petri-net is infinite. It is infinite if it is
     not bounded.
@@ -34,7 +34,7 @@ def infinite(student_answer, sample_answer, preload_answer):
             'feedback': 'The petri net is not infinite.'}
 
 
-def deadlock_free(student_answer, sample_answer, preload_answer):
+def deadlock_free(student_answer):
     """
     This check does not work. The pm4py functionality does not work.
     """
@@ -59,7 +59,7 @@ def deadlock_free(student_answer, sample_answer, preload_answer):
             'feedback': 'The petri net is not deadlock free.'}
 
 
-def live(student_answer, sample_answer, preload_answer):
+def live(student_answer):
     """
     This check does not work. The pm4py functionality does not work.
     """

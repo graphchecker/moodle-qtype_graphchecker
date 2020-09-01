@@ -21,7 +21,7 @@ def get_marking(net):
     return marking
 
 
-def number_of_tokens(student_answer, sample_answer, preload_answer, num_tokens):
+def number_of_tokens(student_answer, num_tokens):
     """
     Checks if there exists a place in student_answer that contains num_tokens tokens.
     """
@@ -69,7 +69,7 @@ def is_sequence_possible(net, transition_sequence):
     return [True, 0, False]
 
 
-def possible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def possible_sequence(student_answer, transition_sequence):
     """
     Checks whether it is possible to run a sequence of transitions. transition_sequence is the
     ordered list of transition labels for which we check if it is possible.
@@ -93,7 +93,7 @@ def possible_sequence(student_answer, sample_answer, preload_answer, transition_
                                                   transition_sequence, index)}
 
 
-def impossible_sequence(student_answer, sample_answer, preload_answer, transition_sequence):
+def impossible_sequence(student_answer, transition_sequence):
     """
     Checks whether it is impossible to run a sequence of transitions. transition_sequence is the
     ordered list of transition labels for which we check if it is impossible.
@@ -115,7 +115,7 @@ def impossible_sequence(student_answer, sample_answer, preload_answer, transitio
         return {'correct': True}
 
 
-def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
+def marking_given(student_answer, correct_graph):
     """
     Checks whether the student_answer petri net has the exact same marking as correct_graph
     for all places they share.
@@ -142,7 +142,7 @@ def marking_given(student_answer, sample_answer, preload_answer, correct_graph):
     return {'correct': True}
 
 
-def workflow_net(student_answer, sample_answer, preload_answer):
+def workflow_net(student_answer):
     """
     Checks if the PetriNet in student_answer is a workflow net.
     """

@@ -6,7 +6,7 @@ It also describes the types of the parameters for those functions.
 """
 
 
-def has_sub_graph(student_answer, sample_answer, preload_answer, sub_graph):
+def has_sub_graph(student_answer, sub_graph):
     """
     Checks if the student_answer PetriNet contains the exact sub graph in the sub_graph PetriNet.
     The student_answer needs to contain all nodes that are in the sub_graph, edges between nodes

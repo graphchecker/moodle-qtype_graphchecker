@@ -8,7 +8,7 @@ It also describes the types of the parameters for those functions.
 """
 
 
-def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
+def no_forbidden_words(student_answer, words):
     """
     Checks if no nodes (places and transitions) in student_answer have a label that
     is present in the words list.
@@ -27,7 +27,7 @@ def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
 
 
 # DEPRECATED
-# def only_mandatory_words(student_answer, sample_answer, preload_answer, words):
+# def only_mandatory_words(student_answer, words):
 #     """
 #     Checks if all nodes (places and transitions) in student_answer have a label that
 #     is present in the words list.
@@ -45,7 +45,7 @@ def no_forbidden_words(student_answer, sample_answer, preload_answer, words):
 #     return {'correct': True}
 
 
-def all_labels_from_set(student_answer, sample_answer, preload_answer, labels, node_type):
+def all_labels_from_set(student_answer, labels, node_type):
     """
     Checks if all labels for nodes (places/transitions/both) all have labels that are in the labels list.
     If node_type is 'places' only places are checked.
@@ -72,7 +72,7 @@ def all_labels_from_set(student_answer, sample_answer, preload_answer, labels, n
     return {'correct': True}
 
 
-def all_labels_used(student_answer, sample_answer, preload_answer, labels, node_type):
+def all_labels_used(student_answer, labels, node_type):
     """
     Checks if all labels in the list labels can be found in the (places/transitions/both) of student_answer.
     If node_type is 'places' only places are checked.
@@ -107,7 +107,7 @@ def all_labels_used(student_answer, sample_answer, preload_answer, labels, node_
 
 
 # This check is currently useless because no petri-nets with duplicate labels get through the pre-process check.
-# def no_duplicate_label(student_answer, sample_answer, preload_answer):
+# def no_duplicate_label(student_answer):
 #     """
 #     Checks if all nodes (places and transitions) have a unique label.
 #     """
@@ -127,7 +127,7 @@ def all_labels_used(student_answer, sample_answer, preload_answer, labels, node_
 #     return {'correct': True}
 
 
-def left_to_right(student_answer, sample_answer, preload_answer):
+def left_to_right(student_answer):
     """
     Checks if all arcs in student_answer start at a position to the left (or equal x) to where they end.
     """
@@ -143,7 +143,7 @@ def left_to_right(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def top_to_bottom(student_answer, sample_answer, preload_answer):
+def top_to_bottom(student_answer):
     """
     Checks if all arcs in student_answer start at a position above (or equal y) of where they end.
     """
@@ -159,7 +159,7 @@ def top_to_bottom(student_answer, sample_answer, preload_answer):
     return {'correct': True}
 
 
-def crossing_arcs(student_answer, sample_answer, preload_answer, max_crossings):
+def crossing_arcs(student_answer, max_crossings):
     """
     Checks if the number of crossing arcs in student_answers is <= max_crossings.
     Uses the geometry utility functions at the end of the file.
@@ -229,7 +229,7 @@ def adjacent_helper(net, labels, axis):
     return {'correct': True}
 
 
-def horizontally_adjacent(student_answer, sample_answer, preload_answer, labels):
+def horizontally_adjacent(student_answer, labels):
     """
     Checks if all nodes (places + transitions) with a label that is in the labels list
     are horizontally adjacent: their y coordinates are very similar.
@@ -237,7 +237,7 @@ def horizontally_adjacent(student_answer, sample_answer, preload_answer, labels)
     return adjacent_helper(student_answer, labels, 1)
 
 
-def vertically_adjacent(student_answer, sample_answer, preload_answer, labels):
+def vertically_adjacent(student_answer, labels):
     """
     Checks if all nodes (places + transitions) with a label that is in the labels list
     are vertically adjacent: their x coordinates are very similar.
@@ -275,7 +275,7 @@ def get_node_list(net, label_list):
     return my_list
 
 
-def list_left_of(student_answer, sample_answer, preload_answer, labels_a, labels_b):
+def list_left_of(student_answer, labels_a, labels_b):
     """
     Checks if all nodes with a label in the list labels_a have a position that is strictly left of
     all nodes that have a label in the list labels_b.
@@ -299,7 +299,7 @@ def list_left_of(student_answer, sample_answer, preload_answer, labels_a, labels
     return {'correct': True}
 
 
-def list_above_of(student_answer, sample_answer, preload_answer, labels_a, labels_b):
+def list_above_of(student_answer, labels_a, labels_b):
     """
     Checks if all nodes with a label in the list labels_a have a position that is strictly above of
     all nodes that have a label in the list labels_b.
