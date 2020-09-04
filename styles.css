@@ -564,6 +564,10 @@ li.bulktest.graphchecker.context.quiz {
 }
 
 /* Styling for the subparts of the graph UI toolbar */
+.graph_ui_container_div div.graphchecker_toolbar {
+    display: flex;
+}
+
 .graph_ui_container_div div.toolbar_part {
     display: inline-flex;
     align-items: center;
@@ -573,13 +577,16 @@ li.bulktest.graphchecker.context.quiz {
 
 .graph_ui_container_div div#toolbar_part_left {
     border-right: 1px solid DarkGray;
+    flex-stretch: 0;
 }
 
 .graph_ui_container_div div#toolbar_part_right {
     border-left: 1px solid DarkGray;
+    flex-stretch: 0;
 }
 
 .graph_ui_container_div div#toolbar_part_middle {
+    flex-stretch: 1;
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
