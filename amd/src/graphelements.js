@@ -47,33 +47,6 @@
 
 define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
-    // An enum for defining the node types of petri nets
-    const PetriNodeType = Object.freeze({
-        NONE: 'none',               // Indicates not a petri node
-        PLACE: 'place',             // Indicates not a petri place
-        TRANSITION: 'transition'    // Indicates not a petri transition
-    });
-
-    // An enum for defining the mode type of the graph UI
-    const ModeType = Object.freeze({
-        SELECT: 'select',           // Indicates that the UI is in select mode
-        DRAW: 'draw'                // Indicates that the UI is in draw mode
-    });
-
-    // An enum for defining the type of the checkboxes graph UI
-    const CheckboxType = Object.freeze({
-        FSM_INITIAL: 'fsm_initial',         // Indicates that the checkbox controls the initial fsm state
-        FSM_FINAL: 'fsm_final',             // Indicates that the checkbox controls the final fsm state
-        HIGHLIGHT: 'highlight'               // Indicates that the checkbox controls the highlighted state
-    });
-
-    // An enum for defining the type of draw operations that can be done on objects
-    const DrawOption = Object.freeze({
-        SELECTION: 'selection',
-        OBJECT: 'object',
-        HOVER: 'hover'
-    });
-
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -90,7 +63,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.isInitial = false;
         this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
-        this.petriNodeType = PetriNodeType.NONE;
+        this.petriNodeType = util.PetriNodeType.NONE;
         this.petriTokens = 0;
         this.colorObject = (this.parent.templateParams.vertex_colors) ?
             util.colors[this.parent.templateParams.vertex_colors[0]] : null;
@@ -125,25 +98,25 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.draw = function(c, isShadowNode, drawOption) {
         // A function used to draw the node
         const drawShape = function () {
-            if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
+            if (this.petriNodeType === util.PetriNodeType.NONE || this.petriNodeType === util.PetriNodeType.PLACE) {
                 c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
-            } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
+            } else if (this.petriNodeType === util.PetriNodeType.TRANSITION) {
                 c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
                     this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
             }
         }.bind(this);
 
         // Draw the selection, highlight and object of the node
-        if (drawOption === DrawOption.SELECTION) {
+        if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawShape, isShadowNode);
-        } else if (drawOption === DrawOption.OBJECT) {
+        } else if (drawOption === util.DrawOption.OBJECT) {
             this.drawObject(c, drawShape, isShadowNode, false);
 
             // Draw the label.
             c.fillStyle = util.Color.BLACK;
             this.parent.drawText(this, this.text, this.x, this.y, null);
 
-            if (this.petriNodeType === PetriNodeType.PLACE && this.petriTokens > 0) {
+            if (this.petriNodeType === util.PetriNodeType.PLACE && this.petriTokens > 0) {
                 // Draw the token values.
                 this.parent.drawText(null, this.petriTokens.toString(), this.x, this.y, null);
             }
@@ -154,7 +127,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
                 c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
                 c.stroke();
             }
-        } else if (drawOption === DrawOption.HOVER) {
+        } else if (drawOption === util.DrawOption.HOVER) {
             this.drawHoverObject(c, drawShape);
         }
     };
@@ -252,7 +225,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.closestPointOnNode = function(x, y) {
         let dx = x - this.x;
         let dy = y - this.y;
-        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
             // Calculate the closest point on the node's circle
             let scale = Math.sqrt(dx * dx + dy * dy);
             return {
@@ -313,7 +286,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     // Method of a Node, being of PetriNodeType 'TRANSITION', that given a circle, calculates
     // the points of intersection
     Node.prototype.calculateIntersectionsCircle = function(circleX, circleY, circleR) {
-        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
             // Currently no functionality is implemented to calculate the intersections of
             // non 'TRANSITION' type nodes
             return;
@@ -421,7 +394,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if (usePadding) {
             radius += this.parent.HIT_TARGET_PADDING;
         }
-        if (this.petriNodeType !== PetriNodeType.TRANSITION) {
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
             // Check for a circle
             return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= radius * radius;
         } else {
@@ -611,11 +584,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         var reverseScale = isReversed ? 1 : -1;
         let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius());
         // If the start node is a TRANSITION node, adjust the start of the link
-        if (this.nodeA.petriNodeType === PetriNodeType.TRANSITION) {
+        if (this.nodeA.petriNodeType === util.PetriNodeType.TRANSITION) {
             linkInfo = this.nodeA.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, true);
         }
         // If the end node is a TRANSITION node
-        if (this.nodeB.petriNodeType === PetriNodeType.TRANSITION) {
+        if (this.nodeB.petriNodeType === util.PetriNodeType.TRANSITION) {
             linkInfo = this.nodeB.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, false);
         }
         return {
@@ -668,9 +641,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }.bind(this);
 
         // Draw the selection, and object and according highlight
-        if (drawOption === DrawOption.SELECTION) {
+        if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
-        } else if (drawOption === DrawOption.OBJECT) {
+        } else if (drawOption === util.DrawOption.OBJECT) {
             this.drawObject(c, drawLink, drawArrowHead, false);
 
             // Draw the text.
@@ -907,10 +880,10 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }.bind(this);
 
         // Draw the selection, and object and according highlight
-        if (drawOption === DrawOption.SELECTION) {
+        if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
-        } else if (drawOption === DrawOption.OBJECT) {
-            this.drawObject(c, drawLink, drawArrowHead, false);
+        } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawObject(c, drawLink, drawArrowHead);
 
             // Draw the text on the loop farthest from the node.
             c.strokeStyle = c.fillStyle = util.Color.BLACK;
@@ -929,7 +902,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }
 
         // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead, true); //TODO: this function, and funct below
+        this.drawObject(c, drawLink, drawArrowHead); //TODO: this function, and funct below
     };
 
     SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
@@ -1053,9 +1026,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         }.bind(this);
 
         // Draw the selection, and the object and according highlight
-        if (drawOption === DrawOption.SELECTION) {
+        if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
-        } else if (drawOption === DrawOption.OBJECT) {
+        } else if (drawOption === util.DrawOption.OBJECT) {
             this.drawObject(c, drawLink, drawArrowHead, false);
         }
     };
@@ -1164,535 +1137,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent.arrowIfReqd(c, this.to.x, this.to.y, Math.atan2(this.to.y - this.from.y, this.to.x - this.from.x));
     };
 
-    /***********************************************************************
-     *
-     * Define a class Button as a base class from which more specific
-     * buttons can be derived.
-     *
-     ***********************************************************************/
-
-    function Button(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.width = w; //In px.
-        this.height = h; //In px.
-        this.icon = iconClass;
-        this.title = title;
-        this.eventFunction = eventFunction;
-        this.functionArg = functionArg;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the button
-    Button.prototype.create = function (addAsFirst) {
-        // Create the button, and add an unclickable icon
-        this.id = 'button_' + this.title.split(' ').join('_');
-
-        let toolbarContainerHeight = $(this.parent[0]).height();
-        let $button = $('<button/>')
-            .attr({
-                "id":       this.id,
-                "class":    'toolbar_button',
-                "type":     "button",
-                "title":    this.title,
-                "style":    "width: " + this.width + "px; height: " + this.height + "px; margin-top: " +
-                    (toolbarContainerHeight - this.height)/2 + "px;",
-            })
-            .append($('<i/>')
-            .addClass('icon fa ' + this.icon).attr({
-                    "style":    "pointer-events: none",
-                }));
-
-        // Add the element to the end or to the beginning of the parent
-        if (!addAsFirst) {
-            $(this.parent[0]).append($button);
-        } else {
-            this.parent[0].insertAdjacentElement('afterbegin', $button.get(0));
-        }
-
-        this.object = $button;
-
-        // Add the event function to this button
-        let self = this;
-        $(this.object).click(function () {
-            self.onClick(self.eventFunction, self.functionArg, this);
-        });
-    };
-
-    Button.prototype.onClick = function(eventFunction, functionArg, eventObject) {
-        if (eventFunction !== null) {
-            if (eventObject === null) {
-                eventFunction(functionArg);
-            } else {
-                eventFunction(functionArg, eventObject);
-            }
-        }
-    };
-
-    // This function should be called before the object is removed
-    Button.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
-    };
-
-    /***********************************************************************
-     *
-     * Define a class ToggleButton, used for buttons which can be set to
-     * on/enabled or off/disabled. This is based on the general Button class
-     *
-     ***********************************************************************/
-
-    function ToggleButton(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction, functionArg);
-    }
-
-    ToggleButton.prototype = Object.create(Button.prototype);
-    ToggleButton.prototype.constructor = ToggleButton;
-
-    ToggleButton.prototype.create = function() {
-        Button.prototype.create.call(this);
-
-        // Add 'toggle' to the class
-        this.object.addClass('toggle');
-
-        // Add the not_clicked class name by default
-        this.object.addClass('not_clicked');
-    };
-
-    ToggleButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this.functionArg);
-        this.setSelected();
-    };
-
-    ToggleButton.prototype.setSelected = function() {
-        this.object.addClass('clicked');
-        this.object.removeClass('not_clicked');
-    };
-
-    ToggleButton.prototype.setDeselected = function() {
-        this.object.removeClass('clicked');
-        this.object.addClass('not_clicked');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class PetriNodeTypeButton for the buttons used to switch
-     * the petri node to be placed, when in Draw mode and when the graph
-     * type is Petri nets
-     *
-     ***********************************************************************/
-
-    function PetriNodeTypeButton(toolbar, parent, w, h, iconClass, title, petriNodeType, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-        this.petriNodeType = petriNodeType; // Denotes which petri node type mode pressing the button activates
-    }
-
-    PetriNodeTypeButton.prototype = Object.create(Button.prototype);
-    PetriNodeTypeButton.prototype.constructor = PetriNodeTypeButton;
-
-    PetriNodeTypeButton.prototype.create = function() {
-        Button.prototype.create.call(this, true);
-
-        // Add 'toggle' to the class
-        this.object.addClass('toggle');
-
-        // Add 'petri_node_type' to the class
-        this.object.addClass('petri_node_type');
-
-        // Add the not_clicked class name by default, based on the button type
-        this.object.addClass('not_clicked');
-    };
-
-    PetriNodeTypeButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this);
-        this.setSelected();
-    };
-
-    PetriNodeTypeButton.prototype.setSelected = function() {
-        this.object.addClass('clicked');
-        this.object.removeClass('not_clicked');
-    };
-
-    PetriNodeTypeButton.prototype.setDeselected = function() {
-        this.object.removeClass('clicked');
-        this.object.addClass('not_clicked');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class GrayOutButton for buttons which can be grayed out
-     * (disabled). This class is based on the general Button class
-     *
-     ***********************************************************************/
-
-    function GrayOutButton(toolbar, parent, w, h, iconClass, title, eventFunction, functionArg) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction, functionArg);
-    }
-
-    GrayOutButton.prototype = Object.create(Button.prototype);
-    GrayOutButton.prototype.constructor = GrayOutButton;
-
-    GrayOutButton.prototype.create = function() {
-        Button.prototype.create.call(this);
-
-        // Set the button as disabled
-        this.setDisabled();
-    };
-
-    GrayOutButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this.functionArg);
-    };
-
-    GrayOutButton.prototype.setEnabled = function() {
-        $(this.object[0]).attr('disabled', false);
-
-        this.object.removeClass('disabled');
-    };
-
-    GrayOutButton.prototype.setDisabled = function() {
-        $(this.object[0]).attr('disabled', true);
-
-        this.object.addClass('disabled');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class NumberInputField for the number input field
-     * This can be used to set the number of tokens in a petri net's place,
-     * for example
-     *
-     ***********************************************************************/
-
-    function NumberInputField(toolbar, parent, w, h, minValue, maxValue, name, labelText, title, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.width = w;     // In px.
-        this.height = h;    // In px.
-        this.minValue = minValue;   // The minimum numeric value possible to be entered
-        this.maxValue = maxValue;   // The maximum numeric value possible to be entered
-        this.name = name;
-        this.labelText = labelText;
-        this.title = title;
-        this.eventFunction = eventFunction;
-    }
-
-    NumberInputField.prototype.create = function() {
-        // Create the number input field
-        this.id = 'numberinput_' + this.title.split(' ').join('_');
-
-        let $number_input = $('<div/>')
-            .attr({
-                'class':    'toolbar_field',
-            }).append(this.labelText).append($('<input/>')
-            .attr({
-                'id':       this.id,
-                'class':    'toolbar_numberinput',
-                'type':     'number',
-                'title':    this.title,
-                'name':     this.name,
-                'min':      this.minValue,
-                'max':      this.maxValue,
-            }));
-        $(this.parent[0]).append($number_input);
-
-        // Add the event listener
-        $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
-        $number_input[0].addEventListener('keydown', (event) => this.handleInteraction(event));
-        this.object = $number_input;
-    };
-
-    NumberInputField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this.toolbar);
-    };
-
-    // This function should be called before the object is removed
-    NumberInputField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
-    };
-
-    /***********************************************************************
-     *
-     * Define a class Checkbox which can be used in the graph toolbar
-     *
-     ***********************************************************************/
-
-    function Checkbox(toolbar, parent, type, text, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.type = type;
-        this.text = text;
-        this.eventFunction = eventFunction;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
-    Checkbox.prototype.create = function () {
-        this.id = 'checkbox_' + this.text.split(' ').join('_');
-
-        let $checkbox = $('<div/>')
-            .addClass('toolbar_field' + ' ' + this.id)
-            .append($('<label/>')
-                .attr('for', this.id)
-                .addClass('checkbox_label')
-                .text(this.text)
-            )
-            .append($('<input/>')
-                .attr({
-                    'id':       this.id,
-                    'class':    'toolbar_checkbox',
-                    'type':     'checkbox',
-                })
-            )
-            .append($('<span/>')
-                .attr({
-                    'class':    'toolbar_checkbox toolbar_checkbox_black',
-                })
-            )
-            .appendTo(this.parent[0]);
-
-        // Add the event listener
-        $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
-        this.object = $checkbox;
-    };
-
-    Checkbox.prototype.handleInteraction = function(event) {
-        this.eventFunction(event);
-    };
-
-    // A function to set the checked state of the checkbox
-    // Here, partialNr, where 0 <= partialNr <= fullNr, conveys how many items adhere to a certain property
-    Checkbox.prototype.setChecked = function(partialNr, fullNr) {
-        $($(this).attr('object').get(0)).find('input').get(0).checked = partialNr;
-        if (partialNr !== fullNr) {
-            // If not all of the selected objects are initial, create a gray tick mark
-            $($(this).attr('object').get(0)).find('span').removeClass('toolbar_checkbox_black');
-            $($(this).attr('object').get(0)).find('span').addClass('toolbar_checkbox_gray');
-        }
-    };
-
-    // This function should be called before the object is removed
-    Checkbox.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
-    };
-
-    /***********************************************************************
-     *
-     * Define a class TextField which can be used in the graph toolbar
-     *
-     ***********************************************************************/
-
-    function TextField(toolbar, parent, w, placeholderText, eventFunction, onFocusInFunction, onFocusOutFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.w = w;
-        this.placeholderText = placeholderText;
-        this.eventFunction = eventFunction;
-        this.labelOnFocusIn = "";   // The value of the label right after the focusin event has fired
-        this.onFocusInFunction = onFocusInFunction;
-        this.onFocusOutFunction = onFocusOutFunction;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the text field
-    TextField.prototype.create = function () {
-        this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
-        let $textfield = $('<div/>')
-            .attr({
-                'class':    'field_label',
-            }).append(this.placeholderText + ':')
-            .append($('<div/>')
-                .attr({
-                    'class':    'field_label_wrapper',
-                })
-            .append($('<input/>')
-                .attr({
-                    'id':           this.id,
-                    'class':        'toolbar_textfield',
-                    'type':         'text',
-                    'placeholder':  this.placeholderText,
-                    'size':         this.w,
-                })));
-        $(this.parent[0]).append($textfield);
-
-        // Add the event listeners, for the regular input and for checking the CTRL and enter key, and for focus events
-        $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
-        $textfield[0].addEventListener('keydown', (event) => this.handleInteraction(event));
-        $textfield[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
-        $textfield[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
-        this.object = $textfield;
-    };
-
-    TextField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this, this.toolbar);
-    };
-
-    // This function should be called before the object is removed
-    TextField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
-    };
-
-    /***********************************************************************
-     *
-     * Define a class Dropdown which can be used in the graph toolbar as
-     * a dropdown menu
-     *
-     ***********************************************************************/
-
-    function Dropdown(toolbar, parent, labelText, dropDownOptionsList, fontAwesomeIcons, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.labelText = labelText;
-        this.dropDownOptions = dropDownOptionsList; // The different options of the dropdown list (type: [string])
-        this.icons = fontAwesomeIcons; // The different icons corresponding to this.dropDownOptions (type: [{icon, color}])
-        this.eventFunction = eventFunction;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the text field
-    Dropdown.prototype.create = function () {
-        // Create a custom dropdown menu, so we can display colored Font Awesome items (e.g. circles)
-        let $dropdownField = $('<div/>').attr({
-            'class':    'custom_dropdown_field',
-        }).append($('<i/>')
-            .addClass('icon fa fa-angle-down custom_dropdown_icon'));
-        // Create the dropdown list. Here 20.4 is the height of the outerdiv when accounting for the borders of both
-        // $dropdownField and $dropdownMenu
-        let $dropdownMenu = $('<div/>').attr({
-            'class':    'custom_dropdown_itemlist_wrapper hide',
-            'style':    'left: ' + (-$($dropdownField).outerWidth()) + 'px;',
-        }).append($('<div/>').attr({
-            'class':    'custom_dropdown_itemlist',
-        }));
-
-        // Add the different options to the dropdown menu div
-        for (let i = 0; i < this.dropDownOptions.length; i++) {
-            let $itemDiv = $('<div/>')
-                .addClass('dropdown_item')
-                .append($('<i/>')
-                    .addClass('icon fa ' + this.icons[i].icon + ' dropdown_item_icon')
-                    .attr({
-                        'style':    'pointer-events: none; color: ' + this.icons[i].color.colorCode +';',
-                    }))
-                .append($('<span/>')
-                    .addClass('dropdown_item')
-                    .attr({
-                        'style':    'pointer-events: none;',
-                    })
-                    .text(' ' + this.dropDownOptions[i]));
-            $itemDiv[0].addEventListener('click', (event) => this.handleDropdownItemClick(event, $dropdownField[0]));
-            $dropdownMenu[0].firstChild.append($itemDiv[0]);
-        }
-
-        // Add an event listener for selecting
-        $dropdownField[0].addEventListener('click', (event) => this.handleDropdownMenuClick(event, $dropdownField[0]));
-        this.field = $dropdownField;
-
-        // Set the location of the dropdown menu
-        let outerDivWidth = $($dropdownField[0]).outerWidth();
-        let outerDivHeight = $($dropdownField[0]).height();
-        $($dropdownMenu).css({left: -outerDivWidth, top: outerDivHeight/2.0 - 1});
-
-        // Append both divs to an outer wrapper div
-        let $outerDiv = $('<div/>')
-            .attr({
-                'class':    'field_label',
-            }).append(this.labelText + ':')
-            .append($dropdownField).append($dropdownMenu);
-        $(this.parent[0]).append($outerDiv);
-        this.object = $outerDiv;
-    };
-
-    Dropdown.prototype.handleDropdownMenuClick = function(event, dropdownFieldElement) {
-        // Hide/unhide the sibling element, to show or hide the dropdown items
-        dropdownFieldElement.nextElementSibling.classList.toggle('hide');
-    };
-
-    // An event function to handle the case when a user clicks a dropdown item
-    Dropdown.prototype.handleDropdownItemClick = function(event, dropdownFieldElement) {
-        this.eventFunction(event);
-
-        // Close the dropdown menu
-        this.handleDropdownMenuClick(event, dropdownFieldElement);
-    };
-
-    Dropdown.prototype.setInitialFieldValue = function(selectedObjects) {
-        let indices = [];
-        if (selectedObjects.length === 0) {
-            return;
-        } else if (selectedObjects.length >= 1) {
-            // Get the color names of the object(s)
-            let objectColors = [];
-            for (let i = 0; i < selectedObjects.length; i++) {
-                if (!objectColors.includes(selectedObjects[i].colorObject.name)) {
-                    objectColors.push(selectedObjects[i].colorObject.name);
-                }
-            }
-
-            // Find the indices in the dropdown options which correspond to the selected objects' color names
-            for (let i = 0; i < this.dropDownOptions.length ; i++) {
-                if (objectColors.includes(this.dropDownOptions[i])) {
-                    indices.push(i);
-                }
-            }
-            if (indices.length === 0) {
-                return;
-            }
-        }
-
-        // Only if there is 1 found index, meaning all selected objects (either 1 or more) have the same color,
-        // display that color in the dropdown field
-        if (indices.length === 1) {
-            // Using the index, get the corresponding item elements from the dropdown menu itself
-            let itemDivWrapper = this.object[0].children[1].children[0].children[indices[0]];
-            this.displayInDropdownField(itemDivWrapper);
-        }
-    };
-
-    // This function displays an item in the dropdown field, based on the div wrapper element of the item
-    // This wrapper div contains an icon and a span element
-    Dropdown.prototype.displayInDropdownField = function(divWrapper) {
-        // Remove the icon and the span from the field if they are present
-        let fieldIcon = $(this.field).children('.dropdown_item_icon');
-        let fieldSpan = $(this.field).children('.dropdown_item');
-        if (fieldIcon.length >= 1 && fieldSpan.length >= 1) {
-            fieldIcon[0].remove();
-            fieldSpan[0].remove();
-        }
-
-        // Create two deep copies of the icon and the span element
-        let iconClone = divWrapper.childNodes[0].cloneNode(true);
-        let spanClone = divWrapper.childNodes[1].cloneNode(true);
-
-        // Adjust the styling slightly
-        $(iconClone).css({'padding-left': 5});
-
-        // Add these copies to the field
-        this.field.prepend(spanClone);
-        this.field.prepend(iconClone);
-    };
-
-    // This function should be called before the object is removed
-    Dropdown.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
-    };
-
     return {
-        PetriNodeType: PetriNodeType,
-        ModeType: ModeType,
-        CheckboxType: CheckboxType,
-        DrawOption: DrawOption,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
-        StartLink: StartLink,
-        Button: Button,
-        ToggleButton: ToggleButton,
-        PetriNodeTypeButton: PetriNodeTypeButton,
-        NumberInputField: NumberInputField,
-        GrayOutButton: GrayOutButton,
-        Checkbox: Checkbox,
-        TextField: TextField,
-        Dropdown: Dropdown,
+        StartLink: StartLink
     };
 });

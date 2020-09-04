@@ -129,11 +129,10 @@ define(['jquery'], function($) {
         // When the wrapper has been set up on a text area, the text area's
         // data attribute contains an entry for 'current-ui-wrapper' that is
         // a reference to the wrapper ('this').
-        var  h,
-             params,
-             t = this; // For use by embedded functions.
+        var params,
+            t = this; // For use by embedded functions.
 
-        this.GUTTER = 40;  // Size of gutter at base of wrapper Node (pixels)
+        this.GUTTER = 0;  // Size of gutter at base of wrapper Node (pixels)
         this.MIN_WRAPPER_HEIGHT = 50;
 
         this.taId = textareaId;
@@ -162,6 +161,13 @@ define(['jquery'], function($) {
             width: "100%",
             "background-color": "transparent"
         });
+
+        // Set the height to an initial height for the graph UI
+        if (this.taId === "graph-ui-textarea") {
+            this.wrapperNode.css({
+            height: "350px",
+        });
+        }
 
         // Record a reference to this wrapper in the text area's data attribute
         // for use by external javascript that needs to interact with the
@@ -351,12 +357,12 @@ define(['jquery'], function($) {
     // Enables the resizing of the interface wrapper
     InterfaceWrapper.prototype.enableResize = function() {
         $(this.wrapperNode).css('resize', 'vertical');
-    }
+    };
 
     // Disables the resizing of the interface wrapper
     InterfaceWrapper.prototype.disableResize = function() {
         $(this.wrapperNode).css('resize', 'none');
-    }
+    };
 
     /**
      *  The external entry point from the PHP.
