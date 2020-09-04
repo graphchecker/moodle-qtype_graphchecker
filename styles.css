@@ -564,22 +564,22 @@ li.bulktest.graphchecker.context.quiz {
 }
 
 /* Styling for the subparts of the graph UI toolbar */
-div.toolbar_part {
+.graph_ui_container_div div.toolbar_part {
     display: inline-flex;
     align-items: center;
     vertical-align: top;
     padding: 0 3px;
 }
 
-div#toolbar_part_left {
+.graph_ui_container_div div#toolbar_part_left {
     border-right: 1px solid DarkGray;
 }
 
-div#toolbar_part_right {
+.graph_ui_container_div div#toolbar_part_right {
     border-left: 1px solid DarkGray;
 }
 
-div#toolbar_part_middle {
+.graph_ui_container_div div#toolbar_part_middle {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
@@ -587,14 +587,14 @@ div#toolbar_part_middle {
 
 /* Checkboxes */
 
-div.toolbar_field {
+.graph_ui_container_div div.toolbar_field {
     position: relative;
     font-size: 14px;
     color: black;
     margin: 0.0px 7px;
 }
 
-div.toolbar_field label.checkbox_label {
+.graph_ui_container_div div.toolbar_field label.checkbox_label {
     display: inline-block;
     position: relative;
     margin-right: 10px;
@@ -602,25 +602,25 @@ div.toolbar_field label.checkbox_label {
     color: black;
 }
 
-div.checkbox_Highlight {
+.graph_ui_container_div div.checkbox_Highlight {
     width: 80px;
 }
 
-div.checkbox_Initial {
+.graph_ui_container_div div.checkbox_Initial {
     width: 57px;
 }
 
-div.checkbox_Final {
+.graph_ui_container_div div.checkbox_Final {
     width: 55px;
 }
 
-div.checkbox_label {
+.graph_ui_container_div div.checkbox_label {
     padding-right: 5px;
     margin-left: 5px;
     font-size: 14px;
 }
 
-input.toolbar_checkbox {
+.graph_ui_container_div input.toolbar_checkbox {
     margin: 0;
     position: absolute;
     top: 4px;
@@ -631,7 +631,7 @@ input.toolbar_checkbox {
     width: 15px;
 }
 
-span.toolbar_checkbox {
+.graph_ui_container_div span.toolbar_checkbox {
     /* create a custom checkbox positioned on top of the actual input
        field */
     position: absolute;
@@ -648,25 +648,25 @@ span.toolbar_checkbox {
 }
 
 /* On hover over the input checkbox, add a border color to the span checkbox */
-div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
+.graph_ui_container_div div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
     border-color: #0078d7;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
-span.toolbar_checkbox:after {
+.graph_ui_container_div span.toolbar_checkbox:after {
     content: "";
     position: absolute;
     display: none;
 }
 
 /* Show the checkmark in the span when checked */
-input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
-input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after {
+.graph_ui_container_div input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
+.graph_ui_container_div input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after {
     display: block;
 }
 
 /* Styling of the checkmark */
-span.toolbar_checkbox_black:after {
+.graph_ui_container_div span.toolbar_checkbox_black:after {
     left: 4px;
     top: 0;
     width: 4.5px;
@@ -678,7 +678,7 @@ span.toolbar_checkbox_black:after {
     transform: rotate(45deg);
 }
 
-span.toolbar_checkbox_gray:after {
+.graph_ui_container_div span.toolbar_checkbox_gray:after {
     left: 4px;
     top: 0;
     width: 5px;
@@ -697,7 +697,7 @@ span.toolbar_checkbox_gray:after {
     color: black;
 }
 
-input.toolbar_numberinput {
+.graph_ui_container_div input.toolbar_numberinput {
     height: 17.5px;
     width: 45px;
     margin-left: 5px;
@@ -714,11 +714,11 @@ input.toolbar_numberinput {
     box-shadow: 0 0 5px red;
 }
 
-button.disabled {
+.graph_ui_container_div button.disabled {
     background-color: #d9d9d9;
 }
 
-ul.dialog-help {
+.graph_ui_container_div ul.dialog-help {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -732,11 +732,11 @@ ul.dialog-help {
     margin-right: 0px;
 }
 
-.hide {
+.graph_ui_container_div .hide {
     display: none;
 }
 
-div.custom_dropdown_field {
+.graph_ui_container_div div.custom_dropdown_field {
     width: 95px;
     height: 17.5px;
     background-color: white;
@@ -752,12 +752,12 @@ div.custom_dropdown_field {
     border: 1px solid #0078d7;
 }
 
-div.dropdown_item {
+.graph_ui_container_div div.dropdown_item {
     height: 18.4px;
     padding: 0 5px;
 }
 
-div.dropdown_item:hover {
+.graph_ui_container_div div.dropdown_item:hover {
     background-color: dodgerblue;
 }
 
@@ -774,18 +774,18 @@ div.dropdown_item:hover {
     margin-right: 0px;
 }
 
-span.dropdown_item {
+.graph_ui_container_div span.dropdown_item {
     position: relative;
     top: calc(50% - 11px);
     font-size: 14px;
     user-select: none;
 }
 
-div.custom_dropdown_itemlist_wrapper {
+.graph_ui_container_div div.custom_dropdown_itemlist_wrapper {
     position: relative;
 }
 
-div.custom_dropdown_itemlist {
+.graph_ui_container_div div.custom_dropdown_itemlist {
     position: absolute;
     width: 95px;
     z-index: 99;
