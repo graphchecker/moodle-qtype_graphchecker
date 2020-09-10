@@ -79,51 +79,27 @@ def BinaryTree(student_answer, downwards):
                 'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
     return {'correct': True }
 
+#BROKEN
 def BinarySearchTree(student_answer, downwards):
-    if downwards == "top":
-        down = True
-    elif downwards == "bottom":
-        down = False
-    else:
-        raise Exception('Unknown parameter value supplied. Contact support.')
+    bTree = BinaryTree(student_answer, downwards)
+    if not bTree['correct']:
+        return bTree
 
-    root = 0
+    labels = []
     for v in student_answer.vs:
-        split = splitParentChildren(v, down)
-        if split == None:
-            return {'correct': False,
-                    'feedback': 'Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.'}
-        (par, chil) = split
-        if len(par) > 1:
-            return {'correct': False,
-                    'feedback': 'Not a binary tree: node {0} has two parents.'.format(filter_orig_name(v))}
-        elif len(par) == 0:
-            root += 1
-        if len(chil) > 2:
-            return {'correct': False,
-                    'feedback': 'Not a binary tree: node {0} has more than two children.'.format(filter_orig_name(v))}
         try:
-            valueV = int(filter_orig_name(v))
+            label = filter_orig_name(v)
+            labels.append(label)
         except:
             return {'correct': False,
                     'feedback': "The label {0} is not numerical.".format(filter_orig_name(v))}
-        for w in chil:
-            valueW = int(filter_orig_name(w))
-            vIsLeft    = v['x'] < w['x']
-            equal      = valueV == valueW
-            vIsSmaller = valueV < valueW
-            if (not equal and vIsLeft != vIsSmaller):
-                direction = 'left'
-                size      = ' > '
-                if (vIsLeft):
-                    direction = 'right'
-                    size      = ' < '
-                return {'correct': False,
-                        'feedback': 'Layout mistake: Vertex {0} is a {1} child of vertex {2} , but {3}{4}[5}.'.format(filter_orig_name(w), direction, filter_orig_name(v),filter_orig_name(w), size, filter_orig_name(v))}
-    if root > 1:
-        return {'correct': False,
-                'feedback': 'Not a binary tree: there is more than one root in the drawing.'}
-    return {'correct': True }
+                    
+    labels.sort()
+    iOrder = InOrderTraversal(student_answer, labels, downwards)
+    if not iOrder['correct']:
+        return {'correct': False, 'feedback': "The elements do not form a sorted order on an in-order traversal"}
+    else:
+        return {'correct': True}
 
 def NodeDepth(student_answer, label, depth, downwards):
     if downwards == "top":
