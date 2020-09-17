@@ -396,7 +396,11 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         let $dialog = this.createDialog('Edit graph', $newField, 'OK')
             .appendTo(this.$backdrop);
 
-        let params = $('textarea#id_answer').attr('data-params');
+        let $answerField = $('textarea#id_answer');
+        if ($answerField.length === 0) {
+            $answerField = $('textarea#graph-ui-textarea');  // for the tester
+        }
+        let params = $answerField.attr('data-params');
         $newField.attr('data-params', params);
 
         let uiWrapper = new ui.InterfaceWrapper('graph', 'graph-editor-field');

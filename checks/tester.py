@@ -42,7 +42,13 @@ class GCTester:
 		types_file = os.path.join(root_dir, 'checks', 'types.json')
 		with open(types_file) as types:
 			types = json.load(types)
-		return types[graph_type]['ui_params']
+		params = types[graph_type]['ui_params']
+
+		# for easy debugging, allow highlighting
+		params['highlight_vertices'] = True
+		params['highlight_edges'] = True
+
+		return params
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
