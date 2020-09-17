@@ -460,8 +460,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .append($('<div/>')
                 .addClass('dialog-body')
                 .append(content))
-            .on('click', function() {
-                return false;  // avoid bubbling to the backdrop
+            .on('click', function(e) {
+                e.stopPropagation();  // avoid bubbling to the backdrop
             });
 
         if (buttonText) {
