@@ -13,19 +13,19 @@ def test():
 
 def some_tests():
     net = preprocess(other_example)
-    # res = basic.connected(net, net, net)
+    # res = basic.connected(net)
     # print(res)
-    # res = basic.strongly_connected(net, net, net)
+    # res = basic.strongly_connected(net)
     # print(res)
-    # res = basic.transition_degree_one(net, net, net)
+    # res = basic.transition_degree_one(net)
     # print(res)
-    # res = basic.node_empty_label(net, net, net)
+    # res = basic.node_empty_label(net)
     # print(res)
-    # res = functionality.workflow_net(net, net, net)
+    # res = functionality.workflow_net(net)
     # print(res)
-    # res = functionality.number_of_tokens(net, net, net, 2)
+    # res = functionality.number_of_tokens(net, 2)
     # print(res)
-    res = basic.node_on_shortest_path(net, net, net, 'a', 'b', 'c')
+    res = basic.node_on_shortest_path(net, 'a', 'b', 'c')
     print(res)
 
 

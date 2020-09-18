@@ -1,7 +1,18 @@
 import math
 
+"""
+This file implements all 'design' checks for graphs of type petri.
+These checks correspond to the 'Design' checks in the requirements document.
+The 'design.json' file describes every available check and which function is linked to that check.
+It also describes the types of the parameters for those functions.
+"""
+
 
 def no_forbidden_words(student_answer, words):
+    """
+    Checks if no nodes (places and transitions) in student_answer have a label that
+    is present in the words list.
+    """
     for place in student_answer.places:
         if place.name in words:
             return {'correct': False,
@@ -15,39 +26,113 @@ def no_forbidden_words(student_answer, words):
     return {'correct': True}
 
 
-def only_mandatory_words(student_answer, words):
-    for place in student_answer.places:
-        if place.name not in words:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
+# DEPRECATED
+# def only_mandatory_words(student_answer, words):
+#     """
+#     Checks if all nodes (places and transitions) in student_answer have a label that
+#     is present in the words list.
+#     """
+#     for place in student_answer.places:
+#         if place.name not in words:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
+#
+#     for transition in student_answer.transitions:
+#         if transition.name not in words:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
+#
+#     return {'correct': True}
 
-    for transition in student_answer.transitions:
-        if transition.name not in words:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
 
+def all_labels_from_set(student_answer, labels, node_type):
+    """
+    Checks if all labels for nodes (places/transitions/both) all have labels that are in the labels list.
+    If node_type is 'places' only places are checked.
+    If node_type is 'transitions' only transitions are checked.
+    If node_type is 'both' places and transitions are checked.
+    """
+    if node_type not in ['places', 'transitions', 'both']:
+        return {'correct': False,
+                'feedback': 'Please set the Node Type'}
+
+    if node_type == 'places' or node_type == 'both':
+        for place in student_answer.places:
+            if place.name not in labels:
+                return {'correct': False,
+                        'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(place.name)}
+
+    if node_type == 'transitions' or node_type == 'both':
+        for transition in student_answer.transitions:
+            if transition.name not in labels:
+                return {'correct': False,
+                        'feedback': 'Label {0} was used but is not in the list of allowed labels.'.format(transition.name)}
+
+    # All labels came from the labels list
     return {'correct': True}
 
 
-def no_duplicate_label(student_answer):
-    used_labels = set()
-    for place in student_answer.places:
-        if place.name in used_labels:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used multiple times. This is not allowed.'.format(place.name)}
-        used_labels.add(place.name)
+def all_labels_used(student_answer, labels, node_type):
+    """
+    Checks if all labels in the list labels can be found in the (places/transitions/both) of student_answer.
+    If node_type is 'places' only places are checked.
+    If node_type is 'transitions' only transitions are checked.
+    If node_type is 'both' places and transitions are checked.
+    """
+    if node_type not in ['places', 'transitions', 'both']:
+        return {'correct': False,
+                'feedback': 'Please set the Node Type'}
 
-    for transition in student_answer.transitions:
-        if transition.name in used_labels:
-            return {'correct': False,
-                    'feedback': 'Label {0} was used multiple times. This is not allowed.'.format(transition.name)}
-        used_labels.add(transition.name)
+    # Keep track of all labels that have not been seen yet
+    labels_needed = [la for la in labels]
 
+    if node_type == 'places' or node_type == 'both':
+        for place in student_answer.places:
+            if place.name in labels_needed:
+                labels_needed.remove(place.name)
+    if node_type == 'transitions' or node_type == 'both':
+        for transition in student_answer.transitions:
+            if transition.name in labels_needed:
+                labels_needed.remove(transition.name)
+
+    word = 'places or transitions' if node_type == 'both' else node_type
+    # Not all labels were present
+    if len(labels_needed) > 0:
+        return {'correct': False,
+                'feedback': 'Label \'{0}\' was not found in the student_answer but was expected to be '
+                            'found in {1}'.format(labels_needed[0], word)}
+
+    # All labels were present
     return {'correct': True}
+
+
+# This check is currently useless because no petri-nets with duplicate labels get through the pre-process check.
+# def no_duplicate_label(student_answer):
+#     """
+#     Checks if all nodes (places and transitions) have a unique label.
+#     """
+#     used_labels = set()
+#     for place in student_answer.places:
+#         if place.name in used_labels:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used multiple times. This is not allowed.'.format(place.name)}
+#         used_labels.add(place.name)
+#
+#     for transition in student_answer.transitions:
+#         if transition.name in used_labels:
+#             return {'correct': False,
+#                     'feedback': 'Label {0} was used multiple times. This is not allowed.'.format(transition.name)}
+#         used_labels.add(transition.name)
+#
+#     return {'correct': True}
 
 
 def left_to_right(student_answer):
+    """
+    Checks if all arcs in student_answer start at a position to the left (or equal x) to where they end.
+    """
     for arc in student_answer.arcs:
+        # Extract x coordinates
         a_pos = arc.source.properties['position'][0]
         b_pos = arc.target.properties['position'][0]
         if a_pos >= b_pos:
@@ -59,7 +144,11 @@ def left_to_right(student_answer):
 
 
 def top_to_bottom(student_answer):
+    """
+    Checks if all arcs in student_answer start at a position above (or equal y) of where they end.
+    """
     for arc in student_answer.arcs:
+        # Extract y coordinates
         a_pos = arc.source.properties['position'][1]
         b_pos = arc.target.properties['position'][1]
         if a_pos >= b_pos:
@@ -70,11 +159,184 @@ def top_to_bottom(student_answer):
     return {'correct': True}
 
 
+def crossing_arcs(student_answer, max_crossings):
+    """
+    Checks if the number of crossing arcs in student_answers is <= max_crossings.
+    Uses the geometry utility functions at the end of the file.
+    """
+    intersects = 0
+    for arc_a in student_answer.arcs:
+        for arc_b in student_answer.arcs:
+            if arc_a == arc_b:
+                continue
+
+            # Arcs sharing a node should not intersect if they are both a straight line
+            share_node = arc_a.source == arc_b.target or arc_a.target == arc_b.source \
+                         or arc_a.source == arc_b.source or arc_a.target == arc_b.target
+
+            # Check if the arcs intersect using utility functions
+            if geom_intersect(get_arc_geometry_object(arc_a), get_arc_geometry_object(arc_b), share_node):
+                intersects += 1
+
+    # Intersects are counted twice
+    intersects = int(intersects / 2)
+
+    if intersects > int(max_crossings):
+        return {'correct': False,
+                'feedback': 'There are {0} edge intersections, at most {1} allowed.'.format(
+                    intersects, max_crossings)}
+
+    return {'correct': True}
+
+
+def adjacent_helper(net, labels, axis):
+    """
+    Helper function which checks if all nodes with a label that is in the labels list have their
+    x or y coordinate (depending on axis) close to eachother.
+    If axis=1: checks y coordinates: vertical alignment
+    If axis=0: checks x coordinates: horizontal alignment
+    """
+    # Eps is how much the coordinates can differ
+    eps = 5
+    # rough_coord stores the value that all nodes need to be close to
+    rough_coord = None
+    my_axis = 'horizontally' if axis == 0 else 'vertically'
+
+    # Loop over places with the correct label
+    for place in net.places:
+        if place.name not in labels:
+            continue
+        # Initialise rough_coord for first hit
+        if rough_coord is None:
+            rough_coord = place.properties['position'][axis]
+        else:
+            # All coordinates need to be close to rough_coord
+            if abs(place.properties['position'][axis] - rough_coord) > eps:
+                return {'correct': False,
+                        'feedback': 'Place {0} does not {1} align well enough.'.format(place.name, my_axis)}
+
+    # Do same for transitions
+    for transition in net.transitions:
+        if transition.name not in labels:
+            continue
+        if rough_coord is None:
+            rough_coord = transition.properties['position'][axis]
+        else:
+            if abs(transition.properties['position'][axis] - rough_coord) > eps:
+                return {'correct': False,
+                        'feedback': 'Transition {0} does not {1} align well enough.'.format(transition.name, my_axis)}
+
+    return {'correct': True}
+
+
+def horizontally_adjacent(student_answer, labels):
+    """
+    Checks if all nodes (places + transitions) with a label that is in the labels list
+    are horizontally adjacent: their y coordinates are very similar.
+    """
+    return adjacent_helper(student_answer, labels, 1)
+
+
+def vertically_adjacent(student_answer, labels):
+    """
+    Checks if all nodes (places + transitions) with a label that is in the labels list
+    are vertically adjacent: their x coordinates are very similar.
+    """
+    return adjacent_helper(student_answer, labels, 0)
+
+
+def labels_overlap(labels_a, labels_b):
+    """
+    Helper function to check if the lists labels_a and labels_b contain the same item.
+    Returns true if they have overlap.
+    """
+    for label in labels_a:
+        if label in labels_b:
+            return True
+
+    return False
+
+
+def get_node_list(net, label_list):
+    """
+    Helper function to get all nodes (places + transitions) of net with a label that
+    is in the label_list in a single list.
+    Returns a list of all nodes in net that have a label that is inside label_list.
+    """
+    my_list = []
+
+    for place in net.places:
+        if place.name in label_list:
+            my_list.append(place)
+    for transition in net.transitions:
+        if transition.name in label_list:
+            my_list.append(transition)
+
+    return my_list
+
+
+def list_left_of(student_answer, labels_a, labels_b):
+    """
+    Checks if all nodes with a label in the list labels_a have a position that is strictly left of
+    all nodes that have a label in the list labels_b.
+    Returns false if labels_a and labels_b have overlap.
+    """
+    if labels_overlap(labels_a, labels_b):
+        return {'correct': False,
+                'feedback': 'Overlapping labels in group A and B.'}
+
+    a_list = get_node_list(student_answer, labels_a)
+    b_list = get_node_list(student_answer, labels_b)
+
+    for node in a_list:
+        x = node.properties['position'][0]
+        for other in b_list:
+            other_x = other.properties['position'][0]
+            if x >= other_x:
+                return {'correct': False,
+                        'feedback': 'Node {0} should be to the left of node {1}'.format(node.name, other.name)}
+
+    return {'correct': True}
+
+
+def list_above_of(student_answer, labels_a, labels_b):
+    """
+    Checks if all nodes with a label in the list labels_a have a position that is strictly above of
+    all nodes that have a label in the list labels_b.
+    Returns false if labels_a and labels_b have overlap.
+    """
+    if labels_overlap(labels_a, labels_b):
+        return {'correct': False,
+                'feedback': 'Overlapping labels in group A and B.'}
+
+    a_list = get_node_list(student_answer, labels_a)
+    b_list = get_node_list(student_answer, labels_b)
+
+    for thing in a_list:
+        y = thing.properties['position'][1]
+        for other in b_list:
+            other_y = other.properties['position'][1]
+            if y >= other_y:
+                return {'correct': False,
+                        'feedback': 'Node {0} should be above node {1}'.format(thing.name, other.name)}
+
+    return {'correct': True}
+
+
+# ========================== GEOMETRY UTILITY FUNCTIONS ================================
+
+
 def det(a, b, c, d, e, f, g, h, i):
+    """
+    Helper function used to get a circle from 3 points.
+    """
     return a * e * i + b * f * g + c * d * h - a * f * h - b * d * i - c * e * g
 
 
 def circle_from_three_points(x1, y1, x2, y2, x3, y3):
+    """
+    Helper function which creates and returns a circle object given 3 points.
+    """
     a = det(x1, y1, 1, x2, y2, 1, x3, y3, 1)
     bx = -det(x1 * x1 + y1 * y1, y1, 1, x2 * x2 + y2 * y2, y2, 1, x3 * x3 + y3 * y3, y3, 1)
     by = det(x1 * x1 + y1 * y1, x1, 1, x2 * x2 + y2 * y2, x2, 1, x3 * x3 + y3 * y3, x3, 1)
@@ -87,6 +349,10 @@ def circle_from_three_points(x1, y1, x2, y2, x3, y3):
 
 
 def get_anchor_point(node_a, node_b, bend):
+    """
+    Gets the 'anchor' point of a circle. This point is the third point on a circle arc
+    that we use to create a circle from an arc.
+    """
     parallel_part = bend['parallelPart']
     perpendicular_part = bend['perpendicularPart']
     ax = node_a.properties['position'][0]
@@ -104,11 +370,16 @@ def get_anchor_point(node_a, node_b, bend):
 
 
 def get_arc_geometry_object(arc):
+    """
+    Creates a custom geometry object from an arc object.
+    The geometry object represents a straight line or a part of a circle.
+    """
     start_x = arc.source.properties['position'][0]
     start_y = arc.source.properties['position'][1]
     end_x = arc.target.properties['position'][0]
     end_y = arc.target.properties['position'][1]
 
+    # This means it is a straight line
     if arc.properties['bend']['perpendicularPart'] == 0:
         return {
             'has_circle': False,
@@ -118,20 +389,25 @@ def get_arc_geometry_object(arc):
             'end_y': end_y,
         }
 
-    # TODO: change: it looks like I guessed correctly :D
+    # This is currently the hardcoded radius of a node in the UI.
     node_radius = 30
 
+    # Get some data about the circle to create a circle object
     anchor = get_anchor_point(arc.source, arc.target, arc.properties['bend'])
     circle = circle_from_three_points(start_x, start_y, end_x, end_y, anchor[0], anchor[1])
     is_reversed = (arc.properties['bend']['perpendicularPart'] > 0)
     reverse_scale = 1 if is_reversed else -1
     r_ratio = reverse_scale * node_radius / circle['radius']
     start_angle = math.atan2(start_y - circle['y'], start_x - circle['x']) - r_ratio
+
+    # Make sure all angles are positive
     if start_angle < 0:
         start_angle += math.pi * 2
     end_angle = math.atan2(end_y - circle['y'], end_x - circle['x']) + r_ratio
     if end_angle < 0:
         end_angle += math.pi * 2
+    # Get the starting and ending coordinates of the arc (this is not equal to the centre of the starting
+    # and ending nodes).
     final_start_x = circle['x'] + circle['radius'] * math.cos(start_angle)
     final_start_y = circle['y'] + circle['radius'] * math.sin(start_angle)
     final_end_x = circle['x'] + circle['radius'] * math.cos(end_angle)
@@ -151,6 +427,10 @@ def get_arc_geometry_object(arc):
 
 
 def line_line_intersect(geom_a, geom_b):
+    """
+    Helper function that returns true if the two lines encoded in geom_a and geom_b intersect.
+    """
+
     # Contains utility functions from
     # https://kite.com/python/answers/how-to-check-if-two-line-segments-intersect-in-python
     def on_segment(p, q, r):
@@ -193,6 +473,10 @@ def line_line_intersect(geom_a, geom_b):
 
 
 def point_on_arc(circle, point):
+    """
+    Helper function that checks if a point lies on a part of a circle.
+    The given circle object contains data about the starting and ending point of an arc on that circle.
+    """
     angle = math.atan2(point[1] - circle['circle']['y'], point[0] - circle['circle']['x'])
     if angle < 0:
         angle += math.pi * 2
@@ -209,6 +493,11 @@ def point_on_arc(circle, point):
 
 
 def circle_circle_intersect(geom_a, geom_b):
+    """
+    Helper function that checks if two circles encoded in geom_a and geom_b intersect.
+    They only intersect if the arc of the two circles intersect: the part of the circles on
+    which the actual arc lies.
+    """
     x0 = geom_a['circle']['x']
     y0 = geom_a['circle']['y']
     r0 = geom_a['circle']['radius']
@@ -243,6 +532,10 @@ def circle_circle_intersect(geom_a, geom_b):
 
 
 def line_circle_intersect(line_a, circle_b):
+    """
+    Helper function to check if a line intersects with a circle.
+    They only intersect if the line intersects with the arc that lies on the circle.
+    """
     # https://stackoverflow.com/questions/30844482/what-is-most-efficient-way-to-find-the-intersection-of-a-line-and-a-circle-in-py
     x0, y0, r0 = circle_b['circle']['x'], circle_b['circle']['y'], circle_b['circle']['radius']
     x1, y1 = line_a['start_x'], line_a['start_y']
@@ -282,10 +575,17 @@ def line_circle_intersect(line_a, circle_b):
 
 
 def geom_intersect(geom_a, geom_b, share_node):
+    """
+    Helper functions that checks if two geom objects (straight line or circular arc) intersect.
+    If share_node is true it means that the two lines share a node.
+    """
+    # Check if two circular arcs intersect
     if geom_a['has_circle'] and geom_b['has_circle']:
         return circle_circle_intersect(geom_a, geom_b)
 
+    # Check if two straight lines intersect
     if not geom_a['has_circle'] and not geom_b['has_circle']:
+        # If two straight lines share a node they always intersect in that node but that does not count
         if share_node:
             return False
         return line_line_intersect(geom_a, geom_b)
@@ -293,125 +593,5 @@ def geom_intersect(geom_a, geom_b, share_node):
     circle = geom_a if geom_a['has_circle'] else geom_b
     line = geom_b if geom_a['has_circle'] else geom_a
 
+    # Check if a straight line intersects with a circular arc
     return line_circle_intersect(line, circle)
-
-
-def crossing_arcs(student_answer, max_crossings):
-    intersects = 0
-    for arc_a in student_answer.arcs:
-        for arc_b in student_answer.arcs:
-            if arc_a == arc_b:
-                continue
-
-            # Arcs sharing a node should not intersect if they are lines
-            share_node = arc_a.source == arc_b.target or arc_a.target == arc_b.source \
-                         or arc_a.source == arc_b.source or arc_a.target == arc_b.target
-
-            if geom_intersect(get_arc_geometry_object(arc_a), get_arc_geometry_object(arc_b), share_node):
-                print(str(arc_a) + " intersects with " + str(arc_b))
-                intersects += 1
-
-    # Intersects are counted twice
-    intersects = int(intersects / 2)
-
-    print(intersects)
-    if intersects > int(max_crossings):
-        return {'correct': False,
-                'feedback': 'There are {0} edge intersections, at most {1} allowed.'.format(
-                    intersects, max_crossings)}
-
-    return {'correct': True}
-
-
-def adjacent_helper(net, labels, axis):
-    eps = 5
-    rough_coord = None
-    my_axis = 'horizontally' if axis == 1 else 'vertically'
-    for place in net.places:
-        if place.name not in labels:
-            continue
-        if rough_coord is None:
-            rough_coord = place.properties['position'][axis]
-        else:
-            if abs(place.properties['position'][axis] - rough_coord) > eps:
-                return {'correct': False,
-                        'feedback': 'Place {0} does not {1} align well enough.'.format(place.name, my_axis)}
-
-    for transition in net.transitions:
-        if transition.name not in labels:
-            continue
-        if rough_coord is None:
-            rough_coord = transition.properties['position'][axis]
-        else:
-            if abs(transition.properties['position'][axis] - rough_coord) > eps:
-                return {'correct': False,
-                        'feedback': 'Transition {0} does not {1} align well enough.'.format(transition.name, my_axis)}
-
-    return {'correct': True}
-
-
-def horizontally_adjacent(student_answer, labels):
-    return adjacent_helper(student_answer, labels, 1)
-
-
-def vertically_adjacent(student_answer, labels):
-    return adjacent_helper(student_answer, labels, 0)
-
-
-def labels_overlap(labels_a, labels_b):
-    for label in labels_a:
-        if label in labels_b:
-            return True
-
-    return False
-
-
-def get_node_list(net, label_list):
-    my_list = []
-
-    for place in net.places:
-        if place.name in label_list:
-            my_list.append(place)
-    for transition in net.transitions:
-        if transition.name in label_list:
-            my_list.append(transition)
-
-    return my_list
-
-
-def list_left_of(student_answer, labels_a, labels_b):
-    if labels_overlap(labels_a, labels_b):
-        return {'correct': False,
-                'feedback': 'Overlapping labels in group A and B.'}
-
-    a_list = get_node_list(student_answer, labels_a)
-    b_list = get_node_list(student_answer, labels_b)
-
-    for thing in a_list:
-        x = thing.properties['position'][0]
-        for other in b_list:
-            other_x = other.properties['position'][0]
-            if x >= other_x:
-                return {'correct': False,
-                        'feedback': 'Node {0} should be to the left of node {1}'.format(thing.name, other.name)}
-
-    return {'correct': True}
-
-
-def list_above_of(student_answer, labels_a, labels_b):
-    if labels_overlap(labels_a, labels_b):
-        return {'correct': False,
-                'feedback': 'Overlapping labels in group A and B.'}
-
-    a_list = get_node_list(student_answer, labels_a)
-    b_list = get_node_list(student_answer, labels_b)
-
-    for thing in a_list:
-        y = thing.properties['position'][1]
-        for other in b_list:
-            other_y = other.properties['position'][1]
-            if y >= other_y:
-                return {'correct': False,
-                        'feedback': 'Node {0} should be above node {1}'.format(thing.name, other.name)}
-
-    return {'correct': True}
