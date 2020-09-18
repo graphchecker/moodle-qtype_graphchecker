@@ -53,7 +53,90 @@ define(function() {
                                 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda',
                                 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma',
                                 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega' ];
+
+        // A dictionary containing the color code and whether the color is considered dark or not of the specified color
+        this.colors = {
+            'black': {name: 'black', colorCode: '#444444', isDark: true},
+            'red': {name: 'red', colorCode: '#fb9a99', isDark: false},
+            'blue': {name: 'blue', colorCode: '#a6cee3', isDark: false},
+            'green': {name: 'green', colorCode: '#b2df8a', isDark: false},
+            'yellow': {name: 'yellow', colorCode: '#ffff99', isDark: false},
+            'orange': {name: 'orange', colorCode: '#fdbf6f', isDark: false},
+            'purple': {name: 'purple', colorCode: '#cab2d6', isDark: false},
+            'white': {name: 'white', colorCode: '#ffffff', isDark: false},
+        };
     }
+
+    // An enum for defining the different colors that can be used to color vertices and/or edges
+    Util.prototype.Color = Object.freeze({
+        BLACK: 'black',
+        RED: 'red',
+        BLUE: 'blue',
+        GREEN: 'green',
+        YELLOW: 'yellow',
+        ORANGE: 'orange',
+        PURPLE: 'purple',
+        WHITE: 'white',
+    });
+
+    // An enum for defining the type of the graph
+    Util.prototype.Type = Object.freeze({
+        UNDIRECTED: 'undirected',
+        DIRECTED: 'directed',
+        FSM: 'fsm',
+        PETRI: 'petri'
+    });
+
+    // An enum for defining the type of edits that can be set to allowed or disallowed
+    Util.prototype.Edit = Object.freeze({
+        MOVE: 'move',
+        ADD: 'add',
+        DELETE: 'delete',
+        VERTEX_LABELS: 'vertex_labels',
+        EDGE_LABELS: 'edge_labels',
+        VERTEX_COLORS: 'vertex_colors',
+        EDGE_COLORS: 'edge_colors',
+        FSM_FLAGS: 'fsm_flags',
+        PETRI_MARKING: 'petri_marking'
+    });
+
+    // An enum for defining the node types of petri nets
+    Util.prototype.PetriNodeType = Object.freeze({
+        NONE: 'none',               // Indicates not a petri node
+        PLACE: 'place',             // Indicates not a petri place
+        TRANSITION: 'transition'    // Indicates not a petri transition
+    });
+
+    // An enum for defining the mode type of the graph UI
+    Util.prototype.ModeType = Object.freeze({
+        SELECT: 'select',           // Indicates that the UI is in select mode
+        DRAW: 'draw'                // Indicates that the UI is in draw mode
+    });
+
+    // An enum for defining the type of the checkboxes graph UI
+    Util.prototype.CheckboxType = Object.freeze({
+        FSM_INITIAL: 'fsm_initial',         // Indicates that the checkbox controls the initial fsm state
+        FSM_FINAL: 'fsm_final',             // Indicates that the checkbox controls the final fsm state
+        HIGHLIGHT: 'highlight'               // Indicates that the checkbox controls the highlighted state
+    });
+
+    // An enum for defining the type of draw operations that can be done on objects
+    Util.prototype.DrawOption = Object.freeze({
+        OBJECT: 'object',           // Solely draw the object
+        SELECTION: 'selection',     // Draw the object and a blue selection halo
+        HOVER: 'hover'              // Draw a shadow vertex when hovering over an empty area
+    });
+
+    // A function to find the according color object from the given color code, if the object exists
+    Util.prototype.colorObjectFromColorCode = function(colorCode) {
+        for (let key in this.colors) {
+            if (this.colors[key].colorCode === colorCode) {
+                return this.colors[key];
+            }
+        }
+
+        return null;
+    };
 
     Util.prototype.convertLatexShortcuts = function(text) {
         // Html greek characters.
@@ -101,6 +184,11 @@ define(function() {
         };
     };
 
+    Util.prototype.degToRad = function(deg) {
+        // Converts degrees to radians
+        return deg * (Math.PI/180.0);
+    };
+
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
         return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
@@ -112,37 +200,17 @@ define(function() {
         return e.which || e.keyCode;
     };
 
-    Util.prototype.crossBrowserElementPos = function(e) {
-        // Return the {x, y} location of the element in which event e occurred.
-        e = e || window.event;
-        var obj = e.target || e.srcElement;
-        var x = 0, y = 0;
-        while(obj.offsetParent) {
-            x += obj.offsetLeft;
-            y += obj.offsetTop;
-            obj = obj.offsetParent;
-        }
-        return { 'x': x, 'y': y };
-    };
-
-    Util.prototype.crossBrowserMousePos = function(e) {
-        // Return the {x, y} page coords (?) of the mouse position associated with event e.
-        e = e || window.event;
+    Util.prototype.mousePos = function(e) {
+        let rect = e.target.getBoundingClientRect();
         return {
-            'x': e.pageX || e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
-            'y': e.pageY || e.clientY + document.body.scrollTop + document.documentElement.scrollTop
+            'x': e.clientX - rect.x,
+            'y': e.clientY - rect.y
         };
     };
 
-    Util.prototype.crossBrowserRelativeMousePos = function(e) {
-        // Return the {x, y} location relative to the element within which the
-        // event occurred of the mouse position associated with event e.
-        var element = this.crossBrowserElementPos(e);
-        var mouse = this.crossBrowserMousePos(e);
-        return {
-            'x': mouse.x - element.x,
-            'y': mouse.y - element.y
-        };
+    Util.prototype.calculateAngle = function(v1, v2) {
+        // Return an angle a, where 0 <= a <= 2*PI, in radians
+        return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
     };
 
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
@@ -238,6 +306,77 @@ define(function() {
                 candidateAngle = candidateAngles[i];
             }
         }
+
+        return candidateAngle;
+    };
+
+    Util.prototype.quadraticFormula = function(a, b, c) {
+        let D = Math.pow(b, 2) - 4*a*c;
+
+        let res1 = (-b - Math.sqrt(D))/(2*a);
+        let res2 = (-b + Math.sqrt(D))/(2*a);
+        return [res1, res2];
+    };
+
+    // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
+    // link, and the start and end angles.
+    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
+        let rRatio = reverseScale * distance / circle.radius;
+        let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;
+        let endAngle = Math.atan2(nodeB.y - circle.y, nodeB.x - circle.x) + rRatio;
+        let startX = circle.x + circle.radius * Math.cos(startAngle);
+        let startY = circle.y + circle.radius * Math.sin(startAngle);
+        let endX = circle.x + circle.radius * Math.cos(endAngle);
+        let endY = circle.y + circle.radius * Math.sin(endAngle);
+
+        return {startAngle: startAngle, endAngle: endAngle, startX: startX, startY: startY, endX: endX, endY:endY};
+    };
+
+    // Function used to test whether rectInner (rectangle) lies completely inside rectOuter (rectangle)
+    // Rect1 and rect2 are both of the form: [{x: corner1X, y: corner1Y}, {x: corner2X, y: corner2Y}]
+    Util.prototype.isRectInsideRect = function(rectOuter, rectInner) {
+        // Find out top-left and bottom-right corner of rectOuter
+        // Determine the lowest and highest x and y coordinates of the outer rectangle
+        let minXRectOuter, maxXRectOuter;
+        if (rectOuter[0].x <= rectOuter[1].x) {
+            minXRectOuter = rectOuter[0].x;
+            maxXRectOuter = rectOuter[1].x;
+        } else {
+            minXRectOuter = rectOuter[1].x;
+            maxXRectOuter = rectOuter[0].x;
+        }
+
+        let minYRectOuter, maxYRectOuter;
+        if (rectOuter[0].y <= rectOuter[1].y) {
+            minYRectOuter = rectOuter[0].y;
+            maxYRectOuter = rectOuter[1].y;
+        } else {
+            minYRectOuter = rectOuter[1].y;
+            maxYRectOuter = rectOuter[0].y;
+        }
+
+        // Now check if each point of the inner rectangle lies within these coordinates
+        return (minXRectOuter <= rectInner[0].x && rectInner[0].x <= maxXRectOuter &&
+            minXRectOuter <= rectInner[1].x && rectInner[1].x <= maxXRectOuter &&
+            minYRectOuter <= rectInner[0].y && rectInner[0].y <= maxYRectOuter &&
+            minYRectOuter <= rectInner[1].y && rectInner[1].y <= maxYRectOuter);
+    };
+
+    // Checks if all elements in a1 occur in a2, and vice versa
+    // This function assumes that both arrays do not have repeating elements, and are of equal length
+    Util.prototype.checkSameElementsArrays = function(a1, a2) {
+        if (a1.length !== a2.length) {
+            return false;
+        }
+
+        for (let i = 0; i < a1.length; i++) {
+            if (!a1.includes(a2[i]) || !a2.includes(a1[i])) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
     return new Util();

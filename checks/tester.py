@@ -65,9 +65,13 @@ conf = {
 	'/': {
 		'tools.staticdir.root': os.path.join(os.getcwd(), '../tester')
 	},
-	'/css/style-moodle.css': {
+	'/css/style.css': {
 		'tools.staticfile.on': True,
 		'tools.staticfile.filename': os.path.join(os.getcwd(), '../styles.css')
+	},
+	'/css/moodle-style.css': {
+		'tools.staticfile.on': True,
+		'tools.staticfile.filename': os.path.join(os.getcwd(), '../tester/css/moodle-style.css')
 	},
 	'/js': {
 		'tools.staticdir.on': True,

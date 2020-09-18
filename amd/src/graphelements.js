@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  * A module for use by ui_graph, defining classes Node, Link, SelfLink,
- * StartLink and TemporaryLink
+ * StartLink, TemporaryLink, and HTML elements
  *
  ******************************************************************************/
 // This code is a modified version of Finite State Machine Designer
@@ -47,25 +47,6 @@
 
 define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
-    // An enum for defining the node types of petri nets
-    const PetriNodeType = Object.freeze({
-        NONE: 'none',               // Indicates not a petri node
-        PLACE: 'place',             // Indicates not a petri place
-        TRANSITION: 'transition'    // Indicates not a petri transition
-    });
-
-    // An enum for defining the mode type of the graph UI
-    const ModeType = Object.freeze({
-        EDIT: 'edit',               // Indicates that the UI is in edit mode
-        DRAW: 'draw'                // Indicates that the UI is in draw mode
-    });
-
-    // An enum for defining the type of the checkboxes graph UI
-    const CheckboxType = Object.freeze({
-        FSM_INITIAL: 'fsm_initial',         // Indicates that the checkbox controls the initial fsm state
-        FSM_FINAL: 'fsm_final'             // Indicates that the checkbox controls the final fsm state
-    });
-
     /***********************************************************************
      *
      * Define a class Node that represents a node in a graph
@@ -78,11 +59,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = y;
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
+        this.hasMoved = false;
         this.isInitial = false;
         this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
-        this.petriNodeType = PetriNodeType.NONE; //TODO: create a new subtype of node perhaps?
+        this.petriNodeType = util.PetriNodeType.NONE;
         this.petriTokens = 0;
+        this.colorObject = (this.parent.templateParams.vertex_colors) ?
+            util.colors[this.parent.templateParams.vertex_colors[0]] : null;
+        this.isHighlighted = false;
         this.text = '';
     }
 
@@ -95,6 +80,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.setAnchorPoint = function(x, y) {
         this.x = x + this.mouseOffsetX;
         this.y = y + this.mouseOffsetY;
+        this.hasMoved = true;
+    };
+
+    Node.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     // Given a new mouse position during a drag, move to the appropriate
@@ -104,45 +94,313 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = this.mouseOffsetY + mouseY;
     };
 
-    Node.prototype.draw = function(c) {
-        // Draw the circle.
-        c.beginPath();
-        if (this.petriNodeType === PetriNodeType.NONE || this.petriNodeType === PetriNodeType.PLACE) {
-            c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
-        } else if (this.petriNodeType === PetriNodeType.TRANSITION) {
-            c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
-                this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+    // This function draws the node on the canvas.
+    Node.prototype.draw = function(c, isShadowNode, drawOption) {
+        // A function used to draw the node
+        const drawShape = function () {
+            if (this.petriNodeType === util.PetriNodeType.NONE || this.petriNodeType === util.PetriNodeType.PLACE) {
+                c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+            } else if (this.petriNodeType === util.PetriNodeType.TRANSITION) {
+                c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
+                    this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+            }
+        }.bind(this);
+
+        // Draw the selection, highlight and object of the node
+        if (drawOption === util.DrawOption.SELECTION) {
+            this.drawSelection(c, drawShape, isShadowNode);
+        } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawObject(c, drawShape, isShadowNode, false);
+
+            // Draw the label.
+            c.fillStyle = util.Color.BLACK;
+            this.parent.drawText(this, this.text, this.x, this.y, null);
+
+            if (this.petriNodeType === util.PetriNodeType.PLACE && this.petriTokens > 0) {
+                // Draw the token values.
+                this.parent.drawText(null, this.petriTokens.toString(), this.x, this.y, null);
+            }
+
+            // Draw a double circle for an accept state.
+            if(this.isFinal) {
+                c.beginPath();
+                c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
+                c.stroke();
+            }
+        } else if (drawOption === util.DrawOption.HOVER) {
+            this.drawHoverObject(c, drawShape);
         }
+    };
+
+    // A function to draw the selection halo around the object
+    Node.prototype.drawSelection = function(c, drawShape, isShadowNode) {
+        // Enable the selection effect when applicable
+        if (this.parent.selectedObjects.includes(this)) {
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        }
+
+        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
+        this.drawObject(c, drawShape, isShadowNode, true);
+    };
+
+    // A function to draw the object itself and the according highlighting
+    Node.prototype.drawObject = function(c, drawShape, isShadowNode, invisible) {
+        // If the node is highlighted, draw a highlight ring around it
+        if (this.isHighlighted) {
+            // Set the stroke color and the line width
+            let oldStrokeStyle = c.strokeStyle;
+            c.strokeStyle = util.colors[util.Color.RED].colorCode;
+            let oldLineWidth = c.lineWidth;
+            c.lineWidth = 15;
+
+            // Draw the shape
+            c.beginPath();
+            drawShape();
+            c.stroke();
+
+            if (isShadowNode) {
+                // Draw a special shadow if it is a highlighted node
+                c.shadowColor = 'rgb(150,150,150,0.7)';
+                c.shadowBlur = 10;
+                c.stroke();
+            }
+
+            // Reset the draw parameters
+            c.strokeStyle = oldStrokeStyle;
+            c.lineWidth = oldLineWidth;
+            c.shadowBlur = 0;
+        }
+
+        // Draw the node itself, on top of the highlighting
+        c.beginPath();
+        c.strokeStyle = (!invisible)? util.Color.BLACK : 'rgba(0,0,0,0)';
+        drawShape();
+
+        // Use the color to fill the node
+        let fillColor = (this.colorObject) ? this.colorObject.colorCode : null;
+        if (!fillColor) {
+            fillColor = util.colors[util.Color.WHITE].colorCode; // White is the default color
+            this.colorObject = util.colorObjectFromColorCode(fillColor);
+        }
+        c.fillStyle = fillColor;
+        c.fill();
+
+        // If the node is a shadow node, apply the effect more to enhance the visibility
+        if (isShadowNode) {
+            c.fill();
+        }
+
+        // Reset the shadow parameter, in case the node was selected
+        c.shadowBlur = 0;
+
+        // Draw the node border
+        c.stroke();
+    };
+
+    Node.prototype.drawHoverObject = function(c, drawShape) {
+        // Draw the hover node
+        c.beginPath();
+
+        // Set the styles
+        c.shadowColor = 'rgb(220,220,220,1)';
+        c.shadowBlur = 10;
+        c.lineWidth = 1;
+        c.strokeStyle = 'rgb(192,192,192,0.5)';
+
+        // Draw the shape of the shadow
+        drawShape();
         c.stroke();
 
-        // Draw the label.
-        this.parent.drawText(this, this.text, this.x, this.y, null);
+        // Draw a white circle, to not show the inner shadow
+        c.fillStyle = util.Color.WHITE;
+        c.fill();
 
-        if (this.petriNodeType === PetriNodeType.PLACE && this.petriTokens > 0) {
-            // Draw the token values.
-            this.parent.drawText(null, this.petriTokens.toString(), this.x, this.y, null);
-        }
+        // Unset the styles
+        c.shadowBlur = 0;
+        c.globalAlpha = 1;
+    };
 
-        // Draw a double circle for an accept state.
-        if(this.isFinal) {
-            c.beginPath();
-            c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
-            c.stroke();
+    Node.prototype.closestPointOnNode = function(x, y) {
+        let dx = x - this.x;
+        let dy = y - this.y;
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
+            // Calculate the closest point on the node's circle
+            let scale = Math.sqrt(dx * dx + dy * dy);
+            return {
+                x: this.x + dx * this.parent.nodeRadius() / scale,
+                y: this.y + dy * this.parent.nodeRadius() / scale,
+            };
+        } else {
+            // Calculate the closest point on the node's square
+            // Calculate the angle between the vector of the link's midpoint (x, y) and the midpoint of the node, and
+            // the right vector (1, 0)
+            let nodeToLinkVector = {
+                x: dx,
+                y: dy
+            };
+            let rightVector = {
+                x: 1,
+                y: 0
+            };
+            let angle = util.calculateAngle(nodeToLinkVector, rightVector);
+
+            // Determine the equation of the line of the link's midpoint to the node's midpoint, in the form:
+            // y = a*x + b
+            let a = nodeToLinkVector.y/nodeToLinkVector.x;
+            let b = y - a*x;
+
+            // The length of half the side of the square
+            let sideHalfLength = this.parent.nodeRadius();
+            let xRes, yRes;
+            if (angle < util.degToRad(45) || angle >= util.degToRad(315)) {
+                xRes = this.x - sideHalfLength;
+                yRes = a*xRes + b;
+            } else if (util.degToRad(45) <= angle && angle < util.degToRad(135)) {
+                yRes = this.y + sideHalfLength;
+                if (Math.abs(a) !== Infinity) {
+                    xRes = (yRes - b) / a;
+                } else {
+                    xRes = this.x;
+                }
+            } else if (util.degToRad(135) <= angle && angle < util.degToRad(225)) {
+                xRes = this.x + sideHalfLength;
+                yRes = a*xRes + b;
+            } else if (util.degToRad(225) <= angle && angle < util.degToRad(315)) {
+                yRes = this.y - sideHalfLength;
+                if (Math.abs(a) !== Infinity) {
+                    xRes = (yRes - b) / a;
+                } else {
+                    xRes = this.x;
+                }
+            }
+
+            return {
+                x: xRes,
+                y: yRes,
+            };
         }
     };
 
-    Node.prototype.closestPointOnCircle = function(x, y) {
-        var dx = x - this.x;
-        var dy = y - this.y;
-        var scale = Math.sqrt(dx * dx + dy * dy);
-        return {
-            'x': this.x + dx * this.parent.nodeRadius() / scale,
-            'y': this.y + dy * this.parent.nodeRadius() / scale,
-        };
+    // Method of a Node, being of PetriNodeType 'TRANSITION', that given a circle, calculates
+    // the points of intersection
+    Node.prototype.calculateIntersectionsCircle = function(circleX, circleY, circleR) {
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
+            // Currently no functionality is implemented to calculate the intersections of
+            // non 'TRANSITION' type nodes
+            return;
+        }
+        // The half side length of the square
+        let halfSideLength = this.parent.nodeRadius();
+
+        // An array of valid points at which the circle intersects the square
+        let points = [];
+
+        // Intersections of the circle, in the form (x-circleX)^2 + (y-circleY)^2 - circleR^2 = 0,
+        // with the top side of the square. Using the Quadratic Formula (i.e. the abc formula)
+        let y = this.y - halfSideLength;
+        let a = 1;
+        let b = -circleX*2;
+        let c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
+        let results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
+                points.push({x: results[i], y: y});
+            }
+        }
+
+        // Intersections with the bottom side. The variables a and b remain the same
+        y = this.y + halfSideLength;
+        c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
+                points.push({x: results[i], y: y});
+            }
+        }
+
+        // Intersections with the right side
+        let x = this.x + halfSideLength;
+        a = 1;
+        b = -circleY*2;
+        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
+                points.push({x: x, y: results[i]});
+            }
+        }
+
+        // Intersections with the left side. The variables a and b remain the same
+        x = this.x - halfSideLength;
+        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
+        results = util.quadraticFormula(a, b, c);
+        for (let i = 0; i < 2; i++) {
+            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
+                points.push({x: x, y: results[i]});
+            }
+        }
+
+        return points;
     };
 
-    Node.prototype.containsPoint = function(x, y) {
-        return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) < this.parent.nodeRadius() * this.parent.nodeRadius();
+    Node.prototype.getadjustedLinkInfo = function(circle, linkInfo, reverseScale, nodeA, nodeB, isStart) {
+        // Calculate the intersections of the circle with the square
+        let intersections = this.calculateIntersectionsCircle(circle.x, circle.y, circle.radius);
+
+        // Choose the one which is the closest to the original location of the intersection with the circle
+        let closestPoint = null;
+        let closestPointDistance = Infinity;
+        for (let i = 0; i < intersections.length; i++) {
+            let dx, dy;
+            if (isStart) {
+                dx = linkInfo.startX - intersections[i].x;
+                dy = linkInfo.startY - intersections[i].y;
+            } else {
+                dx = linkInfo.endX - intersections[i].x;
+                dy = linkInfo.endY - intersections[i].y;
+            }
+            let dist = Math.sqrt( Math.pow(dx, 2) + Math.pow(dy, 2));
+            if (dist < closestPointDistance) {
+                closestPointDistance = dist;
+                closestPoint = intersections[i];
+            }
+        }
+
+        // Recalculate other variables,
+        // using the distance from this node, the TRANSITION node, to the calculated closest point
+        if (closestPoint !== null) {
+            let dx = this.x - closestPoint.x;
+            let dy = this.y - closestPoint.y;
+            let transitionNodeDist = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            let adjustedLinkInfo = util.calculateLinkInfo(nodeA, nodeB, circle, reverseScale, transitionNodeDist);
+            if (isStart) {
+                linkInfo.startAngle = adjustedLinkInfo.startAngle;
+                linkInfo.startX = adjustedLinkInfo.startX;
+                linkInfo.startY = adjustedLinkInfo.startY;
+            } else {
+                linkInfo.endAngle = adjustedLinkInfo.endAngle;
+                linkInfo.endX = adjustedLinkInfo.endX;
+                linkInfo.endY = adjustedLinkInfo.endY;
+            }
+        }
+
+        return linkInfo;
+    };
+
+    Node.prototype.containsPoint = function(x, y, usePadding) {
+        let radius = this.parent.nodeRadius();
+        if (usePadding) {
+            radius += this.parent.HIT_TARGET_PADDING;
+        }
+        if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
+            // Check for a circle
+            return (x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= radius * radius;
+        } else {
+            // Check for a square
+            return this.x - radius <= x && x <= this.x + radius && this.y - radius <= y && y <= this.y + radius;
+        }
     };
 
     // Method of a Node that, given a list of all links in a graph, returns
@@ -195,6 +453,64 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         return visited;
     };
 
+    // This function determines which sides of a node have an incoming or outgoing edge.
+    // The sides are: right, top, left, and bottom.
+    Node.prototype.getLinkIntersectionSides = function(links) {
+        // Get all angles of the incoming/outgoing links w.r.t. the node
+        let angles = [];
+        for (let i = 0; i < links.length; i++) {
+            let v1 = {x: 1, y: 0};
+            let v2 = [{x: 0, y: 0}];
+            let isAdjacentLink = false;
+            if (links[i] instanceof Link) {
+                let linkInfo = links[i].getEndPointsAndCircle();
+                if (links[i].nodeA === this) {
+                    v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
+                    isAdjacentLink = true;
+                } else if (links[i].nodeB === this) {
+                    v2[0] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            } else if (links[i] instanceof SelfLink) {
+                let linkInfo = links[i].getEndPointsAndCircle();
+                if (links[i].node === this) {
+                    v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
+                    v2[1] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            } else if (links[i] instanceof StartLink) {
+                let linkInfo = links[i].getEndPoints();
+                if (links[i].node === this) {
+                    v2[0] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
+                    isAdjacentLink = true;
+                }
+            }
+
+            if (isAdjacentLink) {
+                for (let j = 0; j < v2.length; j++) {
+                    angles.push(util.calculateAngle(v1, v2[j]));
+                }
+            }
+        }
+
+        // Determine whether there are intersections for each of the 45degree-rotated quadrants:
+        // right, top, left, and bottom
+        let result = {right: false, top: false, left: false, bottom: false};
+        for (let i = 0; i < angles.length; i++) {
+            if ((0 <= angles[i] && angles[i] <= 1/4 * Math.PI) || (7/4 * Math.PI <= angles[i] && angles[i] <= 2 * Math.PI)) {
+                result.right = true;
+            } else if (1/4 * Math.PI <= angles[i] && angles[i] <= 3/4 * Math.PI) {
+                result.top = true;
+            } else if (3/4 * Math.PI <= angles[i] && angles[i] <= 5/4 * Math.PI) {
+                result.left = true;
+            } else if (5/4 * Math.PI <= angles[i] && angles[i] <= 7/4 * Math.PI) {
+                result.bottom = true;
+            }
+        }
+
+        return result;
+    };
+
     /***********************************************************************
      *
      * Define a class Link that represents a connection between two nodes.
@@ -205,11 +521,15 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.nodeA = a;
         this.nodeB = b;
         this.text = '';
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
+        this.isHighlighted = false;
         this.lineAngleAdjust = 0; // Value to add to textAngle when link is straight line.
 
         // Make anchor point relative to the locations of nodeA and nodeB.
         this.parallelPart = 0.5;    // Percentage from nodeA to nodeB.
-        this.perpendicularPart = 0; // Pixels from line between nodeA and nodeB.
+        this.perpendicularPart = 0.1; // Pixels from line between nodeA and nodeB.
+        // This is set to 0.1, to enable the tweaking of links (when there are multiple links present) to enhance visibility
     }
 
     Link.prototype.getAnchorPoint = function() {
@@ -222,6 +542,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         };
     };
 
+    // Method to set the anchor point of a link. It returns whether the link is snapped (true) or not (false)
     Link.prototype.setAnchorPoint = function(x, y) {
         var dx = this.nodeB.x - this.nodeA.x;
         var dy = this.nodeB.y - this.nodeA.y;
@@ -232,15 +553,23 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < this.parent.SNAP_TO_PADDING) {
             this.lineAngleAdjust = (this.perpendicularPart < 0) * Math.PI;
             this.perpendicularPart = 0;
+            return true;
+        } else {
+            this.hasMoved = true;
+            return false;
         }
+    };
+
+    Link.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     Link.prototype.getEndPointsAndCircle = function() {
         if(this.perpendicularPart === 0) {
             var midX = (this.nodeA.x + this.nodeB.x) / 2;
             var midY = (this.nodeA.y + this.nodeB.y) / 2;
-            var start = this.nodeA.closestPointOnCircle(midX, midY);
-            var end = this.nodeB.closestPointOnCircle(midX, midY);
+            var start = this.nodeA.closestPointOnNode(midX, midY);
+            var end = this.nodeB.closestPointOnNode(midX, midY);
             return {
                 'hasCircle': false,
                 'startX': start.x,
@@ -253,21 +582,23 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         var circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
         var isReversed = (this.perpendicularPart > 0);
         var reverseScale = isReversed ? 1 : -1;
-        var rRatio = reverseScale * this.parent.nodeRadius() / circle.radius;
-        var startAngle = Math.atan2(this.nodeA.y - circle.y, this.nodeA.x - circle.x) - rRatio;
-        var endAngle = Math.atan2(this.nodeB.y - circle.y, this.nodeB.x - circle.x) + rRatio;
-        var startX = circle.x + circle.radius * Math.cos(startAngle);
-        var startY = circle.y + circle.radius * Math.sin(startAngle);
-        var endX = circle.x + circle.radius * Math.cos(endAngle);
-        var endY = circle.y + circle.radius * Math.sin(endAngle);
+        let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius());
+        // If the start node is a TRANSITION node, adjust the start of the link
+        if (this.nodeA.petriNodeType === util.PetriNodeType.TRANSITION) {
+            linkInfo = this.nodeA.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, true);
+        }
+        // If the end node is a TRANSITION node
+        if (this.nodeB.petriNodeType === util.PetriNodeType.TRANSITION) {
+            linkInfo = this.nodeB.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, false);
+        }
         return {
             'hasCircle': true,
-            'startX': startX,
-            'startY': startY,
-            'endX': endX,
-            'endY': endY,
-            'startAngle': startAngle,
-            'endAngle': endAngle,
+            'startX': linkInfo.startX,
+            'startY': linkInfo.startY,
+            'endX': linkInfo.endX,
+            'endY': linkInfo.endY,
+            'startAngle': linkInfo.startAngle,
+            'endAngle': linkInfo.endAngle,
             'circleX': circle.x,
             'circleY': circle.y,
             'circleRadius': circle.radius,
@@ -276,51 +607,124 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         };
     };
 
-    Link.prototype.draw = function(c) {
+    Link.prototype.draw = function(c, drawOption) {
         var linkInfo = this.getEndPointsAndCircle(), textX, textY, textAngle;
-        // Draw arc.
-        c.beginPath();
-        if(linkInfo.hasCircle) {
-            c.arc(linkInfo.circleX,
-                  linkInfo.circleY,
-                  linkInfo.circleRadius,
-                  linkInfo.startAngle,
-                  linkInfo.endAngle,
-                  linkInfo.isReversed);
+
+        // A function used to draw the link
+        const drawLink = function () {
+            if (linkInfo.hasCircle) {
+                c.arc(linkInfo.circleX,
+                    linkInfo.circleY,
+                    linkInfo.circleRadius,
+                    linkInfo.startAngle,
+                    linkInfo.endAngle,
+                    linkInfo.isReversed);
+            } else {
+                c.moveTo(linkInfo.startX, linkInfo.startY);
+                c.lineTo(linkInfo.endX, linkInfo.endY);
+            }
+        }.bind(this);
+
+        // A function used to draw the arrow head
+        const drawArrowHead = function () {
+            if(linkInfo.hasCircle) {
+                this.parent.arrowIfReqd(c,
+                    linkInfo.endX,
+                    linkInfo.endY,
+                    linkInfo.endAngle - linkInfo.reverseScale * (Math.PI / 2));
+            } else {
+                this.parent.arrowIfReqd(c,
+                    linkInfo.endX,
+                    linkInfo.endY,
+                    Math.atan2(linkInfo.endY - linkInfo.startY, linkInfo.endX - linkInfo.startX));
+            }
+        }.bind(this);
+
+        // Draw the selection, and object and according highlight
+        if (drawOption === util.DrawOption.SELECTION) {
+            this.drawSelection(c, drawLink, drawArrowHead);
+        } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawObject(c, drawLink, drawArrowHead, false);
+
+            // Draw the text.
+            c.strokeStyle = c.fillStyle = util.Color.BLACK;
+            if(linkInfo.hasCircle) {
+                var startAngle = linkInfo.startAngle;
+                var endAngle = linkInfo.endAngle;
+                if(endAngle < startAngle) {
+                    endAngle += Math.PI * 2;
+                }
+                textAngle = (startAngle + endAngle) / 2 + linkInfo.isReversed * Math.PI;
+                textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(textAngle);
+                textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(textAngle);
+                this.parent.drawText(this, this.text, textX, textY, textAngle);
+            } else {
+                textX = (linkInfo.startX + linkInfo.endX) / 2;
+                textY = (linkInfo.startY + linkInfo.endY) / 2;
+                textAngle = Math.atan2(linkInfo.endX - linkInfo.startX, linkInfo.startY - linkInfo.endY);
+                this.parent.drawText(this, this.text, textX, textY, textAngle + this.lineAngleAdjust);
+            }
+        }
+    };
+
+    Link.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
+        // Enable the selection effect
+        let isSelected = this.parent.selectedObjects.includes(this);
+        if (isSelected) {
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        }
+
+        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
+        this.drawObject(c, drawLink, drawArrowHead, true);
+    };
+
+    Link.prototype.drawObject = function(c, drawLink, drawArrowHead) {
+        // Enable the highlight effect
+        if (this.isHighlighted) {
+            // Set the stroke color and the line width
+            let oldStrokeStyle = c.strokeStyle;
+            c.strokeStyle = util.colors[util.Color.RED].colorCode;
+            let oldLineWidth = c.lineWidth;
+            c.lineWidth = 15;
+
+            // Draw the highlight bar of the link
+            c.beginPath();
+            drawLink();
+            c.stroke();
+
+            // Reset the draw parameters
+            c.strokeStyle = oldStrokeStyle;
+            c.lineWidth = oldLineWidth;
+            c.shadowBlur = 0;
+        }
+
+        // Draw the link itself, on top of the highlighting
+        // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
+        // is drawn visibly
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
+            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
         } else {
-            c.moveTo(linkInfo.startX, linkInfo.startY);
-            c.lineTo(linkInfo.endX, linkInfo.endY);
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
+        }
+        c.beginPath();
+        drawLink();
+        c.stroke();
+        c.stroke();
+        c.stroke();
+        c.stroke();
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
-        // Draw the head of the arrow.
-        if(linkInfo.hasCircle) {
-            this.parent.arrowIfReqd(c,
-                      linkInfo.endX,
-                      linkInfo.endY,
-                      linkInfo.endAngle - linkInfo.reverseScale * (Math.PI / 2));
-        } else {
-            this.parent.arrowIfReqd(c,
-                      linkInfo.endX,
-                      linkInfo.endY,
-                      Math.atan2(linkInfo.endY - linkInfo.startY, linkInfo.endX - linkInfo.startX));
-        }
-        // Draw the text.
-        if(linkInfo.hasCircle) {
-            var startAngle = linkInfo.startAngle;
-            var endAngle = linkInfo.endAngle;
-            if(endAngle < startAngle) {
-                endAngle += Math.PI * 2;
-            }
-            textAngle = (startAngle + endAngle) / 2 + linkInfo.isReversed * Math.PI;
-            textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(textAngle);
-            textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(textAngle);
-            this.parent.drawText(this, this.text, textX, textY, textAngle);
-        } else {
-            textX = (linkInfo.startX + linkInfo.endX) / 2;
-            textY = (linkInfo.startY + linkInfo.endY) / 2;
-            textAngle = Math.atan2(linkInfo.endX - linkInfo.startX, linkInfo.startY - linkInfo.endY);
-            this.parent.drawText(this, this.text, textX, textY, textAngle + this.lineAngleAdjust);
-        }
+        c.stroke();
+        drawArrowHead();
+        c.stroke();
+
+        // Reset the shadow parameter, in case the node was selected
+        c.shadowBlur = 0;
     };
 
     Link.prototype.containsPoint = function(x, y) {
@@ -378,7 +782,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             return;
         }
 
-        let nodeToLinkVector = { //TODO: maybe noramlize in length? mb it's not needed
+        let nodeToLinkVector = {
             x: node.x - linkPoint.x,
             y: node.y - linkPoint.y
         };
@@ -387,8 +791,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             y: 0
         };
 
-        return (Math.atan2(rightVector.y, rightVector.x) - Math.atan2(nodeToLinkVector.y, nodeToLinkVector.x)
-            + Math.PI) % (2*Math.PI);
+        return util.calculateAngle(nodeToLinkVector, rightVector);
     };
 
     /***********************************************************************
@@ -403,9 +806,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.anchorAngle = 0;
         this.mouseOffsetAngle = 0;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
+        this.isHighlighted = false;
         this.text = '';
 
-        if(mouse) {
+        if (mouse) {
             this.setAnchorPoint(mouse.x, mouse.y);
         }
     }
@@ -428,6 +834,12 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(this.anchorAngle > Math.PI) {
             this.anchorAngle -= 2 * Math.PI;
         }
+
+        this.hasMoved = true;
+    };
+
+    SelfLink.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     SelfLink.prototype.getEndPointsAndCircle = function() {
@@ -454,18 +866,90 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         };
     };
 
-    SelfLink.prototype.draw = function(c) {
+    SelfLink.prototype.draw = function(c, drawOption) {
         var linkInfo = this.getEndPointsAndCircle();
-        // Draw arc.
+
+        // A function used to draw the link
+        const drawLink = function() {
+            c.arc(linkInfo.circleX, linkInfo.circleY, linkInfo.circleRadius, linkInfo.startAngle, linkInfo.endAngle, false);
+        }.bind(this);
+
+        // A function used to draw the arrow head
+        const drawArrowHead = function() {
+            this.parent.arrowIfReqd(c, linkInfo.endX, linkInfo.endY, linkInfo.endAngle + Math.PI * 0.4);
+        }.bind(this);
+
+        // Draw the selection, and object and according highlight
+        if (drawOption === util.DrawOption.SELECTION) {
+            this.drawSelection(c, drawLink, drawArrowHead);
+        } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawObject(c, drawLink, drawArrowHead);
+
+            // Draw the text on the loop farthest from the node.
+            c.strokeStyle = c.fillStyle = util.Color.BLACK;
+            var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
+            var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
+            this.parent.drawText(this, this.text, textX, textY, this.anchorAngle);
+        }
+    };
+
+    SelfLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
+        // Enable the selection effect when applicable
+        if (this.parent.selectedObjects.includes(this)) {
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        }
+
+        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
+        this.drawObject(c, drawLink, drawArrowHead); //TODO: this function, and funct below
+    };
+
+    SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
+        // Enable the highlight effect
+        if (this.isHighlighted) {
+            // Set stroke color and line width
+            let oldStrokeStyle = c.strokeStyle;
+            c.strokeStyle = util.colors[util.Color.RED].colorCode;
+            let oldLineWidth = c.lineWidth;
+            c.lineWidth = 15;
+
+            // Draw the highlight bar of the link
+            c.beginPath();
+            drawLink();
+            c.stroke();
+
+            // Reset the draw parameters
+            c.strokeStyle = oldStrokeStyle;
+            c.lineWidth = oldLineWidth;
+            c.shadowBlur = 0;
+        }
+
+        // Draw the link itself, on top of the highlighting
+        // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
+        // is drawn visibly
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
+            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
+        } else {
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
+        }
         c.beginPath();
-        c.arc(linkInfo.circleX, linkInfo.circleY, linkInfo.circleRadius, linkInfo.startAngle, linkInfo.endAngle, false);
+        drawLink();
         c.stroke();
-        // Draw the text on the loop farthest from the node.
-        var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
-        var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
-        this.parent.drawText(this, this.text, textX, textY, this.anchorAngle);
-        // Draw the head of the arrow.
-        this.parent.arrowIfReqd(c, linkInfo.endX, linkInfo.endY, linkInfo.endAngle + Math.PI * 0.4);
+        c.stroke();
+        c.stroke();
+        c.stroke();
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+        }
+        c.stroke();
+        c.stroke();
+        drawArrowHead();
+        c.stroke();
+
+        // Reset the shadow parameter, in case the node was selected
+        c.shadowBlur = 0;
     };
 
     SelfLink.prototype.containsPoint = function(x, y) {
@@ -487,6 +971,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.node = node;
         this.deltaX = 0;
         this.deltaY = 0;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
+        this.isHighlighted = false;
 
         if(start) {
             this.setAnchorPoint(start.x, start.y);
@@ -504,12 +991,18 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if(Math.abs(this.deltaY) < this.parent.SNAP_TO_PADDING) {
             this.deltaY = 0;
         }
+
+        this.hasMoved = true;
+    };
+
+    StartLink.prototype.resetHasMoved = function() {
+        this.hasMoved = false;
     };
 
     StartLink.prototype.getEndPoints = function() {
         var startX = this.node.x + this.deltaX;
         var startY = this.node.y + this.deltaY;
-        var end = this.node.closestPointOnCircle(startX, startY);
+        var end = this.node.closestPointOnNode(startX, startY);
         return {
             'startX': startX,
             'startY': startY,
@@ -518,17 +1011,85 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         };
     };
 
-    StartLink.prototype.draw = function(c) {
+    StartLink.prototype.draw = function(c, drawOption) {
         var endPoints = this.getEndPoints();
 
-        // Draw the line.
+        // A function used to draw the link
+        const drawLink = function() {
+            c.moveTo(endPoints.startX, endPoints.startY);
+            c.lineTo(endPoints.endX, endPoints.endY);
+        }.bind(this);
+
+        // A function used to draw the arrow head
+        const drawArrowHead = function() {
+            this.parent.arrowIfReqd(c, endPoints.endX, endPoints.endY, Math.atan2(-this.deltaY, -this.deltaX));
+        }.bind(this);
+
+        // Draw the selection, and the object and according highlight
+        if (drawOption === util.DrawOption.SELECTION) {
+            this.drawSelection(c, drawLink, drawArrowHead);
+        } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawObject(c, drawLink, drawArrowHead, false);
+        }
+    };
+
+    StartLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
+        // Enable the selection effect when applicable
+        if (this.parent.selectedObjects.includes(this)) {
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        }
+
+        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
+        this.drawObject(c, drawLink, drawArrowHead, true); //TODO: this function, and funct below
+    };
+
+    StartLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
+        // Enable the highlight effect
+        if (this.isHighlighted) {
+            // Set the stroke color and the line width
+            let oldStrokeStyle = c.strokeStyle;
+            c.strokeStyle = util.colors[util.Color.RED].colorCode;
+            let oldLineWidth = c.lineWidth;
+            c.lineWidth = 15;
+
+            // Draw the highlight bar of the link
+            c.beginPath();
+            drawLink();
+            c.stroke();
+
+            // Reset the draw parameters
+            c.strokeStyle = oldStrokeStyle;
+            c.lineWidth = oldLineWidth;
+            c.shadowBlur = 0;
+        }
+
+        // Draw the link itself, on top of the highlighting
+        // The multiple executions of c.stroke();, and the if-statements are placed to ensure that the selection
+        // is drawn visibly
+        if (this.colorObject !== util.colors[util.Color.BLACK] && this.colorObject !== null) {
+            c.strokeStyle = c.fillStyle = this.colorObject.colorCode;
+        } else {
+            c.strokeStyle = c.fillStyle = util.Color.WHITE;
+        }
         c.beginPath();
-        c.moveTo(endPoints.startX, endPoints.startY);
-        c.lineTo(endPoints.endX, endPoints.endY);
+        drawLink();
+        c.stroke();
+        c.stroke();
+        c.stroke();
+        c.stroke();
+        if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
+            c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
+                this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
+        }
+        c.stroke();
+        c.stroke();
+        drawArrowHead();
         c.stroke();
 
-        // Draw the head of the arrow.
-        this.parent.arrowIfReqd(c, endPoints.endX, endPoints.endY, Math.atan2(-this.deltaY, -this.deltaX));
+        // Reset the shadow parameter, in case the node was selected
+        c.shadowBlur = 0;
     };
 
     StartLink.prototype.containsPoint = function(x, y) {
@@ -552,11 +1113,22 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent = parent;
         this.from = from;
         this.to = to;
+        this.colorObject = (this.parent.templateParams.edge_colors) ?
+            util.colors[this.parent.templateParams.edge_colors[0]] : null;
     }
 
     TemporaryLink.prototype.draw = function(c) {
         // Draw the line.
         c.beginPath();
+
+        // Use the color to draw the link
+        let drawColor = (this.colorObject) ? this.colorObject.colorCode : null;
+        if (!drawColor) {
+            drawColor = util.colors[util.Color.BLACK].colorCode; // black is the default color
+            this.colorObject = util.colorObjectFromColorCode(drawColor);
+        }
+        c.strokeStyle = c.fillStyle = drawColor;
+
         c.moveTo(this.to.x, this.to.y);
         c.lineTo(this.from.x, this.from.y);
         c.stroke();
@@ -565,345 +1137,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent.arrowIfReqd(c, this.to.x, this.to.y, Math.atan2(this.to.y - this.from.y, this.to.x - this.from.x));
     };
 
-    /***********************************************************************
-     *
-     * Define a class Button as a base class from which more specific
-     * buttons can be derived.
-     *
-     ***********************************************************************/
-
-    function Button(toolbar, parent, w, h, iconClass, title, eventFunction) { //TODO: put a button in a button group (used for draw/edit mode buttons, or place/transition buttons) to easily switch between buttons in a group
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.width = w; //In px.
-        this.height = h; //In px.
-        this.icon = iconClass;
-        this.title = title;
-        this.eventFunction = eventFunction;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the button
-    Button.prototype.create = function () {
-        // Create the button, and add an unclickable icon
-        this.id = 'button_' + this.title.split(' ').join('_');
-
-        let toolbarContainerHeight = $(this.parent[0]).height();
-        let $button = $('<button/>')
-            .attr({
-                "id":       this.id,
-                "class":    'toolbar_button',
-                "type":     "button",
-                "title":    this.title,
-                "style":    "width: " + this.width + "px; height: " + this.height + "px; margin-top: " +
-                    (toolbarContainerHeight - this.height)/2 + "px;",
-            })
-            .append($('<i/>')
-            .addClass('icon fa ' + this.icon).attr({
-                    "style":    "pointer-events: none",
-                }));
-        $(this.parent[0]).append($button);
-        this.object = $button;
-    };
-
-    Button.prototype.onClick = function(eventFunction, object) {
-        if (eventFunction !== null) {
-            if (object === null) {
-                eventFunction();
-            } else {
-                eventFunction(object);
-            }
-        }
-    };
-
-    /***********************************************************************
-     *
-     * Define a class ModeButton for the buttons used to switch modes,
-     * which are based on the general Button class
-     *
-     ***********************************************************************/
-
-    function ModeButton(toolbar, parent, w, h, iconClass, title, buttonModeType, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-        this.buttonModeType = buttonModeType; // Denotes which UI mode pressing the button activates
-    }
-
-    ModeButton.prototype = Object.create(Button.prototype);
-    ModeButton.prototype.constructor = ModeButton;
-
-    ModeButton.prototype.create = function() {
-        Button.prototype.create.call(this);
-
-        // Add 'toggle' to the class
-        this.object.addClass('toggle');
-
-        // Add the not_clicked class name by default, based on the button type
-        this.object.addClass('not_clicked');
-    };
-
-    ModeButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this);
-        this.setSelected();
-    };
-
-    ModeButton.prototype.setSelected = function() {
-        this.object.addClass('clicked');
-        this.object.removeClass('not_clicked');
-    };
-
-    ModeButton.prototype.setDeselected = function() {
-        this.object.removeClass('clicked');
-        this.object.addClass('not_clicked');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class PetriNodeTypeButton for the buttons used to switch
-     * the petri node to be placed, when in Draw mode and when the graph
-     * type is Petri nets
-     *
-     ***********************************************************************/
-
-    function PetriNodeTypeButton(toolbar, parent, w, h, iconClass, title, petriNodeType, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-        this.petriNodeType = petriNodeType; // Denotes which petri node type mode pressing the button activates
-    }
-
-    PetriNodeTypeButton.prototype = Object.create(Button.prototype);
-    PetriNodeTypeButton.prototype.constructor = PetriNodeTypeButton;
-
-    PetriNodeTypeButton.prototype.create = function() {
-        Button.prototype.create.call(this);
-
-        // Add 'toggle' to the class
-        this.object.addClass('toggle');
-
-        // Add 'petri_node_type' to the class
-        this.object.addClass('petri_node_type');
-
-        // Add the not_clicked class name by default, based on the button type
-        this.object.addClass('not_clicked');
-
-        // Add the event function to this button
-        let self = this;
-        $(this.object).click(function () {
-            self.onClick();
-        });
-    };
-
-    PetriNodeTypeButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this);
-        this.setSelected();
-    };
-
-    PetriNodeTypeButton.prototype.setSelected = function() {
-        this.object.addClass('clicked');
-        this.object.removeClass('not_clicked');
-    };
-
-    PetriNodeTypeButton.prototype.setDeselected = function() {
-        this.object.removeClass('clicked');
-        this.object.addClass('not_clicked');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class DeleteButton for the delete button, which is based on
-     * the general Button class
-     *
-     ***********************************************************************/
-
-    function DeleteButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-    }
-
-    DeleteButton.prototype = Object.create(Button.prototype);
-    DeleteButton.prototype.constructor = DeleteButton;
-
-    DeleteButton.prototype.create = function() {
-        Button.prototype.create.call(this);
-
-        // Set the button as disabled
-        this.setDisabled();
-    };
-
-    DeleteButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction, this.toolbar.parent);
-    };
-
-    DeleteButton.prototype.setEnabled = function() {
-        $(this.object[0]).attr('disabled', false);
-
-        this.object.removeClass('disabled');
-    };
-
-    DeleteButton.prototype.setDisabled = function() {
-        $(this.object[0]).attr('disabled', true);
-
-        this.object.addClass('disabled');
-    };
-
-    /***********************************************************************
-     *
-     * Define a class HelpButton for the help button, which is based on
-     * the general Button class
-     *
-     ***********************************************************************/
-
-    function HelpButton(toolbar, parent, w, h, iconClass, title, eventFunction) {
-        Button.call(this, toolbar, parent, w, h, iconClass, title, eventFunction);
-    }
-
-    HelpButton.prototype = Object.create(Button.prototype);
-    HelpButton.prototype.constructor = HelpButton;
-
-    HelpButton.prototype.onClick = function() {
-        Button.prototype.onClick(this.eventFunction);
-
-        this.toolbar.displayHelpOverlay();
-    };
-
-    /***********************************************************************
-     *
-     * Define a class NumberInputField for the number input field
-     * This can be used to set the number of tokens in a petri net's place
-     * for example
-     *
-     ***********************************************************************/
-
-    function NumberInputField(toolbar, parent, w, h, minValue, maxValue, name, labelText, title, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.width = w;     // In px.
-        this.height = h;    // In px.
-        this.minValue = minValue;   // The minimum numeric value possible to be entered
-        this.maxValue = maxValue;   // The maximum numeric value possible to be entered
-        this.name = name;
-        this.labelText = labelText;
-        this.title = title;
-        this.eventFunction = eventFunction;
-    }
-
-    NumberInputField.prototype.create = function() {
-        // Create the number input field
-        this.id = 'numberinput_' + this.title.split(' ').join('_');
-
-        let $number_input = $('<label/>')
-            .attr({
-                'class':    'toolbar_label',
-            }).append(this.labelText).append($('<input/>')
-            .attr({
-                'id':       this.id,
-                'class':    'toolbar_numberinput',
-                'type':     'number',
-                'title':    this.title,
-                'name':     this.name,
-                'min':      this.minValue,
-                'max':      this.maxValue,
-            }));
-        $(this.parent[0]).append($number_input);
-
-        // Add the event listener
-        $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
-        this.object = $number_input;
-    }
-
-    NumberInputField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this.toolbar);
-    };
-
-    /***********************************************************************
-     *
-     * Define a class Checkbox which can be used in the graph toolbar
-     *
-     ***********************************************************************/
-
-    function Checkbox(toolbar, parent, type, text, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.text = text;
-        this.type = type;
-        this.eventFunction = eventFunction;
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
-    Checkbox.prototype.create = function () {
-        this.id = 'checkbox_' + this.text.split(' ').join('_');
-        let $checkbox = $('<label/>')
-            .attr({
-                'class':    'toolbar_label',
-            }).append($('<input/>')
-            .attr({
-                'id':       this.id,
-                'class':    'toolbar_checkbox',
-                'type':     'checkbox',
-            })).append(this.text);
-        $(this.parent[0]).append($checkbox);
-
-        // Add the event listener
-        $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
-        this.object = $checkbox;
-    };
-
-    Checkbox.prototype.handleInteraction = function(event) {
-        this.eventFunction(event);
-    }
-
-    /***********************************************************************
-     *
-     * Define a class TextField which can be used in the graph toolbar
-     *
-     ***********************************************************************/
-
-    function TextField(toolbar, parent, w, placeholderText, eventFunction) {
-        this.toolbar = toolbar;
-        this.parent = parent;
-        this.w = w;
-        this.placeholderText = placeholderText;
-        this.eventFunction = eventFunction;
-    //<input type="text" id="pin" name="pin" maxlength="4" size="4" placeholder="Hello0000008808080">
-    }
-
-    // The create function should be called explicitly in order to create the HTML element(s) of the text field
-    TextField.prototype.create = function () {
-        this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
-        let $textfield = $('<label/>')
-            .attr({
-                'class':    'toolbar_label',
-            }).append(this.placeholderText)
-            .append($('<input/>')
-                .attr({
-                    'id':           this.id,
-                    'class':        'toolbar_textfield',
-                    'type':         'text',
-                    'placeholder':  this.placeholderText,
-                    'size':         this.w,
-                }));
-        $(this.parent[0]).append($textfield);
-
-        // Add the event listener
-        $textfield[0].addEventListener('input', (event) => this.handleInteraction(event));
-        this.object = $textfield;
-    };
-
-    TextField.prototype.handleInteraction = function(event) {
-        this.eventFunction(event, this.toolbar);
-    }
-
     return {
-        PetriNodeType: PetriNodeType,
-        ModeType: ModeType,
-        CheckboxType: CheckboxType,
         Node: Node,
         Link: Link,
         SelfLink: SelfLink,
         TemporaryLink: TemporaryLink,
-        StartLink: StartLink,
-        ModeButton: ModeButton,
-        PetriNodeTypeButton: PetriNodeTypeButton,
-        HelpButton: HelpButton,
-        NumberInputField: NumberInputField,
-        DeleteButton: DeleteButton,
-        Checkbox: Checkbox,
-        TextField: TextField,
+        StartLink: StartLink
     };
 });

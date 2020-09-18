@@ -116,7 +116,22 @@ class qtype_graphchecker_question extends question_graded_automatically {
      * @return string the message.
      */
     public function get_validation_error(array $response) {
-        return '';
+        $error = 'This answer could not be graded because an error occurred while checking.<br>Details:';
+        $testoutcomeserial = $response['_testoutcome'];
+        $testoutcome = unserialize($testoutcomeserial);
+        if ($testoutcome instanceof qtype_graphchecker_testing_outcome) {
+            $error .= "<ul>";
+            foreach ($testoutcome->testresults as $result) {
+                if (array_key_exists('error', $result)) {
+                    $error .= "<li>";
+                    $error .= "Check <b>" . $testoutcome->get_test_name($this->answertype, $result['module'], $result['method']) . "</b> produced error:<pre>" . $result['error'] . "</pre>";
+                }
+            }
+            $error .= "</ul>";
+        } else {
+            $error .= "Unknown error.";
+        }
+        return $error;
     }
 
 
@@ -193,7 +208,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
         }
 
         $datatocache = array('_testoutcome' => $testoutcomeserial);
-        if ($testoutcome->run_failed()) {
+        if ($testoutcome->is_ungradable()) {
             return array(0, question_state::$invalid, $datatocache);
         } else if ($testoutcome->all_correct()) {
              return array(1, question_state::$gradedright, $datatocache);
@@ -218,19 +233,45 @@ class qtype_graphchecker_question extends question_graded_automatically {
     }
 
 
-    /**
-     * Returns a JSON string to be handed to the UI plugin, corresponding to
-     * the answer type of this question.
-     */
-    public static function get_ui_params($type) {
+    public static function get_ui_params_for_type($type) {
         global $CFG;
         $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
         $types = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception("Invalid JSON types file");
         }
+        $params = $types[$type]["ui_params"];
+        $params['type'] = $type;
+        return $params;
+    }
 
-        return json_encode($types[$type]["ui_params"]);
+    /**
+     * Returns a JSON string to be handed to the UI plugin, corresponding to
+     * the answer type of this question.
+     */
+    public function get_ui_params() {
+        $params = qtype_graphchecker_question::get_ui_params_for_type($this->answertype);
+
+        if ($this->vertex_highlight) {
+            $params['highlight_vertices'] = true;
+        }
+        if ($this->edge_highlight) {
+            $params['highlight_edges'] = true;
+        }
+
+        if ($this->allowed_vertex_edits === 'none') {
+            $params['allow_edits'] = [];
+        } else if ($this->allowed_vertex_edits === 'layout') {
+            $params['allow_edits'] = ['move'];
+        } else if ($this->allowed_vertex_edits === 'attributes') {
+            $params['allow_edits'] = [
+                'move', 'vertex_labels', 'edge_labels',
+                'vertex_colors', 'edge_colors',
+                'fsm_flags', 'petri_marking'
+            ];
+        }
+
+        return json_encode($params);
     }
 
 

@@ -129,12 +129,11 @@ define(['jquery'], function($) {
         // When the wrapper has been set up on a text area, the text area's
         // data attribute contains an entry for 'current-ui-wrapper' that is
         // a reference to the wrapper ('this').
-        var  h,
-             params,
-             t = this; // For use by embedded functions.
+        var params,
+            t = this; // For use by embedded functions.
 
-        this.GUTTER = 40;  // Size of gutter at base of wrapper Node (pixels)
-        this.MIN_WRAPPER_HEIGHT = 50;
+        this.GUTTER = 0;  // Size of gutter at base of wrapper Node (pixels)
+        this.MIN_WRAPPER_HEIGHT = 300;
 
         this.taId = textareaId;
         this.loadFailId = textareaId + '_loadfailerr';
@@ -151,8 +150,6 @@ define(['jquery'], function($) {
         this.loadFailed = false;  // True if UI failed to initialise properly
         this.retries = 0;        // Number of failed attempts to load a UI component
 
-        h = Math.max(parseInt(this.textArea.css("height")), this.MIN_WRAPPER_HEIGHT);
-
         // Construct an empty hidden wrapper div, inserted directly after the
         // textArea, ready to contain the actual UI.
         this.wrapperNode = $("<div id='" + this.taId + "_wrapper' class='ui_wrapper'></div>");
@@ -160,7 +157,7 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
-            "background-color": "transparent"
+            minHeight: this.MIN_WRAPPER_HEIGHT,
         });
 
         // Record a reference to this wrapper in the text area's data attribute
@@ -280,7 +277,8 @@ define(['jquery'], function($) {
                                 resize: 'vertical',
                                 overflow: 'hidden',
                                 minHeight: h,
-                                border: '1px solid darkgrey'
+                                border: '1px solid darkgrey',
+                                backgroundColor: 'white'
                             });
                             t.checkForResize();
                         } else {
@@ -288,7 +286,8 @@ define(['jquery'], function($) {
                                 resize: 'none',
                                 overflow: 'auto',
                                 minHeight: 'auto',
-                                border: 'none'
+                                border: 'none',
+                                backgroundColor: 'transparent'
                             });
                         }
                     }
@@ -329,6 +328,7 @@ define(['jquery'], function($) {
 
 
     InterfaceWrapper.prototype.checkForResize = function() {
+
         // Check for wrapper resize - propagate to ui element.
         var h, hAdjusted, w, wAdjusted, xLeft, maxWidth;
         var SIZE_HACK = 25;  // Horrible but best I can do. TODO: FIXME
@@ -341,7 +341,7 @@ define(['jquery'], function($) {
                 maxWidth = $(window).innerWidth() - xLeft - SIZE_HACK;
                 hAdjusted = h - this.GUTTER;
                 wAdjusted = Math.min(maxWidth, w);
-                this.uiInstance.resize(wAdjusted,  hAdjusted);
+                this.uiInstance.resize(wAdjusted, hAdjusted);
                 this.hLast = this.wrapperNode.innerHeight();
                 this.wLast = this.wrapperNode.innerWidth();
             }
@@ -351,12 +351,12 @@ define(['jquery'], function($) {
     // Enables the resizing of the interface wrapper
     InterfaceWrapper.prototype.enableResize = function() {
         $(this.wrapperNode).css('resize', 'vertical');
-    }
+    };
 
     // Disables the resizing of the interface wrapper
     InterfaceWrapper.prototype.disableResize = function() {
         $(this.wrapperNode).css('resize', 'none');
-    }
+    };
 
     /**
      *  The external entry point from the PHP.

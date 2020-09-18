@@ -3,9 +3,11 @@
         "name": "Undirected graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": false,
-            "isfsm": false,
-            "ispetri": false
+            "type": "undirected",
+            "vertex_labels": true,
+            "edge_labels": true,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         },
         "python_modules": ["igraph"]
     },
@@ -13,9 +15,11 @@
         "name": "Directed graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": false,
-            "ispetri": false
+            "type": "directed",
+            "vertex_labels": true,
+            "edge_labels": true,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         },
         "python_modules": ["igraph"]
     },
@@ -23,18 +27,22 @@
         "name": "Finite state machine",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": true,
-            "ispetri": false
+            "type": "fsm",
+            "vertex_labels": true,
+            "edge_labels": true,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         }
     },
     "petri": {
         "name": "Petri net",
         "ui_plugin": "graph",
         "ui_params": {
-            "isdirected": true,
-            "isfsm": false,
-            "ispetri": true
+            "type": "petri",
+            "vertex_labels": true,
+            "edge_labels": true,
+            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
+            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
         }
     }
 }

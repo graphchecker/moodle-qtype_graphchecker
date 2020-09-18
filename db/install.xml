@@ -13,6 +13,12 @@
         <FIELD NAME="answer" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A sample solution to the problem. Should satisfy all checks."/>
         <FIELD NAME="validateonsave" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If true, the sample answer will be checked when saving and saving will be aborted if the tests don't pass."/>
         <FIELD NAME="checks" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The checks, as a JSON string."/>
+        <FIELD NAME="allowed_vertex_edits" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which types of vertex edits to allow ('none' / 'layout' / 'attributes' / 'add_remove' / 'all')"/>
+        <FIELD NAME="allowed_edge_edits" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which types of edge edits to allow ('none' / 'layout' / 'attributes' / 'add_remove' / 'all')"/>
+        <FIELD NAME="vertex_highlight" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether to allow the student to highlight vertices (0 / 1)"/>
+        <FIELD NAME="edge_highlight" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether to allow the student to highlight edges (0 / 1)"/>
+        <FIELD NAME="vertex_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which vertex labels to allow (temporary WIP field, currently unused)"/>
+        <FIELD NAME="edge_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which edge labels to allow (temporary WIP field, currently unused)"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

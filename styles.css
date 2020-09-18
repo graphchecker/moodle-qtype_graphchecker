@@ -347,11 +347,6 @@ body#page-question-type-graphchecker input#id_memlimitmb {
     width: auto;
 }
 
-body#page-question-type-graphchecker label + select,
-body#page-question-type-graphchecker label + input {
-    margin-right: 1em;
-}
-
 body#page-question-type-graphchecker div.testcaseexpression {
     padding-top: 10px;
     border-top: 1px solid lightgrey;
@@ -396,8 +391,11 @@ body#page-question-type-graphchecker .tests-ui .test-container {
 }
 
 .graphchecker_toolbar {
+    display: inline-flex;
     background-color: #f2f2f2;
     border-bottom: 1px solid #bbb;
+    min-height: 43.55px;
+    width: 100%;
 }
 
 body#page-question-type-graphchecker .tests-ui .test-container:last-child {
@@ -451,6 +449,9 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
 .graph_ui_container_div button.toolbar_button.clicked,
 .graph_ui_container_div button.toolbar_button:active:not(.disabled) {
     background-color: #ebebeb !important;
+    box-shadow: 0 2px 6px inset rgba(0, 0, 0, 0.3);
+    border-color: #a0a0a0;
+    border-bottom-color: #b0b0b0;
 }
 
 .graph_ui_container_div button.toolbar_button.disabled {
@@ -461,8 +462,8 @@ body#page-question-type-graphchecker .tests-ui .button:hover,
     padding: 0 !important;
 }
 
-.graph_ui_container_div .toolbar_button .icon {
-    margin-right: 0 !important;
+button.toolbar_button.petri_node_type {
+    margin-top: 2px !important;
 }
 
 body#page-question-type-graphchecker .tests-ui .button .icon {
@@ -554,58 +555,249 @@ li.bulktest.graphchecker.context.quiz {
     list-style-type: none;
 }
 
+
+/* Graph UI */
+
+.graph_ui_container_div button .icon {
+    padding: 0;
+    margin: 2px 0;
+}
+
 /* Styling for the subparts of the graph UI toolbar */
-div.toolbar_part {
-    display: inline-block;
+.graph_ui_container_div div.graphchecker_toolbar {
+    display: flex;
+}
+
+.graph_ui_container_div div.toolbar_part {
+    display: inline-flex;
+    align-items: center;
     vertical-align: top;
     padding: 0 3px;
 }
 
-div#toolbar_part_left {
+.graph_ui_container_div div#toolbar_part_left {
     border-right: 1px solid DarkGray;
+    flex-stretch: 0;
 }
 
-div#toolbar_part_right {
+.graph_ui_container_div div#toolbar_part_right {
     border-left: 1px solid DarkGray;
+    flex-stretch: 0;
 }
 
-div#toolbar_part_middle {
+.graph_ui_container_div div#toolbar_part_middle {
+    flex-stretch: 1;
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
-label.checkbox_label {
+/* Checkboxes */
+
+.graph_ui_container_div div.toolbar_field {
     position: relative;
     font-size: 14px;
+    color: black;
+    margin: 0.0px 7px;
+}
+
+.graph_ui_container_div div.toolbar_field label.checkbox_label {
+    display: inline-block;
+    position: relative;
     margin-right: 10px;
     margin-bottom: 0;
     color: black;
 }
 
-input.toolbar_checkbox {
-    margin-right: 5px;
+.graph_ui_container_div div.checkbox_Highlight {
+    width: 80px;
 }
 
-label.textfield_label {
+.graph_ui_container_div div.checkbox_Initial {
+    width: 57px;
+}
+
+.graph_ui_container_div div.checkbox_Final {
+    width: 55px;
+}
+
+.graph_ui_container_div div.checkbox_label {
+    padding-right: 5px;
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+.graph_ui_container_div input.toolbar_checkbox {
+    margin: 0;
+    position: absolute;
+    top: 4px;
+
+    opacity: 0;
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+}
+
+.graph_ui_container_div span.toolbar_checkbox {
+    /* create a custom checkbox positioned on top of the actual input
+       field */
+    position: absolute;
+    top: 4px;
+
+    height: 14px;
+    width: 14px;
+    background-color: white;
+    border: 1px solid black;
+    cursor: pointer;
+
+    /* make sure mouse clicks end up on the underlying input element */
+    pointer-events: none;
+}
+
+/* On hover over the input checkbox, add a border color to the span checkbox */
+.graph_ui_container_div div.checkbox_label:not(:hover) ~ input.toolbar_checkbox:hover ~ span.toolbar_checkbox {
+    border-color: #0078d7;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.graph_ui_container_div span.toolbar_checkbox:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark in the span when checked */
+.graph_ui_container_div input.toolbar_checkbox:checked ~ span.toolbar_checkbox_black:after,
+.graph_ui_container_div input.toolbar_checkbox:checked ~ span.toolbar_checkbox_gray:after {
+    display: block;
+}
+
+/* Styling of the checkmark */
+.graph_ui_container_div span.toolbar_checkbox_black:after {
+    left: 4px;
+    top: 0;
+    width: 4.5px;
+    height: 9px;
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.graph_ui_container_div span.toolbar_checkbox_gray:after {
+    left: 4px;
+    top: 0;
+    width: 5px;
+    height: 10px;
+    border: solid darkgray;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.graph_ui_container_div div.field_label {
     position: relative;
     font-size: 14px;
-    margin-bottom: 0;
-    margin-left: 5px;
+    margin: 0.0px 7px;
     color: black;
 }
 
-input.toolbar_textfield {
+.graph_ui_container_div input.toolbar_numberinput {
+    height: 17.5px;
+    width: 45px;
     margin-left: 5px;
-    margin-right: 13px;
-    height: 14px;
 }
 
-button.disabled {
+.graph_ui_container_div input.toolbar_textfield {
+    top: -2px;
+    position: relative;
+    margin: 0;
+    height: 17.5px;
+}
+
+.graph_ui_container_div input.toolbar_textfield.invalid {
+    box-shadow: 0 0 5px red;
+}
+
+.graph_ui_container_div button.disabled {
     background-color: #d9d9d9;
 }
 
-ul.dialog-help {
+.graph_ui_container_div ul.dialog-help {
     margin-top: 0;
     margin-bottom: 0;
 }
 
+/* Styling for the custom dropdown menu */
+.graph_ui_container_div i.dropdown_item_icon {
+    font-size: 12px;
+    /* Used to center the icons in their direct parent div */
+    top: calc(50% - 11px);
+    position: relative;
+    margin-right: 0px;
+}
+
+.graph_ui_container_div .hide {
+    display: none;
+}
+
+.graph_ui_container_div div.custom_dropdown_field {
+    width: 95px;
+    height: 17.5px;
+    background-color: white;
+    border: 1px solid #7a7a7a;
+}
+
+.graph_ui_container_div div.custom_dropdown_field:hover {
+    border-color: #171717;
+}
+
+.graph_ui_container_div div.custom_dropdown_field:hover i.custom_dropdown_icon {
+    background-color: #e5f1fb;
+    border: 1px solid #0078d7;
+}
+
+.graph_ui_container_div div.dropdown_item {
+    height: 18.4px;
+    padding: 0 5px;
+}
+
+.graph_ui_container_div div.dropdown_item:hover {
+    background-color: dodgerblue;
+}
+
+.graph_ui_container_div i.custom_dropdown_icon {
+    position: relative;
+    width: 15px;
+    height: 100%;
+    font-size: 12px;
+    text-align: center;
+    float: right;
+    right: -1px;
+    top: -1px;
+    border: 1px solid transparent;
+    margin-right: 0px;
+}
+
+.graph_ui_container_div span.dropdown_item {
+    position: relative;
+    top: calc(50% - 11px);
+    font-size: 14px;
+    user-select: none;
+}
+
+.graph_ui_container_div div.custom_dropdown_itemlist_wrapper {
+    position: relative;
+}
+
+.graph_ui_container_div div.custom_dropdown_itemlist {
+    position: absolute;
+    width: 95px;
+    z-index: 99;
+    background-color: white;
+    border: 1px solid #7a7a7a;
+    cursor: default;
+    user-select: none;
+}

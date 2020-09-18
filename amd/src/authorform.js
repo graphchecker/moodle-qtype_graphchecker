@@ -30,7 +30,9 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             $preloadField = $('#id_answerpreload'),
             $checksField = $('#id_checks'),
             $typeCombo = $('#id_answertype'),
-            type = $typeCombo.val();
+            type = $typeCombo.val(),
+            $copyFromPreloadButton = $('#id_copyfrompreload');
+            $copyToPreloadButton = $('#id_copytopreload');
 
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
@@ -89,8 +91,11 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                         $preloadField.val('');
                         $checksField.val('');
 
-                        $sampleAnswerField.attr('data-params', JSON.stringify(data['ui_params']));
-                        $preloadField.attr('data-params', JSON.stringify(data['ui_params']));
+                        let params = data['ui_params'];
+                        params['type'] = type;
+                        params = JSON.stringify(params);
+                        $sampleAnswerField.attr('data-params', params);
+                        $preloadField.attr('data-params', params);
                         $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
 
                         setUis();
@@ -104,6 +109,26 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             } else {
                 $typeCombo.val(type);
             }
+        });
+
+        $copyFromPreloadButton.on('click', function() {
+            $preloadField.data('current-ui-wrapper').stop();
+            $sampleAnswerField.data('current-ui-wrapper').stop();
+
+            $sampleAnswerField.val($preloadField.val());
+
+            $preloadField.data('current-ui-wrapper').restart();
+            $sampleAnswerField.data('current-ui-wrapper').restart();
+        });
+
+        $copyToPreloadButton.on('click', function() {
+            $preloadField.data('current-ui-wrapper').stop();
+            $sampleAnswerField.data('current-ui-wrapper').stop();
+
+            $preloadField.val($sampleAnswerField.val());
+
+            $preloadField.data('current-ui-wrapper').restart();
+            $sampleAnswerField.data('current-ui-wrapper').restart();
         });
     }
 

@@ -1,6 +1,10 @@
 {
     "name": "Basic properties",
     "checks": {
+        "connected": {
+            "name": "Connectedness",
+            "description": "Check if the graph is connected"
+        },
         "edge_count": {
             "name": "Edge count",
             "description": "Checks if the graph has the given number of edges.",
@@ -11,6 +15,59 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Count",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
+                }
+            ]
+        },
+        "same_highlights": {
+            "name": "Match highlighting",
+            "description": "Check if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "graph"
+                }
+            ]
+        },
+        "no_cycles": {
+            "name": "No cycles",
+            "description": "Checks if the graph has no cycles.",
+            "params": [
+                {
+                    "param": "highlighted",
+                    "name": "Use",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
+                }
+            ]
+        },
+        "mst": {
+            "name": "Is MST highlighted",
+            "description": "Checks if the highlighted edges form a MST."
+        },
+        "sumEdgeWeights": {
+            "name": "Sum edge weights",
+            "description": "Checks if the sum of edge weights matches a given integer.",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "should be",
+                    "type": "integer"
+                },
+                {
+                    "param": "highlighted",
+                    "name": "Sum",
+                    "type": "choice",
+                    "options": ["all edges", "only highlighted edges"],
+                    "default": "all edges"
                 }
             ]
         },
@@ -24,23 +81,15 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
-                }
-            ]
-        },
-		"connected": {
-			"name": "Graph is connected",
-			"description": "Check if the graph is connected"
-		},
-		"exact_same": {
-			"name": "Exact answer",
-			"description": "Check if exactly the specified graph is given. (excluding embedding)",
-            "params": [
+                },
                 {
-                    "param": "expected",
-                    "name": "should be",
-                    "type": "graph"
+                    "param": "highlighted",
+                    "name": "Count",
+                    "type": "choice",
+                    "options": ["all vertices", "only highlighted vertices"],
+                    "default": "all vertices"
                 }
             ]
-		}
+        }
     }
 }

@@ -1,9 +1,0 @@
-{
-    "name": "BST properties",
-    "checks": {
-        "BST_layout": {
-            "name": "BST layout",
-            "description": "Check if the given layout (only layout, not structure!) is valid for a BST"
-        }
-    }
-}

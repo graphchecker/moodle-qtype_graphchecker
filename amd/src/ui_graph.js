@@ -49,8 +49,9 @@
  */
 
 
-
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'], function($, util, elements) {
+define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
+    'qtype_graphchecker/ui_toolbar', 'qtype_graphchecker/toolbar_elements'],
+    function($, util, elements, ui_toolbar, toolbar_elements) {
 
     /***********************************************************************
      *
@@ -71,7 +72,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             class:      "graphchecker_graphcanvas",
             tabindex:   1 // So canvas can get focus.
         });
-        this.canvas.css({'background-color': 'white'});
+        this.canvas.css({'background-color': util.Color.WHITE});
 
         this.canvas.on('mousedown', function(e) {
             return parent.mousedown(e);
@@ -82,12 +83,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         });
 
         // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
+        this.canvas.on('mouseenter', function(e) {
+            return parent.mouseenter(e);
+        });
+
+        // Added so that the mouseup event is executed when the mouse leaves the graph UI canvas
         this.canvas.on('mouseleave', function(e) {
-            return parent.mouseup(e);
+            return parent.mouseleave(e);
         });
 
         this.canvas.on('keydown', function(e) {
             return parent.keydown(e);
+        });
+
+        this.canvas.on('keyup', function(e) {
+            return parent.keyup(e);
         });
 
         this.canvas.on('mousemove', function(e) {
@@ -106,356 +116,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.resize(w, h);
     }
-
-    /***********************************************************************
-     *
-     * A GraphToolbar is the Graph's toolbar HTML div
-     * object.
-     *
-     ************************************************************************/
-
-    function GraphToolbar(parent, divId, w, h, buttonSize, uiMode, helpOverlay) {
-        // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
-        // the required canvasId and the height and width of the wrapper that
-        // encloses the Div.
-
-        let self = this;
-        this.parent = parent;
-        this.buttonSize = {     //px. The pre-set size of the buttons (width, w, and height, h)
-            w:  35,             //TODO: set this in the style.css file instead of as a variable (a generic button class for this plugin)
-            h:  25,
-        };
-        this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
-        this.helpOverlay = helpOverlay;
-        this.div = $(document.createElement('div'));
-        this.div.attr({
-            id:         divId,
-            class:      "graphchecker_toolbar",
-            tabindex:   0
-        });
-
-        // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
-        // TODO: make one list per toolbar part (left, middle, right), and index by string, e.g. 'token'
-        // TODO: make button groups
-        this.buttons = [];
-        this.checkboxes = [];
-        this.petriNodeTypeButtons = [];
-        this.petriTokenField = null;
-        this.labelTextField = null;
-
-        $(document).ready(function() {
-            // Create the 3 parts of the toolbar: left, middle and right
-            self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
-                self.div[0].style.height, 'left');
-            self.toolbarMiddlePart = self.createToolbarPartObject(self.div[0],
-                self.div[0].style.height, 'middle');
-            self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
-                self.div[0].style.height, 'right');
-
-            // Create the edit button
-            let editButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Edit mode", elements.ModeType.EDIT,
-                self.onModeButtonPressed);
-            editButton.create();
-            self.buttons.push(editButton);
-
-            // Create the draw button
-            let drawButton = new elements.ModeButton(self, self.toolbarLeftPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode", elements.ModeType.DRAW,
-                self.onModeButtonPressed);
-            drawButton.create();
-            self.buttons.push(drawButton);
-
-            // Create the delete button
-            let deleteButton = new elements.DeleteButton(self, self.toolbarRightPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObject);
-            deleteButton.create();
-            self.buttons.push(deleteButton);
-
-            // Create the help button
-            let helpButton = new elements.HelpButton(self, self.toolbarRightPart,
-                self.buttonSize.w, self.buttonSize.h, 'fa-question', "Help menu", null);
-            helpButton.create();
-            self.buttons.push(helpButton);
-
-            // Enable one of the mode buttons at the start, depending on the UI mode
-            for (let i = 0; i < self.buttons.length; i++) {
-                if (self.buttons[i] instanceof elements.ModeButton && self.buttons[i].buttonModeType ===
-                    self.uiMode) {
-                    self.buttons[i].setSelected();
-                }
-            }
-
-            // If the graph type is 'Petri net', and the initial mode is 'Draw', show the buttons for selection
-            // different types of petri nodes: places and transitions
-            if (self.parent.isPetri() && self.uiMode === elements.ModeType.DRAW) {
-                self.addPetriNodeTypeOptions();
-
-                // Set the place button to highlighted
-                self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]);
-            }
-
-            // Create the event listener for the buttons
-            self.setButtonsEventListener(self.buttons);
-
-            self.resize(w, h);
-        });
-
-        this.onModeButtonPressed = function(button) {
-            // Activate the pressed mode
-            self.parent.setUIMode(button.buttonModeType);
-
-            // Display the other mode button(s) accordingly
-            for (let i = 0; i < self.buttons.length; i++) {
-                if (self.buttons[i] instanceof elements.ModeButton && self.buttons[i] !== button) {
-                    self.buttons[i].setDeselected();
-                }
-            }
-
-            // Remove the FSM options from display if the mode is switched to draw mode
-            if (button.buttonModeType === elements.ModeType.DRAW) {
-                self.removeSelectionOptions();
-                self.removeFSMNodeSelectionOptions();
-                self.removePetriPlaceSelectionOptions();
-                if (self.parent.isPetri()) {
-                    self.onClickPetriNodeTypeButton(self.petriNodeTypeButtons[0]); //TODO: make into self.setInitialPetriNodeTypeButton function, so it's clearer
-                }
-            }
-        };
-
-        this.resize = function(w, h) {
-            // Resize to given dimensions.
-            this.div.css({'width': w});
-            this.div.css({'height': h});
-
-            // Update the width of the middle part of the toolbar
-            if (this.toolbarMiddlePart !== undefined) {
-                let leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
-                let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
-                let middlePadding = $(this.toolbarMiddlePart[0]).innerWidth() - $(this.toolbarMiddlePart[0]).width();
-                let canvasWidth = $(this.parent.graphCanvas.canvas).width();
-                let middleWidth = canvasWidth - leftWidth - rightWidth - middlePadding;
-                $(this.toolbarMiddlePart).width(middleWidth);
-            }
-        };
-
-        this.resize(w, h);
-    }
-
-    GraphToolbar.prototype.displayHelpOverlay = function() {
-        // Display a help overlay on the entire graph UI
-        this.helpOverlay.div[0].style.display = 'block';
-        this.helpOverlay.div.addClass('visible');
-        $('body').addClass('unscrollable');
-
-        // Disable resizing of the graphUI wrapper
-        this.helpOverlay.graphUIWrapper.disableResize();
-    };
-
-    GraphToolbar.prototype.createToolbarPartObject = function(parentDiv, parentHeight, side) {
-        // A function to create a basic div for a part of the toolbar:
-        // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
-        let $part = $('<div/>')
-            .attr({
-                'id':       'toolbar_part_' + side,
-                'class':    'toolbar_part',
-                'style':    'height: ' + parseFloat(parentHeight) + 'px;',
-            });
-        $(parentDiv).append($part);
-        return $part;
-    };
-
-    GraphToolbar.prototype.setButtonsEventListener = function(buttons) {
-        // On a click of the button, call the onClick() method on the respective button
-        $('.toolbar_button').click(function (event) {
-            event.preventDefault();
-
-            for (let i = 0; i < buttons.length; i++) {
-                if (event.target === $(buttons[i].object)[0]) {
-                    buttons[i].onClick(event);
-                }
-            }
-        });
-    };
-
-    GraphToolbar.prototype.addSelectionOptions = function(selectedObject) {
-        // TODO: incorporate the input parameters (e.g. vertex_labels)
-        // TODO: make more tidy: rewrite the this.selectionOptions and this.checkboxes variables
-        // Clear the selection options, and re-add them below
-        this.removeSelectionOptions();
-
-        // Create the label textfield
-        let labelTextField = new elements.TextField(this, this.toolbarMiddlePart, 8, 'Label:', this.onInteractTextField);
-        labelTextField.create();
-        this.labelTextField = labelTextField;
-
-        // Fill the value of the label text field according to the selected object
-        this.labelTextField.object[0].childNodes[1].value = selectedObject.text;
-    };
-
-    GraphToolbar.prototype.removeSelectionOptions = function() {
-        if (this.labelTextField !== null) {
-            $(this.labelTextField.object).remove();
-            this.labelTextField = null;
-        }
-    };
-
-    GraphToolbar.prototype.onInteractTextField = function(event, toolbar) {
-        // Add or remove one character to the label of the selected object (i.e. node or link)
-        toolbar.parent.selectedObject.text = event.target.value;
-        toolbar.parent.draw();
-    };
-
-    GraphToolbar.prototype.addFSMNodeSelectionOptions = function(vertex) {
-        // Clear the selection options, and re-add them below
-        this.removeFSMNodeSelectionOptions();
-
-        // Create the FSM initial checkbox
-        let fsmInitialCheckbox = new elements.Checkbox(
-            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_INITIAL, 'Initial',
-            this.onClickFSMInitialCheckbox);
-        fsmInitialCheckbox.create();
-
-        // Set the initial checkbox value accordingly (in case it was pressed before) and save it
-        $($(fsmInitialCheckbox).attr('object').get(0)).find('input').get(0).checked =
-            vertex.hasStartLink(this.parent.links);
-        this.checkboxes.push(fsmInitialCheckbox);
-
-        // Create the FSM final checkbox
-        let fsmFinalCheckbox = new elements.Checkbox(
-            this, this.toolbarMiddlePart, elements.CheckboxType.FSM_FINAL, 'Final',
-            this.onClickFSMFinalCheckbox);
-        fsmFinalCheckbox.create();
-
-        // Set the final checkbox value accordingly (in case it was pressed before) and save it
-        $($(fsmFinalCheckbox).attr('object').get(0)).find('input').get(0).checked = vertex.isFinal;
-        this.checkboxes.push(fsmFinalCheckbox);
-    };
-
-    GraphToolbar.prototype.removeFSMNodeSelectionOptions = function() {
-        // Remove the FSM initial checkboxes if they are present
-        for (let i = 0; i < this.checkboxes.length; i++) {
-            if (this.checkboxes[i].type === elements.CheckboxType.FSM_INITIAL ||
-                this.checkboxes[i].type === elements.CheckboxType.FSM_FINAL) {
-                // Remove the label and the according checkbox from the DOM
-                $(this.checkboxes[i].object).remove();
-
-                // Remove from the list
-                this.checkboxes.splice(i--, 1);
-            }
-        }
-    };
-
-    GraphToolbar.prototype.addPetriNodeTypeOptions = function() {
-        // Clear the existing petri node type options, and re-add them below
-        this.removePetriNodeTypeOptions();
-
-        // Create the place PetriNodeType button
-        let petriNodeTypePlaceButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
-            this.buttonSize.w, this.buttonSize.h, 'fa-circle-o', 'Petri net place', elements.PetriNodeType.PLACE,
-            this.onClickPetriNodeTypeButton); //TODO: function
-        petriNodeTypePlaceButton.create();
-        this.petriNodeTypeButtons.push(petriNodeTypePlaceButton);
-
-        // Create the transition PetriNodeType button
-        let petriNodeTypeTransitionButton = new elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
-            this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', elements.PetriNodeType.TRANSITION,
-            this.onClickPetriNodeTypeButton); //TODO: function
-        petriNodeTypeTransitionButton.create();
-        this.petriNodeTypeButtons.push(petriNodeTypeTransitionButton);
-    };
-
-    GraphToolbar.prototype.removePetriNodeTypeOptions = function() {
-        // Remove the PetriNodeType buttons if they are present
-        for (let i = 0; i < this.petriNodeTypeButtons.length; i++) {
-            if (this.petriNodeTypeButtons[i] instanceof elements.PetriNodeTypeButton) {
-                // Remove the button from the DOM
-                $(this.petriNodeTypeButtons[i].object).remove();
-
-                // Remove from the list
-                this.petriNodeTypeButtons.splice(i--, 1);
-            }
-        }
-    };
-
-    GraphToolbar.prototype.addPetriPlaceSelectionOptions = function() {
-        this.removePetriPlaceSelectionOptions();
-
-        // Create the token number input field
-        let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
-        let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
-        let tokenInputField = new elements.NumberInputField(this, this.toolbarMiddlePart,
-            45, this.buttonSize.h, min, max, 'PetriToken', 'Tokens:', 'Number of tokens (' + min + '-' + max +')',
-            this.onEnterPetriTokenInput);
-        tokenInputField.create();
-        this.petriTokenField = tokenInputField;
-
-        // Set the value of the number input field depending on the selected object
-        $(this.petriTokenField.object)[0].childNodes[1].value = this.parent.selectedObject.petriTokens;
-        //todo draw
-    };
-
-    GraphToolbar.prototype.removePetriPlaceSelectionOptions = function() {
-        if (this.petriTokenField !== null) {
-            // Remove the input field from the DOM
-            $(this.petriTokenField.object).remove();
-        }
-        this.petriTokenField = null;
-    };
-
-    GraphToolbar.prototype.onEnterPetriTokenInput = function(event) {
-        // Determine the token value
-        let min = this.minValue;
-        let max = this.maxValue;
-        let tokenValue = min;
-        if (isNaN(event.target.valueAsNumber) || event.target.valueAsNumber < min) {
-            tokenValue = min;
-        } else if (event.target.valueAsNumber > max) {
-            // Set to 100
-            tokenValue = max;
-        } else {
-            // Set to the value
-            tokenValue = event.target.valueAsNumber;
-        }
-
-        // Set the token value in the node
-        this.toolbar.parent.selectedObject.petriTokens = tokenValue;
-
-        // Draw the number of tokens
-        this.toolbar.parent.draw();
-        // TODO: display the token value, using         this.toolbar.parent.draw()          and another method
-    };
-
-    GraphToolbar.prototype.onClickFSMInitialCheckbox = function(event) {
-        if (event.target.checked) {
-            this.toolbar.parent.setInitialFSMVertex(this.toolbar.parent.selectedObject);
-            this.toolbar.parent.draw();
-        } else {
-            //TODO: Possibly fix for cases where there must be an initial vertex, depending on the input parameter
-            this.toolbar.parent.removeInitialFSMVertex(this.toolbar.parent.selectedObject);
-            this.toolbar.parent.draw();
-        }
-    };
-
-    GraphToolbar.prototype.onClickFSMFinalCheckbox = function() {
-        if (this.toolbar.parent.selectedObject instanceof elements.Node && this.toolbar.parent.isFsm()) {
-            this.toolbar.parent.selectedObject.isFinal = !this.toolbar.parent.selectedObject.isFinal;
-            this.toolbar.parent.draw();
-        }
-    };
-
-    GraphToolbar.prototype.onClickPetriNodeTypeButton = function(object) {
-        // Set the button to selected (in case it was not already), and set the other button to deselected.
-        // Furthermore, set the petriNodeType of the graphUI
-        for (let i = 0; i < object.toolbar.petriNodeTypeButtons.length; i++) {
-            if (object.toolbar.petriNodeTypeButtons[i] === object) {
-                object.toolbar.parent.petriNodeType = object.toolbar.petriNodeTypeButtons[i].petriNodeType; //TODO create function
-                object.toolbar.petriNodeTypeButtons[i].setSelected();
-            } else {
-                object.toolbar.petriNodeTypeButtons[i].setDeselected();
-            }
-        }
-    };
 
     /***********************************************************************
      *
@@ -518,20 +178,27 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.SNAP_TO_PADDING = 6;
         this.DUPLICATE_LINK_OFFSET = 16; // Pixels offset for a duplicate link
-        this.HIT_TARGET_PADDING = 6;    // Pixels.
+        this.HIT_TARGET_PADDING = 6;    // Pixels. Denotes the extra pixels added to make selecting nodes/edges easier
         this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
+        this.TEXT_NODE_HORIZONTAL_PADDING = 4;  // Pixels. Denotes the space between the text and the node border
+        // (horizontally), when the text is on the inside of the node
+        this.TEXT_NODE_VERTICAL_PADDING = 12;  // Pixels. Denotes the space between the text and the node border
+        // (vertically), when the text is on the outside of the node
+        //this.INITIAL_HEIGHT = 350;  // px. The initial height of the toolbar and the canvas combined
         this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.TOOLBAR_HEIGHT = 42.75;       // px. The height of the toolbar above the graphCanvas
         this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
             min: 0,
             max: 100,
-        };       //TODO: assure that these values are met when saving (double check). if > 100, set to 100. If <0 or a char, set to 0
+        };       //TODO: assure that these values are met when saving (double check).
+                 //if > 100, set to 100. If <0 or a char, set to 0
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
+        this.MAX_UNDO_REDO = 100; // The maximum number of undo-redo comands the user can issue
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
-        this.uiMode = this.getUIModeBeginning(); // Set the UI mode type depending on whether there is a graph or not
-        this.petriNodeType = elements.PetriNodeType.NONE;
+        this.uiMode = util.ModeType.SELECT; // Set the UI mode to be 'Select' initially //TODO
+        this.isTempDrawModeActive = false;
+        this.petriNodeType = util.PetriNodeType.NONE;
         this.readOnly = this.textArea.prop('readonly');
         this.templateParams = templateParams;
         this.uiWrapper = uiWrapper;
@@ -541,32 +208,46 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
-        this.toolbar = new GraphToolbar(this, this.toolbarId, width, this.TOOLBAR_HEIGHT,
-            this.uiMode, this.helpOverlay);
+        this.toolbar = null;
+        if (!this.readOnly) {
+            // Set the toolbar only if readonly is disabled
+            this.toolbar = new ui_toolbar.GraphToolbar(this, this.toolbarId, width, this.uiMode, this.helpOverlay);
+        }
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
         $(this.containerDiv).addClass('graph_ui_container_div');
 
-        this.originalClick = null;
         this.nodes = [];
         this.links = [];
-        this.selectedObject = null; // Either a elements.Link or a elements.Node.
-        this.clickedObject = null; // Same as this.selectedObject, but not highlighted
+        this.selectedObjects = []; // One or more elements.Link or elements.Node objects. Default: empty array
+        this.previousSelectedObjects = []; // Same as selectedObjects, but previous selected ones
+        this.clickedObject = null; // The last manually clicked object
+        this.selectionRectangle = null; // The top-left/bottom-right corners of the selection rectangle,
+        // used in the form [{x: null, y: null}, {x: null, y: null}]
+        this.selectionRectangleOffset = 0; // Used for animating the border of the rectangle (marching ants)
         this.currentLink = null;
-        this.movingObject = false;
+        this.mousePosition = null; // A variable to denote the position of the mouse on the canvas.
+        // Format: {x: number, y: number}
+        this.canMoveObjects = false;
         this.fail = false;  // Will be set true if reload fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
-        if ('helpmenutext' in templateParams) {
-            this.helpOverlay.insertHelpText(templateParams.helpmenutext);
-        } else {
-            let newHelpString = self.getHelpText();
-            this.helpOverlay.insertHelpText(newHelpString);
-        }
+
+        let newHelpString = self.getHelpText();
+        this.helpOverlay.insertHelpText(newHelpString);
+
+        // A variable denoting the edit-history of the graph, in the form of a stack (LIFO), used in the undo/redo mechanism
+        // Load it with the initial graph
+        this.historyStack = [$(this.textArea).val()];
+        this.historyStackPointer = 0; // A pointer pointing to an entry in the historyStack
+
         this.reload();
         if (!this.fail) {
             this.draw();
         }
+
+        // Call the draw function at a fixed interval
+        this.drawTimer = window.setInterval(function(){ self.update(); }, 50);
     }
 
     Graph.prototype.failed = function() {
@@ -593,56 +274,55 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.getToolbar = function() {
-        return this.toolbar.div[0];
+        if (this.toolbar !== null) {
+            return this.toolbar.div[0];
+        } else {
+            return null;
+        }
     };
 
     Graph.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
     };
 
-    Graph.prototype.getUIModeBeginning = function() {
-        var content = $(this.textArea).val();
-        if (content) {
-            // Load up the student's previous answer if non-empty.
-            var input = JSON.parse(content);
-
-            if (input.vertices.length === 0) {
-                // If there is no vertex (and thus no edge), return draw mode
-                return elements.ModeType.DRAW;
-            } else {
-                return elements.ModeType.EDIT;
-            }
-        } else {
-            // If there is no content yet, return draw mode
-            return elements.ModeType.DRAW;
-        }
-    };
-
     Graph.prototype.setUIMode = function(modeType) {
         this.uiMode = modeType;
         this.clickedObject = null;
-        this.selectedObject = null;
 
-        if (this.uiMode === elements.ModeType.DRAW) {
+        if (this.uiMode === util.ModeType.DRAW) {
+            // Deselect all selected objects
+            this.selectedObjects = [];
+
             // Disable the delete button
-            for (let i = 0; i < this.toolbar.buttons.length; i++) {
-                if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
-                    this.toolbar.buttons[i].setDisabled();
-                }
+            if (this.allowEdits(util.Edit.DELETE)) {
+                this.toolbar.rightButtons['delete'].setDisabled();
             }
 
-            // If the graph type is Petri net,
-            if (this.isPetri()) {
+            // If the graph type is Petri net
+            if (this.isType(util.Type.PETRI)) {
                 this.toolbar.addPetriNodeTypeOptions();
             }
-        } else if (this.uiMode === elements.ModeType.EDIT) {
-            if (this.isPetri()) {
+
+            // Style the buttons correctly
+            if (this.toolbar.leftButtons['select']) {
+                this.toolbar.leftButtons['select'].setDeselected();
+            }
+            if (this.toolbar.leftButtons['draw']) {
+                this.toolbar.leftButtons['draw'].setSelected();
+            }
+        } else if (this.uiMode === util.ModeType.SELECT) {
+            if (this.isType(util.Type.PETRI)) {
                 this.toolbar.removePetriNodeTypeOptions();
             }
-        }
 
-        // Unselect a (possibly) selected item when going from edit to draw mode
-        this.draw();
+            // Style the buttons correctly
+            if (this.toolbar.leftButtons['select']) {
+                this.toolbar.leftButtons['select'].setSelected();
+            }
+            if (this.toolbar.leftButtons['draw']) {
+                this.toolbar.leftButtons['draw'].setDeselected();
+            }
+        }
     };
 
     Graph.prototype.nodeRadius = function() {
@@ -653,58 +333,195 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return this.templateParams.fontsize ? this.templateParams.fontsize : this.DEFAULT_FONT_SIZE;
     };
 
-    Graph.prototype.isFsm = function() {
-        return this.templateParams.isfsm !== undefined ? this.templateParams.isfsm : true;
+    // A function to return whether the graph is of the type denoted by the input parameter
+    Graph.prototype.isType = function(type) {
+        return this.templateParams.type === type;
     };
 
-    Graph.prototype.isPetri = function() {
-        return this.templateParams.ispetri !== undefined ? this.templateParams.ispetri : true;
+    // A function to return whether the graph allows the edits specified by the parameter.
+    // This parameter can be a single enum value, or an array of enums, to denote either 1 or more allowed edits
+    Graph.prototype.allowEdits = function(edits) {
+        let editsArray = [];
+        let allowed_edits = this.templateParams.allow_edits;
+
+        if (!allowed_edits) {
+            // If the input parameter is undefined (or equal to null) then allow everything
+            return true;
+        } else if ((Array.isArray(allowed_edits) && !allowed_edits.length) || (this.readOnly)) {
+            // If the array is empty, or the graph is readonly, don't allow anything
+            return false;
+        }
+
+        // Else, check whether the supplied arguments (i.e. edits) are allowed
+        if (typeof edits === 'string') {
+            // Check if the variable is a single enum (string)
+            editsArray.push(edits);
+        } else if (Array.isArray(edits) && edits.every(x => (typeof x === "string"))) {
+            // Check if the variable is an array of enums (strings)
+            editsArray = edits;
+        } else {
+            return false;
+        }
+
+        // For each of the edits, check if the enum is valid, and whether it is present as an input parameter
+        for (let i = 0; i < editsArray.length; i++) {
+            if (!(typeof editsArray[i] === 'string' &&
+                Object.values(util.Edit).includes(editsArray[i]) &&
+                allowed_edits.includes(editsArray[i]))) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    // This function returns whether the graph allows at least one edit (true) or not (false)
+    Graph.prototype.allowsOneEdit = function() {
+        for (let i = 0; i < Object.values(util.Edit).length; i++) {
+            let edit = Object.values(util.Edit)[i];
+            if (this.allowEdits(edit)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    // This function checks the validity of a string as per the given regex for one selected object
+    Graph.prototype.checkStringValidity = function(string, selectedObject) {
+        // A variable denoting the used regex, without forward slashes around the regex. /.*/ is the default regex
+        let regexString = '.*';
+        if (selectedObject instanceof elements.Node && this.templateParams.vertex_label_regex) {
+            regexString = this.templateParams.vertex_label_regex;
+        } else if ((selectedObject instanceof elements.Link || selectedObject instanceof elements.SelfLink) &&
+            this.templateParams.edge_label_regex) {
+            regexString = this.templateParams.edge_label_regex;
+        }
+
+        return new RegExp(regexString).test(string);
+    };
+
+    // This function checks the validity of a label as per the given regex, and applies effects
+    Graph.prototype.checkLabelValidity = function(labelInputField, labelText) {
+        let isValid = this.checkStringValidity(labelText, this.selectedObjects[0]);
+
+        if (!isValid) {
+            // Set the textfield border to red by applying a class to the input field
+            $(labelInputField).addClass('invalid');
+        } else {
+            // Remove the red border
+            $(labelInputField).removeClass('invalid');
+        }
     };
 
     // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
     Graph.prototype.getHelpText = function() {
         // Create the first part of the help text
-        let introductoryText =
-        "<div class = 'dialog-header'>Graph Help</div>\
-                    To create and modify graphs you can use two modes:\
-                    'Edit mode' and 'Draw mode'.\
-                    <br><br>";
+        let introductoryText = "<div class='dialog-header'>Graph Help</div>"
+            + "<p>To enter your answer as a graph, you can use Select mode (to edit existing nodes/edges) "
+            + "and Draw mode (to draw new nodes/edges).</p>"
+            + "<p>Toggle between the modes by clicking "
+            + "<i class=\"fa fa-mouse-pointer\"></i>"
+            + " and "
+            + "<i class=\"fa fa-pencil\"></i>. "
+            + "Additionally, while in Select mode you can temporarily use Draw mode "
+            + "by pressing the Ctrl key.</p>";
 
-        // Create the help text for the edit mode
-        let editModeText = "<div class = 'dialog-section'>Edit mode (<i class=\"fa fa-mouse-pointer\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>\
-                      <li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>\
-                      <li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field in the toolbar. You can add a one-character subscript by adding an underscore followed by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by the letter name (i.e., \\alpha).</li>\
-                      <li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click the delete button (<i class=\"fa fa-trash\"></i>), or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
-        if (this.isFsm()) {
+        // Create the help text for the select mode
+        let selectModeText = "<div class='dialog-section'>Select mode:</div>"
+            + "<ul class='dialog-help'>"
+            + "<li><b>Select node:</b> &nbsp;Click a node. Dragging it moves the node.</li>"
+            + "<li><b>Select edge:</b> &nbsp;Click an edge. Dragging it changes the arc curvature.</li>"
+            + "<li><b>Edit node/edge label:</b> &nbsp;Select a node/edge and edit the label text field "
+            + "in the toolbar. You can add a one-character subscript by adding an underscore followed "
+            + "by the subscript (i.e., a_1). You can type Greek letters using a backslash followed by "
+            + "the letter name (i.e., \\alpha).</li>"
+            + "<li><b>Delete node/edge:</b> &nbsp;Select a node/edge and click "
+            + "<i class=\"fa fa-trash\"></i>, or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
+
+        if (this.isType(util.Type.FSM)) {
             // If the current graph type is FSM, add specific help for FSMs
-            editModeText += "<li><b>Mark node as initial or final state:</b> &nbsp;Select a node to show the corresponding checkboxes.</li>";
+            selectModeText += "<li><b>Mark node as initial or final state:</b> &nbsp;"
+                + "Select a node to show the corresponding checkboxes.</li>";
         }
-        editModeText += "</ul><br>";
+        selectModeText += "</ul><br>";
 
         // Create the help text for the draw mode
-        let drawModeText = "<div class = 'dialog-section'>Draw mode (<i class=\"fa fa-pencil\"></i>):</div>\
-                    <ul class='dialog-help'>\
-                      <li><b>Create new node:</b> &nbsp;Click on an empty space.</li>\
-                      <li><b>Create new edge:</b> &nbsp;Click on a node and drag to another node.</li>\
-                      <li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>\
-                    </ul>";
+        let drawModeText = "<div class='dialog-section'>Draw mode:</div>"
+            + "<ul class='dialog-help'>"
+            + "<li><b>Create new node:</b> &nbsp;Click on an empty space.</li>"
+            + "<li><b>Create new edge:</b> &nbsp;Click on a node and drag to another node.</li>"
+            + "<li><b>Create self-loop:</b> &nbsp;Click on a node and drag to the same node.</li>"
+            + "</ul>";
 
         // Return the concatenation
-        return introductoryText + editModeText + drawModeText;
+        return introductoryText + selectModeText + drawModeText;
     };
 
     // Draw an arrow head if this is a directed graph. Otherwise do nothing.
     Graph.prototype.arrowIfReqd = function(c, x, y, angle) {
-        if (this.templateParams.isdirected === undefined || this.templateParams.isdirected) {
+        if (this.isType(util.Type.DIRECTED) || this.isType(util.Type.FSM) || this.isType(util.Type.PETRI)) {
             util.drawArrow(c, x, y, angle);
+        }
+    };
+
+    Graph.prototype.enableTemporaryDrawMode = function() {
+        if (this.allowEdits(util.Edit.ADD)) {
+            // Assign the latest selected object
+            this.previousSelectedObjects = this.selectedObjects;
+
+            // Set the mode to Draw
+            this.setUIMode(util.ModeType.DRAW);
+            this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
+            this.isTempDrawModeActive = true;
+        }
+    };
+
+    Graph.prototype.disableTemporaryDrawMode = function() {
+        if (this.allowEdits(util.Edit.ADD)) {
+            // A variable denoting whether the label input has focus or not
+            let hasLabelFocus = false;
+            let label = this.toolbar.middleInput['label'];
+            let inputElement = null;
+            if (label && label instanceof toolbar_elements.TextField) {
+                inputElement = label.object[0].childNodes[1].childNodes[0];
+                hasLabelFocus = $(inputElement).is(":focus");
+            } else if (label && label instanceof toolbar_elements.NumberInputField) {
+                inputElement = label.object[0].childNodes[1];
+                hasLabelFocus = $(inputElement).is(":focus");
+            }
+
+            // Set the UI mode, and set the selected objects
+            this.setUIMode(util.ModeType.SELECT);
+            this.selectedObjects = this.previousSelectedObjects;
+            this.isTempDrawModeActive = false;
+
+            // Enable the delete button if something is selected
+            if (this.allowEdits(util.Edit.DELETE) && this.selectedObjects.length) {
+                this.toolbar.rightButtons['delete'].setEnabled();
+            }
+
+            // Set the label focus for Petri net graphs
+            if (this.isType(util.Type.PETRI) && hasLabelFocus) {
+                // If the element was previously focused on, re-add the focus
+                this.focusElement(inputElement, 10);
+            }
+            this.draw();
         }
     };
 
     // Copy the serialised version of the graph to the TextArea.
     Graph.prototype.sync = function() {
         // Nothing to do ... always sync'd.
+    };
+
+    Graph.prototype.focusElement = function(element, timeout) {
+        // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
+        setTimeout(function () {
+            if (element) {
+                $(element).focus();
+            }
+        }, timeout);
     };
 
     Graph.prototype.keypress = function(e) {
@@ -714,7 +531,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;
         }
 
-        if(key === 8 || key === 0x20 || key === 9) {
+        if (key === 8 || key === 0x20 || key === 9) {
             // Disable scrolling on backspace, tab and space.
             return false;
         }
@@ -722,72 +539,110 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
     Graph.prototype.mousedown = function(e) {
         //TODO: test all functionality out with lock nodes, I assume these are nodes that cannot be moved/edited?
-        var mouse = util.crossBrowserRelativeMousePos(e);
+        var mouse = util.mousePos(e);
 
         if (this.readOnly) {
             return;
         }
 
-        this.clickedObject = this.getMouseOverObject(mouse.x, mouse.y);
-        this.movingObject = false;
-        this.movingGraph = false;
-        this.originalClick = mouse;
+        this.clickedObject = this.getMouseOverObject(mouse.x, mouse.y, true);
+        this.canMoveObjects = false;
 
         // Check whether the click is a left mouse click
         if (e.button === 0) {
             // Depending on the mode, perform different tasks
-            if (this.uiMode === elements.ModeType.DRAW) {
-                if (this.clickedObject === null && this.currentLink === null) {
+            if (this.uiMode === util.ModeType.DRAW) {
+                if (!this.clickedObject && !this.currentLink && this.allowEdits(util.Edit.ADD)) {
                     // Draw a node
                     let newNode = new elements.Node(this, mouse.x, mouse.y);
-                    if (this.isPetri()) { // Consider the node a place if it is a petri net
+                    if (this.isType(util.Type.PETRI)) { // Consider the node a place if it is a petri net
                         newNode.petriNodeType = this.petriNodeType;
                     }
                     this.nodes.push(newNode);
-                    this.draw();
 
                     // Set as initial node if it is the first node, and if the type is FSM
-                    if (this.nodes.length === 1 && this.isFsm()) {
+                    if (this.nodes.length === 1 && this.isType(util.Type.FSM)) {
                         this.setInitialFSMVertex(newNode);
+                    }
+
+                    // Set this node as the only selected object, so it shows a blue outline
+                    this.selectedObjects = [newNode];
+                    this.previousSelectedObjects = this.selectedObjects;
+
+                    // Also enable the editing fields
+                    this.toolbar.addSelectionOptions(this.selectedObjects);
+                    if (this.allowEdits(util.Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setEnabled();
+                    }
+                    if (this.isType(util.Type.FSM)) {
+                        this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+                    }
+                    if (this.isType(util.Type.PETRI)) {
+                        this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+                    }
+                    this.onGraphChange();
+                }
+
+            } else if (this.uiMode === util.ModeType.SELECT) {
+                if (e.shiftKey) {
+                    if (this.clickedObject) {
+                        if (!this.selectedObjects.includes(this.clickedObject)) {
+                            // Add to selection
+                            this.selectedObjects.push(this.clickedObject);
+                        } else {
+                            // Remove from selection
+                            this.selectedObjects = this.selectedObjects.filter(e => e !== this.clickedObject);
+                        }
+                    }
+                } else if (!e.shiftKey) {
+                    if (!this.selectedObjects.includes(this.clickedObject)) {
+                        // Set this object as the only selected if it was not selected yet
+                        this.selectedObjects = (this.clickedObject) ? [this.clickedObject] : [];
                     }
                 }
 
-            } else if (this.uiMode === elements.ModeType.EDIT) {
-                this.selectedObject = this.clickedObject;
-
-                // If an object is selected (apart from TemporaryLinks),
+                // If a new object is selected (apart from TemporaryLinks),
                 // display the according input elements in the toolbar
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
-                    this.clickedObject instanceof elements.SelfLink) {
-                    this.toolbar.addSelectionOptions(this.clickedObject);
+                    this.clickedObject instanceof elements.SelfLink ||
+                    this.clickedObject instanceof elements.StartLink) {
+                    this.toolbar.addSelectionOptions(this.selectedObjects);
                 } else {
                     this.toolbar.removeSelectionOptions();
                 }
 
                 // If the type is FSM, display the according buttons in the toolbar, depending on the situation
-                if (this.isFsm()) {
-                    if (this.clickedObject instanceof elements.Node) {
-                        this.toolbar.addFSMNodeSelectionOptions(this.clickedObject);
+                if (this.isType(util.Type.FSM)) {
+                    let hasSelectionOneNode = false;
+                    for (let i = 0; i < this.selectedObjects.length; i++) {
+                        if (this.selectedObjects[i] instanceof elements.Node) {
+                            hasSelectionOneNode = true;
+                        }
+                    }
+                    if (hasSelectionOneNode) {
+                        this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
                     } else {
                         this.toolbar.removeFSMNodeSelectionOptions();
                     }
                 }
 
                 // If the type is Petri, display the according token input field in the toolbar
-                if (this.isPetri()) {
-                    if (this.clickedObject instanceof elements.Node &&
-                        this.clickedObject.petriNodeType === elements.PetriNodeType.PLACE) {
-                        this.toolbar.addPetriPlaceSelectionOptions(this.clickedObject);
+                if (this.isType(util.Type.PETRI)) {
+                    if (this.selectedObjects.length) {
+                        this.toolbar.addPetriSelectionOptions(this.selectedObjects);
                     } else {
-                        this.toolbar.removePetriPlaceSelectionOptions();
+                        this.toolbar.removePetriSelectionOptions();
                     }
                 }
 
                 if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
                     && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)) {
-                    this.movingObject = true;
-                    if(this.clickedObject !== null && this.clickedObject.setMouseStart) {
-                        this.clickedObject.setMouseStart(mouse.x, mouse.y);
+                    this.canMoveObjects = true;
+                    for (let i = 0; i < this.selectedObjects.length; i++) {
+                        let object = this.selectedObjects[i];
+                        if (object && object.setMouseStart) {
+                            object.setMouseStart(mouse.x, mouse.y);
+                        }
                     }
                 }
 
@@ -796,17 +651,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
                     this.clickedObject instanceof elements.SelfLink ||
                     this.clickedObject instanceof elements.StartLink) {
-                    for (let i = 0; i < this.toolbar.buttons.length; i++) {
-                        if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
-                            this.toolbar.buttons[i].setEnabled();
-                        }
+                    if (this.allowEdits(util.Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setEnabled();
                     }
                 } else {
-                    for (let i = 0; i < this.toolbar.buttons.length; i++) {
-                        if (this.toolbar.buttons[i] instanceof elements.DeleteButton) {
-                            this.toolbar.buttons[i].setDisabled();
-                        }
+                    if (this.allowEdits(util.Edit.DELETE)) {
+                        this.toolbar.rightButtons['delete'].setDisabled();
                     }
+                }
+
+                if (!this.clickedObject) {
+                    // Clicking on an empty canvas spot marks one corner of the selection rectangle
+                    // The other one will be the same position
+                    this.selectionRectangle = [{x: mouse.x, y :mouse.y}, {x: mouse.x, y :mouse.y}];
                 }
             }
         }
@@ -825,147 +682,489 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     Graph.prototype.keydown = function(e) {
         var key = util.crossBrowserKey(e);
 
+        let elementName = document.activeElement.localName;
+        let elementType = document.activeElement.type;
+
+        if (this.readOnly || (elementName === "input" && (elementType === "text" || elementType === "number"))) {
+            return;
+        }
+
+        if (key === 46) { // Delete key.
+            if (this.allowEdits(util.Edit.DELETE)) {
+                this.deleteSelectedObjects(this);
+            }
+        } else if (key === 27) { // Escape key.
+            // Deselect the objects, and remove the select bar
+            this.selectedObjects = [];
+            this.toolbar.removeSelectionOptions();
+            if (this.isType(util.Type.FSM)) {
+                this.toolbar.removeFSMNodeSelectionOptions();
+            }
+            if (this.isType(util.Type.PETRI)) {
+                this.toolbar.removePetriSelectionOptions();
+            }
+            this.draw();
+        }
+
+        if (key === 17) { // Control key
+
+            // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
+            if (this.uiMode !== util.ModeType.DRAW && this.allowEdits(util.Edit.ADD)) {
+                this.enableTemporaryDrawMode();
+            }
+        }
+
+        // If an object, having a label or token input field, is selected in SELECT mode, and the user presses a key
+        // which produces a character, then focus the input field and add the typed character to the input field.
+        // This enables the delete key to delete the item, instead of deleting the input field text
+        // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
+        let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
+        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key) || e.key === "Backspace") &&
+            !e.originalEvent.ctrlKey) {
+            let inputField = this.toolbar.middleInput['label'];
+
+            // If the input field exists, and a number (or backspace) is entered for a number input field, continue
+            if (inputField && (!(isNaN(parseInt(e.key, 10)) &&
+                inputField instanceof toolbar_elements.NumberInputField) || e.key === "Backspace")) {
+                // Find the input field
+                let element;
+                if (inputField instanceof toolbar_elements.TextField) {
+                    element = inputField.object[0].childNodes[1].childNodes[0];
+                } else if (inputField instanceof toolbar_elements.NumberInputField) {
+                    element = inputField.object[0].childNodes[1];
+                }
+
+                if (e.key !== "Backspace") {
+                    // Add the typed character to the input field and to the object's label
+                    element.value += e.key;
+                    this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+
+                    if (element.value > inputField.maxValue) {
+                        // Set to the max value
+                        element.value = inputField.maxValue + '';
+                        this.selectedObjects[0].text = inputField.maxValue + '';
+                    }
+                } else {
+                    // Remove the last character from the input field
+                    element.value = element.value.slice(0, -1);
+                    this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
+                }
+
+                // Check for the validity of the label and take corresponding actions
+                this.checkLabelValidity(element, element.value);
+
+                // Focus the label
+                this.focusElement(element, 100);
+            }
+        }
+
+        if (e.key === "Backspace") {
+            // Backspace is a shortcut for the back button, but do NOT want to change pages. Therefore return false
+            return false;
+        }
+    };
+
+    Graph.prototype.keyup = function(e) {
+        var key = util.crossBrowserKey(e);
+
         if (this.readOnly) {
             return;
         }
 
-        if(key === 8) { // Backspace key.
-            // Backspace is a shortcut for the back button, but do NOT want to change pages.
-            return false;
-        } else if(key === 46) { // Delete key.
-            this.deleteSelectedObject(this);
-        } else if(key === 13) { // Enter key.
-            if(this.selectedObject !== null) {
-                // Deselect the object.
-                this.selectedObject = null;
-                this.draw();
+        if (key === 17) { // Control key
+            // Set the mode to SELECT if it is not set already
+            if (this.uiMode !== util.ModeType.SELECT && this.isTempDrawModeActive) {
+                this.disableTemporaryDrawMode();
             }
+        }
+    };
+
+    // This function is executed to check for certain key presses
+    Graph.prototype.checkKeyPressed = function(e) {
+        if (!e.ctrlKey && this.isTempDrawModeActive) {
+            // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
+            // This happens for example when releasing the CTRL key on an alert box popup
+            this.disableTemporaryDrawMode();
         }
     };
 
     Graph.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
-        // Setting h to h-7, in order to not make the canvas change size when the help button is pressed (which causes
-        // the screen to resize). TODO: not sure why this happens, but -7 seems to fix it
-        this.graphCanvas.resize(w, h-7);
-        this.toolbar.resize(w, this.TOOLBAR_HEIGHT);
+        let isToolbarNull = this.toolbar === null;
+        let additionalHeight = 0;
+        let toolbarHeight = $(this.toolbar.div[0]).height();
+        if (isToolbarNull) {
+            additionalHeight += toolbarHeight; //TODO: remove additionalHeight var?
+        }
+
+        // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
+        this.graphCanvas.resize(w, h - toolbarHeight);// + (toolbarHeight - this.BASE_TOOLBAR_HEIGHT)));
+        if (!isToolbarNull) {
+            this.toolbar.resize();
+        }
         this.draw();
     };
 
     Graph.prototype.mousemove = function(e) {
-        var mouse = util.crossBrowserRelativeMousePos(e),
+        var mouse = util.mousePos(e),
             closestPoint;
 
         if (this.readOnly) {
             return;
         }
 
+        this.mousePosition = {x: mouse.x, y: mouse.y};
+
         // Depending on the mode, perform different tasks
-        if (this.uiMode === elements.ModeType.DRAW) {
-            if (this.clickedObject instanceof elements.Node) {
-                let targetNode = this.getMouseOverObject(mouse.x, mouse.y);
+        if (this.uiMode === util.ModeType.DRAW) {
+            if (this.clickedObject instanceof elements.Node && this.allowEdits(util.Edit.ADD)) {
+                let targetNode = this.getMouseOverObject(mouse.x, mouse.y, true);
+                let targetNodeStrict = this.getMouseOverObject(mouse.x, mouse.y, false);
                 if(!(targetNode instanceof elements.Node)) {
                     // If the target node is not a node (e.g. an edge) set it to null
                     targetNode = null;
                 }
 
                 // Depending on the mouse position, draw different kind of links
-                if (targetNode === this.clickedObject) {
+                if (targetNode === this.clickedObject &&
+                    (this.isType(util.Type.DIRECTED) || this.isType(util.Type.FSM))) {
                     this.currentLink = new elements.SelfLink(this, this.clickedObject, mouse);
-                } else if (targetNode !== null) {
+                } else if (targetNode && targetNode !== this.clickedObject) {
                     this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
-                } else {
-                    closestPoint = this.clickedObject.closestPointOnCircle(mouse.x, mouse.y);
+                } else if (!targetNodeStrict) {
+                    closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
                     this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
+                } else {
+                    this.currentLink = new elements.TemporaryLink(this, this, mouse);
                 }
             }
-        } else if (this.uiMode === elements.ModeType.EDIT) {
-            if (this.clickedObject !== null) {
+
+            if (this.isTempDrawModeActive) {
+                this.selectionRectangle = null;
+            }
+        } else if (this.uiMode === util.ModeType.SELECT) {
+            if (this.selectedObjects.length) {
+                /*
+                //TODO: remove this part? This was previous code
                 if (this.movingGraph) {
                     var nodes = this.movingNodes;
                     for (var i = 0; i < nodes.length; i++) {
                         nodes[i].trackMouse(mouse.x, mouse.y);
                         this.snapNode(nodes[i]);
                     }
-                } else if (this.movingObject) {
-                    this.clickedObject.setAnchorPoint(mouse.x, mouse.y);
-                    if (this.clickedObject instanceof elements.Node) {
-                        this.snapNode(this.clickedObject);
+
+                 */
+                if (this.canMoveObjects && this.clickedObject) {
+                    // Apply horizontal/vertical snapping to all selected objects if they align horizontally/vertically
+                    let isAlignedHorizontally = true;
+                    let isAlignedVertically = true;
+                    for (let i = 0; i < this.selectedObjects.length - 1; i++) {
+                        if (this.selectedObjects[i].x !== this.selectedObjects[i + 1].x) {
+                            isAlignedVertically = false;
+                        }
+                        if (this.selectedObjects[i].y !== this.selectedObjects[i + 1].y) {
+                            isAlignedHorizontally = false;
+                        }
+                    }
+
+                    // Get all nodes that are not in the selectedObjects
+                    let nodesSet = new Set(this.nodes);
+                    let selectedObjectsSet = new Set(this.selectedObjects);
+                    let nodesNotSelected = [...nodesSet].filter(x => !selectedObjectsSet.has(x));
+
+                    if (this.allowEdits(util.Edit.MOVE)) {
+                        for (let i = 0; i < this.selectedObjects.length; i++) {
+                            let object = this.selectedObjects[i];
+                            if (this.clickedObject instanceof elements.Node && object instanceof elements.Node) {
+                                object.setAnchorPoint(mouse.x, mouse.y);
+                                this.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
+                            } else if ((this.clickedObject instanceof elements.Link ||
+                                this.clickedObject instanceof elements.SelfLink ||
+                                this.clickedObject instanceof elements.StartLink) && this.clickedObject === object) {
+                                let isSnapped = object.setAnchorPoint(mouse.x, mouse.y);
+                                if (!isSnapped) {
+                                    // Deselect all other objects if the link has moved.
+                                    // In case of SelfLinks and StartLinks, which cannot be snapped,
+                                    // all objects are also deselected
+                                    this.selectedObjects = [this.clickedObject];
+                                }
+                            }
+
+                            // Set the object to have moved
+                            object.hasMoved = true;
+                        }
                     }
                 }
+            }
+
+            if (!this.clickedObject && this.selectionRectangle) {
+                // Overwrite the other corner of the selection rectangle
+                this.selectionRectangle[1] = {x: mouse.x, y: mouse.y};
             }
         }
 
         this.draw();
-
-        /*
-        if(this.currentLink !== null) {
-            var targetNode = this.getMouseOverObject(mouse.x, mouse.y);
-            if(!(targetNode instanceof elements.Node)) {
-                targetNode = null;
-            }
-
-            if(this.selectedObject === null) {
-                if(targetNode !== null) {
-                    this.currentLink = new elements.StartLink(this, targetNode, this.originalClick);
-                } else {
-                    this.currentLink = new elements.TemporaryLink(this, this.originalClick, mouse);
-                }
-            } else {
-                if(targetNode === this.selectedObject) {
-                    this.currentLink = new elements.SelfLink(this, this.selectedObject, mouse);
-                } else if(targetNode !== null) {
-                    this.currentLink = new elements.Link(this, this.selectedObject, targetNode);
-                } else {
-                    closestPoint = this.selectedObject.closestPointOnCircle(mouse.x, mouse.y);
-                    this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
-                }
-            }
-            this.draw();
-        }
-        if (this.movingGraph) {
-            var nodes = this.movingNodes;
-            for (var i = 0; i < nodes.length; i++) {
-                 nodes[i].trackMouse(mouse.x, mouse.y);
-                 this.snapNode(nodes[i]);
-            }
-            this.draw();
-        } else if(this.movingObject) {
-            this.selectedObject.setAnchorPoint(mouse.x, mouse.y);
-            if(this.selectedObject instanceof elements.Node) {
-                this.snapNode(this.selectedObject);
-            }
-            this.draw();
-        }
-        */
     };
 
-    Graph.prototype.mouseup = function() {
+    Graph.prototype.mouseup = function(e) {
         if (this.readOnly) {
             return;
         }
+        // After an alert popup (e.g. originating from this function), this function is called again
+        // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
+        this.checkKeyPressed(e);
 
-        this.clickedObject = null;
-
-        if(this.currentLink !== null) {
-            if(!(this.currentLink instanceof elements.TemporaryLink)) {
+        if (this.currentLink) {
+            if (!(this.currentLink instanceof elements.TemporaryLink) && this.allowEdits(util.Edit.ADD)) {
+                // Remove the created link if the graph is of type 'Petri' and a link is made to a node of the same
+                // Petri type (e.g. place->place, or transition->transition).
+                // Also display a warning in the form of an alert
+                let node;
+                if (this.currentLink instanceof elements.SelfLink) {
+                    node = this.currentLink.node;
+                } else {
+                    node = this.currentLink.nodeA;
+                }
+                if (this.isType(util.Type.PETRI) && node.petriNodeType === this.currentLink.nodeB.petriNodeType &&
+                    this.currentLink.nodeA !== this.currentLink.nodeB) {
+                    let nodeType = this.currentLink.nodeA.petriNodeType;
+                    this.alertPopup('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
+                    return;
+                } else if (this.isType(util.Type.UNDIRECTED)) {
+                    // In case of an undirected graph, only 1 edge in between two nodes is permitted
+                    for (let i = 0; i < this.links.length; i++) {
+                        if ((this.links[i].nodeA === this.currentLink.nodeA && this.links[i].nodeB === this.currentLink.nodeB) ||
+                            (this.links[i].nodeA === this.currentLink.nodeB && this.links[i].nodeB === this.currentLink.nodeA)) {
+                            this.alertPopup('Two edges between two nodes is not permitted.');
+                            return;
+                        }
+                    }
+                } else if (this.isType(util.Type.DIRECTED) && !this.isType(util.Type.FSM) &&
+                    !this.isType(util.Type.PETRI)) {
+                    // In case of a directed graph (non-FSM, non-Petri), only 1 edge from two arbitrary
+                    // nodes v_1 to v_2 is permitted
+                    for (let i = 0; i < this.links.length; i++) {
+                        if (!(this.currentLink instanceof elements.SelfLink)) {
+                            if (this.links[i].nodeA === this.currentLink.nodeA && this.links[i].nodeB === this.currentLink.nodeB) {
+                                this.alertPopup('Two edges from one node to another is not permitted.');
+                                return;
+                            }
+                        } else {
+                            if (this.links[i].node === this.currentLink.node) {
+                                this.alertPopup('Two self-loops for a node is not permitted.');
+                                return;
+                            }
+                        }
+                    }
+                }
                 this.addLink(this.currentLink);
+
+                // Set this link as the only selected object, so it shows a blue outline
+                this.selectedObjects = [this.currentLink];
+                this.previousSelectedObjects = this.selectedObjects;
+
+                // Remove FSM/Petri fields
+                if (this.isType(util.Type.FSM)) {
+                    this.toolbar.removeFSMNodeSelectionOptions();
+                }
+                if (this.isType(util.Type.PETRI)) {
+                    this.toolbar.removePetriNodeTypeOptions();
+                    this.toolbar.removePetriSelectionOptions();
+                }
+
+                // Enable the editing fields
+                this.toolbar.addSelectionOptions(this.selectedObjects);
+
+                // Enable the delete button as well
+                if (this.allowEdits(util.Edit.DELETE)) {
+                    this.toolbar.rightButtons['delete'].setEnabled();
+                }
+
+                this.onGraphChange();
             }
             this.currentLink = null;
-            this.draw();
+            this.clickedObject = null;
+        } else if (this.selectionRectangle) {
+            // Remove the selection rectangle, and select or deselect all elements in it
+            // Also set appropriate property selection options (e.g. initial state or final state for FSMs)
+            let objects = this.getObjectsInRectangle(this.selectionRectangle);
+            if (e.shiftKey) {
+                // If all selected objects (within the rectangle) are already selected, deselect these
+                // Otherwise, add all items to the selection
+                let areAllObjectsAlreadySelected = true;
+                for (let i = 0; i < objects.length; i++) {
+                    if (!this.selectedObjects.includes(objects[i])) {
+                        areAllObjectsAlreadySelected = false;
+                    }
+                }
+
+                // Perform the addition/deletion of the selected objects
+                for (let i = 0; i < objects.length; i++) {
+                    if (!areAllObjectsAlreadySelected) {
+                        this.selectedObjects.push(objects[i]);
+                    } else {
+                        this.selectedObjects = this.selectedObjects.filter(e => e !== objects[i]);
+                    }
+                }
+            } else {
+                this.selectedObjects = objects;
+            }
+
+            // Add the appropriate selection functions
+            if (this.selectedObjects.length) {
+                this.toolbar.addSelectionOptions(this.selectedObjects);
+                if (this.allowEdits(util.Edit.DELETE)) {
+                    this.toolbar.rightButtons['delete'].setEnabled();
+                }
+                if (this.isType(util.Type.FSM)) {
+                    this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+                }
+                if (this.isType(util.Type.PETRI)) {
+                    this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+                }
+            }
+            this.selectionRectangle = null;
+        } else if (this.uiMode === util.ModeType.SELECT) {
+
+            // Save the graph when selected nodes and/or edges have moved
+            let hasSelectionMoved = false;
+            this.selectedObjects.forEach(element => {
+                hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved;
+            });
+
+            // Save a different graph state if applicable
+            if (this.clickedObject && hasSelectionMoved) {
+                this.onGraphChange();
+            }
+
+            // If none of the selected objects has moved, and shift is not pressed,
+            // set the selected object to the clicked object. I.e., unselect all other selected objects
+            if (this.clickedObject && !hasSelectionMoved && !e.shiftKey) {
+                this.selectedObjects = [this.clickedObject];
+            }
+
+            // Reset the 'hasMoved' parameter of all selected objects
+            this.selectedObjects.forEach(element => element.resetHasMoved());
+
+            this.clickedObject = null;
+            this.canMoveObjects = false;
+        } else {
+            this.clickedObject = null;
+            this.canMoveObjects = false;
         }
+        this.draw();
     };
 
-    Graph.prototype.getMouseOverObject = function(x, y) {
-        let i;
+    // This event function is activated when the mouse enters the graph canvas
+    Graph.prototype.mouseenter = function(e) {
+        // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
+        this.checkKeyPressed(e);
+    };
 
-        for (i = 0; i < this.nodes.length; i++) {
-            if (this.nodes[i].containsPoint(x, y)) {
-                return this.nodes[i];
+    // This event function is activated when the mouse leaves the graph canvas
+    Graph.prototype.mouseleave = function(e) {
+        // Set the mouse position to null
+        this.mousePosition = null;
+        this.mouseup(e);
+    };
+
+    Graph.prototype.alertPopup = function(message) {
+        this.currentLink = null;
+        this.clickedObject = null;
+        this.draw();
+        window.alert(message);
+    };
+
+    // This function returns all objects which are completely located in a rectangle
+    // The input rectangle should be of the form: [{x: null, y: null}, {x: null, y: null}]
+    Graph.prototype.getObjectsInRectangle = function(rect) {
+        let objects = [];
+        // Check all nodes
+        for (let i = 0; i < this.nodes.length; i++) {
+            // Calculate the top-left corner of the circle/square
+            let topLeft = {x: this.nodes[i].x - this.nodeRadius(), y: this.nodes[i].y - this.nodeRadius()};
+            let bottomRight = {x: this.nodes[i].x + this.nodeRadius(), y: this.nodes[i].y + this.nodeRadius()};
+            let testRect = [topLeft, bottomRight];
+
+            if (util.isRectInsideRect(rect, testRect)) {
+                objects.push(this.nodes[i]);
             }
         }
-        for (i = 0; i < this.links.length; i++) {
+
+        // Check all links
+        for (let i = 0; i < this.links.length; i++) {
+            // If the link is a straight line, check if the two endpoints are located inside the rectangle
+            // If the link is an arc, generate 'steps' number of points on the arc,
+            // and check if they are all located inside the rectangle
+            let points = [];
+            if (this.links[i] instanceof elements.StartLink) {
+                let l = this.links[i].getEndPoints(); // Get information about the link
+                points.push({x: l.startX, y: l.startY});
+                points.push({x: l.endX, y: l.endY});
+            } else {
+                // Else if normal link or self link
+                let l = this.links[i].getEndPointsAndCircle(); // Link info
+                let r = l.circleRadius;
+                let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
+                let circleEndAngle = Math.atan2(((l.endY - l.circleY) / r), ((l.endX - l.circleX) / r));
+                let steps = 100;
+
+                let angleDifference = Math.abs(circleEndAngle - circleStartAngle);
+                if (!l.isReversed && this.links[i].perpendicularPart !== 0) {
+                    // When the link is an arc which goes clockwise
+                    // Generate the 'steps' number of points on the arc
+                    circleEndAngle = (circleEndAngle < circleStartAngle) ? circleEndAngle + 2 * Math.PI : circleEndAngle;
+                    for (let j = circleStartAngle; j < circleEndAngle; j += angleDifference / steps) {
+                        let x = r * Math.cos(j) + l.circleX;
+                        let y = r * Math.sin(j) + l.circleY;
+                        points.push({x: x, y: y});
+                    }
+                } else if (l.isReversed) {
+                    // When the link is an arc which goes counterclockwise
+                    // Generate the 'steps' number of points on the arc
+                    circleEndAngle = (circleEndAngle > circleStartAngle) ? circleEndAngle - 2 * Math.PI : circleEndAngle;
+                    for (let j = circleStartAngle; j > circleEndAngle; j -= angleDifference / steps) {
+                        let x = r * Math.cos(j) + l.circleX;
+                        let y = r * Math.sin(j) + l.circleY;
+                        points.push({x: x, y: y});
+                    }
+                } else if (!l.isReversed && this.links[i].perpendicularPart === 0) {
+                    // When the link is a straight line
+                    let startPoint = {x: l.startX, y: l.startY};
+                    let endPoint = {x: l.endX, y: l.endY};
+                    points.push(startPoint);
+                    points.push(endPoint);
+                }
+            }
+
+            // If all points of the arc are inside the input rectangle, return this link
+            let isLinkInside = true;
+            for (let j = 0; j < points.length; j++) {
+                if (!util.isRectInsideRect(rect, [points[j], points[j]])) {
+                    isLinkInside = false;
+                    break;
+                }
+            }
+            if (isLinkInside) {
+                objects.push(this.links[i]);
+            }
+        }
+
+        return objects;
+    };
+
+    // This function returns the first encountered object on which the user has clicked
+    // A margin is used such that creating links is easier
+    Graph.prototype.getMouseOverObject = function(x, y, useNodePadding) {
+
+        // First check if the mouse hovers over a node
+        let node = this.getMouseOverNode(x, y, useNodePadding);
+        if (node) {
+            return node;
+        }
+
+        for (let i = 0; i < this.links.length; i++) {
             if (this.links[i].containsPoint(x, y)) {
                 return this.links[i];
             }
@@ -973,57 +1172,52 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return null;
     };
 
-    Graph.prototype.deleteSelectedObject = function(graphUI) {
-        if(graphUI.selectedObject !== null) {
+    Graph.prototype.getMouseOverNode = function(x, y, useNodePadding) {
+        for (let i = 0; i < this.nodes.length; i++) {
+            if (this.nodes[i].containsPoint(x, y, useNodePadding)) {
+                return this.nodes[i];
+            }
+        }
+        return null;
+    };
+
+    Graph.prototype.deleteSelectedObjects = function(graphUI) {
+        if(graphUI.selectedObjects.length) {
             for(let i = 0; i < graphUI.nodes.length; i++) {
-                if(graphUI.nodes[i] === graphUI.selectedObject) {
+                if(graphUI.selectedObjects.includes(graphUI.nodes[i])) {
                     graphUI.nodes.splice(i--, 1);
                 }
             }
             for(let i = 0; i < graphUI.links.length; i++) {
-                if(graphUI.links[i] === graphUI.selectedObject ||
-                    graphUI.links[i].node === graphUI.selectedObject ||
-                    graphUI.links[i].nodeA === graphUI.selectedObject ||
-                    graphUI.links[i].nodeB === graphUI.selectedObject) {
+                if(graphUI.selectedObjects.includes(graphUI.links[i]) ||
+                    graphUI.selectedObjects.includes(graphUI.links[i].node) ||
+                    graphUI.selectedObjects.includes(graphUI.links[i].nodeA) ||
+                    graphUI.selectedObjects.includes(graphUI.links[i].nodeB)) {
                     graphUI.links.splice(i--, 1);
                 }
             }
-            graphUI.selectedObject = null;
+            graphUI.selectedObjects = [];
+            graphUI.previousSelectedObjects = [];
             graphUI.draw();
 
             // Set the deleted button as disabled
-            for (let i = 0; i < graphUI.toolbar.buttons.length; i++) {
-                if (graphUI.toolbar.buttons[i] instanceof elements.DeleteButton) {
-                    graphUI.toolbar.buttons[i].setDisabled();
-                }
+            if (graphUI.allowEdits(util.Edit.DELETE)) {
+                graphUI.toolbar.rightButtons['delete'].setDisabled();
             }
 
             // Remove the options in the toolbar based on the selected object
             graphUI.toolbar.removeSelectionOptions();
             graphUI.toolbar.removeFSMNodeSelectionOptions();
-            graphUI.toolbar.removePetriPlaceSelectionOptions();
+            graphUI.toolbar.removePetriSelectionOptions();
         }
     };
 
     Graph.prototype.setInitialFSMVertex = function(vertex) {
-        /*
-        TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
-         number of input vertices
-        // Set all vertices to not be an initial vertex
-        for (let i = 0; i < this.nodes.length; i++) {
-            this.nodes[i].isInitial = false;
-        }
-
-        // Remove all initial links
-        for (let i = 0; i < this.links.length; i++) {
-            if (this.links[i] instanceof elements.StartLink) {
-                this.links.splice(i--, 1);
-            }
-        }
-         */
+        // TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
+        //  number of input vertices
 
         // Set the selected vertex as the initial vertex, and draw it
-        if (this.isFsm() && vertex instanceof elements.Node) {
+        if (this.isType(util.Type.FSM) && vertex instanceof elements.Node) {
             vertex.isInitial = true;
 
             // Get the angles of all incident (i.e. incoming and outgoing) edges of this vertex
@@ -1104,18 +1298,20 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    Graph.prototype.snapNode = function(node) {
-        for(var i = 0; i < this.nodes.length; i++) {
-            if(this.nodes[i] === node){
+    // A function to snap the input node to any other node not present in the selection. This snapping happens either
+    // horizontally or vertically
+    Graph.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
+        for (let i = 0; i < notSelectedNodes.length; i++) {
+            if (notSelectedNodes[i] === node) {
                 continue;
             }
 
-            if(Math.abs(node.x - this.nodes[i].x) < this.SNAP_TO_PADDING) {
-                node.x = this.nodes[i].x;
+            if (Math.abs(node.x - notSelectedNodes[i].x) < this.SNAP_TO_PADDING && snapXDirection) {
+                node.x = notSelectedNodes[i].x;
             }
 
-            if(Math.abs(node.y - this.nodes[i].y) < this.SNAP_TO_PADDING) {
-                node.y = this.nodes[i].y;
+            if (Math.abs(node.y - notSelectedNodes[i].y) < this.SNAP_TO_PADDING && snapYDirection) {
+                node.y = notSelectedNodes[i].y;
             }
         }
     };
@@ -1138,10 +1334,100 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 }
             }
         }
-        if (maxPerpRHS !== null) {
+        if (maxPerpRHS) {
             newLink.perpendicularPart = maxPerpRHS + this.DUPLICATE_LINK_OFFSET;
         }
         this.links.push(newLink);
+    };
+
+    // A function to add a new graph instance, upon a change of the graph, to the history stack
+    Graph.prototype.onGraphChange = function() {
+        // Remove the part of the stack above the pointer, so the 'redo-able' graph instances are lost
+        this.historyStack.length = this.historyStackPointer + 1;
+
+        // Save the graph, so the new graph instance can be used. This instance will be added to the end of the array.
+        // Furthermore, increase the pointer
+        this.save();
+        let graphInstance = $(this.textArea).val();
+        this.historyStack.push(graphInstance);
+        if (this.historyStack.length > this.MAX_UNDO_REDO + 1) {
+            this.historyStack.shift();
+        } else {
+            this.historyStackPointer++;
+        }
+
+        // Enable the undo button, and disable the redo button
+        this.toolbar.rightButtons['undo'].setEnabled();
+        this.toolbar.rightButtons['redo'].setDisabled();
+    };
+
+    // A function to handle the undo operation of the graph UI
+    Graph.prototype.undo = function(graphUI) {
+        let g = graphUI;
+
+        // If there is something on the stack, retrieve it
+        if (g.historyStackPointer >= 1) {
+            // Decrease the stack pointer, and queue the (previous) graph instance
+            g.historyStackPointer--;
+            let graphInstance = g.historyStack[g.historyStackPointer];
+
+            // Update the graph
+            g.updateGraph(g, graphInstance);
+
+            // Set the buttons accordingly
+            if (g.historyStackPointer <= 0) {
+                g.toolbar.rightButtons['undo'].setDisabled();
+            } else {
+                g.toolbar.rightButtons['undo'].setEnabled();
+            }
+            g.toolbar.rightButtons['redo'].setEnabled();
+        }
+    };
+
+    // A function to handle the redo operation of the graph UI
+    Graph.prototype.redo = function(graphUI) {
+        let g = graphUI;
+
+        // Check if there is an operation to be redone
+        if (g.historyStackPointer < g.historyStack.length - 1) {
+            // Update the pointer and update the graph with the new graph
+            g.historyStackPointer++;
+            let graphInstance = g.historyStack[g.historyStackPointer];
+
+            g.updateGraph(g, graphInstance);
+
+            if (g.historyStackPointer >= g.historyStack.length - 1) {
+                g.toolbar.rightButtons['redo'].setDisabled();
+            } else {
+                g.toolbar.rightButtons['redo'].setEnabled();
+            }
+            g.toolbar.rightButtons['undo'].setEnabled();
+        }
+    };
+
+    // A function to update the graph with a new graph
+    Graph.prototype.updateGraph = function(graphUI, graphInstance) {
+        // Update the value:
+        $(this.textArea).val(graphInstance);
+
+        // Clear all objects
+        this.nodes = [];
+        this.links = [];
+        this.selectedObjects = [];
+        this.previousSelectedObjects = [];
+
+        // Save and reload the graphUI
+        this.reload();
+
+        // Reload the toolbar
+        this.toolbar.addSelectionOptions(this.selectedObjects);
+
+        if (this.isType(util.Type.FSM)) {
+            this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
+        }
+        if (this.isType(util.Type.PETRI)) {
+            this.toolbar.addPetriSelectionOptions(this.selectedObjects);
+        }
     };
 
     Graph.prototype.reload = function() {
@@ -1159,13 +1445,19 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     var inputNode = input.vertices[i];
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
                     node.text = inputNode['label'];
-                    if (this.isFsm()) {
+                    if (this.templateParams.vertex_colors) {
+                        node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
+                    }
+                    if (this.templateParams.highlight_vertices) {
+                        node.isHighlighted = inputNode['highlighted'];
+                    }
+                    if (this.isType(util.Type.FSM)) {
                         node.isInitial = inputNode['initial'];
                         node.isFinal = inputNode['final'];
                     }
-                    if (this.isPetri()) {
+                    if (this.isType(util.Type.PETRI)) {
                         node.petriNodeType = inputNode['petri_type'];
-                        if (inputNode['petri_type'] === elements.PetriNodeType.PLACE) {
+                        if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
                             node.petriTokens = inputNode['tokens'];
                         }
                     }
@@ -1175,33 +1467,54 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 for (i = 0; i < input.edges.length; i++) {
                     var inputLink = input.edges[i];
                     var link = null;
+
                     if(inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
                         link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
                         link.text = inputLink['label'];
+                        link.colorObject = (this.templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
-                    } else if(inputLink['from'] === -1) {  // TODO [ws] should be removed
+                    } else if(inputLink['from'] === -1) {
                         link = new elements.StartLink(this, this.nodes[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
+                        link.colorObject = (this.templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
                         link = new elements.Link(this, this.nodes[inputLink['from']], this.nodes[inputLink['to']]);
                         link.text = inputLink['label'];
+                        link.colorObject = (this.templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.parallelPart = inputLink['bend']['parallelPart'];
                         link.perpendicularPart = inputLink['bend']['perpendicularPart'];
                         link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
                     }
                     this.links.push(link);
                 }
+
+                // Update the history stack if it's empty
+                if (this.historyStack.length === []) {
+                    this.historyStack.push(content);
+                    this.historyStackPointer++;
+                }
             } catch(e) {
                 this.fail = true;
                 this.failString = 'graph_ui_invalidserialisation';
+            }
+        } else {
+            // Push an empty graph to the history stack if it's empty
+            if (this.historyStack.length === []) {
+                this.historyStack.push("");
+                this.historyStackPointer++;
             }
         }
     };
 
     Graph.prototype.save = function() {
-
         var output = {
             '_version': 1,
             'vertices': [],
@@ -1213,60 +1526,95 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             return;  // Don't save if we have an empty textbox and no graphic content.
         }
 
-        for(i = 0; i < this.nodes.length; i++) {
+        for (i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];
             let vertex = {
                 'label': node.text,
                 'position': [node.x, node.y],
             };
-            if (this.isFsm()) {
+            if (this.templateParams.vertex_colors) {
+                vertex['color'] = node.colorObject.colorCode;
+            }
+            if (this.templateParams.highlight_vertices) {
+                vertex['highlighted'] = node.isHighlighted;
+            }
+            if (this.isType(util.Type.FSM)) {
                 vertex['initial'] = node.isInitial;
                 vertex['final'] = node.isFinal;
             }
-            if (this.isPetri()) {
+            if (this.isType(util.Type.PETRI)) {
                 vertex['petri_type'] = node.petriNodeType;
-                if (vertex['petri_type'] === elements.PetriNodeType.PLACE) {
+                if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
                     vertex['tokens'] = node.petriTokens;
                 }
             }
             output.vertices.push(vertex);
         }
 
-        for(i = 0; i < this.links.length; i++) {
+        for (i = 0; i < this.links.length; i++) {
             var link = this.links[i];
-
             if(link instanceof elements.SelfLink) {
-                output.edges.push({
+                let linkObject = {
                     'from': this.nodes.indexOf(link.node),
                     'to': this.nodes.indexOf(link.node),
-                    'label': link.text,
                     'bend': {
                         'anchorAngle': link.anchorAngle
-                    }
-                });
-            } else if(link instanceof elements.StartLink) {  // TODO [ws] these should be removed
-                output.edges.push({
+                    },
+                    'label': link.text
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.colorObject.colorCode;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
+            } else if(link instanceof elements.StartLink) {
+                let linkObject = {
                     'from': -1,
                     'to': this.nodes.indexOf(link.node),
                     'bend': {
                         'deltaX': link.deltaX,
                         'deltaY': link.deltaY
                     }
-                });
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.colorObject.colorCode;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
             } else if(link instanceof elements.Link) {
-                output.edges.push({
+                let linkObject = {
                     'from': this.nodes.indexOf(link.nodeA),
                     'to': this.nodes.indexOf(link.nodeB),
-                    'label': link.text,
                     'bend': {
                         'lineAngleAdjust': link.lineAngleAdjust,
                         'parallelPart': link.parallelPart,
                         'perpendicularPart': link.perpendicularPart
-                    }
-                });
+                    },
+                    'label': link.text
+                };
+                if (this.templateParams.edge_colors) {
+                    linkObject.color = link.colorObject.colorCode;
+                }
+                if (this.templateParams.highlight_edges) {
+                    linkObject.highlighted = link.isHighlighted;
+                }
+
+                output.edges.push(linkObject);
             }
         }
         this.textArea.val(JSON.stringify(output));
+    };
+
+    // A function which is configured to be ran periodically
+    Graph.prototype.update = function() {
+        // Draw the graph
+        this.draw();
     };
 
     Graph.prototype.destroy = function () {
@@ -1278,34 +1626,120 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         this.helpOverlay.div.off();
         this.helpOverlay.div.remove();
+
+        this.containerDiv.remove();
+
+        if (this.drawTimer) {
+            clearInterval(this.drawTimer);
+        }
     };
 
-    Graph.prototype.draw = function () {
+    Graph.prototype.draw = function() {
         var canvas = this.getCanvas(),
-            c = canvas.getContext('2d'),
-            i;
+            c = canvas.getContext('2d');
 
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
 
-        for(i = 0; i < this.nodes.length; i++) {
-            c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = (this.nodes[i] === this.selectedObject) ? 'blue' : 'black';
-            this.nodes[i].draw(c);
+        // use Segoe UI as that is the default Moodle font
+        // (at least on Windows)
+        c.font = this.fontSize() + 'px "Segoe UI"';
+
+        // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
+        // can create a node here
+        if (this.uiMode === util.ModeType.DRAW && this.mousePosition && !this.currentLink &&
+            !this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y, true) &&
+            this.allowEdits(util.Edit.ADD)) {
+
+            // Create the shadow node and draw it
+            let shadowNode = new elements.Node(this, this.mousePosition.x, this.mousePosition.y);
+            if (this.isType(util.Type.PETRI) && this.petriNodeType === util.PetriNodeType.TRANSITION) {
+                shadowNode.petriNodeType = util.PetriNodeType.TRANSITION;
+            }
+            shadowNode.draw(c, true, util.DrawOption.HOVER);
         }
-        for(i = 0; i < this.links.length; i++) {
+
+        // Draw all selections of the nodes, and links
+        this.drawNodes(c, util.DrawOption.SELECTION);
+        this.drawLinks(c, util.DrawOption.SELECTION);
+
+        // Draw all highlights of the nodes and the nodes themselves, and links
+        this.drawNodes(c, util.DrawOption.OBJECT);
+        this.drawLinks(c, util.DrawOption.OBJECT);
+
+        // Draw the current link
+        if (this.currentLink) {
             c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = (this.links[i] === this.selectedObject) ? 'blue' : 'black';
-            this.links[i].draw(c);
+            c.fillStyle = c.strokeStyle = util.Color.BLACK;
+            this.currentLink.draw(c, util.DrawOption.OBJECT);
         }
-        if(this.currentLink !== null) {
-            c.lineWidth = 1;
-            c.fillStyle = c.strokeStyle = 'black';
-            this.currentLink.draw(c);
+
+        // Draw the selection rectangle, if it exists
+        let sRect = this.selectionRectangle;
+        if (sRect) {
+
+            c.beginPath();
+            c.setLineDash([5, 5]); // Set the dashes to be 5px wide and 3px apart
+            c.lineDashOffset = this.selectionRectangleOffset;
+            c.strokeStyle = 'rgba(0,0,0,0.75)';
+            // Using +0.5 to make the width of the rectangle's border 1px
+            c.rect(sRect[0].x + 0.5, sRect[0].y + 0.5, sRect[1].x - sRect[0].x, sRect[1].y - sRect[0].y);
+            c.fillStyle = 'rgba(160,209,255,0.5)';
+            c.fillRect(sRect[0].x + 0.5, sRect[0].y + 0.5, sRect[1].x - sRect[0].x, sRect[1].y - sRect[0].y);
+            c.stroke();
+            this.selectionRectangleOffset = (this.selectionRectangleOffset - 1) % 10;
         }
 
         c.restore();
         this.save();
+    };
+
+    // A function to draw (a part of) the nodes
+    Graph.prototype.drawNodes = function(c, drawOption) {
+        // If the option is not defined, don't draw anything
+        if (!Object.values(util.DrawOption).includes(drawOption)) {
+            return;
+        }
+
+        // Draw the nodes with the draw option
+        for (let i = 0; i < this.nodes.length; i++) {
+            let drawNodeShadow = this.uiMode === util.ModeType.DRAW && this.mousePosition &&
+                this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y, true) === this.nodes[i] &&
+                this.allowEdits(util.Edit.ADD);
+            if (drawNodeShadow) {
+                // Enable the shadow
+                let shadowAlpha = 0.5;
+                c.shadowColor = 'rgb(150,150,150,' + shadowAlpha + ')';
+                c.shadowBlur = 10;
+
+                // If the node is highlighted, draw another node below it, so the shadow is visible
+                if (this.nodes[i].isHighlighted) {
+                    let shadowNode = new elements.Node(this, this.nodes[i].x, this.nodes[i].y);
+                    c.lineWidth = 1;
+                    c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
+                    shadowNode.draw(c, drawNodeShadow, null);
+                }
+            }
+
+            c.lineWidth = 1;
+            c.fillStyle = c.strokeStyle = util.Color.BLACK;
+            this.nodes[i].draw(c, drawNodeShadow, drawOption);
+
+            if (drawNodeShadow && this.allowEdits(util.Edit.ADD)) {
+                // Disable the shadow
+                c.shadowBlur = 0;
+                c.globalAlpha = 1;
+            }
+        }
+    };
+
+    // A function to draw (a part of) the links
+    Graph.prototype.drawLinks = function(c, drawOption) {
+        // Draw the links with the draw option
+        for (let i = 0; i < this.links.length; i++) {
+            c.lineWidth = 1;
+            this.links[i].draw(c, drawOption);
+        }
     };
 
     Graph.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
@@ -1314,19 +1748,45 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             width,
             dy;
 
-        c.font = this.fontSize() + 'px Arial';
+        c.fillStyle = util.Color.BLACK;
         width = c.measureText(text).width;
 
-        // Find position for the text
-        if (originalObject instanceof elements.Node && originalObject.petriNodeType === elements.PetriNodeType.PLACE) {
-            x += 30;
-        } else {
-            // Center the text.
+        let isSmallWidth = width <= 2 * this.nodeRadius() - this.TEXT_NODE_HORIZONTAL_PADDING;
+        if (isSmallWidth &&
+            !(this.isType(util.Type.PETRI) && originalObject instanceof elements.Node &&
+                originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
+            (originalObject instanceof elements.Link ||
+            originalObject instanceof elements.SelfLink ||
+            originalObject instanceof elements.StartLink)) {
+            // Center the text inside the node if it fits
             x -= width / 2;
+
+            // If the node is a dark color, enhance the visibility of the text by changing the color to white
+            if (originalObject instanceof elements.Node && originalObject.colorObject.isDark) {
+                c.fillStyle = util.Color.WHITE;
+            }
+        } else if (originalObject instanceof elements.Node && (!isSmallWidth ||
+            originalObject.petriNodeType === util.PetriNodeType.PLACE)) {
+            // If the text does not fit, or if it is a Place node (of a petri net), position the element either on the
+            // bottom, right, top or left of the node
+            let sidesOfNodeLinkIntersections = originalObject.getLinkIntersectionSides(this.links);
+            if (!sidesOfNodeLinkIntersections.bottom ||
+                (sidesOfNodeLinkIntersections.bottom && sidesOfNodeLinkIntersections.right &&
+                    sidesOfNodeLinkIntersections.top && sidesOfNodeLinkIntersections.left)) {
+                x -= width / 2;
+                y += this.nodeRadius() + this.TEXT_NODE_VERTICAL_PADDING;
+            } else if (!sidesOfNodeLinkIntersections.right) {
+                x += this.nodeRadius() + this.TEXT_NODE_HORIZONTAL_PADDING;
+            } else if (!sidesOfNodeLinkIntersections.top) {
+                x -= width / 2;
+                y -= this.nodeRadius() + this.TEXT_NODE_VERTICAL_PADDING;
+            } else if (!sidesOfNodeLinkIntersections.left) {
+                x -= width + this.nodeRadius() + this.TEXT_NODE_HORIZONTAL_PADDING;
+            }
         }
 
         // Position the text intelligently if given an angle.
-        if(angleOrNull !== null) {
+        if(angleOrNull) {
             var cos = Math.cos(angleOrNull);
             var sin = Math.sin(angleOrNull);
             var cornerPointX = (width / 2) * (cos > 0 ? 1 : -1);

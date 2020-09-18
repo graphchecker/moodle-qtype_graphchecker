@@ -99,7 +99,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
         // add other sections
-        $this->add_preload_answer_field($mform);
+        $this->add_student_interaction_field($mform);
         $this->add_checks_field($mform);
         $this->add_sample_answer_field($mform);
     }
@@ -114,10 +114,17 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('header', 'answerhdr',
                     get_string('answer', 'qtype_graphchecker'), '');
         $mform->setExpanded('answerhdr', 1);
+
+        $params = qtype_graphchecker_question::get_ui_params_for_type($this->answertype);
+        // always allow highlighting in the sample answer field
+        $params['highlight_vertices'] = true;
+        $params['highlight_edges'] = true;
+
         $attributes = array(
             'rows' => 9,
             'class' => 'answer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode($params)
+        );
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
@@ -125,6 +132,12 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         //        get_string('validateonsave', 'qtype_graphchecker'));
         //$mform->setDefault('validateonsave', false);
         $mform->addHelpButton('answer', 'answer', 'qtype_graphchecker');
+
+        $copyButtons = [];
+        $copyButtons[] =& $mform->createElement('button', 'copyfrompreload', 'Copy from preload');
+        $copyButtons[] =& $mform->createElement('button', 'copytopreload', 'Copy to preload');
+
+        $mform->addGroup($copyButtons);
     }
 
 
@@ -149,23 +162,40 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('checks', 'checks', 'qtype_graphchecker');
     }
 
-    /**
-     * Add a field for a text to be preloaded into the answer box.
-     * @param object $mform the form being built
-     */
-    protected function add_preload_answer_field($mform) {
-        $mform->addElement('header', 'answerpreloadhdr',
-                    get_string('answerpreload', 'qtype_graphchecker'), '');
-        $expanded = !empty($this->question->options->answerpreload);
-        $mform->setExpanded('answerpreloadhdr', $expanded);
+    protected function add_student_interaction_field($mform) {
+        $mform->addElement('header', 'studentinteractionhdr',
+                    'Student interaction', '');
+        $mform->setExpanded('studentinteractionhdr', 1);
+
+        // preload field
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => qtype_graphchecker_question::get_ui_params($this->answertype));
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+        );
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),
                 $attributes);
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
+
+        $edit_choices = [];
+        $edit_choices['none'] = 'none';
+        $edit_choices['layout'] = 'layout';
+        $edit_choices['attributes'] = 'attributes';
+        $edit_choices['all'] = 'all';
+        $mform->addElement('select', 'allowed_vertex_edits',
+                'Allowed edits', $edit_choices);
+        $mform->setDefault('allowed_vertex_edits', 'all');
+        $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
+
+        $highlightBoxes = [];
+        $highlightBoxes[] =& $mform->createElement('advcheckbox', 'vertex_highlight',
+                'Node highlighting', null, null);
+        $highlightBoxes[] =& $mform->createElement('advcheckbox', 'edge_highlight',
+                'Edge highlighting', null, null);
+        $mform->addGroup($highlightBoxes, 'highlight',
+                'Highlighting', [''], false);
+        $mform->addHelpButton('highlight', 'highlight', 'qtype_graphchecker');
     }
 
 
