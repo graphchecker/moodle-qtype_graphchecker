@@ -792,10 +792,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
         let isToolbarNull = this.toolbar === null;
-        let additionalHeight = 0;
-        let toolbarHeight = $(this.toolbar.div[0]).height();
-        if (isToolbarNull) {
-            additionalHeight += toolbarHeight; //TODO: remove additionalHeight var?
+        let toolbarHeight = 0;
+        if (!isToolbarNull) {
+            toolbarHeight = $(this.toolbar.div[0]).height();
         }
 
         // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
