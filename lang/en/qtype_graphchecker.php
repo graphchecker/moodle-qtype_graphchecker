@@ -65,11 +65,6 @@ $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';
 $string['highlight'] = 'Highlighting';
 $string['highlight_help'] = 'Selecting these checkboxes allows the student to highlight nodes / edges in the graph. (This is most effective when Allowed edits is set to none, so that the student can highlight nodes / edges in the given graph without being allowed to modify the graph itself.)';
 
-$string['ideone_user'] = 'Ideone server user';
-$string['ideone_user_desc'] = 'The login name to use when connecting to the deprecated Ideone server (if the ideone sandbox is enabled)';
-$string['ideone_pass'] = 'Ideone server password';
-$string['ideone_pass_desc'] = 'The password to use when connecting to the deprecated Ideone server (if the ideone sandbox is enabled)';
-
 $string['jobe_apikey'] = 'Jobe API-key';
 $string['jobe_apikey_desc'] = 'The API key to be included in all REST requests to the Jobe server (if required). Max 40 chars. Leave blank to omit the API Key from requests';
 $string['jobe_host'] = 'Jobe server';

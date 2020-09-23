@@ -162,10 +162,7 @@ abstract class qtype_graphchecker_sandbox {
      * @return array
      */
     public static function available_sandboxes() {
-        return array('jobesandbox'      => 'qtype_graphchecker_jobesandbox',
-                     'ideonesandbox'    => 'qtype_graphchecker_ideonesandbox'
-                );
-
+        return array('jobesandbox'      => 'qtype_graphchecker_jobesandbox');
     }
 
     /**

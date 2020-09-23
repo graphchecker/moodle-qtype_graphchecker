@@ -51,14 +51,3 @@ $settings->add(new admin_setting_configtext(
         ''
         ));
 
-$settings->add(new admin_setting_configtext(
-        "qtype_graphchecker/ideone_user",
-        get_string('ideone_user', 'qtype_graphchecker'),
-        get_string('ideone_user_desc', 'qtype_graphchecker'),
-        ''));
-
-$settings->add(new admin_setting_configtext(
-        "qtype_graphchecker/ideone_password",
-        get_string('ideone_pass', 'qtype_graphchecker'),
-        get_string('ideone_pass_desc', 'qtype_graphchecker'),
-        ''));
