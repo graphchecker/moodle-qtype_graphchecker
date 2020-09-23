@@ -28,16 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 $settings->add(new admin_setting_heading('graphcheckersettings',
         get_string('graphcheckersettings', 'qtype_graphchecker'), ''));
 
-$sandboxes = qtype_graphchecker_sandbox::available_sandboxes();
-foreach ($sandboxes as $sandbox => $classname) {
-    $settings->add(new admin_setting_configcheckbox(
-        "qtype_graphchecker/{$sandbox}_enabled",
-        get_string('enable', 'qtype_graphchecker') . ' ' .$sandbox,
-        get_string('enable_sandbox_desc', 'qtype_graphchecker'),
-        $sandbox === 'jobesandbox')  // Only jobesandbox is enabled by default.
-    );
-}
-
 $settings->add(new admin_setting_configtext(
         "qtype_graphchecker/jobe_host",
         get_string('jobe_host', 'qtype_graphchecker'),

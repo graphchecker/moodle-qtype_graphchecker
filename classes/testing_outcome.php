@@ -40,7 +40,7 @@ class qtype_graphchecker_testing_outcome {
                                      // If this is not 1, subsequent fields may not be meaningful.
     public $errorcount;              // The number of failing test cases.
     public $errormessage;            // The error message to display if there are errors.
-    public $testresults;             // An array of TestResult objects.
+    public $testresults = [];        // An array of TestResult objects.
 
     /**
      * Constructs a testing outcome.
@@ -61,6 +61,11 @@ class qtype_graphchecker_testing_outcome {
         $this->testresults = $result;
         $this->errormessage = $errormessage;
         $this->errorcount = 0;
+    }
+
+    public function set_status($status, $errormessage='') {
+        $this->status = $status;
+        $this->errormessage = $errormessage;
     }
 
     public function iscombinatorgrader() {

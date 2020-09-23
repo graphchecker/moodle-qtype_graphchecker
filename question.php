@@ -275,21 +275,4 @@ class qtype_graphchecker_question extends question_graded_automatically {
 
         return json_encode($params);
     }
-
-
-
-    /* ================================================================
-     * Interface methods for use by jobrunner.
-       ================================================================*/
-
-    // Return an instance of the sandbox to be used to run code for this question.
-    public function get_sandbox() {
-        global $CFG;
-        $sandboxinstance = qtype_graphchecker_sandbox::get_best_sandbox('python3');
-        if ($sandboxinstance === null) {
-            throw new qtype_graphchecker_exception("Language {$this->language} is not available on this system");
-        }
-
-        return $sandboxinstance;
-    }
 }

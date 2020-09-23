@@ -51,7 +51,7 @@ class qtype_graphchecker_jobrunner {
         $this->checks = $checks;
 
         $this->isprecheck = $isprecheck;
-        $this->sandbox = $question->get_sandbox();
+        $this->sandbox = new qtype_graphchecker_jobesandbox();
 
         $this->allruns = array();
         $this->templateparams = array(
@@ -70,7 +70,6 @@ class qtype_graphchecker_jobrunner {
         global $CFG;
 
         $numchecks = count($this->checks);
-        $outcome = new qtype_graphchecker_testing_outcome(1, $numchecks, $isprecheck);
         $testprog = $this->get_testing_code();
 
         $this->allruns[] = $testprog;
@@ -82,13 +81,13 @@ class qtype_graphchecker_jobrunner {
             array());  // sandbox params
 
         if ($run->error !== qtype_graphchecker_sandbox::OK) {
-            $outcome->set_status(
-                    qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
-                    qtype_graphchecker_sandbox::error_string($run));
-        } else {
-            $outcome = $this->do_grading($run, $isprecheck);
+            return new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
+                [],
+                qtype_graphchecker_sandbox::error_string($run));
         }
-        return $outcome;
+
+        return $this->do_grading($run, $isprecheck);
     }
 
 
