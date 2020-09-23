@@ -77,7 +77,9 @@ class qtype_graphchecker_question extends question_graded_automatically {
         // if asking for deferred behavior, use that
         // otherwise use our adapted adaptive behavior (so that we can display the results table)
 
-        if ($preferredbehaviour === "deferredfeedback") {
+        if ($preferredbehaviour === "manualgraded") {
+            return question_engine::make_behaviour('manualgraded', $qa, $preferredbehaviour);
+        } else if ($preferredbehaviour === "deferredfeedback") {
             return new qbehaviour_deferredfeedback_graphchecker($qa, $preferredbehaviour);
         } else {
             return new qbehaviour_adaptive_adapted_for_coderunner($qa, $preferredbehaviour);
