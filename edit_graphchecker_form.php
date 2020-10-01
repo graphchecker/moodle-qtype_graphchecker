@@ -98,6 +98,26 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 get_string('answertype', 'qtype_graphchecker'), $typeselectorelements, null, false);
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
+        // vertex attributes
+        $vertexAttrBoxes = [];
+        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_labels',
+                'Labels', null, null);
+        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_colors',
+                'Colors', null, null);
+        $mform->addGroup($vertexAttrBoxes, 'vertex_attributes',
+                'Node attributes', [''], false);
+        $mform->addHelpButton('vertex_attributes', 'vertex_attributes', 'qtype_graphchecker');
+
+        // edge attributes
+        $edgeAttrBoxes = [];
+        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_labels',
+                'Labels', null, null);
+        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_colors',
+                'Colors', null, null);
+        $mform->addGroup($edgeAttrBoxes, 'edge_attributes',
+                'Edge attributes', [''], false);
+        $mform->addHelpButton('edge_attributes', 'edge_attributes', 'qtype_graphchecker');
+
         // add other sections
         $this->add_student_interaction_field($mform);
         $this->add_checks_field($mform);
@@ -178,21 +198,28 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 $attributes);
         $mform->addHelpButton('answerpreload', 'answerpreload', 'qtype_graphchecker');
 
-        $edit_choices = [];
-        $edit_choices['none'] = 'none';
-        $edit_choices['layout'] = 'layout';
-        $edit_choices['attributes'] = 'attributes';
-        $edit_choices['all'] = 'all';
-        $mform->addElement('select', 'allowed_vertex_edits',
-                'Allowed edits', $edit_choices);
-        $mform->setDefault('allowed_vertex_edits', 'all');
-        $mform->addHelpButton('allowed_vertex_edits', 'vertexedits', 'qtype_graphchecker');
+        $lockPreloadBox = [];
+        $lockPreloadBox[] =& $mform->createElement('advcheckbox', 'lock_preload',
+                'Lock preload', null, null);
+        $mform->addGroup($lockPreloadBox, 'lock_preload_box', '', [''], false);
+        $mform->addHelpButton('lock_preload_box', 'lock_preload_box', 'qtype_graphchecker');
 
+        // allowed add/remove
+        $add_remove_choices = [];
+        $add_remove_choices['none'] = 'none';
+        $add_remove_choices['edges'] = 'only edges';
+        $add_remove_choices['all'] = 'all (nodes and edges)';
+        $mform->addElement('select', 'add_remove',
+                'Allow adding/removing', $add_remove_choices);
+        $mform->setDefault('add_remove', 'all');
+        $mform->addHelpButton('add_remove', 'add_remove', 'qtype_graphchecker');
+
+        // highlighting
         $highlightBoxes = [];
         $highlightBoxes[] =& $mform->createElement('advcheckbox', 'vertex_highlight',
-                'Node highlighting', null, null);
+                'Nodes', null, null);
         $highlightBoxes[] =& $mform->createElement('advcheckbox', 'edge_highlight',
-                'Edge highlighting', null, null);
+                'Edges', null, null);
         $mform->addGroup($highlightBoxes, 'highlight',
                 'Highlighting', [''], false);
         $mform->addHelpButton('highlight', 'highlight', 'qtype_graphchecker');

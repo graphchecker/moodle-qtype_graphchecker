@@ -23,6 +23,8 @@
  */
 
 $string['aborted'] = 'Testing was aborted due to an error.';
+$string['add_remove'] = 'Allow adding/removing';
+$string['add_remove_help'] = 'This decides whether the student is able to add/remove nodes and edges.';
 $string['allok'] = 'Passed all checks! ';
 $string['answer'] = 'Sample answer';
 $string['answerprompt'] = 'Answer:';
@@ -43,6 +45,8 @@ $string['checks'] = 'Checks';
 $string['checks_help'] = 'Checks used to verify if the student\'s answer is correct.';
 $string['confirmreset'] = 'Are you sure you want reset the answer box to the original value? This will discard all your work on the question.';
 
+$string['edge_attributes'] = 'Edge attributes';
+$string['edge_attributes_help'] = 'Specify which attributes edges have: labels, colors, or both.';
 $string['enable'] = 'Enable';
 $string['enable_sandbox_desc'] = 'Permit use of the specified sandbox for running student submissions';
 $string['errorstring-ok'] = 'OK';
@@ -69,6 +73,9 @@ $string['jobe_apikey'] = 'Jobe API-key';
 $string['jobe_apikey_desc'] = 'The API key to be included in all REST requests to the Jobe server (if required). Max 40 chars. Leave blank to omit the API Key from requests';
 $string['jobe_host'] = 'Jobe server';
 $string['jobe_host_desc'] = 'The host name of the Jobe server plus the port number if other than port 80, e.g. jobe.somewhere.edu:4010. The URL for the Jobe request is obtained by default by prefixing this string with http:// and appending /jobe/index.php/restapi/<REST_METHOD>. You may either specify the https:// protocol in front of the host name (e.g. https://jobe.somewhere.edu) if the Jobe server is set behind a reverse proxy which acts as an SSL termination.';
+
+$string['lock_preload_box'] = 'Lock preload';
+$string['lock_preload_box_help'] = 'Checking this box will make the preloaded answer uneditable. That is, the student will not be able to drag and remove nodes and edges from the preload, or change their attributes. However, it is still possible to add new edges between nodes from the preload.';
 
 $string['noerrorsallowed'] = 'Your answer must pass all checks to earn any marks. Try again.';
 
@@ -105,6 +112,8 @@ $string['ui_fallback'] = 'Falling back to raw text area.';
 $string['unknownerror'] = 'An unexpected error occurred. The sandbox may be down. Try again shortly.';
 $string['unserializefailed'] = 'Stored test results could not be deserialised. Perhaps try regrading?';
 
+$string['vertex_attributes'] = 'Node attributes';
+$string['vertex_attributes_help'] = 'Specify which attributes nodes have: labels, colors, or both.';
 $string['vertexedits'] = 'Allowed edits';
 $string['vertexedits_help'] = 'Specify if students should be able to edit the nodes / edges of the preloaded graph. Various values are possible:<ul><li><b>none</b>: prohibit any edits (in this case you probably want to allow highlighting);<li><b>layout</b>: allow dragging the nodes / edges around, but nothing else;<li><b>attributes</b>: additionally allow changing vertex and edge labels, colors, etc.;<li><b>all</b>: allow all edits, including adding new nodes / edges or deleting existing ones.</ul>';
 
