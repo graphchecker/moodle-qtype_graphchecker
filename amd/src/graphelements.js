@@ -59,6 +59,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.y = y;
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
+        this.locked = false;
         this.hasMoved = false;
         this.isInitial = false;
         this.isFinal = false;
@@ -138,6 +139,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if (this.parent.selectedObjects.includes(this)) {
             // Set the shadow color to be blue
             c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        } else if (this.locked) {
+            c.shadowColor = '#999999';
             c.shadowBlur = 15;
         }
 
@@ -520,6 +524,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parent = parent;  // The parent ui_digraph instance.
         this.nodeA = a;
         this.nodeB = b;
+        this.locked = false;
         this.text = '';
         this.colorObject = (this.parent.templateParams.edge_colors) ?
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
@@ -673,6 +678,9 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         if (isSelected) {
             // Set the shadow color to be blue
             c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        } else if (this.locked) {
+            c.shadowColor = '#999999';
             c.shadowBlur = 15;
         }
 

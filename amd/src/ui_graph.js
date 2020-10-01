@@ -222,6 +222,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.links = [];
         this.selectedObjects = []; // One or more elements.Link or elements.Node objects. Default: empty array
         this.previousSelectedObjects = []; // Same as selectedObjects, but previous selected ones
+        this.draggedObjects = []; // The elements that are currently being dragged; [] if not dragging
         this.clickedObject = null; // The last manually clicked object
         this.selectionRectangle = null; // The top-left/bottom-right corners of the selection rectangle,
         // used in the form [{x: null, y: null}, {x: null, y: null}]
@@ -538,7 +539,6 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.mousedown = function(e) {
-        //TODO: test all functionality out with lock nodes, I assume these are nodes that cannot be moved/edited?
         var mouse = util.mousePos(e);
 
         if (this.readOnly) {
@@ -585,7 +585,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             } else if (this.uiMode === util.ModeType.SELECT) {
                 if (e.shiftKey) {
-                    if (this.clickedObject) {
+                    if (this.clickedObject && !this.clickedObject.locked) {
                         if (!this.selectedObjects.includes(this.clickedObject)) {
                             // Add to selection
                             this.selectedObjects.push(this.clickedObject);
@@ -594,10 +594,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                             this.selectedObjects = this.selectedObjects.filter(e => e !== this.clickedObject);
                         }
                     }
-                } else if (!e.shiftKey) {
+                } else {
                     if (!this.selectedObjects.includes(this.clickedObject)) {
                         // Set this object as the only selected if it was not selected yet
-                        this.selectedObjects = (this.clickedObject) ? [this.clickedObject] : [];
+                        this.selectedObjects = (this.clickedObject && !this.clickedObject.locked) ? [this.clickedObject] : [];
                     }
                 }
 
@@ -635,11 +635,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     }
                 }
 
+                // Start dragging objects
                 if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
                     && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)) {
                     this.canMoveObjects = true;
-                    for (let i = 0; i < this.selectedObjects.length; i++) {
-                        let object = this.selectedObjects[i];
+                    this.draggedObjects = [...this.selectedObjects];
+                    if (!this.draggedObjects.includes(this.clickedObject)) {
+                        this.draggedObjects.push(this.clickedObject);
+                    }
+                    for (let i = 0; i < this.draggedObjects.length; i++) {
+                        let object = this.draggedObjects[i];
                         if (object && object.setMouseStart) {
                             object.setMouseStart(mouse.x, mouse.y);
                         }
@@ -843,38 +848,28 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.selectionRectangle = null;
             }
         } else if (this.uiMode === util.ModeType.SELECT) {
-            if (this.selectedObjects.length) {
-                /*
-                //TODO: remove this part? This was previous code
-                if (this.movingGraph) {
-                    var nodes = this.movingNodes;
-                    for (var i = 0; i < nodes.length; i++) {
-                        nodes[i].trackMouse(mouse.x, mouse.y);
-                        this.snapNode(nodes[i]);
-                    }
-
-                 */
+            if (this.draggedObjects.length) {
                 if (this.canMoveObjects && this.clickedObject) {
                     // Apply horizontal/vertical snapping to all selected objects if they align horizontally/vertically
                     let isAlignedHorizontally = true;
                     let isAlignedVertically = true;
-                    for (let i = 0; i < this.selectedObjects.length - 1; i++) {
-                        if (this.selectedObjects[i].x !== this.selectedObjects[i + 1].x) {
+                    for (let i = 0; i < this.draggedObjects.length - 1; i++) {
+                        if (this.draggedObjects[i].x !== this.draggedObjects[i + 1].x) {
                             isAlignedVertically = false;
                         }
-                        if (this.selectedObjects[i].y !== this.selectedObjects[i + 1].y) {
+                        if (this.draggedObjects[i].y !== this.draggedObjects[i + 1].y) {
                             isAlignedHorizontally = false;
                         }
                     }
 
-                    // Get all nodes that are not in the selectedObjects
+                    // Get all nodes that are not in the draggedObjects
                     let nodesSet = new Set(this.nodes);
-                    let selectedObjectsSet = new Set(this.selectedObjects);
-                    let nodesNotSelected = [...nodesSet].filter(x => !selectedObjectsSet.has(x));
+                    let draggedObjectsSet = new Set(this.draggedObjects);
+                    let nodesNotSelected = [...nodesSet].filter(x => !draggedObjectsSet.has(x));
 
                     if (this.allowEdits(util.Edit.MOVE)) {
-                        for (let i = 0; i < this.selectedObjects.length; i++) {
-                            let object = this.selectedObjects[i];
+                        for (let i = 0; i < this.draggedObjects.length; i++) {
+                            let object = this.draggedObjects[i];
                             if (this.clickedObject instanceof elements.Node && object instanceof elements.Node) {
                                 object.setAnchorPoint(mouse.x, mouse.y);
                                 this.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
@@ -886,7 +881,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                                     // Deselect all other objects if the link has moved.
                                     // In case of SelfLinks and StartLinks, which cannot be snapped,
                                     // all objects are also deselected
-                                    this.selectedObjects = [this.clickedObject];
+                                    this.draggedObjects = [this.clickedObject];
                                 }
                             }
 
@@ -1039,7 +1034,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // If none of the selected objects has moved, and shift is not pressed,
             // set the selected object to the clicked object. I.e., unselect all other selected objects
-            if (this.clickedObject && !hasSelectionMoved && !e.shiftKey) {
+            if (this.clickedObject && !this.clickedObject.locked && !hasSelectionMoved && !e.shiftKey) {
                 this.selectedObjects = [this.clickedObject];
             }
 
@@ -1075,12 +1070,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         window.alert(message);
     };
 
-    // This function returns all objects which are completely located in a rectangle
+    // This function returns all non-locked objects which are completely located in a rectangle
     // The input rectangle should be of the form: [{x: null, y: null}, {x: null, y: null}]
     Graph.prototype.getObjectsInRectangle = function(rect) {
         let objects = [];
         // Check all nodes
         for (let i = 0; i < this.nodes.length; i++) {
+            if (this.nodes[i].locked) {
+                continue;
+            }
             // Calculate the top-left corner of the circle/square
             let topLeft = {x: this.nodes[i].x - this.nodeRadius(), y: this.nodes[i].y - this.nodeRadius()};
             let bottomRight = {x: this.nodes[i].x + this.nodeRadius(), y: this.nodes[i].y + this.nodeRadius()};
@@ -1093,6 +1091,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Check all links
         for (let i = 0; i < this.links.length; i++) {
+            if (this.links[i].locked) {
+                continue;
+            }
             // If the link is a straight line, check if the two endpoints are located inside the rectangle
             // If the link is an arc, generate 'steps' number of points on the arc,
             // and check if they are all located inside the rectangle
@@ -1443,6 +1444,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 for (i = 0; i < input.vertices.length; i++) {
                     var inputNode = input.vertices[i];
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
+                    if ('locked' in inputNode) {
+                        node.locked = inputNode['locked'];
+                    }
                     node.text = inputNode['label'];
                     if (this.templateParams.vertex_colors) {
                         node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
@@ -1492,6 +1496,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         link.perpendicularPart = inputLink['bend']['perpendicularPart'];
                         link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
                     }
+                    if ('locked' in inputLink) {
+                        link.locked = inputLink['locked'];
+                    }
                     this.links.push(link);
                 }
 
@@ -1530,6 +1537,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             let vertex = {
                 'label': node.text,
                 'position': [node.x, node.y],
+                'locked': node.locked
             };
             if (this.templateParams.vertex_colors) {
                 vertex['color'] = node.colorObject.colorCode;
@@ -1559,7 +1567,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     'bend': {
                         'anchorAngle': link.anchorAngle
                     },
-                    'label': link.text
+                    'label': link.text,
+                    'locked': link.locked
                 };
                 if (this.templateParams.edge_colors) {
                     linkObject.color = link.colorObject.colorCode;
@@ -1576,7 +1585,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     'bend': {
                         'deltaX': link.deltaX,
                         'deltaY': link.deltaY
-                    }
+                    },
+                    'locked': link.locked
                 };
                 if (this.templateParams.edge_colors) {
                     linkObject.color = link.colorObject.colorCode;
@@ -1595,7 +1605,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         'parallelPart': link.parallelPart,
                         'perpendicularPart': link.perpendicularPart
                     },
-                    'label': link.text
+                    'label': link.text,
+                    'locked': link.locked
                 };
                 if (this.templateParams.edge_colors) {
                     linkObject.color = link.colorObject.colorCode;
