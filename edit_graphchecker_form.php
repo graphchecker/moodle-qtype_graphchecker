@@ -191,7 +191,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $attributes = array(
             'rows' => 5,
             'class' => 'preloadanswer edit_code',
-            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_type($this->answertype))
+            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_preload($this->answertype))
         );
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),

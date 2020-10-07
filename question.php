@@ -247,6 +247,14 @@ class qtype_graphchecker_question extends question_graded_automatically {
         return $params;
     }
 
+
+    public static function get_ui_params_for_preload($type) {
+        $params = qtype_graphchecker_question::get_ui_params_for_type($type);
+        $params['edit_locked'] = true;
+        return $params;
+    }
+
+
     /**
      * Returns a JSON string to be handed to the UI plugin, corresponding to
      * the answer type of this question.

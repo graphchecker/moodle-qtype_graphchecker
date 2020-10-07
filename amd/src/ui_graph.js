@@ -1444,7 +1444,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 for (i = 0; i < input.vertices.length; i++) {
                     var inputNode = input.vertices[i];
                     var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
-                    if ('locked' in inputNode) {
+                    if (!this.templateParams.edit_locked && 'locked' in inputNode) {
+                        // note: don't set the locked flag if we're in edit_locked mode,
+                        // because then we're supposed to be able to edit locked objects
+                        // (in the save() method the locked flag is placed back on all nodes
+                        // and links)
                         node.locked = inputNode['locked'];
                     }
                     node.text = inputNode['label'];
@@ -1496,7 +1500,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                         link.perpendicularPart = inputLink['bend']['perpendicularPart'];
                         link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
                     }
-                    if ('locked' in inputLink) {
+                    if (!this.templateParams.edit_locked && 'locked' in inputLink) {
                         link.locked = inputLink['locked'];
                     }
                     this.links.push(link);
@@ -1555,6 +1559,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     vertex['tokens'] = node.petriTokens;
                 }
             }
+            // if we're in the edit_locked mode, make sure to put the locked flag back on save
+            if (this.templateParams.edit_locked) {
+                vertex['locked'] = true;
+            }
             output.vertices.push(vertex);
         }
 
@@ -1576,7 +1584,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.templateParams.highlight_edges) {
                     linkObject.highlighted = link.isHighlighted;
                 }
-
+                // if we're in the edit_locked mode, make sure to put the locked flag back on save
+                if (this.templateParams.edit_locked) {
+                    linkObject['locked'] = true;
+                }
                 output.edges.push(linkObject);
             } else if(link instanceof elements.StartLink) {
                 let linkObject = {
@@ -1594,7 +1605,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.templateParams.highlight_edges) {
                     linkObject.highlighted = link.isHighlighted;
                 }
-
+                // if we're in the edit_locked mode, make sure to put the locked flag back on save
+                if (this.templateParams.edit_locked) {
+                    linkObject['locked'] = true;
+                }
                 output.edges.push(linkObject);
             } else if(link instanceof elements.Link) {
                 let linkObject = {
@@ -1614,7 +1628,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.templateParams.highlight_edges) {
                     linkObject.highlighted = link.isHighlighted;
                 }
-
+                // if we're in the edit_locked mode, make sure to put the locked flag back on save
+                if (this.templateParams.edit_locked) {
+                    linkObject['locked'] = true;
+                }
                 output.edges.push(linkObject);
             }
         }
