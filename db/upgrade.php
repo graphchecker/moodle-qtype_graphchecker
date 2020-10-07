@@ -69,5 +69,18 @@ function xmldb_qtype_graphchecker_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020080400, 'qtype', 'graphchecker');
     }
 
+    if ($oldversion < 2020100700) {
+        $table = new xmldb_table('question_graphchecker_opts');
+
+        // Conditionally launch add field vertex_highlight.
+        $field = new xmldb_field('lock_preload', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'edge_labels');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Graphchecker savepoint reached.
+        upgrade_plugin_savepoint(true, 2020100700, 'qtype', 'graphchecker');
+    }
+
     return true;
 }

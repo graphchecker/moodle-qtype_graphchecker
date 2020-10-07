@@ -250,7 +250,8 @@ class qtype_graphchecker_question extends question_graded_automatically {
 
     public static function get_ui_params_for_preload($type) {
         $params = qtype_graphchecker_question::get_ui_params_for_type($type);
-        $params['edit_locked'] = true;
+        $params['ignore_locked'] = true;
+        $params['save_locked'] = true;
         return $params;
     }
 
@@ -279,6 +280,10 @@ class qtype_graphchecker_question extends question_graded_automatically {
                 'vertex_colors', 'edge_colors',
                 'fsm_flags', 'petri_marking'
             ];
+        }
+
+        if (!$this->lock_preload) {
+            $params['ignore_locked'] = true;
         }
 
         return json_encode($params);

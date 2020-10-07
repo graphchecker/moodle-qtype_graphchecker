@@ -19,6 +19,7 @@
         <FIELD NAME="edge_highlight" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether to allow the student to highlight edges (0 / 1)"/>
         <FIELD NAME="vertex_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which vertex labels to allow (temporary WIP field, currently unused)"/>
         <FIELD NAME="edge_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which edge labels to allow (temporary WIP field, currently unused)"/>
+        <FIELD NAME="lock_preload" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether to lock the preload graph (0 / 1)"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
