@@ -147,7 +147,7 @@ def node_label_exists(student_answer, label):
 #             'feedback': 'Net has no node with an empty label.'}
 
 
-def arc_missing(student_answer label_a, label_b):
+def arc_missing(student_answer, label_a, label_b):
     """
     Checks whether there is no edge from the node with label_a to the node with label_b.
     The check fails if there is an edge from node with label_a to the node with label_b.
@@ -184,7 +184,7 @@ def arc_has_label(student_answer, label_a, label_b, label_arc):
                         ' with arc label {2}.'.format(label_a, label_b, label_arc)}
 
 
-def at_most_one_arc(student_answer label_a, label_b):
+def at_most_one_arc(student_answer, label_a, label_b):
     """
     Checks if there is at most one arc from the node with label label_a to the node
     with label label_b.
