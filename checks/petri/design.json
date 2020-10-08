@@ -3,7 +3,7 @@
   "checks": {
     "no_forbidden_words": {
       "name": "Labels have no forbidden words",
-      "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
+      "description": "Checks if labels of nodes are meaningful by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
       "params": [
         {
           "param": "words",
