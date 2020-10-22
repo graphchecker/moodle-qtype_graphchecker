@@ -5,7 +5,9 @@ def preprocess(graph):
     if not graph:
         return g
     count = 0
-    for vertex in graph['vertices']:
+    
+    sortedVertices = sorted(graph['vertices'], key=lambda vertex: vertex['label'])
+    for vertex in sortedVertices:
         label = "v" + str(count) + "_" + vertex['label']
         if 'highlighted' not in vertex:
             highlight = False
