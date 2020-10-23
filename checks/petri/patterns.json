@@ -2,12 +2,12 @@
   "name": "Patterns",
   "checks": {
     "has_sub_graph": {
-      "name": "Contains given sub graph",
-      "description": "Checks if for a given sub-graph the nodes with matching labels form have the exact sameconnections (no more, no less) and markings.",
+      "name": "Contains given subgraph",
+      "description": "Checks if for a given subgraph the nodes with matching labels form have the exact same arcs and markings.",
       "params": [
         {
           "param": "sub_graph",
-          "name": "sub graph",
+          "name": "Subgraph",
           "type": "graph"
         }
       ]

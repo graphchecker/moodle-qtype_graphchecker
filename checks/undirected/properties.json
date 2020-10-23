@@ -7,7 +7,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -20,7 +20,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -33,7 +33,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 3,
                     "min": 3
@@ -46,7 +46,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -55,11 +55,11 @@
         },
         "isomorphism": {
             "name": "Isomorphism",
-            "description": "Checks if the graph is isomorphic to the sample answer (that is, if it is identical to the sample answer, up to reordering vertices).",
+            "description": "Checks if the graph is isomorphic to the given graph (that is, if it is identical up to reordering vertices).",
             "params": [
                 {
                     "param": "graph_answer",
-                    "name": "Graph to be matched",
+                    "name": "Answer isomorphic to",
                     "type": "graph"
                 }
             ]
@@ -70,7 +70,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0

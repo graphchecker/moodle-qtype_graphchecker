@@ -3,7 +3,7 @@
     "checks": {
         "connected": {
             "name": "Connectedness",
-            "description": "Check if the graph is connected"
+            "description": "Checks if the graph is connected."
         },
         "edge_count": {
             "name": "Edge count",
@@ -11,7 +11,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -27,11 +27,11 @@
         },
         "same_highlights": {
             "name": "Match highlighting",
-            "description": "Check if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
+            "description": "Checks if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "graph"
                 }
             ]
@@ -59,7 +59,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer"
                 },
                 {
@@ -77,7 +77,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
