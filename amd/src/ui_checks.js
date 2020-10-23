@@ -14,12 +14,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Implementation of the html_ui user interface plugin. For overall details
- * of the UI plugin architecture, see userinterfacewrapper.js.
+ * Implementation of the UI plugin to select checks.
  *
  * @package    qtype
- * @subpackage coderunner
- * @copyright  Richard Lobb, 2018, The University of Canterbury
+ * @subpackage graphchecker
+ * @copyright  EdIn, TU Eindhoven, 2020
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -46,29 +45,47 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         let checks = [];
 
         let $checkContainers = this.$activeChecksList.children();
+        const self = this;
         $checkContainers.each(function() {
             let $checkContainer = $(this);
-            let check = {
-                'module': $checkContainer.attr('data-module'),
-                'method': $checkContainer.attr('data-method')
-            };
-
-            let $argRows =
-                    $checkContainer.children('.args-container').children();
-            if ($argRows) {
-                let args = {};
-                $argRows.each(function() {
-                    let $argRow = $(this);
-                    let name = $argRow.attr('data-param-name');
-                    let value = $argRow.children('.argument-value').val();
-                    args[name] = value;
-                });
-                check['arguments'] = args;
+            if ($checkContainer.hasClass('test-container')) {
+                checks.push(self.checkContainerToJson($checkContainer));
+            } else {
+                checks.push(self.gradeContainerToJson($checkContainer));
             }
-            checks.push(check);
         });
 
         this.$textArea.val(JSON.stringify(checks));
+    };
+
+    ChecksUi.prototype.checkContainerToJson = function($container) {
+        let check = {
+            'type': 'check',
+            'module': $container.attr('data-module'),
+            'method': $container.attr('data-method')
+        };
+
+        let $argRows = $container.children('.args-container').children();
+        if ($argRows) {
+            let args = {};
+            $argRows.each(function() {
+                let $argRow = $(this);
+                let name = $argRow.attr('data-param-name');
+                let value = $argRow.children('.argument-value').val();
+                args[name] = value;
+            });
+            check['arguments'] = args;
+        }
+        return check;
+    };
+
+    ChecksUi.prototype.gradeContainerToJson = function($container) {
+        let grade = {
+            'type': 'grade'
+        };
+        grade['points'] = $container.find('.points-field').val();
+        grade['continue'] = $container.find('.continue-field').val() !== 'stop checking';
+        return grade;
     };
 
     ChecksUi.prototype.getElement = function() {
@@ -99,8 +116,17 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         for (let i = 0; i < activeChecks.length; i++) {
             let check = activeChecks[i];
-            this.createActiveCheckContainer(check)
-                .appendTo(this.$activeChecksList);
+            if (check['type'] === 'grade') {
+                this.createPartialGradeContainer(check)
+                    .appendTo(this.$activeChecksList);
+            } else {
+                // check['type'] === 'check'
+                // but note that in earlier versions of the check UI, the type
+                // was not explicitly stored, so check['type'] can also be
+                // undefined, and then we end up in this case, too
+                this.createActiveCheckContainer(check)
+                    .appendTo(this.$activeChecksList);
+            }
         }
 
         this.$addCheckButton = $('<button/>')
@@ -108,6 +134,15 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
             .append('Add check')
             .on('click', this.showAddCheckDialog.bind(this))
+            .appendTo(this.$checksPanel);
+
+        this.$checksPanel.append(' ');
+
+        this.$addPartialGradeButton = $('<button/>')
+            .addClass('btn')
+            .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
+            .append('Add partial grade')
+            .on('click', this.addPartialGrade.bind(this))
             .appendTo(this.$checksPanel);
     };
 
@@ -208,6 +243,103 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         if (checkInfo['params']) {
             this.createArgsContainer(checkInfo, check)
                 .appendTo($container);
+        }
+
+        return $container;
+    };
+
+    ChecksUi.prototype.createPartialGradeContainer = function(grade) {
+        let $container = $('<div/>')
+            .addClass('grade-container');
+
+        let $header = $('<div/>')
+            .addClass('test-header')
+            .appendTo($container);
+
+        let $buttonGroup = $('<div/>')
+            .addClass('button-group')
+            .appendTo($header);
+
+        this.createButton('fa-angle-up')
+            .attr('title', 'Move this partial grade up in the list')
+            .on('click', this.moveCheckUp.bind(this))
+            .appendTo($buttonGroup);
+        this.createButton('fa-angle-down')
+            .attr('title', 'Move this partial grade down in the list')
+            .on('click', this.moveCheckDown.bind(this))
+            .appendTo($buttonGroup);
+
+        $('<span/>')
+            .html('Partial grade')
+            .addClass('test-name')
+            .appendTo($header);
+
+        this.createHelpButton(
+            "This allows you to award partial grades if only some of the checks " +
+            "pass." +
+            "<ul><li><b>If all checks above this block passed</b>, then " +
+            "the set number of points will be awarded." +
+            "<li><b>If at least one check above this block failed</b>, no points will be awarded, " +
+            "and you can decide if " +
+            "the checks below this block should still be checked (in which " +
+            "case points can still be awarded for them) or the checking " +
+            "process should be stopped.</ul>"
+        )
+            .appendTo($header);
+
+        let $rightButtonGroup = $('<div/>')
+            .addClass('button-group float-right')
+            .appendTo($header);
+
+        this.createButton('fa-trash')
+            .attr('title', 'Remove this partial grade from the list')
+            .on('click', this.removeCheck.bind(this))
+            .appendTo($rightButtonGroup);
+
+        let $argsContainer = $('<div/>')
+            .addClass('args-container')
+            .appendTo($container);
+
+        let $gradeRow = $('<div/>')
+            .addClass('argument-row')
+            .appendTo($argsContainer);
+        $('<span/>')
+            .addClass('argument-name')
+            .text('points to award')
+            .appendTo($gradeRow);
+        let $pointsField = $('<input/>')
+            .addClass('argument-value')
+            .addClass('points-field')
+            .attr('type', 'number')
+            .attr('min', 0)
+            .appendTo($gradeRow);
+
+        if (grade) {
+            $pointsField.val(grade['points']);
+        } else {
+            $pointsField.val(0);
+        }
+
+        let $continueRow = $('<div/>')
+            .addClass('argument-row')
+            .appendTo($argsContainer);
+        $('<span/>')
+            .addClass('argument-name')
+            .text('if checks fail ')
+            .appendTo($continueRow);
+        let $continueSelect = $('<select/>')
+            .addClass('argument-value')
+            .addClass('continue-field')
+            .appendTo($continueRow);
+        $('<option/>')
+            .text('continue with the checks below')
+            .appendTo($continueSelect);
+        $('<option/>')
+            .text('stop checking')
+            .appendTo($continueSelect);
+
+        if (grade && !grade['continue']) {
+            $continueSelect.val('stop checking');
         }
 
         return $container;
@@ -333,7 +465,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     };
 
     ChecksUi.prototype.moveCheckUp = function(e) {
-        let $checkContainer = $(e.target).closest('.test-container');
+        let $checkContainer = $(e.target).closest('.test-container, .grade-container');
         let $previous = $checkContainer.prev();
         if ($previous) {
             $previous.before($checkContainer);
@@ -342,7 +474,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     };
 
     ChecksUi.prototype.moveCheckDown = function(e) {
-        let $checkContainer = $(e.target).closest('.test-container');
+        let $checkContainer = $(e.target).closest('.test-container, .grade-container');
         let $next = $checkContainer.next();
         if ($next) {
             $next.after($checkContainer);
@@ -351,7 +483,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     };
 
     ChecksUi.prototype.removeCheck = function(e) {
-        let $checkContainer = $(e.target).closest('.test-container');
+        let $checkContainer = $(e.target).closest('.test-container, .grade-container');
         $checkContainer.slideUp();
 
         // remove it after the slideUp is done
@@ -377,6 +509,15 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .slideDown();
 
         this.hideDialogs();
+
+        return false;
+    };
+
+    ChecksUi.prototype.addPartialGrade = function() {
+        this.createPartialGradeContainer()
+            .appendTo($('.active-tests-list'))
+            .hide()
+            .slideDown();
 
         return false;
     };
