@@ -75,7 +75,7 @@ $string['jobe_host'] = 'Jobe server';
 $string['jobe_host_desc'] = 'The host name of the Jobe server plus the port number if other than port 80, e.g. jobe.somewhere.edu:4010. The URL for the Jobe request is obtained by default by prefixing this string with http:// and appending /jobe/index.php/restapi/<REST_METHOD>. You may either specify the https:// protocol in front of the host name (e.g. https://jobe.somewhere.edu) if the Jobe server is set behind a reverse proxy which acts as an SSL termination.';
 
 $string['lock_preload_box'] = 'Lock preload';
-$string['lock_preload_box_help'] = 'Checking this box will make the preloaded answer uneditable. That is, the student will not be able to drag and remove nodes and edges from the preload, or change their attributes. However, it is still possible to add new edges between nodes from the preload.';
+$string['lock_preload_box_help'] = 'Checking this box will make the preloaded answer uneditable. That is, the student will not be able to remove nodes and edges from the preload, or change their attributes. However, it is still possible to drag nodes from the preload around, and to add new edges between them.';
 
 $string['noerrorsallowed'] = 'Your answer must pass all checks to earn any marks. Try again.';
 
