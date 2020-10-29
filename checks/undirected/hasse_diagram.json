@@ -1,0 +1,16 @@
+{
+    "name": "Hasse diagrams",
+    "checks": {
+        "matchesDiagram": {
+            "name": "Match Hasse diagram",
+            "description": "Check if the graph matches the given Hasse diagram (assumes distinct vertex labels)",
+            "params": [
+                    {
+                        "param": "graph_answer",
+                        "name": "should be",
+                        "type": "graph"
+                    }
+            ]
+        }
+    }
+}
