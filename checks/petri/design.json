@@ -3,11 +3,11 @@
   "checks": {
     "no_forbidden_words": {
       "name": "Labels have no forbidden words",
-      "description": "Checks if labels of nodes are ’meaningful’ by matching them against an array (/list) of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
+      "description": "Checks if labels of nodes are meaningful by matching them against an list of forbidden words. If any forbidden word is used then the test fails and reports what forbidden word was used.",
       "params": [
         {
           "param": "words",
-          "name": "labels",
+          "name": "Forbidden labels",
           "type": "string_list",
           "default": ""
         }
@@ -15,17 +15,17 @@
     },
     "all_labels_from_set": {
       "name": "All labels come from set",
-      "description": "Check if all the labels for places/transitions/both (dropdown) come from a given set.",
+      "description": "Checks if all the labels for places/transitions/both come from a given set.",
       "params": [
         {
           "param": "labels",
-          "name": "Allowed Labels",
+          "name": "Allowed labels",
           "type": "string_list",
           "default": ""
         },
         {
           "param": "node_type",
-          "name": "Node Type",
+          "name": "Node type",
           "type": "choice",
           "options": ["places", "transitions", "both"]
         }
@@ -33,17 +33,17 @@
     },
     "all_labels_used": {
       "name": "All labels in set are used",
-      "description": "Check if all labels from a given set (string list) are used to label places/transitions/both (dropdown).",
+      "description": "Checks if all labels from a given set are used to label places/transitions/both.",
       "params": [
         {
           "param": "labels",
-          "name": "Required Labels",
+          "name": "Required labels",
           "type": "string_list",
           "default": ""
         },
         {
           "param": "node_type",
-          "name": "Node Type",
+          "name": "Node type",
           "type": "choice",
           "options": ["places", "transitions", "both"]
         }
@@ -51,21 +51,21 @@
     },
     "left_to_right": {
       "name": "Left to right",
-      "description": "Checks if the modeling is left-to-right. That is, all arcs are left-to-right.",
+      "description": "Checks if all arcs are oriented left-to-right.",
       "params": []
     },
     "top_to_bottom": {
       "name": "Top to bottom",
-      "description": "Check if the modeling is top-to-bottom. That is, all arcs are top-to-bottom.",
+      "description": "Checks if all arcs are oriented top-to-bottom.",
       "params": []
     },
     "crossing_arcs": {
       "name": "Number of crossing arcs",
-      "description": " Check if the number of crossing arcs is at most a given natural number.",
+      "description": "Checks if the number of crossing arcs is at most the given number.",
       "params": [
         {
           "param": "max_crossings",
-          "name": "Max number of crossings",
+          "name": "Maximum number of crossings",
           "type": "string",
           "default": "10",
           "min": "0"
@@ -74,11 +74,11 @@
     },
     "horizontally_adjacent": {
       "name": "Nodes horizontally adjacent",
-      "description": "Check if for a given array of labels all the nodes matching the labels are (approximately) horizontally adjacent.",
+      "description": "Checks if for a given list of labels, all the nodes matching the labels are (approximately) horizontally adjacent.",
       "params": [
         {
           "param": "labels",
-          "name": "labels",
+          "name": "Labels",
           "type": "string_list",
           "default": ""
         }
@@ -86,47 +86,47 @@
     },
     "vertically_adjacent": {
       "name": "Nodes vertically adjacent",
-      "description": " Check if for a given array of labels all the nodes matching the labels are (approximately) vertically adjacent.",
+      "description": "Checks if for a given list of labels, all the nodes matching the labels are (approximately) vertically adjacent.",
       "params": [
         {
           "param": "labels",
-          "name": "labels",
+          "name": "Labels",
           "type": "string_list",
           "default": ""
         }
       ]
     },
     "list_left_of": {
-      "name": "Node groups horizontal separation.",
-      "description": "Check if for two given arrays A, B with labels, all the nodes matching the labels in A are left of all the nodes with labels in B. Fails if A, B have an overlapping label.",
+      "name": "Horizontal separation between node groups",
+      "description": "Checks if for two given lists A and B of labels, all the nodes matching the labels in A are left of all the nodes with labels in B. Fails if A and B have an overlapping label.",
       "params": [
         {
           "param": "labels_a",
-          "name": "labels of nodes in A",
+          "name": "Labels in A",
           "type": "string_list",
           "default": ""
         },
         {
           "param": "labels_b",
-          "name": "labels of nodes in B",
+          "name": "Labels in B",
           "type": "string_list",
           "default": ""
         }
       ]
     },
     "list_above_of": {
-      "name": "Node groups vertical separation.",
-      "description": " Check if for two given arrays A, B with labels, all the nodes matching the labels in A are above all the nodes with labels in B. Fails if A, B have an overlapping label.",
+      "name": "Vertical separation between node groups",
+      "description": "Checks if for two given lists A and B of labels, all the nodes matching the labels in A are above all the nodes with labels in B. Fails if A and B have an overlapping label.",
       "params": [
         {
           "param": "labels_a",
-          "name": "labels of nodes in A",
+          "name": "Labels in A",
           "type": "string_list",
           "default": ""
         },
         {
           "param": "labels_b",
-          "name": "labels of nodes in B",
+          "name": "Labels in B",
           "type": "string_list",
           "default": ""
         }

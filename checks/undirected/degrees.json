@@ -3,29 +3,29 @@
     "checks": {
         "vertex_degree_sequence": {
             "name": "Degree sequence",
-            "description": "Check if the graph has the given degree sequence (Comma separated. I.e. '3,3,2,2,1').",
+            "description": "Checks if the graph has the given degree sequence (comma separated, e.g. <i>3,3,2,2,1</i>).",
             "params": [
                 {
                     "param": "degree_sequence",
-                    "name": "The degree sequence is ",
+                    "name": "Expected sequence",
                     "type": "string"
                 }
             ]
         },
         "number_vertices_of_degree": {
-            "name": "Required vertices of given degree",
+            "name": "Count vertices of given degree",
             "description": "Checks if there are a given number of vertices in the graph with the given degree.",
             "params": [
                 {
                     "param": "number_of_verts",
-                    "name": "There should be ",
+                    "name": "There should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
                 },
                 {
                     "param": "degree",
-                    "name": "vertices of degree ",
+                    "name": "vertices of degree",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -38,7 +38,7 @@
             "params": [
                 {
                     "param": "max_degree",
-                    "name": "The maximum vertex degree is ",
+                    "name": "Maximum vertex degree",
                     "type": "integer",
                     "default": 1,
                     "min": 0

@@ -3,11 +3,11 @@
     "checks": {
         "state_count": {
             "name": "State count",
-            "description": "Checks if the graph has the given number of states.",
+            "description": "Checks if the FSM has the given number of states.",
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0
@@ -20,7 +20,7 @@
             "params": [
                 {
                     "param": "expected",
-                    "name": "should be",
+                    "name": "Should be",
                     "type": "integer",
                     "default": 1,
                     "min": 0

@@ -1,40 +1,40 @@
 {
-  "name": "Basic petri-net functionality",
+  "name": "Basic Petri net functionality",
   "checks": {
     "possible_sequence": {
-      "name": "Is firing sequence possible",
+      "name": "Possible firing sequence",
       "description": "Checks if a specific sequence of firing transitions is possible.",
       "params": [
         {
           "param": "transition_sequence",
-          "name": "list of transition labels in order of firing",
+          "name": "List of transition labels in order of firing",
           "type": "string_list"
         }
       ]
     },
     "impossible_sequence": {
-      "name": "Is firing sequence impossible",
+      "name": "Impossible firing sequence",
       "description": "Checks if a specific sequence of firing transitions is impossible.",
       "params": [
         {
           "param": "transition_sequence",
-          "name": "list of transition labels in order of firing",
+          "name": "List of transition labels in order of firing",
           "type": "string_list"
         }
       ]
     },
     "workflow_net": {
-      "name": "Is workflow net",
-      "description": "Checks if a petri-net is workflow net (there is a unique initial and final state and every node is between the initial and final state).",
+      "name": "Workflow net",
+      "description": "Checks if a Petri net is a workflow net (there is a unique initial and final state, and every node is between the initial and final state).",
       "params": []
     },
     "marking_given": {
-      "name": "Marking is given",
-      "description": "Checks if a particular marking is given for a known petri-net. Given a petri-net checks if the markings in the student answer are the same.",
+      "name": "Marking",
+      "description": "Given a Petri net, checks if the markings in the student answer are the same.",
       "params": [
         {
           "param": "correct_graph",
-          "name": "petri net with correct marking",
+          "name": "Expected marking",
           "type": "graph"
         }
       ]
@@ -45,7 +45,7 @@
       "params": [
         {
           "param": "num_tokens",
-          "name": "should exist",
+          "name": "Number of tokens",
           "type": "integer",
           "default": 1,
           "min": 0

@@ -7,7 +7,7 @@
             "params": [
                 {
                     "param": "language",
-                    "name": "language",
+                    "name": "Language",
                     "type": "string"
                 }
             ]
@@ -18,7 +18,7 @@
             "params": [
                 {
                     "param": "language",
-                    "name": "language",
+                    "name": "Language",
                     "type": "string"
                 }
             ]

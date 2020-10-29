@@ -122,14 +122,19 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $testoutcomeserial = $response['_testoutcome'];
         $testoutcome = unserialize($testoutcomeserial);
         if ($testoutcome instanceof qtype_graphchecker_testing_outcome) {
-            $error .= "<ul>";
-            foreach ($testoutcome->testresults as $result) {
-                if (array_key_exists('error', $result)) {
-                    $error .= "<li>";
-                    $error .= "Check <b>" . $testoutcome->get_test_name($this->answertype, $result['module'], $result['method']) . "</b> produced error:<pre>" . $result['error'] . "</pre>";
+            if (array_key_exists('errormessage', $testoutcome)) {
+                $error .= '<pre>' . $testoutcome->errormessage . '</pre>';
+            } else {
+                $error .= "<ul>";
+                foreach ($testoutcome->testresults as $result) {
+                    if (array_key_exists('error', $result)) {
+                        $error .= "<li>";
+                        $error .= "Check <b>" . $testoutcome->get_test_name($this->answertype, $result['module'], $result['method']) .
+                            "</b> produced error:<pre>" . $result['error'] . "</pre>";
+                    }
                 }
+                $error .= "</ul>";
             }
-            $error .= "</ul>";
         } else {
             $error .= "Unknown error.";
         }

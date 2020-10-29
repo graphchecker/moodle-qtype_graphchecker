@@ -2,13 +2,13 @@
   "name": "Behavioral properties",
   "checks": {
     "bounded": {
-      "name": "Is bounded",
-      "description": "Checks if the petri-net is bounded.",
+      "name": "Bounded",
+      "description": "Checks if the Petri net is bounded.",
       "params": []
     },
     "infinite": {
-      "name": "Is infinite",
-      "description": "Checks if the petri-net is infinite.",
+      "name": "Infinite",
+      "description": "Checks if the Petri net is infinite.",
       "params": []
     }
   }
