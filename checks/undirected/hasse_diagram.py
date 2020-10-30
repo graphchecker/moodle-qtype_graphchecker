@@ -58,16 +58,13 @@ def matchesDiagram(student_answer, graph_answer):
     for e in student_answer.es:
         eSource = student_answer.vs[e.source]
         eTarget = student_answer.vs[e.target]
-        for f in graph_answer.es: 
-            fSource = graph_answer.vs[f.source]
-            fTarget = graph_answer.vs[f.target]
-            if (eSource['name'] == fSource['name'] and eTarget['name'] == fTarget['name']):
-                if ((eSource['y'] < eTarget['y']) !=
-                   (fSource['y'] < fTarget['y'])):
-                    return {'correct': False, 'feedback': 'Edges do not match expected edges or vertical ordering incorrect.'}
-            elif (eSource['name'] == fTarget['name'] and eTarget['name'] == fSource['name']):
-                if ((eTarget['y'] < eSource['y']) !=
-                   (fSource['y'] < fTarget['y'])):
-                    return {'correct': False, 'feedback': 'Edges do not match expected edges or vertical ordering incorrect.'}
-        
+        fSource = graph_answer.vs.find(name=eSource['name']) 
+        fTarget = graph_answer.vs.find(name=eTarget['name'])
+        #if no edge is present in f between these verties
+        if (graph_answer.get_eid(fSource, fTarget, directed=False, error=False) < 0):
+            return {'correct': False,
+                'feedback': 'Error: graph does not match expected graph. Missing edge.'}
+        #if not same orientation
+        if ((eSource['y'] < eTarget['y']) != (fSource['y'] < fTarget['y'])):
+            return {'correct': False, 'feedback': 'Edges do not match expected edges or vertical ordering incorrect.'}
     return {'correct': True}
