@@ -22,7 +22,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2020100700;
+$plugin->version  = 2020102800;
 $plugin->requires = 2015051200;
 $plugin->cron = 0;
 $plugin->component = 'qtype_graphchecker';
@@ -31,6 +31,6 @@ $plugin->release = '0.2';
 
 $plugin->dependencies = array(
     'qbehaviour_adaptive_adapted_for_coderunner' => 2018042800,
-    'qbehaviour_deferredfeedback_graphchecker' => 2020061100
+    'qbehaviour_deferredfeedback_graphchecker' => 2020102200
 );
 

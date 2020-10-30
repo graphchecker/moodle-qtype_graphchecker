@@ -20,6 +20,10 @@
         <FIELD NAME="vertex_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which vertex labels to allow (temporary WIP field, currently unused)"/>
         <FIELD NAME="edge_labels" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Which edge labels to allow (temporary WIP field, currently unused)"/>
         <FIELD NAME="lock_preload" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether to lock the preload graph (0 / 1)"/>
+        <FIELD NAME="vertex_attr_labels" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether vertices carry labels."/>
+        <FIELD NAME="edge_attr_labels" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether edges carry labels."/>
+        <FIELD NAME="vertex_attr_colors" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether vertices carry colors."/>
+        <FIELD NAME="edge_attr_colors" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether edges carry colors."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

@@ -82,5 +82,36 @@ function xmldb_qtype_graphchecker_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020100700, 'qtype', 'graphchecker');
     }
 
+    if ($oldversion < 2020102800) {
+        $table = new xmldb_table('question_graphchecker_opts');
+
+        // Conditionally launch add field vertex_attr_labels.
+        $field = new xmldb_field('vertex_attr_labels', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'lock_preload');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field edge_attr_labels.
+        $field = new xmldb_field('edge_attr_labels', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'lock_preload');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field vertex_attr_colors.
+        $field = new xmldb_field('vertex_attr_colors', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'lock_preload');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field edge_attr_colors.
+        $field = new xmldb_field('edge_attr_colors', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'lock_preload');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Graphchecker savepoint reached.
+        upgrade_plugin_savepoint(true, 2020102800, 'qtype', 'graphchecker');
+    }
+
     return true;
 }
