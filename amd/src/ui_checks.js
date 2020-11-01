@@ -142,8 +142,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('btn')
             .append($('<i/>').addClass('icon fa ' + 'fa-plus'))
             .append('Add partial grade')
-            .on('click', this.addPartialGrade.bind(this))
-            .appendTo(this.$checksPanel);
+            .on('click', this.addPartialGrade.bind(this));
+            //.appendTo(this.$checksPanel);  // FIXME commented out temporarily
     };
 
     ChecksUi.prototype.createAvailableChecksList = function() {
