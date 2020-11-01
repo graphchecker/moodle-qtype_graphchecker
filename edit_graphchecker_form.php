@@ -139,6 +139,9 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         // always allow highlighting in the sample answer field
         $params['highlight_vertices'] = true;
         $params['highlight_edges'] = true;
+        //$params['highlight_edges'] = true;
+        //$params['vertex_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
+        //$params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
 
         $attributes = array(
             'rows' => 9,
@@ -209,10 +212,10 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $add_remove_choices['none'] = 'none';
         $add_remove_choices['edges'] = 'only edges';
         $add_remove_choices['all'] = 'all (nodes and edges)';
-        $mform->addElement('select', 'add_remove',
+        $mform->addElement('select', 'allowed_vertex_edits',
                 'Allow adding/removing', $add_remove_choices);
-        $mform->setDefault('add_remove', 'all');
-        $mform->addHelpButton('add_remove', 'add_remove', 'qtype_graphchecker');
+        $mform->setDefault('allowed_vertex_edits', 'all');
+        $mform->addHelpButton('allowed_vertex_edits', 'allowed_vertex_edits', 'qtype_graphchecker');
 
         // highlighting
         $highlightBoxes = [];

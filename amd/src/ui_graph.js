@@ -295,7 +295,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.selectedObjects = [];
 
             // Disable the delete button
-            if (this.allowEdits(util.Edit.DELETE)) {
+            if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
                 this.toolbar.rightButtons['delete'].setDisabled();
             }
 
@@ -467,7 +467,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.enableTemporaryDrawMode = function() {
-        if (this.allowEdits(util.Edit.ADD)) {
+        if (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE)) {
             // Assign the latest selected object
             this.previousSelectedObjects = this.selectedObjects;
 
@@ -479,7 +479,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.disableTemporaryDrawMode = function() {
-        if (this.allowEdits(util.Edit.ADD)) {
+        if (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE)) {
             // A variable denoting whether the label input has focus or not
             let hasLabelFocus = false;
             let label = this.toolbar.middleInput['label'];
@@ -498,7 +498,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.isTempDrawModeActive = false;
 
             // Enable the delete button if something is selected
-            if (this.allowEdits(util.Edit.DELETE) && this.selectedObjects.length) {
+            if ((this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) &&
+                    this.selectedObjects.length) {
                 this.toolbar.rightButtons['delete'].setEnabled();
             }
 
@@ -552,7 +553,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (e.button === 0) {
             // Depending on the mode, perform different tasks
             if (this.uiMode === util.ModeType.DRAW) {
-                if (!this.clickedObject && !this.currentLink && this.allowEdits(util.Edit.ADD)) {
+                if (!this.clickedObject && !this.currentLink && this.allowEdits(util.Edit.ADD_VERTEX)) {
                     // Draw a node
                     let newNode = new elements.Node(this, mouse.x, mouse.y);
                     if (this.isType(util.Type.PETRI)) { // Consider the node a place if it is a petri net
@@ -571,7 +572,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
                     // Also enable the editing fields
                     this.toolbar.addSelectionOptions(this.selectedObjects);
-                    if (this.allowEdits(util.Edit.DELETE)) {
+                    if (this.allowEdits(util.Edit.DELETE_VERTEX)) {
                         this.toolbar.rightButtons['delete'].setEnabled();
                     }
                     if (this.isType(util.Type.FSM)) {
@@ -656,11 +657,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
                     this.clickedObject instanceof elements.SelfLink ||
                     this.clickedObject instanceof elements.StartLink) {
-                    if (this.allowEdits(util.Edit.DELETE)) {
+                    if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
                         this.toolbar.rightButtons['delete'].setEnabled();
                     }
                 } else {
-                    if (this.allowEdits(util.Edit.DELETE)) {
+                    if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
                         this.toolbar.rightButtons['delete'].setDisabled();
                     }
                 }
@@ -695,7 +696,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if (key === 46) { // Delete key.
-            if (this.allowEdits(util.Edit.DELETE)) {
+            if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
                 this.deleteSelectedObjects(this);
             }
         } else if (key === 27) { // Escape key.
@@ -714,7 +715,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         if (key === 17) { // Control key
 
             // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
-            if (this.uiMode !== util.ModeType.DRAW && this.allowEdits(util.Edit.ADD)) {
+            if (this.uiMode !== util.ModeType.DRAW &&
+                    (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
                 this.enableTemporaryDrawMode();
             }
         }
@@ -822,7 +824,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         // Depending on the mode, perform different tasks
         if (this.uiMode === util.ModeType.DRAW) {
-            if (this.clickedObject instanceof elements.Node && this.allowEdits(util.Edit.ADD)) {
+            if (this.clickedObject instanceof elements.Node && this.allowEdits(util.Edit.ADD_EDGE)) {
                 let targetNode = this.getMouseOverObject(mouse.x, mouse.y, true);
                 let targetNodeStrict = this.getMouseOverObject(mouse.x, mouse.y, false);
                 if(!(targetNode instanceof elements.Node)) {
@@ -910,7 +912,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.checkKeyPressed(e);
 
         if (this.currentLink) {
-            if (!(this.currentLink instanceof elements.TemporaryLink) && this.allowEdits(util.Edit.ADD)) {
+            if (!(this.currentLink instanceof elements.TemporaryLink) && this.allowEdits(util.Edit.ADD_EDGE)) {
                 // Remove the created link if the graph is of type 'Petri' and a link is made to a node of the same
                 // Petri type (e.g. place->place, or transition->transition).
                 // Also display a warning in the form of an alert
@@ -971,7 +973,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 this.toolbar.addSelectionOptions(this.selectedObjects);
 
                 // Enable the delete button as well
-                if (this.allowEdits(util.Edit.DELETE)) {
+                if (this.allowEdits(util.Edit.DELETE_EDGE)) {
                     this.toolbar.rightButtons['delete'].setEnabled();
                 }
 
@@ -1008,7 +1010,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             // Add the appropriate selection functions
             if (this.selectedObjects.length) {
                 this.toolbar.addSelectionOptions(this.selectedObjects);
-                if (this.allowEdits(util.Edit.DELETE)) {
+                if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
                     this.toolbar.rightButtons['delete'].setEnabled();
                 }
                 if (this.isType(util.Type.FSM)) {
@@ -1182,18 +1184,22 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.deleteSelectedObjects = function(graphUI) {
-        if(graphUI.selectedObjects.length) {
-            for(let i = 0; i < graphUI.nodes.length; i++) {
-                if(graphUI.selectedObjects.includes(graphUI.nodes[i])) {
-                    graphUI.nodes.splice(i--, 1);
+        if (graphUI.selectedObjects.length) {
+            if (graphUI.allowEdits(util.Edit.DELETE_VERTEX)) {
+                for (let i = 0; i < graphUI.nodes.length; i++) {
+                    if (graphUI.selectedObjects.includes(graphUI.nodes[i])) {
+                        graphUI.nodes.splice(i--, 1);
+                    }
                 }
             }
-            for(let i = 0; i < graphUI.links.length; i++) {
-                if(graphUI.selectedObjects.includes(graphUI.links[i]) ||
-                    graphUI.selectedObjects.includes(graphUI.links[i].node) ||
-                    graphUI.selectedObjects.includes(graphUI.links[i].nodeA) ||
-                    graphUI.selectedObjects.includes(graphUI.links[i].nodeB)) {
-                    graphUI.links.splice(i--, 1);
+            if (graphUI.allowEdits(util.Edit.DELETE_EDGE)) {
+                for (let i = 0; i < graphUI.links.length; i++) {
+                    if (graphUI.selectedObjects.includes(graphUI.links[i]) ||
+                        graphUI.selectedObjects.includes(graphUI.links[i].node) ||
+                        graphUI.selectedObjects.includes(graphUI.links[i].nodeA) ||
+                        graphUI.selectedObjects.includes(graphUI.links[i].nodeB)) {
+                        graphUI.links.splice(i--, 1);
+                    }
                 }
             }
             graphUI.selectedObjects = [];
@@ -1201,7 +1207,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             graphUI.draw();
 
             // Set the deleted button as disabled
-            if (graphUI.allowEdits(util.Edit.DELETE)) {
+            if (graphUI.allowEdits(util.Edit.DELETE_VERTEX) || graphUI.allowEdits(util.Edit.DELETE_EDGE)) {
                 graphUI.toolbar.rightButtons['delete'].setDisabled();
             }
 
@@ -1673,7 +1679,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         // can create a node here
         if (this.uiMode === util.ModeType.DRAW && this.mousePosition && !this.currentLink &&
             !this.getMouseOverObject(this.mousePosition.x, this.mousePosition.y, true) &&
-            this.allowEdits(util.Edit.ADD)) {
+            this.allowEdits(util.Edit.ADD_VERTEX)) {
 
             // Create the shadow node and draw it
             let shadowNode = new elements.Node(this, this.mousePosition.x, this.mousePosition.y);
@@ -1729,7 +1735,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         for (let i = 0; i < this.nodes.length; i++) {
             let drawNodeShadow = this.uiMode === util.ModeType.DRAW && this.mousePosition &&
                 this.getMouseOverNode(this.mousePosition.x, this.mousePosition.y, true) === this.nodes[i] &&
-                this.allowEdits(util.Edit.ADD);
+                this.allowEdits(util.Edit.ADD_VERTEX);
             if (drawNodeShadow) {
                 // Enable the shadow
                 let shadowAlpha = 0.5;
@@ -1749,7 +1755,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             c.fillStyle = c.strokeStyle = util.Color.BLACK;
             this.nodes[i].draw(c, drawNodeShadow, drawOption);
 
-            if (drawNodeShadow && this.allowEdits(util.Edit.ADD)) {
+            if (drawNodeShadow && this.allowEdits(util.Edit.ADD_VERTEX)) {
                 // Disable the shadow
                 c.shadowBlur = 0;
                 c.globalAlpha = 1;

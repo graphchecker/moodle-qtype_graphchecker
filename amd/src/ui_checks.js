@@ -305,7 +305,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo($argsContainer);
         $('<span/>')
             .addClass('argument-name')
-            .text('points to award')
+            .text('Points to award')
             .appendTo($gradeRow);
         let $pointsField = $('<input/>')
             .addClass('argument-value')
@@ -325,7 +325,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo($argsContainer);
         $('<span/>')
             .addClass('argument-name')
-            .text('if checks fail ')
+            .text('If a check fails ')
             .appendTo($continueRow);
         let $continueSelect = $('<select/>')
             .addClass('argument-value')

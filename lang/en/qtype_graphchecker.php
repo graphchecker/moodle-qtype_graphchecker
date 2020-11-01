@@ -23,9 +23,9 @@
  */
 
 $string['aborted'] = 'Testing was aborted due to an error.';
-$string['add_remove'] = 'Allow adding/removing';
-$string['add_remove_help'] = 'This decides whether the student is able to add/remove nodes and edges.';
 $string['allok'] = 'Passed all checks! ';
+$string['allowed_vertex_edits'] = 'Allow adding/removing';
+$string['allowed_vertex_edits_help'] = 'This decides whether the student is able to add/remove nodes and edges.';
 $string['answer'] = 'Sample answer';
 $string['answerprompt'] = 'Answer:';
 $string['answer_help'] = 'A sample answer can be entered here, so that it can be shown to students during review. Note that this sample answer is not used for grading purposes: only the checks above determine if the student\'s answer is correct. The buttons below the editor can be used to copy the preloaded answer into the sample answer, or vice versa.';

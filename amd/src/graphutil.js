@@ -90,8 +90,10 @@ define(function() {
     // An enum for defining the type of edits that can be set to allowed or disallowed
     Util.prototype.Edit = Object.freeze({
         MOVE: 'move',
-        ADD: 'add',
-        DELETE: 'delete',
+        ADD_VERTEX: 'add_vertex',
+        DELETE_VERTEX: 'delete_vertex',
+        ADD_EDGE: 'add_edge',
+        DELETE_EDGE: 'delete_edge',
         VERTEX_LABELS: 'vertex_labels',
         EDGE_LABELS: 'edge_labels',
         VERTEX_COLORS: 'vertex_colors',

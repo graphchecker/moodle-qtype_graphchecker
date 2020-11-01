@@ -71,7 +71,11 @@ class qtype_graphchecker extends question_type {
             'edge_highlight',
             'vertex_labels',
             'edge_labels',
-            'lock_preload'
+            'lock_preload',
+            'vertex_attr_labels',
+            'edge_attr_labels',
+            'vertex_attr_colors',
+            'edge_attr_colors'
         );
     }
 

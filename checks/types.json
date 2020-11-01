@@ -3,11 +3,7 @@
         "name": "Undirected graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "type": "undirected",
-            "vertex_labels": true,
-            "edge_labels": true,
-            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
+            "type": "undirected"
         },
         "python_modules": ["igraph"]
     },
@@ -15,11 +11,7 @@
         "name": "Directed graph",
         "ui_plugin": "graph",
         "ui_params": {
-            "type": "directed",
-            "vertex_labels": true,
-            "edge_labels": true,
-            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
+            "type": "directed"
         },
         "python_modules": ["igraph"]
     },
@@ -27,22 +19,14 @@
         "name": "Finite state machine",
         "ui_plugin": "graph",
         "ui_params": {
-            "type": "fsm",
-            "vertex_labels": true,
-            "edge_labels": true,
-            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
+            "type": "fsm"
         }
     },
     "petri": {
         "name": "Petri net",
         "ui_plugin": "graph",
         "ui_params": {
-            "type": "petri",
-            "vertex_labels": true,
-            "edge_labels": true,
-            "vertex_colors": ["white", "black", "red", "blue", "green", "yellow", "orange", "purple"],
-            "edge_colors": ["black", "red", "blue", "green", "yellow", "orange", "purple", "white"]
+            "type": "petri"
         }
     }
 }
