@@ -257,6 +257,15 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $params = qtype_graphchecker_question::get_ui_params_for_type($type);
         $params['ignore_locked'] = true;
         $params['save_locked'] = true;
+        $params['allow_edits'] = [
+            'move', 'add_vertex', 'add_edge',
+            'delete_vertex', 'delete_edge',
+            'vertex_labels', 'edge_labels',
+            'vertex_colors', 'edge_colors',
+            'fsm_flags', 'petri_marking'
+        ];
+        $params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
+        $params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
         return $params;
     }
 
@@ -271,13 +280,10 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $params['highlight_vertices'] = $this->vertex_highlight === "1";
         $params['highlight_edges'] = $this->edge_highlight === "1";
 
-        $params['vertex_labels'] = $this->vertex_attr_labels === "1";
-        $params['edge_labels'] = $this->edge_attr_labels === "1";
-
-        if ($this->vertex_attr_colors === "1") {
-            $params['vertex_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
+        if ($this->vertex_attr_colors) {
+            $params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
         }
-        if ($this->edge_attr_colors === "1") {
+        if ($this->edge_attr_colors) {
             $params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
         }
 
@@ -285,10 +291,25 @@ class qtype_graphchecker_question extends question_graded_automatically {
             $params['allow_edits'] = [];
         } else if ($this->allowed_vertex_edits === 'edges') {
             $params['allow_edits'] = [
-                'move', 'add_edge', 'delete_edge', 'edge_labels', 'edge_colors'
+                'move', 'add_edge',
+                'delete_edge',
+                'edge_colors',
+                'fsm_flags', 'petri_marking'
             ];
         } else if ($this->allowed_vertex_edits === 'all') {
-            // not setting allow_edits defaults to everything allowed
+            $params['allow_edits'] = [
+                'move', 'add_vertex', 'add_edge',
+                'delete_vertex', 'delete_edge',
+                'vertex_colors', 'edge_colors',
+                'fsm_flags', 'petri_marking'
+            ];
+        }
+
+        if ($this->vertex_attr_labels) {
+            $params['allow_edits'][] = 'vertex_labels';
+        }
+        if ($this->edge_attr_labels) {
+            $params['allow_edits'][] = 'edge_labels';
         }
 
         if (!$this->lock_preload) {

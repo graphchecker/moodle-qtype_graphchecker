@@ -1480,7 +1480,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     var inputLink = input.edges[i];
                     var link = null;
 
-                    if(inputLink['from'] === inputLink['to']) {
+                    if (inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
                         link = new elements.SelfLink(this, this.nodes[inputLink['from']]);
                         link.text = inputLink['label'];
@@ -1488,7 +1488,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                             util.colorObjectFromColorCode(inputLink['color']) : null;
                         link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
-                    } else if(inputLink['from'] === -1) {
+                    } else if (inputLink['from'] === -1) {
                         link = new elements.StartLink(this, this.nodes[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
@@ -1548,7 +1548,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 'position': [node.x, node.y],
                 'locked': node.locked
             };
-            if (this.templateParams.vertex_colors) {
+            if (this.templateParams.vertex_colors && node.colorObject) {
                 vertex['color'] = node.colorObject.colorCode;
             }
             if (this.templateParams.highlight_vertices) {
@@ -1573,7 +1573,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
         for (i = 0; i < this.links.length; i++) {
             var link = this.links[i];
-            if(link instanceof elements.SelfLink) {
+            if (link instanceof elements.SelfLink) {
                 let linkObject = {
                     'from': this.nodes.indexOf(link.node),
                     'to': this.nodes.indexOf(link.node),
@@ -1583,7 +1583,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     'label': link.text,
                     'locked': link.locked
                 };
-                if (this.templateParams.edge_colors) {
+                if (this.templateParams.edge_colors && link.colorObject) {
                     linkObject.color = link.colorObject.colorCode;
                 }
                 if (this.templateParams.highlight_edges) {
@@ -1594,7 +1594,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     linkObject['locked'] = true;
                 }
                 output.edges.push(linkObject);
-            } else if(link instanceof elements.StartLink) {
+            } else if (link instanceof elements.StartLink) {
                 let linkObject = {
                     'from': -1,
                     'to': this.nodes.indexOf(link.node),
@@ -1604,7 +1604,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     },
                     'locked': link.locked
                 };
-                if (this.templateParams.edge_colors) {
+                if (this.templateParams.edge_colors && link.colorObject) {
                     linkObject.color = link.colorObject.colorCode;
                 }
                 if (this.templateParams.highlight_edges) {
@@ -1614,7 +1614,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     linkObject['locked'] = true;
                 }
                 output.edges.push(linkObject);
-            } else if(link instanceof elements.Link) {
+            } else if (link instanceof elements.Link) {
                 let linkObject = {
                     'from': this.nodes.indexOf(link.nodeA),
                     'to': this.nodes.indexOf(link.nodeB),
@@ -1626,7 +1626,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                     'label': link.text,
                     'locked': link.locked
                 };
-                if (this.templateParams.edge_colors) {
+                if (this.templateParams.edge_colors && link.colorObject) {
                     linkObject.color = link.colorObject.colorCode;
                 }
                 if (this.templateParams.highlight_edges) {

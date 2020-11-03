@@ -139,9 +139,9 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         // always allow highlighting in the sample answer field
         $params['highlight_vertices'] = true;
         $params['highlight_edges'] = true;
-        //$params['highlight_edges'] = true;
-        //$params['vertex_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
-        //$params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
+        $params['highlight_edges'] = true;
+        $params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
+        $params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
 
         $attributes = array(
             'rows' => 9,
