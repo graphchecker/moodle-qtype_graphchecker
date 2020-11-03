@@ -107,6 +107,8 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addGroup($vertexAttrBoxes, 'vertex_attributes',
                 'Node attributes', [''], false);
         $mform->addHelpButton('vertex_attributes', 'vertex_attributes', 'qtype_graphchecker');
+        $mform->setDefault('vertex_attr_labels', true);
+        $mform->setDefault('vertex_attr_colors', true);
 
         // edge attributes
         $edgeAttrBoxes = [];
@@ -117,6 +119,8 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addGroup($edgeAttrBoxes, 'edge_attributes',
                 'Edge attributes', [''], false);
         $mform->addHelpButton('edge_attributes', 'edge_attributes', 'qtype_graphchecker');
+        $mform->setDefault('edge_attr_labels', true);
+        $mform->setDefault('edge_attr_colors', true);
 
         // add other sections
         $this->add_student_interaction_field($mform);
