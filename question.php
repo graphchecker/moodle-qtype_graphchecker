@@ -296,7 +296,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
                 'edge_colors',
                 'fsm_flags', 'petri_marking'
             ];
-        } else if ($this->allowed_vertex_edits === 'all') {
+        } else {  // 'all' or NULL (for old questions)
             $params['allow_edits'] = [
                 'move', 'add_vertex', 'add_edge',
                 'delete_vertex', 'delete_edge',
