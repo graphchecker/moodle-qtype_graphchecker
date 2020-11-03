@@ -31,7 +31,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             $checksField = $('#id_checks'),
             $typeCombo = $('#id_answertype'),
             type = $typeCombo.val(),
-            $copyFromPreloadButton = $('#id_copyfrompreload');
+            $copyFromPreloadButton = $('#id_copyfrompreload'),
             $copyToPreloadButton = $('#id_copytopreload');
 
         // Set up the UI controller for the textarea whose name is
