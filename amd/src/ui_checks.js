@@ -530,11 +530,42 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         let $checkContainer = $(e.target).closest('.test-container');
         let $graphField = $checkContainer.find('.argument-value');
 
+        let $body = $('<div/>');
+
         let $newField = $('<textarea/>')
             .attr('id', 'graph-editor-field')
-            .val($graphField.val());
+            .val($graphField.val())
+            .appendTo($body);
 
-        let $dialog = this.createDialog('Edit graph', $newField, 'OK')
+        let $copyFromPreloadButton = $('<button/>')
+            .addClass('btn')
+            .text('Copy from preload')
+            .appendTo($body);
+
+        $copyFromPreloadButton.on('click', function() {
+            $('#id_answerpreload').data('current-ui-wrapper').stop();
+            $newField.data('current-ui-wrapper').stop();
+            $newField.val($('#id_answerpreload').val());
+            $('#id_answerpreload').data('current-ui-wrapper').restart();
+            $newField.data('current-ui-wrapper').restart();
+            return false;
+        });
+
+        let $copyFromSampleButton = $('<button/>')
+            .addClass('btn')
+            .text('Copy from sample answer')
+            .appendTo($body);
+
+        $copyFromSampleButton.on('click', function() {
+            $('#id_answer').data('current-ui-wrapper').stop();
+            $newField.data('current-ui-wrapper').stop();
+            $newField.val($('#id_answer').val());
+            $('#id_answer').data('current-ui-wrapper').restart();
+            $newField.data('current-ui-wrapper').restart();
+            return false;
+        });
+
+        let $dialog = this.createDialog('Edit graph', $body, 'OK')
             .appendTo(this.$backdrop);
 
         let $answerField = $('textarea#id_answer');
@@ -545,7 +576,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         $newField.attr('data-params', params);
 
         let uiWrapper = new ui.InterfaceWrapper('graph', 'graph-editor-field');
-        $dialog.find('.btn').on('click', function() {
+        $dialog.find('.btn.btn-primary').on('click', function() {
             uiWrapper.stop();
             $graphField.val($newField.val());
             this.hideDialogs();
