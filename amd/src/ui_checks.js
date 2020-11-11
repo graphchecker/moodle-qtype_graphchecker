@@ -549,6 +549,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             uiWrapper.stop();
             $graphField.val($newField.val());
             this.hideDialogs();
+            return false;
         }.bind(this));
 
         return false;
