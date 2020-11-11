@@ -293,23 +293,33 @@ class qtype_graphchecker_question extends question_graded_automatically {
             $params['allow_edits'] = [
                 'move', 'add_edge',
                 'delete_edge',
-                'edge_colors',
                 'fsm_flags', 'petri_marking'
             ];
         } else {  // 'all' or NULL (for old questions)
             $params['allow_edits'] = [
                 'move', 'add_vertex', 'add_edge',
                 'delete_vertex', 'delete_edge',
-                'vertex_colors', 'edge_colors',
                 'fsm_flags', 'petri_marking'
             ];
         }
 
-        if ($this->vertex_attr_labels) {
+        if ($this->vertex_attr_labels &&
+                ($this->allowed_vertex_edits !== 'none' &&
+                $this->allowed_vertex_edits !== 'edges')) {
             $params['allow_edits'][] = 'vertex_labels';
         }
-        if ($this->edge_attr_labels) {
+        if ($this->edge_attr_labels &&
+                $this->allowed_vertex_edits !== 'none') {
             $params['allow_edits'][] = 'edge_labels';
+        }
+        if ($this->vertex_attr_colors &&
+                ($this->allowed_vertex_edits !== 'none' &&
+                $this->allowed_vertex_edits !== 'edges')) {
+            $params['allow_edits'][] = 'vertex_colors';
+        }
+        if ($this->edge_attr_colors &&
+                $this->allowed_vertex_edits !== 'none') {
+            $params['allow_edits'][] = 'edge_colors';
         }
 
         if (!$this->lock_preload) {
