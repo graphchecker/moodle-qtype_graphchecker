@@ -2,7 +2,7 @@ def preprocess(graph):
     text = ""
 
     for state in graph['vertices']:
-        if not 'label' in state:
+        if (not 'label' in state) or (state['label'] == ''):
             raise Exception("Automaton contains a state without a label")
         if state['initial']:
             text += "initial " + state['label'] + "\n"
@@ -13,7 +13,7 @@ def preprocess(graph):
         if transition['from'] == -1:
             continue  # ignore the initial edge
         
-        if not 'label' in transition:
+        if (not 'label' in transition) or (transition['label'] == ''):
             raise Exception("Automaton contains a transition without a label")
         
         p = graph['vertices'][transition['from']]['label']
