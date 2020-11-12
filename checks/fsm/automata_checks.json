@@ -18,6 +18,24 @@
                     "default": 4
                 }
             ]
+        },
+        "check_dfa_language_from_answer": {
+            "name": "Compare DFA languages",
+            "description": "Checks if the DFA accepts exactly the same words as the given DFA.",
+            "params": [
+                {
+                    "param": "other",
+                    "name": "Other DFA",
+                    "type": "graph"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
+                }
+            ]
         }
     }
 }

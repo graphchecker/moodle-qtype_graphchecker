@@ -5,7 +5,7 @@ from automata.notebook import parse_dfa, generate_language, parse_word_list, com
 def check_dfa_language_from_words(student_answer, word_list, length):
     word_list = " ".join(word_list)
     A = parse_dfa(student_answer)
-    A_words = generate_language(A, 8)
+    A_words = generate_language(A, length)
     words = parse_word_list(word_list)
     feedback = compare_languages(A_words, words)
     if len(feedback) == 0:
@@ -13,4 +13,15 @@ def check_dfa_language_from_words(student_answer, word_list, length):
     else:
         return {'correct': False,
                 'feedback': " / ".join(feedback)}
-        
+
+def check_dfa_language_from_words(student_answer, other, length):
+    A = parse_dfa(student_answer)
+    A_words = generate_language(A, length)
+    B = parse_dfa(other)
+    B_words = generate_language(B, length)
+    feedback = compare_languages(A_words, B_words)
+    if len(feedback) == 0:
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': " / ".join(feedback)}
