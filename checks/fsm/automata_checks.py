@@ -1,13 +1,16 @@
 # Tests for DFAs.
 
-from automata.automata_checker import check_dfa_for_given_language, check_nfa_for_given_language
+from automata.notebook import parse_dfa, generate_language, parse_word_list, compare_languages
 
-
-def dfa_for_given_language(student_answer, language):
-    states, transitions, initial_states, final_states = student_answer
-    return check_dfa_for_given_language(states, transitions, initial_states, final_states, language)
-
-
-def nfa_for_given_language(student_answer, language):
-    states, transitions, initial_states, final_states = student_answer
-    return check_nfa_for_given_language(states, transitions, initial_states, final_states, language)
+def check_dfa_language_from_words(student_answer, word_list, length):
+    word_list = " ".join(word_list)
+    A = parse_dfa(student_answer)
+    A_words = generate_language(A, 8)
+    words = parse_word_list(word_list)
+    feedback = compare_languages(A_words, words)
+    if len(feedback) == 0:
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': " / ".join(feedback)}
+        

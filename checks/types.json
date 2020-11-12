@@ -20,7 +20,8 @@
         "ui_plugin": "graph",
         "ui_params": {
             "type": "fsm"
-        }
+        },
+        "python_modules": ["automata"]
     },
     "petri": {
         "name": "Petri net",

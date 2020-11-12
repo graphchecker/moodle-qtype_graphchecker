@@ -1,25 +1,21 @@
 {
     "name": "Automata checks",
     "checks": {
-        "dfa_for_given_language": {
-            "name": "DFA for given language",
-            "description": "Checks if the DFA accepts a given language.",
+        "check_dfa_language_from_words": {
+            "name": "DFA language from words",
+            "description": "Checks if the DFA accepts exactly the given words.",
             "params": [
                 {
-                    "param": "language",
-                    "name": "Language",
-                    "type": "string"
-                }
-            ]
-        },
-        "nfa_for_given_language": {
-            "name": "NFA for given language",
-            "description": "Checks if the NFA accepts a given language.",
-            "params": [
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                },
                 {
-                    "param": "language",
-                    "name": "Language",
-                    "type": "string"
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
                 }
             ]
         }

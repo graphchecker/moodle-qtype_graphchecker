@@ -1,21 +1,24 @@
 def preprocess(graph):
-    initial_states = set([])
-    final_states = set([])
-    states = set([])
-    transitions = []
+    text = ""
 
-    for vertex in graph['vertices']:
-        state = vertex['label']
-        states.add(state)
-        if vertex['final']:
-            final_states.add(state)
-    for edge in graph['edges']:
-        if 'label' in edge:
-            p = graph['vertices'][edge['from']]['label']
-            q = graph['vertices'][edge['to']]['label']
-            a = edge['label']
-            transitions.append((p, a, q))
-        else:
-            state = graph['vertices'][edge['to']]['label']
-            initial_states.add(state)
-    return states, transitions, initial_states, final_states
+    for state in graph['vertices']:
+        if not 'label' in state:
+            raise Exception("Automaton contains a state without a label")
+        if state['initial']:
+            text += "initial " + state['label'] + "\n"
+        if state['final']:
+            text += "final " + state['label'] + "\n"
+
+    for transition in graph['edges']:
+        if transition['from'] == -1:
+            continue  # ignore the initial edge
+        
+        if not 'label' in transition:
+            raise Exception("Automaton contains a transition without a label")
+        
+        p = graph['vertices'][transition['from']]['label']
+        q = graph['vertices'][transition['to']]['label']
+        a = transition['label']
+        text += p + " " + q + " " + a + "\n"
+
+    return text
