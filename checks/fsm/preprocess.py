@@ -1,5 +1,3 @@
-import igraph
-
 def preprocess(graph):
     initial_states = set([])
     final_states = set([])
