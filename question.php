@@ -122,7 +122,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $testoutcomeserial = $response['_testoutcome'];
         $testoutcome = unserialize($testoutcomeserial);
         if ($testoutcome instanceof qtype_graphchecker_testing_outcome) {
-            if (array_key_exists('errormessage', $testoutcome)) {
+            if (array_key_exists('errormessage', $testoutcome) && $testoutcome->errormessage) {
                 $error .= '<pre>' . $testoutcome->errormessage . '</pre>';
             } else {
                 $error .= "<ul>";
