@@ -15,6 +15,12 @@ def run(graph_type, graph, checks):
 		for module in types[graph_type]['python_modules']:
 			globals()[module] = importlib.import_module(module)
 
+	if not graph:
+		return {
+			'type': 'preprocess_fail',
+			'feedback': 'You submitted an empty answer'
+		}
+
 	try:
 		graph = preprocess.preprocess(json.loads(graph))
 	except Exception as e:
