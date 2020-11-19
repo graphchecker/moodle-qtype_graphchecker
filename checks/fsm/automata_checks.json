@@ -2,7 +2,7 @@
     "name": "Automata checks",
     "checks": {
         "check_dfa_language_from_words": {
-            "name": "DFA language from words",
+            "name": "Compare DFA language to word list",
             "description": "Checks if the DFA accepts exactly the given words.",
             "params": [
                 {
@@ -20,7 +20,7 @@
             ]
         },
         "check_dfa_language_from_answer": {
-            "name": "Compare DFA languages",
+            "name": "Compare DFA language to given DFA",
             "description": "Checks if the DFA accepts exactly the same words as the given DFA.",
             "params": [
                 {
@@ -34,6 +34,19 @@
                     "type": "integer",
                     "min": 0,
                     "default": 4
+                }
+            ]
+        },
+        "check_dfa_max_states": {
+            "name": "State count",
+            "description": "Checks if the automaton has at most the given number of states.",
+            "params": [
+                {
+                    "param": "max_states",
+                    "name": "Maximum count",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 1
                 }
             ]
         }
