@@ -303,22 +303,16 @@ class qtype_graphchecker_question extends question_graded_automatically {
             ];
         }
 
-        if ($this->vertex_attr_labels &&
-                ($this->allowed_vertex_edits !== 'none' &&
-                $this->allowed_vertex_edits !== 'edges')) {
+        if ($this->vertex_attr_labels) {
             $params['allow_edits'][] = 'vertex_labels';
         }
-        if ($this->edge_attr_labels &&
-                $this->allowed_vertex_edits !== 'none') {
+        if ($this->edge_attr_labels) {
             $params['allow_edits'][] = 'edge_labels';
         }
-        if ($this->vertex_attr_colors &&
-                ($this->allowed_vertex_edits !== 'none' &&
-                $this->allowed_vertex_edits !== 'edges')) {
+        if ($this->vertex_attr_colors) {
             $params['allow_edits'][] = 'vertex_colors';
         }
-        if ($this->edge_attr_colors &&
-                $this->allowed_vertex_edits !== 'none') {
+        if ($this->edge_attr_colors) {
             $params['allow_edits'][] = 'edge_colors';
         }
 
