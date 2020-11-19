@@ -208,9 +208,8 @@ class qtype_graphchecker_question extends question_graded_automatically {
             if (array_key_exists('answer', $response)) {
                 $answer = $response['answer'];
             }
-            $checks = $this->get_checks();
             $runner = new qtype_graphchecker_jobrunner();
-            $testoutcome = $runner->run_checks($this, $answer, $checks, $isprecheck);
+            $testoutcome = $runner->run_checks($this, $answer, $this->checks, $isprecheck);
             $testoutcomeserial = serialize($testoutcome);
         }
 
@@ -222,21 +221,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
         } else {
             return array(0, question_state::$gradedwrong, $datatocache);
         }
-    }
-
-
-    // Returns all checks that we need to run.
-    protected function get_checks() {
-        $checks = json_decode($this->checks, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new coding_exception('Invalid JSON string for tests');
-        }
-
-        foreach ($checks as $index => $check) {
-            $checks[$index] = new qtype_graphchecker_check($check);
-        }
-
-        return $checks;
     }
 
 

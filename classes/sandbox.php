@@ -198,7 +198,7 @@ abstract class qtype_graphchecker_sandbox {
      *  input and returns an object with fields error, result, signal, cmpinfo,
      *  stderr, output.
      * @param string $sourcecode The source file to compile and run
-     * @param string $language  One of the languages regognised by the sandbox
+     * @param string $language One of the languages recognised by the sandbox
      * @param string $input A string to use as standard input during execution
      * @param associative array $files either null or a map from filename to
      *         file contents, defining a file context at execution time

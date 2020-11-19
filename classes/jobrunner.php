@@ -24,90 +24,66 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 
-// The qtype_graphchecker_jobrunner class contains all code concerned with running a question
-// in the sandbox and grading the result.
+/**
+ * The job runner is responsible for constructing the checker code, handing it
+ * to the sandbox, and interpreting the result.
+ */
 class qtype_graphchecker_jobrunner {
-    private $sandbox = null;         // The sandbox we're using.
-    private $code = null;            // The code we're running.
-    private $files = null;           // The files to be loaded into the working dir.
-    private $question = null;        // The question that we're running code for.
-    private $checks = null;          // The checks.
-    private $allruns = null;         // Array of the source code for all runs.
-    private $precheck = null;        // True if this is a precheck run.
 
-    // Check the correctness of a student's code and possible extra attachments
-    // as an answer to the given
-    // question and and a given set of test cases (which may be empty or a
-    // subset of the question's set of testcases. $isprecheck is true if
-    // this is a run triggered by the student clicking the Precheck button.
-    // $answerlanguage will be the empty string except for multilanguage questions,
-    // when it is the language selected in the language drop-down menu.
-    // Returns a TestingOutcome object.
-    public function run_checks($question, $answer, $checks, $isprecheck) {
+    private $sandbox = null;
+
+    /**
+     * Runs a series of checks.
+     *
+     * @param $question The question we're running checks for.
+     * @param $answer The student-submitted answer.
+     * @param $checks JSON string describing the checks to run.
+     */
+    public function run_checks($question, $answer, $checks) {
         global $CFG;
 
-        $this->question = $question;
+        /*$this->question = $question;
         $this->answer = $answer;
-        $this->checks = $checks;
+        $this->checks = $checks;*/
 
-        $this->isprecheck = $isprecheck;
         $this->sandbox = new qtype_graphchecker_jobesandbox();
 
-        $this->allruns = array();
-        $this->templateparams = array(
-            'STUDENT_ANSWER' => $answer,
-            'IS_PRECHECK' => $isprecheck ? "1" : "0"
-         );
+        $code = $this->get_code($question, $answer, $checks);
 
-        $outcome = $this->run_combinator($isprecheck);
+        $run = $this->sandbox->execute($code,
+            "python3",  // language
+            null,  // stdin
+            $this->get_checker_files($question, $checks),  // files
+            []);  // sandbox params
+
+        if ($run->error !== qtype_graphchecker_sandbox::OK) {
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
+                [],
+                qtype_graphchecker_sandbox::error_string($run));
+        } else {
+            $outcome = $this->do_grading($run);
+        }
 
         $this->sandbox->close();
 
         return $outcome;
     }
 
-    private function run_combinator($isprecheck) {
-        global $CFG;
 
-        $numchecks = count($this->checks);
-        $testprog = $this->get_testing_code();
-
-        $this->allruns[] = $testprog;
-
-        $run = $this->sandbox->execute($testprog,
-            "python3",  // language
-            null,
-            $this->get_checker_files(),  // files
-            array());  // sandbox params
-
-        if ($run->error !== qtype_graphchecker_sandbox::OK) {
-            return new qtype_graphchecker_testing_outcome(
-                qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
-                [],
-                qtype_graphchecker_sandbox::error_string($run));
-        }
-
-        return $this->do_grading($run, $isprecheck);
-    }
-
-
-    private function get_testing_code() {
+    private function get_code($question, $answer, $checks) {
         $code = "";
 
         $code .= "import checkrunner\n";
         $code .= "import json\n";
 
-        foreach ($this->get_checker_modules() as $module) {
+        foreach ($this->get_checker_modules($checks) as $module) {
             $code .= "import " . $module . "\n";
         }
 
-        $code .= "answer_type = \"\"\"" . $this->py_escape($this->question->answertype) . "\"\"\"\n";
-
-        $answer = $this->answer;
+        $code .= "answer_type = \"\"\"" . $this->py_escape($question->answertype) . "\"\"\"\n";
         $code .= "answer = \"\"\"" . $this->py_escape($answer) . "\"\"\"\n";
-
-        $checks = $this->checks;
-        $code .= "checks = \"\"\"" . $this->py_escape(json_encode($checks)) . "\"\"\"\n";
+        $code .= "checks = \"\"\"" . $this->py_escape($checks) . "\"\"\"\n";
 
         $code .= "result = checkrunner.run(answer_type, answer, checks)\n";
         $code .= "print(json.dumps(result))";
@@ -117,22 +93,30 @@ class qtype_graphchecker_jobrunner {
 
 
     /**
-     * An escaper for user with Python triple-doublequote delimiters. Escapes only
+     * An escaper for use with Python triple-doublequote delimiters. Escapes only
      * double quote characters plus backslashes.
-     * @param type $s         The string to convert
-     * @return typestudentanswervar
+     * @param $s The string to convert
      */
     private function py_escape($s) {
         return str_replace('"', '\"', str_replace('\\', '\\\\', $s));
     }
 
 
-    private function get_checker_modules() {
+    private function get_checker_modules($checks) {
         $modules = [];
 
-        foreach ($this->checks as $check) {
-            $module = $check->module;
-            $modules[] = $module;
+        $checksArray = json_decode($checks, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new coding_exception('Invalid JSON string for tests');
+        }
+
+        foreach ($checksArray as $check) {
+            // only look at type "check", not "grade"
+            if (!array_key_exists("type", $check) ||
+                    $check["type"] === "check") {
+                $module = $check['module'];
+                $modules[] = $module;
+            }
         }
 
         $modules[] = 'preprocess';
@@ -141,21 +125,21 @@ class qtype_graphchecker_jobrunner {
     }
 
 
-    private function get_checker_files() {
+    private function get_checker_files($question, $checks) {
         global $CFG;
 
         $filemap = [];
 
-        foreach ($this->get_checker_modules() as $module) {
+        foreach ($this->get_checker_modules($checks) as $module) {
             // Python file
             $name = $module . '.py';
-            $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
+            $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
 
             // JSON file
             if ($module != 'preprocess') {
                 $name = $module . '.json';
-                $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $this->question->answertype . '/' . $name;
+                $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $name;
                 $filemap[$name] = file_get_contents($full_name);
             }
         }
@@ -170,21 +154,7 @@ class qtype_graphchecker_jobrunner {
     }
 
 
-    /**
-     * Given the result of a sandbox run with the combinator template,
-     * build and return a testingOutcome object with a status of
-     * STATUS_COMBINATOR_TEMPLATE_GRADER and attributes of prelude and/or
-     * and/or testresults and/or epiloguehtml.
-     *
-     * @param JSON $run The JSON-encoded output from the run.
-     * @return \qtype_graphchecker_testing_outcome the outcome object ready
-     * for display by the renderer. This will have an actualmark and zero or more of
-     * prologuehtml, testresults and epiloguehtml. The last three are: some
-     * html for display before the result table, the test results table (an
-     * array of pseudo-test_result objects) and some html for display after
-     * the result table.
-     */
-    private function do_grading($run, $isprecheck) {
+    private function do_grading($run) {
         if ($run->result !== qtype_graphchecker_sandbox::RESULT_SUCCESS) {
             $error = "Checks failed, output on stderr: " . $run->stderr;
             $outcome = new qtype_graphchecker_testing_outcome(
