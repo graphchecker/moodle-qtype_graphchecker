@@ -102,6 +102,9 @@ class qtype_graphchecker_jobrunner {
     }
 
 
+    /**
+     * Returns a list of modules used by the checks.
+     */
     private function get_checker_modules($checks) {
         $modules = [];
 
@@ -125,6 +128,10 @@ class qtype_graphchecker_jobrunner {
     }
 
 
+    /**
+     * Returns an associative array of files that need to be sent to the
+     * sandbox to run the given checks.
+     */
     private function get_checker_files($question, $checks) {
         global $CFG;
 
@@ -183,48 +190,5 @@ class qtype_graphchecker_jobrunner {
         return new qtype_graphchecker_testing_outcome(
             qtype_graphchecker_testing_outcome::STATUS_VALID,
             $result["results"]);
-    }
-
-
-    /* Return a $sep-separated string of the non-empty elements
-       of the array $strings. Similar to implode except empty strings
-       are ignored. */
-    private function merge($sep, $strings) {
-        $s = '';
-        foreach ($strings as $el) {
-            if (trim($el)) {
-                if ($s !== '') {
-                    $s .= $sep;
-                }
-                $s .= $el;
-            }
-        }
-        return $s;
-    }
-
-
-    private function make_error_message($run) {
-        $err = "***" . qtype_graphchecker_sandbox::result_string($run->result) . "***";
-        if ($run->result === qtype_graphchecker_sandbox::RESULT_RUNTIME_ERROR) {
-            $sig = $run->signal;
-            if ($sig) {
-                $err .= " (signal $sig)";
-            }
-        }
-        return $this->merge("\n", array($run->cmpinfo, $run->output, $err, $run->stderr));
-    }
-
-
-    // Count the number of errors in the given array of test results.
-    // TODO -- figure out how to eliminate either this one or the identical
-    // version in renderer.php.
-    private function count_errors($testresults) {
-        $errors = 0;
-        foreach ($testresults as $tr) {
-            if (!$tr->iscorrect) {
-                $errors++;
-            }
-        }
-        return $errors;
     }
 }
