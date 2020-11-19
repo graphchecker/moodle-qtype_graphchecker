@@ -1,13 +1,16 @@
 def preprocess(graph):
     text = ""
 
+    final_states = []
     for state in graph['vertices']:
         if (not 'label' in state) or (state['label'] == ''):
             raise Exception("Automaton contains a state without a label")
         if state['initial']:
             text += "initial " + state['label'] + "\n"
         if state['final']:
-            text += "final " + state['label'] + "\n"
+            final_states.append(state['label'])
+    if len(final_states) > 0:
+        text += "final " + " ".join(final_states) + "\n"
 
     for transition in graph['edges']:
         if transition['from'] == -1:
