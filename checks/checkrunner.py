@@ -33,26 +33,37 @@ def run(graph_type, graph, checks):
 
 	checks = json.loads(checks)
 	results = []
+	correct = True
+	grade = 0
 	for check in checks:
-		try:
-			check_module = importlib.import_module(check['module'])
-			check_method = getattr(check_module, check['method'])
-			argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
-			result = check_method(graph, **argument)
-			result['module'] = check['module']
-			result['method'] = check['method']
-			results.append(result)
-		except:
-			stacktrace = traceback.format_exc()
-			results.append({
-				'module': check['module'],
-				'method': check['method'],
-				'error': stacktrace
-				})
+		if 'type' in check and check['type'] == 'grade':
+			if correct:
+				grade += int(check['points'])
+			elif check['continue']:
+				correct = True
+		else:
+			try:
+				check_module = importlib.import_module(check['module'])
+				check_method = getattr(check_module, check['method'])
+				argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
+				result = check_method(graph, **argument)
+				result['module'] = check['module']
+				result['method'] = check['method']
+				if not result['correct']:
+					correct = False
+				results.append(result)
+			except:
+				stacktrace = traceback.format_exc()
+				results.append({
+					'module': check['module'],
+					'method': check['method'],
+					'error': stacktrace
+					})
 
 	return {
 		'type': 'success',
-		'results': results
+		'results': results,
+		'grade': grade
 	}
 
 def convert_arguments(args, check, preprocess):

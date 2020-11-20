@@ -45,24 +45,27 @@ requirejs(["jquery",
 				console.log(data);
 				$('#results').html('<p>Test results (in order):</p>');
 				if (data['type'] === 'success') {
-					data = data['results'];
+					let results = data['results'];
 					let resultList = $('<ol/>');
-					for (let i = 0; i < data.length; i++) {
+					for (let i = 0; i < results.length; i++) {
 						let text = '';
-						if (data[i]['error']) {
+						if (results[i]['error']) {
 							text = '<b>error</b>:'
 							text += '<pre>'
-							text += data[i]['error']
+							text += results[i]['error']
 							text += '</pre>'
 						} else {
-							text = '<b>' + (data[i]['correct'] ? 'pass' : 'fail') + '</b>'
-							if (data[i]['feedback']) {
-								text += ': ' + data[i]['feedback'];
+							text = '<b>' + (results[i]['correct'] ? 'pass' : 'fail') + '</b>'
+							if (results[i]['feedback']) {
+								text += ': ' + results[i]['feedback'];
 							}
 						}
 						resultList.append($('<li/>').html(text));
 					}
 					$('#results').append(resultList);
+					$('#results').append($('<p/>').html(
+						'<b>Grade:</b> ' + data['grade']
+					));
 
 				} else if (data['type'] === 'preprocess_fail') {
 					$('#results').append($('<div/>').html('<b>Sanity check failed</b> during preprocessing. Feedback:<pre>' + data['feedback'] + '</pre>'));
