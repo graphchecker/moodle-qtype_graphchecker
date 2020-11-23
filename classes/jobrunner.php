@@ -59,6 +59,7 @@ class qtype_graphchecker_jobrunner {
         if ($run->error !== qtype_graphchecker_sandbox::OK) {
             $outcome = new qtype_graphchecker_testing_outcome(
                 qtype_graphchecker_testing_outcome::STATUS_SANDBOX_ERROR,
+                0,
                 [],
                 qtype_graphchecker_sandbox::error_string($run));
         } else {
@@ -166,7 +167,7 @@ class qtype_graphchecker_jobrunner {
             $error = "Checks failed, output on stderr: " . $run->stderr;
             $outcome = new qtype_graphchecker_testing_outcome(
                 qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
-                [], $error);
+                0, [], $error);
             return $outcome;
         }
 
@@ -176,19 +177,19 @@ class qtype_graphchecker_jobrunner {
             $error = "Invalid JSON output from checks: " . $run->output;
             $outcome = new qtype_graphchecker_testing_outcome(
                 qtype_graphchecker_testing_outcome::STATUS_BAD_COMBINATOR,
-                [], $error);
+                0, [], $error);
             return $outcome;
         }
 
         if ($result["type"] === "preprocess_fail") {
             $outcome = new qtype_graphchecker_testing_outcome(
                 qtype_graphchecker_testing_outcome::STATUS_PREPROCESSOR_ERROR,
-                [], $result["feedback"]);
+                0, [], $result["feedback"]);
             return $outcome;
         }
 
         return new qtype_graphchecker_testing_outcome(
             qtype_graphchecker_testing_outcome::STATUS_VALID,
-            $result["results"]);
+            $result["grade"], $result["results"]);
     }
 }

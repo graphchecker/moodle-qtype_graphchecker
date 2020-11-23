@@ -216,10 +216,12 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $datatocache = array('_testoutcome' => $testoutcomeserial);
         if ($testoutcome->is_ungradable()) {
             return array(0, question_state::$invalid, $datatocache);
-        } else if ($testoutcome->all_correct()) {
-             return array(1, question_state::$gradedright, $datatocache);
-        } else {
+        } else if ($testoutcome->mark_as_fraction() == 1) {
+            return array(1, question_state::$gradedright, $datatocache);
+        } else if ($testoutcome->mark_as_fraction() == 0) {
             return array(0, question_state::$gradedwrong, $datatocache);
+        } else {
+            return array($testoutcome->mark_as_fraction(), question_state::$gradedpartial, $datatocache);
         }
     }
 

@@ -305,13 +305,16 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo($argsContainer);
         $('<span/>')
             .addClass('argument-name')
-            .text('Points to award')
+            .text('Award')
             .appendTo($gradeRow);
         let $pointsField = $('<input/>')
             .addClass('argument-value')
             .addClass('points-field')
             .attr('type', 'number')
             .attr('min', 0)
+            .appendTo($gradeRow);
+        $('<span/>')
+            .text(' % of the points')
             .appendTo($gradeRow);
 
         if (grade) {

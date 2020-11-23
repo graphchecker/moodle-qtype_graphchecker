@@ -34,11 +34,14 @@ def run(graph_type, graph, checks):
 	checks = json.loads(checks)
 	results = []
 	correct = True
-	grade = 0
+	grade = 0  # points awarded
+	totalGrade = 0  # total points seen in partial grade blocks
 	for check in checks:
 		if 'type' in check and check['type'] == 'grade':
+			points = float(check['points']) / 100
+			totalGrade += points
 			if correct:
-				grade += int(check['points'])
+				grade += points
 			elif check['continue']:
 				correct = True
 		else:
@@ -59,6 +62,11 @@ def run(graph_type, graph, checks):
 					'method': check['method'],
 					'error': stacktrace
 					})
+
+	# if less than 100% of the points have been awarded, and the last checks
+	# were correct, award the remainder of the points
+	if correct:
+		grade += 1 - totalGrade
 
 	return {
 		'type': 'success',

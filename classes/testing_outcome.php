@@ -41,6 +41,7 @@ class qtype_graphchecker_testing_outcome {
     public $errorcount;              // The number of failing test cases.
     public $errormessage;            // The error message to display if there are errors.
     public $testresults = [];        // An array of TestResult objects.
+    public $grade;                   // Grade computed by the checker code.
 
     /**
      * Constructs a testing outcome.
@@ -56,8 +57,9 @@ class qtype_graphchecker_testing_outcome {
      * @param $errormessage (Only if $status !== STATUS_VALID:)
      * Human-readable error message describing the problem.
      */
-    public function __construct($status, $result=[], $errormessage='') {
+    public function __construct($status, $grade, $result=[], $errormessage='') {
         $this->status = $status;
+        $this->grade = $grade;
         $this->testresults = $result;
         $this->errormessage = $errormessage;
         $this->errorcount = 0;
@@ -66,10 +68,6 @@ class qtype_graphchecker_testing_outcome {
     public function set_status($status, $errormessage='') {
         $this->status = $status;
         $this->errormessage = $errormessage;
-    }
-
-    public function iscombinatorgrader() {
-        return false;
     }
 
     public function run_failed() {
@@ -107,19 +105,10 @@ class qtype_graphchecker_testing_outcome {
 
     public function mark_as_fraction() {
         if ($this->status === self::STATUS_VALID && !$this->check_error()) {
-            foreach ($this->testresults as $result) {
-                if (!$result["correct"]) {
-                    return 0;
-                }
-            }
-            return 1;
+            return $this->grade;
         } else {
             return 0;
         }
-    }
-
-    public function all_correct() {
-        return $this->mark_as_fraction() === 1;
     }
 
     // Return a message summarising the nature of the error if this outcome
@@ -131,7 +120,7 @@ class qtype_graphchecker_testing_outcome {
             return get_string('run_failed', 'qtype_graphchecker');
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
-        } else if (!$this->iscombinatorgrader()) {  // Combinator grader results table can't be used.
+        } else {
             $numerrors = 0;
             $failures = new html_table();
             $failures->attributes['class'] = 'graphchecker-test-results';
@@ -168,8 +157,6 @@ class qtype_graphchecker_testing_outcome {
             } else {
                 $message .= get_string('failedtesting', 'qtype_graphchecker');
             }
-        } else {
-            $message = get_string('failedtesting', 'qtype_graphchecker');
         }
         return $message . html_writer::empty_tag('br') . get_string('howtogetmore', 'qtype_graphchecker');
     }
@@ -250,69 +237,6 @@ class qtype_graphchecker_testing_outcome {
         return $module . '.' . $method . '()';
     }
 
-
-    // Count the number of errors in hidden testcases, given the array of
-    // testresults.
-    public function count_hidden_errors() {
-        $count = 0;
-        $hidingrest = false;
-        foreach ($this->testresults as $tr) {
-            if ($hidingrest) {
-                $isdisplayed = false;
-            } else {
-                $isdisplayed = $this->should_display_result($tr);
-            }
-            if (!$isdisplayed && !$tr->iscorrect) {
-                $count++;
-            }
-            if ($tr->hiderestiffail && !$tr->iscorrect) {
-                $hidingrest = true;
-            }
-        }
-        return $count;
-    }
-
-
-    // True iff the given test result should be displayed.
-    protected static function should_display_result($testresult) {
-        return !isset($testresult->display) ||  // E.g. broken combinator template?
-             $testresult->display == 'SHOW' ||
-            ($testresult->display == 'HIDE_IF_FAIL' && $testresult->iscorrect) ||
-            ($testresult->display == 'HIDE_IF_SUCCEED' && !$testresult->iscorrect);
-    }
-
-
-    // Support function to count how many objects in the given list of objects
-    // have the given 'field' attribute non-blank. Non-existent fields are also
-    // included in order to generate a column showing the error, but null values.
-    protected static function count_non_blanks($field, $objects) {
-        $n = 0;
-        foreach ($objects as $obj) {
-            if (!property_exists($obj, $field) ||
-                (!is_null($obj->$field) && !is_string($obj->$field)) ||
-                (is_string($obj->$field) && trim($obj->$field !== ''))) {
-                $n++;
-            }
-        }
-        return $n;
-    }
-
-
-    /**
-     * Make an HTML table describing a single failing test case
-     * @param string $expected the expected output from the test
-     * @param string $got the actual output from the test
-     */
-    protected static function make_error_html($expected, $got) {
-        $table = new html_table();
-        $table->attributes['class'] = 'graphchecker-test-results';
-        $table->head = array(get_string('expectedcolhdr', 'qtype_graphchecker'),
-                             get_string('gotcolhdr', 'qtype_graphchecker'));
-        $table->data = array(array(html_writer::tag('pre', s($expected)), html_writer::tag('pre', s($got))));
-        return html_writer::table($table);
-    }
-
-
     /**
      *
      * @global type $COURSE the current course (if there is one)
@@ -338,28 +262,12 @@ class qtype_graphchecker_testing_outcome {
         return $this->build_results_table($q);
     }
 
-    // Called only in case of precheck == 1, and no errors.
-    public function get_raw_output() {
-        assert(count($this->testresults) === 1);
-        $testresult = $this->testresults[0];
-        assert(empty($testresult->stderr));
-        return $testresult->got;
-    }
-
     public function get_prologue() {
         return '';
     }
 
     public function get_epilogue() {
         return '';
-    }
-
-    public function get_sourcecode_list() {
-        return $this->sourcecodelist;
-    }
-
-    public function get_error_count() {
-        return $this->errorcount;
     }
 
     // TODO TODO [ws] stub!

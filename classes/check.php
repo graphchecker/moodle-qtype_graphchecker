@@ -23,7 +23,6 @@ class qtype_graphchecker_check {
      *   - arguments: an array of arguments for the check.
      */
     public function __construct($check_array) {
-        $this->type = 'check';
         $this->module = $check_array['module'];
         $this->method = $check_array['method'];
         if (array_key_exists('arguments', $check_array)) {

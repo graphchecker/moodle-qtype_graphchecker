@@ -123,7 +123,9 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $q = $qa->get_question();
         $outcome = unserialize($toserialised);
         if ($outcome === false) {
-            $outcome = new qtype_graphchecker_testing_outcome(qtype_graphchecker_testing_outcome::STATUS_UNSERIALIZE_FAILED, [], "Internal error: unserialization failed");
+            $outcome = new qtype_graphchecker_testing_outcome(
+                qtype_graphchecker_testing_outcome::STATUS_UNSERIALIZE_FAILED,
+                0, [], "Internal error: unserialization failed");
         }
         $resultsclass = $this->results_class($outcome);
 
@@ -223,15 +225,18 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
         if ($outcome->was_aborted()) {
             $lines[] = 'Grading was aborted due to an error.';
-        } else if ($outcome->all_correct()) {
+        } else if ($outcome->mark_as_fraction() == 1) {
             $lines[] = 'Passed all checks!' .
                     "&nbsp;" . $this->feedback_image(1.0);
+        } else if ($outcome->mark_as_fraction() == 0) {
+            $lines[] = 'Your answer was incorrect!' .
+                    "&nbsp;" . $this->feedback_image(0.0);
         } else if ($outcome->preprocessor_error()) {
             $lines[] = 'Your answer must pass the sanity checks to earn any marks. Try again.';
         } else if ($outcome->check_error()) {
             $lines[] = 'Your answer could not be graded because an error occurred while checking. Please ask your teacher for assistance.';
         } else {
-            $lines[] = 'Your answer must pass all checks to earn any marks. Try again.';
+            $lines[] = 'Your answer was partially correct.';
         }
 
         return qtype_graphchecker_util::make_html_para($lines);
@@ -273,7 +278,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
      * @return string the CSS class for the given testing outcome
      */
     protected function results_class($outcome) {
-        if ($outcome->all_correct()) {
+        if ($outcome->mark_as_fraction() == 1) {
             $resultsclass = "graphchecker-test-results good";
         } else if ($outcome->mark_as_fraction() == 0) {
             $resultsclass = "graphchecker-test-results bad";
