@@ -3,7 +3,7 @@
     "checks": {
         "vertex_degree_sequence": {
             "name": "Degree sequence",
-            "description": "Checks if the graph has the given degree sequence (comma separated, e.g. <i>3,3,2,2,1</i>).",
+            "description": "Checks if the graph has the given degree sequence (comma separated, e.g. <i>1,2,2,3</i>).",
             "params": [
                 {
                     "param": "degree_sequence",
