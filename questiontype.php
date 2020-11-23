@@ -205,5 +205,35 @@ class qtype_graphchecker extends question_type {
         }
         return $s;
     }
+
+    /*
+     * Imports question from the Moodle XML format.
+     *
+     * Overridden because we need to avoid the superclass code that tries to
+     * read answers (we have only one sample answer and it is an extra question
+     * field).
+     */
+    public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {
+        $question_type = $data['@']['type'];
+        if ($question_type != $this->name()) {
+            return false;
+        }
+
+        $extraquestionfields = $this->extra_question_fields();
+        if (!is_array($extraquestionfields)) {
+            return false;
+        }
+
+        // Omit table name.
+        array_shift($extraquestionfields);
+        $qo = $format->import_headers($data);
+        $qo->qtype = $question_type;
+
+        foreach ($extraquestionfields as $field) {
+            $qo->$field = $format->getpath($data, array('#', $field, 0, '#'), '');
+        }
+
+        return $qo;
+    }
 }
 
