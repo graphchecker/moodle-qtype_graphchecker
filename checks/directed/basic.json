@@ -27,6 +27,17 @@
                 }
             ]
         },
+        "equivalent": {
+            "name": "Equivalent",
+            "description": "Check if the graph is equivalent (labels and connectivity) to the given graph.",
+            "params": [
+                {
+                    "param": "graph_answer",
+                    "name" : "Expected graph",
+                    "type" : "graph"
+                }
+            ]
+        },                    
         "girth": {
             "name": "Girth",
             "description": "Checks if the girth (length of the shortest cycle) is equal to the given value.",

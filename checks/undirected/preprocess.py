@@ -8,7 +8,7 @@ def preprocess(graph):
     
     sortedVertices = sorted(graph['vertices'], key = lambda vertex: vertex['label'])
     for vertex in sortedVertices:
-        vertex['label'] = "v" + str(count) + "_" + vertex['label']
+        vertex['label'] = "v" + str(count) + "_" + vertex['label'].strip()
         count += 1
         
     # Needs to be separated as the edges only have indices.

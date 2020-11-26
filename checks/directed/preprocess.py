@@ -5,13 +5,20 @@ def preprocess(graph):
     if not graph:
         return g
     count = 0
+
+    sortedVertices = sorted(graph['vertices'], key = lambda vertex: vertex['label'])
+    for vertex in sortedVertices:
+        vertex['label'] = "v" + str(count) + "_" + vertex['label'].strip()
+        count += 1
+
+    # Needs to be separated as the edges only have indices.
+    # So we need to add the vertices in the same order to the new graph.. :(
     for vertex in graph['vertices']:
-        label = "v" + str(count) + "_" + vertex['label']
         if 'highlighted' not in vertex:
             highlight = False
         else:
             highlight = vertex['highlighted']
-        v = g.add_vertex(name = label, x = vertex['position'][0], y = vertex['position'][1], highlighted = highlight)
+        v = g.add_vertex(name = vertex['label'], x = vertex['position'][0], y = vertex['position'][1], highlighted = highlight)
         count += 1
     for edge in graph['edges']:
         if 'highlighted' not in edge:

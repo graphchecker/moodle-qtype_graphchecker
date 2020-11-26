@@ -74,3 +74,27 @@ def vertex_degrees(student_answer, degree_type, expected):
                         degree_type, expected, v_name, v.degree(mode=mode))}
     return {'correct': True}
 
+def equivalent(student_answer, graph_answer):
+    if len(student_answer.vs) != len(graph_answer.vs):
+        return {'correct': False, 'feedback' : 'Number of vertices does not match the expected number of vertices.'}
+    if len(student_answer.es) != len(graph_answer.es):
+        return {'correct': False, 'feedback' : 'Number of edges does not match the expected number of edges.'}
+    vs_stud = sorted(student_answer.vs)
+    
+    for v in graph_answer.vs:
+        try:
+            w = student_answer.vs.find(v['name'])
+        except:
+            return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(v))}
+    for e in graph_answer.es:
+        try:
+            f = student_answer.es.find(label = e['label'])
+            sourceStud = student_answer.vs[f.source]
+            targetStud = student_answer.vs[f.target]
+            sourceGrap = graph_answer.vs[e.source]
+            targetGrap = graph_answer.vs[e.target]
+            if ((filter_orig_name(sourceStud) != filter_orig_name(sourceGrap)) or (filter_orig_name(targetStud) != filter_orig_name(targetGrap))):
+                return {'correct': False, 'feedback' : ('Edge with label \'{0}\' does not run from vertex \'{1}\' to vertex \'{2}\' as expected.').format(e['label'],filter_orig_name(sourceGrap), filter_orig_name(targetGrap))}
+        except:
+            return {'correct': False, 'feedback': ('Answer missing edge labelled: \'{0}\'').format(e['label'])}
+    return {'correct': True}
