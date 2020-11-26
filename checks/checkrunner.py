@@ -85,7 +85,10 @@ def convert_argument(name, value, check, preprocess):
 	if param_type == 'integer':
 		return int(value)
 	elif param_type == 'string_list':
-		return value.split('\n')
+		values = value.split('\n')
+		if len(values) == 1:
+			values = values[0].split(',')
+		return values
 	elif param_type == 'graph':
 		return preprocess.preprocess(json.loads(value))
 	else:
