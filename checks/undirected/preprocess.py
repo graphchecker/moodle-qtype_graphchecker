@@ -18,11 +18,19 @@ def preprocess(graph):
             highlight = False
         else:
             highlight = vertex['highlighted']
-        v = g.add_vertex(name = vertex['label'], x = vertex['position'][0], y = vertex['position'][1], highlighted = highlight)
+        if 'color' not in vertex:
+            col = '000000'
+        else:
+            col = vertex['color']
+        v = g.add_vertex(name = vertex['label'], x = vertex['position'][0], y = vertex['position'][1], highlighted = highlight, color = col)
     for edge in graph['edges']:
         if 'highlighted' not in edge:
             highlight = False
         else:
             highlight = edge['highlighted']
-        g.add_edge(edge['from'], edge['to'], label = edge['label'], highlighted = highlight)
+        if 'color' not in edge:
+            col = '000000'
+        else:
+            col = edge['color']
+        g.add_edge(edge['from'], edge['to'], label = edge['label'], highlighted = highlight, color = col)
     return g

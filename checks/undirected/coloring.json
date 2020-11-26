@@ -1,0 +1,18 @@
+{
+    "name": "Coloring properties",
+    "checks": {
+        "coloring": {
+            "name": "Coloring",
+            "description": "Checks if the graph has a valid x-coloring.",
+            "params": [
+                {
+                    "param": "noColors",
+                    "name": "Maximum number of colors",
+                    "type": "integer",
+                    "default": 4,
+                    "min": 1
+                }
+            ]
+        }
+    }
+}

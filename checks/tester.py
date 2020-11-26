@@ -47,6 +47,7 @@ class GCTester:
 		# for easy debugging, allow highlighting
 		params['highlight_vertices'] = True
 		params['highlight_edges'] = True
+		params['vertex_colors'] = ['black','red','blue','green','yellow','orange','purple','white']
 
 		return params
 
