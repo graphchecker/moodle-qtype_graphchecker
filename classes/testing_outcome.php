@@ -111,87 +111,31 @@ class qtype_graphchecker_testing_outcome {
         }
     }
 
-    // Return a message summarising the nature of the error if this outcome
-    // is not all correct.
-    public function validation_error_message() {
+    /**
+     * Return a concise error message for the validate-on-save function.
+     */
+    public function validation_error_message($question) {
         if ($this->invalid()) {
             return html_writer::tag('pre', $this->errormessage);
         } else if ($this->run_failed()) {
             return get_string('run_failed', 'qtype_graphchecker');
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
-        } else {
-            $numerrors = 0;
-            $failures = new html_table();
-            $failures->attributes['class'] = 'graphchecker-test-results';
-            $failures->head = array(get_string('testcolhdr', 'qtype_graphchecker'),
-                get_string('expectedcolhdr', 'qtype_graphchecker'),
-                get_string('gotcolhdr', 'qtype_graphchecker'));
-            $failures->data = array();
-            $failures->rowclasses = array();
+        }
 
-            foreach ($this->testresults as $i => $testresult) {
-                if (!$testresult->iscorrect) {
-                    $numerrors += 1;
-                    $rownum = isset($testresult->rownum) ? intval($testresult->rownum) : $i;
-                    if (isset($testresult->expected) && isset($testresult->got)) {
-                        $failures->data[] = array(
-                            html_writer::link('#id_testcode_' . $rownum,
-                                    get_string('testcase', 'qtype_graphchecker', $rownum + 1) .
-                                        html_writer::empty_tag('br') . s($testresult->testcode)),
-                            html_writer::link('#id_expected_' . $rownum, html_writer::tag('pre', s($testresult->expected),
-                                    array('id' => 'id_fail_expected_' . $rownum))),
-                            html_writer::tag('pre', s($testresult->got), array('id' => 'id_got_' . $rownum)) .
-                                html_writer::tag('button', '&lt;&lt;', array(
-                                    'type' => 'button',  // To suppress form submission.
-                                    'class' => 'replaceexpectedwithgot')),
-                        );
-                        $failures->rowclasses[] = 'graphchecker-failed-test failrow_' . $rownum;
-                    }
-                }
-            }
-            $message = get_string('failedntests', 'qtype_graphchecker', array(
-                'numerrors' => $numerrors));
-            if ($failures->data) {
-                $message .= html_writer::table($failures) . get_string('replaceexpectedwithgot', 'qtype_graphchecker');
-            } else {
-                $message .= get_string('failedtesting', 'qtype_graphchecker');
+        $message = 'Sample answer fails checks (' . $this->grade * 100 . '% of points awarded):<ul>';
+        foreach ($this->testresults as $result) {
+            if (!$result['correct']) {
+                $checkName = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
+                $message .= '<li><b>' . $checkName . '</b>: ' . $result['feedback'];
             }
         }
-        return $message . html_writer::empty_tag('br') . get_string('howtogetmore', 'qtype_graphchecker');
+        $message .= '</ul>';
+        return $message;
     }
 
     /**
-     *
-     * @global type $COURSE
-     * @param qtype_graphchecker $question
-     * @return a table of test results.
-     * The test result table is an array of table rows (each an array).
-     * The first row is a header row, containing strings like 'Test', 'Expected',
-     * 'Got' etc. Other rows are the values of those items for the different
-     * tests that were run.
-     * There are two special case columns. If the header is 'iscorrect', the
-     * value in the row should be 0 or 1. The header of this column is left blank
-     * and the row contents are replaced by a tick or a cross. There can be
-     * multiple iscorrect columns. If the header is
-     * 'ishidden', the column is not displayed but instead the row itself is
-     * hidden from view unless the user has the grade:viewhidden capability.
-     *
-     * The set of columns to be displayed is specified by the question's
-     * resultcolumns variable (which should be accessed via its result_columns
-     * method). The resultcolumns attribute is a JSON-encoded list of column specifiers.
-     * A column specifier is itself a list, usually with 2 or 3 elements.
-     * The first element is the column header the second is (usually) the test
-     * result object field name whose value is to be displayed in the column
-     * and the third (optional) element is the sprintf format used to display
-     * the field. It is also possible to combine more than one field of the
-     * test result object into a single field by adding extra field names into
-     * the column specifier before the format, which is then mandatory.
-     * For example, to display the mark awarded for a test case as, say
-     * '0.71 out of 1.00' the column specifier would be
-     * ["Mark", "awarded", "mark", "%.2f out of %.2f"] A special case format
-     * specifier is '%h' denoting that the result object field value should be
-     * treated as ready-to-output html. Empty columns are suppressed.
+     * Build the table of test results.
      */
     public function build_results_table(qtype_graphchecker_question $question) {
         $table = array();

@@ -23,7 +23,6 @@
  */
 
 $string['aborted'] = 'Testing was aborted due to an error.';
-$string['allok'] = 'Passed all checks! ';
 $string['allowed_vertex_edits'] = 'Allow adding/removing';
 $string['allowed_vertex_edits_help'] = 'This decides whether the student is able to add/remove nodes and edges.';
 $string['answer'] = 'Sample answer';
@@ -39,7 +38,6 @@ $string['answertype_changed'] = 'Changing the answer type will clear the Answer 
 $string['asolutionis'] = 'Example solution:';
 
 $string['badquestion'] = 'Error in question';
-$string['brokentemplategrader'] = 'Bad output from grader: {$a->output}. Something may be wrong with the question; please notify your tutor.';
 
 $string['checks'] = 'Checks';
 $string['checks_help'] = 'Checks used to verify if the student\'s answer is correct.';
@@ -60,9 +58,6 @@ $string['errorstring-submissionlimitexceeded'] = 'Sandbox submission limit reach
 $string['errorstring-submissionfailed'] = 'Submission to sandbox failed';
 $string['errorstring-unknown'] = 'Unexpected error while executing checks. The sandbox server may be down or overloaded. Perhaps try again shortly?';
 
-$string['failedntests'] = 'Failed {$a->numerrors} check(s)';
-$string['failedtesting'] = 'Failed testing.';
-
 $string['graphcheckersettings'] = 'GraphChecker settings';
 $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';
 
@@ -77,8 +72,6 @@ $string['jobe_host_desc'] = 'The host name of the Jobe server plus the port numb
 $string['lock_preload_box'] = 'Lock preload';
 $string['lock_preload_box_help'] = 'Checking this box will make the preloaded answer uneditable. That is, the student will not be able to remove nodes and edges from the preload, or change their attributes. However, it is still possible to drag nodes from the preload around, and to add new edges between them.';
 
-$string['noerrorsallowed'] = 'Your answer must pass all checks to earn any marks. Try again.';
-
 $string['options'] = 'Options';
 
 $string['pluginname'] = 'GraphChecker';
@@ -90,7 +83,6 @@ $string['pluginname_link'] = 'question/type/graphchecker';
 $string['privacy:metadata'] = 'The GraphChecker question type plugin does not store any personal data.';
 
 $string['reset'] = 'Reset answer';
-$string['resethover'] = 'Discard changes and reset answer to original preloaded value';
 $string['resultstring-norun'] = 'No run';
 $string['resultstring-compilationerror'] = 'Compilation error';
 $string['resultstring-runtimeerror'] = 'Error';
@@ -106,12 +98,11 @@ $string['resultstring-outputlimit'] = 'Excessive output';
 $string['resultstring-abnormaltermination'] = 'Abnormal termination';
 $string['run_failed'] = 'Failed to run checks';
 
-$string['syntax_errors'] = 'Syntax Error(s)';
-
 $string['ui_fallback'] = 'Falling back to raw text area.';
-$string['unknownerror'] = 'An unexpected error occurred. The sandbox may be down. Try again shortly.';
 $string['unserializefailed'] = 'Stored test results could not be deserialised. Perhaps try regrading?';
 
+$string['validateonsave'] = 'Check sample answer on save';
+$string['validateonsave_help'] = 'The <b>Copy from/to preload</b> buttons allow you to use the preloaded answer set above as a base for drawing the sample answer, or the other way round.<br>The <b>Check sample answer on save</b> checkbox, if checked, will validate that the checks pass for the sample answer when you save this question; this ensures that the sample answer is actually correct.';
 $string['vertex_attributes'] = 'Node attributes';
 $string['vertex_attributes_help'] = 'Specify which attributes nodes have: labels, colors, or both.';
 $string['vertexedits'] = 'Allowed edits';

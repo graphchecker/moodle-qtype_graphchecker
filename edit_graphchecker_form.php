@@ -155,16 +155,18 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
                 $attributes);
-        //$mform->addElement('advcheckbox', 'validateonsave', null,
-        //        get_string('validateonsave', 'qtype_graphchecker'));
-        //$mform->setDefault('validateonsave', false);
         $mform->addHelpButton('answer', 'answer', 'qtype_graphchecker');
 
         $copyButtons = [];
         $copyButtons[] =& $mform->createElement('button', 'copyfrompreload', 'Copy from preload');
         $copyButtons[] =& $mform->createElement('button', 'copytopreload', 'Copy to preload');
+        $copyButtons[] =& $mform->createElement('advcheckbox', 'validateonsave', null,
+            get_string('validateonsave', 'qtype_graphchecker'));
 
-        $mform->addGroup($copyButtons);
+        $mform->addGroup($copyButtons, 'copy_buttons', '', [''], false);
+
+        $mform->setDefault('validateonsave', true);
+        $mform->addHelpButton('copy_buttons', 'validateonsave', 'qtype_graphchecker');
     }
 
 
@@ -333,13 +335,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         return $result;
     }
 
-
-    // UTILITY FUNCTIONS.
-    // =================.
-
+    /**
+     * Construct a question object containing all the fields from $data.
+     * Used when validating the sample answer.
+     */
     private function make_question_from_form_data($data) {
-        // Construct a question object containing all the fields from $data.
-        // Used in data pre-processing and when validating a question.
         global $DB;
         $question = new qtype_graphchecker_question();
         foreach ($data as $key => $value) {
@@ -354,7 +354,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
         // Clean the question object, get inherited fields and run the sample answer.
         $qtype = new qtype_graphchecker();
-        $qtype->clean_question_form($question, true);
         $questiontype = $question->answertype;
         list($category) = explode(',', $question->category);
         $contextid = $DB->get_field('question_categories', 'contextid', array('id' => $category));
@@ -373,13 +372,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
             $question = $this->make_question_from_form_data($data);
             $question->start_attempt();
             $response = array('answer' => $question->answer);
-            if (!empty($answerlang)) {
-                $response['language'] = $answerlang;
-            }
-            $error = $question->validate_response($response);
-            if ($error) {
-                return $error;
-            }
             list($mark, $state, $cachedata) = $question->grade_response($response);
         } catch (Exception $e) {
             return $e->getMessage();
@@ -390,7 +382,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
             return '';
         } else {
             $outcome = unserialize($cachedata['_testoutcome']);
-            $error = $outcome->validation_error_message();
+            $error = $outcome->validation_error_message($question);
             return $error;
         }
     }
