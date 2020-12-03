@@ -8,6 +8,8 @@ GraphChecker is being developed by Arthur van Goethem and Willem Sonke from EdIn
 
 * It is still in development. While we have used (earlier versions of) GraphChecker successfully in several small courses, the code has not been heavily battle-tested yet and may still contain bugs. It may not be easy to install -- if you're having problems, please let us know so we can help.
 
+* The API for checks is still subject to change in the future.
+
 * The number of checks implemented is still limited.
 
 
