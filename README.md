@@ -2,31 +2,38 @@
 
 GraphChecker is a question type for Moodle, which allows teachers to pose quiz questions with a graph as the answer. During quizzes, students are presented with a graph editor with which they can enter their answer. It features a user-friendly interface for teachers to edit questions. In particular, it contains a standard library of checks for various standard properties (such as ‘number of vertices’ or ‘connectedness’), which the teacher can select as requirements for the student answer without having to write any code themselves.
 
-GraphChecker is being developed by Arthur van Goethem and Willem Sonke from EdIn, TU Eindhoven. The plugin is based on the [CodeRunner](https://github.com/trampgeek/moodle-qtype_coderunner/) question type by Richard Lobb and Tim Hunt, and its graph editor written originally by Emily Price. CodeRunner lets teachers ask programming questions and automatically grades student-submitted code based on tests the teacher defines. Behind the scenes (and invisibly to the teacher) GraphChecker translates the list of checks selected by the teacher to a piece of Python code, which is sent to a Jobe server in the same way that CodeRunner grades code. (See the CodeRunner documentation for more details.) This approach is very flexible, because checks can execute any Python code they need, including calling external libraries.
+GraphChecker is being developed by Arthur van Goethem and Willem Sonke from EdIn, TU Eindhoven. The plugin is based on the [CodeRunner](https://github.com/trampgeek/moodle-qtype_coderunner/) question type by Richard Lobb (University of Canterbury, New Zealand) and Tim Hunt (The Open University, UK), and its graph editor written originally by Emily Price. CodeRunner lets teachers ask programming questions and automatically grades student-submitted code based on tests the teacher defines. Behind the scenes (and invisibly to the teacher) GraphChecker translates the list of checks selected by the teacher to a piece of Python code, which is sent to a Jobe server in much the same way that CodeRunner grades code. (See the CodeRunner documentation for more details.) This approach is very flexible, because checks can execute any Python code they need, including calling external libraries.
 
-GraphChecker is still experimental software and comes with some limitations:
+:warning: GraphChecker is still experimental software and comes with some limitations:
 
-* It is still in development. While we have used (earlier versions of) GraphChecker successfully in several small courses, the code has not been heavily battle-tested yet and may still contain bugs.
+* It is still in development. While we have used (earlier versions of) GraphChecker successfully in several small courses, the code has not been heavily battle-tested yet and may still contain bugs. It may not be easy to install -- if you're having problems, please let us know so we can help.
 
 * The number of checks implemented is still limited.
 
 
 ## Installation
 
-_(to do: mention exactly which Moodle versions we support)_
+At the moment, we support Moodle 3.8 and 3.9. Slightly older versions may work, but no guarantees.
 
 We will assume you have a working Jobe server, used to grade submissions. If not, please follow the [Jobe documentation](https://github.com/trampgeek/jobe) to set one up. (In case your Moodle installation already has CodeRunner installed correctly, and a Jobe server to go along with it, you can use the same server also for GraphChecker.)
 
 
 ### Step 1: Installing GraphChecker on the Moodle server
 
-* Clone this repository to `question/type/graphchecker` in the Moodle directory.
+* **Install GraphChecker itself:** Clone this repository to `question/type/graphchecker` in the Moodle directory.
 
-* Install [qbehaviour_adaptive_adapted_for_coderunner](https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner) and change line 51 of `behaviour.php` to allow GraphChecker questions as well. _(to do: fix this)_
+* **Install two dependencies:**
+    * If it was not installed yet, install [qbehaviour_adaptive_adapted_for_coderunner](https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner). We need to make a small change to line 51 of `behaviour.php` to allow GraphChecker questions to run with this question behavior as well:
 
-* Clone the repository _(to do: insert link)_ for `qbehaviour_deferredfeedback_graphchecker` to `question/behavior/deferredfeedback_graphchecker` in the Moodle directory.
+```diff
+-        return $question instanceof qtype_coderunner_question;
++        return $question instanceof qtype_coderunner_question ||
++                $question instanceof qtype_graphchecker_question;
+```
 
-* Go to the Site Administration page, which should show the usual plugin installation page. Follow the steps indicated to perform the database upgrade.
+    * Clone the repository [qbehaviour_deferredfeedback_graphchecker](https://github.com/graphchecker/moodle-qbehavior_deferredfeedback_graphchecker) to `question/behavior/deferredfeedback_graphchecker` in the Moodle directory.
+
+* **Run database upgrade:** Go to the Site Administration page, which should detect the newly installed plugins and show the usual plugin installation page. Follow the steps indicated to perform the database upgrade.
 
 
 ### Step 2: Compile the JavaScript assets
@@ -40,14 +47,14 @@ If you don't have `grunt` yet, run `npm install -g grunt-cli` (you'll need Node.
 
 ### Step 3: Configuration
 
-Go to the plugin configuration and set the URL to the Jobe server. If you are already running CodeRunner, you can simply copy the URL from there.
+Go to the plugin configuration (*Site administration > Category: Question types > GraphChecker settings*) and set the URL and, if necessary, API key for the Jobe server. If you are already running CodeRunner, you can simply copy the URL from there.
 
 
 ### Step 4: Installing required libraries on Jobe
 
 Our built-in checks use the graph library `igraph`, which needs to be available on the Jobe server. Be sure to install it on the Jobe server, so _not_ on the Moodle server!
 
-Assuming your Jobe instance runs on Ubuntu, you can simply do `sudo apt install python3-igraph`. Otherwise `sudo pip3 install python-igraph` should do the trick _(to do: test this)_.
+Assuming your Jobe instance runs on Ubuntu, you can simply do `sudo apt install python3-igraph`. Otherwise `sudo pip3 install python-igraph` should do the trick.
 
 
 ### Step 5: Testing
@@ -65,11 +72,11 @@ The installation should now be complete. To test that GraphChecker works correct
 If you get an error instead, the Jobe server is probably not installed correctly or not reachable.
 
 
-## User guide
-
-_(to do: to be written)_
-
-
 ## License
 
-GPL v3 or later.
+> GraphChecker is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+>
+> GraphChecker is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+GraphChecker is based on CodeRunner by Richard Lobb et al. which is also under GPL v3 or later. See https://coderunner.org.nz/ for more information.
+
