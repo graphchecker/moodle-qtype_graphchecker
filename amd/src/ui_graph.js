@@ -39,13 +39,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * JavaScript to interfdigraph2 to the Graph editor, which is used both in
- * the author editing page and by the student question submission page.
+ * Implementation of the graph editor, which is used both in the question
+ * editing page and in the student question submission page.
  *
- * @package    qtype
- * @subpackage graphchecker
- * @copyright  Richard Lobb, 2015, The University of Canterbury
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 

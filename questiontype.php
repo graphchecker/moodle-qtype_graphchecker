@@ -1,46 +1,30 @@
 <?php
-// This file is part of CodeRunner - http://coderunner.org.nz/
+// This file is part of GraphChecker - https://github.com/graphchecker
 //
-// CodeRunner is free software: you can redistribute it and/or modify
+// GraphChecker is based on CodeRunner by Richard Lobb et al.
+// See https://coderunner.org.nz/
+//
+// GraphChecker is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// CodeRunner is distributed in the hope that it will be useful,
+// GraphChecker is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
-//
-// ***************
-// coderunner
-// ***************
-//
-// CODERUNNER QUESTION TYPE CLASS
-// The class for programming code questions.
-// A coderunner question consists of a specification for a piece of program
-// code, which might be a function or a complete program or
-// just a fragment of code.
-// The student's response must be source code that defines
-// the specified function. The student's code is executed by
-// a set of test cases, all of which must pass for the question
-// to be marked correct. The code execution takes place in an external
-// sandbox.
-// In a typical use case each coderunner question will have its
-// own submit button and students will keep submitting until
-// they pass all tests, so that their mark will be based on
-// the number of submissions and the penalty per wrong
-// submissions.  However, there is the capability to allow per-test-case
-// part marks by turning off the "all-or-nothing" checkbox when authoring the
-// question.
+// along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package     qtype
- * @subpackage  coderunner
- * @copyright   &copy; 2012, 2013, 2014 Richard Lobb
- * @author       Richard Lobb richard.lobb@canterbury.ac.nz
+defined('MOODLE_INTERNAL') || die();
+
+/*
+ * GraphChecker's question definition class.
+ *
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -49,7 +33,9 @@ require_once($CFG->dirroot . '/question/engine/bank.php');
 require_once($CFG->dirroot . '/lib/questionlib.php');
 
 /**
- * qtype_graphchecker extends the base question_type to graphchecker-specific functionality.
+ * GraphChecker's question type class. This includes the specific fields
+ * needed for GraphChecker questions (answer type, preload, sample answer,
+ * etc.)
  */
 class qtype_graphchecker extends question_type {
 

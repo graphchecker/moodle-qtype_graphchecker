@@ -1,29 +1,30 @@
 <?php
-// This file is part of CodeRunner - http://coderunner.org.nz/
+// This file is part of GraphChecker - https://github.com/graphchecker
 //
-// CodeRunner is free software: you can redistribute it and/or modify
+// GraphChecker is based on CodeRunner by Richard Lobb et al.
+// See https://coderunner.org.nz/
+//
+// GraphChecker is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// CodeRunner is distributed in the hope that it will be useful,
+// GraphChecker is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
+// along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
 
 /*
- * Defines the editing form for the coderunner question type.
+ * GraphChecker's question edit form.
  *
- * @package 	questionbank
- * @subpackage 	questiontypes
- * @copyright 	&copy; 2013 Richard Lobb
- * @author 		Richard Lobb richard.lobb@canterbury.ac.nz
- * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
@@ -32,7 +33,7 @@ require_once($CFG->dirroot . '/question/type/graphchecker/question.php');
 use qtype_graphchecker\constants;
 
 /**
- * CodeRunner editing form definition.
+ * GraphChecker editing form definition.
  */
 class qtype_graphchecker_edit_form extends question_edit_form {
 
@@ -50,14 +51,10 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
     private static function author_edit_keys() {
         // A list of all the language strings required by authorform.js.
-        /*return array('coderunner_question_type', 'confirm_proceed', 'template_changed',
-            'info_unavailable', 'proceed_at_own_risk', 'error_loading_prototype',
-            'ajax_error', 'prototype_load_failure', 'prototype_error',
-            'question_type_changed');*/
         return array();
     }
 
-    // Define the CodeRunner question edit form.
+    // Define the GraphChecker question edit form.
     protected function definition() {
         global $PAGE;
 
@@ -84,7 +81,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     }
 
 
-    // Defines the bit of the CodeRunner question edit form after the "General"
+    // Defines the bit of the GraphChecker question edit form after the "General"
     // section and before the footer stuff.
     public function definition_inner($mform) {
 

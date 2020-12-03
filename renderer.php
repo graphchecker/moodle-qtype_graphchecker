@@ -1,39 +1,38 @@
 <?php
-// This file is part of CodeRunner - http://coderunner.org.nz/
+// This file is part of GraphChecker - https://github.com/graphchecker
 //
-// CodeRunner is free software: you can redistribute it and/or modify
+// GraphChecker is based on CodeRunner by Richard Lobb et al.
+// See https://coderunner.org.nz/
+//
+// GraphChecker is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// CodeRunner is distributed in the hope that it will be useful,
+// GraphChecker is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
+// along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * CodeRunner renderer class.
- *
- * @package    qtype
- * @subpackage coderunner
- * @copyright  2012 Richard Lobb, The University of Canterbury.
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 defined('MOODLE_INTERNAL') || die();
+
+/*
+ * GraphChecker's renderer class.
+ *
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 use qtype_graphchecker\constants;
 
 /**
- * Subclass for generating the bits of output specific to graphchecker questions.
- *
- * @copyright  Richard Lobb, University of Canterbury.
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Subclass for generating the bits of output specific to GraphChecker
+ * questions.
  */
-
-
 class qtype_graphchecker_renderer extends qtype_renderer {
 
     /**
@@ -197,8 +196,6 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                         if ($cell) { // Anything other than zero or false means hidden.
                             $rowclass .= ' hidden-test';
                         }
-                    } else if ($cell instanceof qtype_graphchecker_html_wrapper) {
-                        $tablerow[] = $cell->value();  // It's already HTML.
                     } else {
                         $tablerow[] = qtype_graphchecker_util::format_cell($cell);
                     }

@@ -1,31 +1,31 @@
 <?php
-// This file is part of CodeRunner - http://coderunner.org.nz/
+// This file is part of GraphChecker - https://github.com/graphchecker
 //
-// CodeRunner is free software: you can redistribute it and/or modify
+// GraphChecker is based on CodeRunner by Richard Lobb et al.
+// See https://coderunner.org.nz/
+//
+// GraphChecker is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// CodeRunner is distributed in the hope that it will be useful,
+// GraphChecker is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * coderunner question definition classes.
- *
- * @package    qtype
- * @subpackage coderunner
- * @copyright  Richard Lobb, 2011, The University of Canterbury
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
+// along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
 
+/*
+ * GraphChecker's question definition class.
+ *
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->dirroot . '/question/behaviour/adaptive/behaviour.php');
 require_once($CFG->dirroot . '/question/engine/questionattemptstep.php');
@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/question/type/graphchecker/questiontype.php');
 use qtype_graphchecker\constants;
 
 /**
- * Represents a 'CodeRunner' question.
+ * Represents a GraphChecker question.
  */
 class qtype_graphchecker_question extends question_graded_automatically {
 

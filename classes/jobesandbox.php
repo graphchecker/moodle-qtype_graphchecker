@@ -1,29 +1,32 @@
 <?php
-// This file is part of CodeRunner - http://coderunner.org.nz/
+// This file is part of GraphChecker - https://github.com/graphchecker
 //
-// CodeRunner is free software: you can redistribute it and/or modify
+// GraphChecker is based on CodeRunner by Richard Lobb et al.
+// See https://coderunner.org.nz/
+//
+// GraphChecker is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// CodeRunner is distributed in the hope that it will be useful,
+// GraphChecker is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with CodeRunner.  If not, see <http://www.gnu.org/licenses/>.
+// along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
-/* A sandbox that uses the Jobe server (http://github.com/trampgeek/jobe) to run
- * student submissions.
+/**
+ * A sandbox that uses the Jobe server (http://github.com/trampgeek/jobe) to
+ * run student submissions.
  *
  * This version doesn't do any authentication; it's assumed the server is
  * firewalled to accept connections only from Moodle.
  *
- * @package    qtype
- * @subpackage coderunner
- * @copyright  2014, 2015 Richard Lobb, University of Canterbury
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_graphchecker
+ * @copyright 2014, 2015 Richard Lobb, University of Canterbury
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
