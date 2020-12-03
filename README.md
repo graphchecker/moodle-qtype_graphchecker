@@ -25,11 +25,11 @@ We will assume you have a working Jobe server, used to grade submissions. If not
 * **Install two dependencies:**
     * If it was not installed yet, install [qbehaviour_adaptive_adapted_for_coderunner](https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner). We need to make a small change to line 51 of `behaviour.php` to allow GraphChecker questions to run with this question behavior as well:
 
-```diff
--        return $question instanceof qtype_coderunner_question;
-+        return $question instanceof qtype_coderunner_question ||
-+                $question instanceof qtype_graphchecker_question;
-```
+      ```diff
+      -        return $question instanceof qtype_coderunner_question;
+      +        return $question instanceof qtype_coderunner_question ||
+      +                $question instanceof qtype_graphchecker_question;
+      ```
 
     * Clone the repository [qbehaviour_deferredfeedback_graphchecker](https://github.com/graphchecker/moodle-qbehavior_deferredfeedback_graphchecker) to `question/behavior/deferredfeedback_graphchecker` in the Moodle directory.
 
