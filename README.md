@@ -8,6 +8,8 @@ GraphChecker is being developed by Arthur van Goethem and Willem Sonke from EdIn
 
 * It is still in development. While we have used (earlier versions of) GraphChecker successfully in several small courses, the code has not been heavily battle-tested yet and may still contain bugs. It may not be easy to install -- if you're having problems, please let us know so we can help.
 
+* The API for checks is still subject to change in the future.
+
 * The number of checks implemented is still limited.
 
 
@@ -31,7 +33,7 @@ We will assume you have a working Jobe server, used to grade submissions. If not
       +                $question instanceof qtype_graphchecker_question;
       ```
 
-    * Clone the repository [qbehaviour_deferredfeedback_graphchecker](https://github.com/graphchecker/moodle-qbehavior_deferredfeedback_graphchecker) to `question/behavior/deferredfeedback_graphchecker` in the Moodle directory.
+    * Clone the repository [qbehaviour_deferredfeedback_graphchecker](https://github.com/graphchecker/moodle-qbehaviour_deferredfeedback_graphchecker) to `question/behavior/deferredfeedback_graphchecker` in the Moodle directory.
 
 * **Run database upgrade:** Go to the Site Administration page, which should detect the newly installed plugins and show the usual plugin installation page. Follow the steps indicated to perform the database upgrade.
 
