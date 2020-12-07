@@ -1805,6 +1805,10 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.clearRect(0, 0, this.getCanvas().width, this.getCanvas().height);
         c.save();
 
+        // scale the canvas so that it is nominalWidth 'virtual pixels' wide
+        const scaleFactor = canvas.width / util.nominalWidth;
+        c.scale(scaleFactor, scaleFactor);
+
         // use Segoe UI as that is the default Moodle font
         // (at least on Windows)
         c.font = this.fontSize() + 'px "Segoe UI"';

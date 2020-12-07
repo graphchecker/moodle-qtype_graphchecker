@@ -65,6 +65,13 @@ define(function() {
             'purple': {name: 'purple', colorCode: '#cab2d6', isDark: false},
             'white': {name: 'white', colorCode: '#ffffff', isDark: false},
         };
+
+        // Width of the viewport in pixels. If the actual width of the editor
+        // differs from this (most likely), the coordinates used internally
+        // will be scaled so that the width is nominalWidth. In other words,
+        // a vertex drawn at x = nominalWidth will always be drawn on the right
+        // edge of the editor, no matter the editor's actual size.
+        this.nominalWidth = 900;
     }
 
     // An enum for defining the different colors that can be used to color vertices and/or edges
@@ -203,10 +210,11 @@ define(function() {
     };
 
     Util.prototype.mousePos = function(e) {
-        let rect = e.target.getBoundingClientRect();
+        const rect = e.target.getBoundingClientRect();
+        const scaleFactor = rect.width / this.nominalWidth;
         return {
-            'x': e.clientX - rect.x,
-            'y': e.clientY - rect.y
+            'x': (e.clientX - rect.x) / scaleFactor,
+            'y': (e.clientY - rect.y) / scaleFactor
         };
     };
 
