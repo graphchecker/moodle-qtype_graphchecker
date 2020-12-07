@@ -31,7 +31,15 @@ class GCTester:
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
 	def test(self, graph, checks):
-		return checkrunner.run(graph_type, graph, checks)
+		class RaiseStream:
+			def write(self, s):
+				print("OH NO", file=sys.stderr)
+				raise Exception('Check functions are not permited to print to stdout. Tried to print: ' + s)
+
+		sys.stdout = RaiseStream()
+		result = checkrunner.run(graph_type, graph, checks)
+		sys.stdout = sys.__stdout__  # reset stdout
+		return result
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
