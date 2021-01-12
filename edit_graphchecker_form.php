@@ -141,6 +141,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $params['highlight_vertices'] = true;
         $params['highlight_edges'] = true;
         $params['highlight_edges'] = true;
+        $params['ignore_locked'] = true;
         $params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
         $params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
 
