@@ -148,10 +148,19 @@ class qtype_graphchecker_jobrunner {
         $filemap = [];
 
         foreach ($this->get_checker_modules($checks) as $module) {
-            // Python file
+
+            // avoid illegal answertype or module name values (avoids possible
+            // path traversal attacks)
+            if (!qtype_graphchecker_util::check_valid_name($question->answertype)) {
+                throw new Exception('Illegal answertype');
+            }
+            if (!qtype_graphchecker_util::check_valid_name($module)) {
+                throw new Exception('Illegal module name');
+            }
+
             $name = $module . '.py';
             $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $name;
-            $filemap[$name] = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
+            $filemap[$name] = file_get_contents($full_name);
 
             // JSON file
             if ($module != 'preprocess') {

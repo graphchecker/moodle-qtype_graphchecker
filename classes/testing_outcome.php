@@ -171,10 +171,19 @@ class qtype_graphchecker_testing_outcome {
 
         global $CFG;
 
+        // avoid illegal answertype or module name values (avoids possible
+        // path traversal attacks)
+        if (!qtype_graphchecker_util::check_valid_name($answertype)) {
+            throw new Exception('Illegal answertype');
+        }
+        if (!qtype_graphchecker_util::check_valid_name($module)) {
+            throw new Exception('Illegal module name');
+        }
+
         // load module JSON
         $name = $module . '.json';
         $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $answertype . '/' . $name;
-        $module_json = file_get_contents($full_name);  // TODO [ws] check for path traversal attacks!
+        $module_json = file_get_contents($full_name);
         $module_info = json_decode($module_json, true);
 
         if (array_key_exists($method, $module_info['checks'])) {

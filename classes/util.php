@@ -142,4 +142,13 @@ class qtype_graphchecker_util {
         $params = json_decode($jsonparams, true);
         return $params === null ? array() : $params;
     }
+
+    /**
+     * Checks if the given name is a valid type, module, or check name.
+     * A name is valid if it consists of alphanumeric characters and
+     * underscores.
+     */
+    public static function check_valid_name($name) {
+        return preg_match('[^A-Za-z0-9_]', $name) === 0;
+    }
 }
