@@ -53,6 +53,15 @@ class qtype_graphchecker_check {
         }
     }
 
+    public static function has_check($answertype, $module, $method) {
+        $modules = qtype_graphchecker_check::get_available_checks($answertype);
+        if (!array_key_exists($module, $modules)) {
+            return false;
+        }
+        $methods = $modules[$module]->checks;
+        return array_key_exists($method, $methods);
+    }
+
     public static function get_available_checks($answertype) {
         global $CFG;
 

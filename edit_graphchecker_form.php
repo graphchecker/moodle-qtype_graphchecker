@@ -289,11 +289,32 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (count($errors) == 0 && !empty($data['validateonsave'])) {
-            $testresult = $this->validate_sample_answer($data);
-            if ($testresult) {
-                $errors['answer'] = $testresult;
+        // validate that all checks in the checks JSON actually exist
+        $checks = json_decode($data['checks'], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors['checks'] = 'Checks specification is invalid JSON';
+        } else {
+            foreach ($checks as $check) {
+                if (!qtype_graphchecker_check::has_check(
+                        $data['answertype'],
+                        $check['module'], $check['method'])) {
+                    $errors['checks'] = 'Unavailable check used: ' .
+                            $check['module'] . '.' . $check['method'];
+                    break;
+                }
             }
+        }
+
+        // next, if validateonsave was set, run the checks and see if they
+        // pass (but don't even try to do that if we already had errors up
+        // until this point)
+        if (empty($data['validateonsave']) || count($errors) > 0) {
+            return $errors;
+        }
+
+        $testresult = $this->validate_sample_answer($data);
+        if ($testresult) {
+            $errors['answer'] = $testresult;
         }
 
         return $errors;
