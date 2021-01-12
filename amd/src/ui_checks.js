@@ -222,15 +222,16 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo($buttonGroup);
 
         let checkInfo = this.modules[module]['checks'][method];
-
-        $('<span/>')
-            .html(checkInfo['name'])
-            .addClass('test-name')
-            .appendTo($header);
-
-        if (checkInfo['description']) {
-            //let $helpButton = this.createHelpButton(checkInfo['description'])
-            //    .appendTo($header);
+        if (checkInfo) {
+            $('<span/>')
+                .html(checkInfo['name'])
+                .addClass('test-name')
+                .appendTo($header);
+        } else {
+            $('<span/>')
+                .html(module + '.' + method)
+                .addClass('test-name')
+                .appendTo($header);
         }
 
         let $rightButtonGroup = $('<div/>')
@@ -242,8 +243,16 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .on('click', this.removeCheck.bind(this))
             .appendTo($rightButtonGroup);
 
-        if (checkInfo['params']) {
-            this.createArgsContainer(checkInfo, check)
+        if (checkInfo) {
+            if (checkInfo['params']) {
+                this.createArgsContainer(checkInfo, check)
+                    .appendTo($container);
+            }
+        } else {
+            $('<div/>')
+                .html('Unavailable check')
+                .addClass('invalid-feedback')
+                .css('display', 'block')
                 .appendTo($container);
         }
 
