@@ -1349,6 +1349,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             graphUI.toolbar.removeSelectionOptions();
             graphUI.toolbar.removeFSMNodeSelectionOptions();
             graphUI.toolbar.removePetriSelectionOptions();
+
+            graphUI.onGraphChange();
         }
     };
 
