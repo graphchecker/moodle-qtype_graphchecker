@@ -101,7 +101,7 @@ def preprocess(graph):
 
     # Add all vertices (places and transitions) to net
     for vertex in graph['vertices']:
-        label = vertex['label']
+        label = vertex['label'].strip()
         if vertex['petri_type'] == "place":
             new_place = PetriNet.Place(label)
             new_place.properties['position'] = vertex['position']

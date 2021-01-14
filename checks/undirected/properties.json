@@ -16,7 +16,7 @@
         },
         "diameter": {
             "name": "Diameter",
-            "description": "Checks if the diameter (length of the longest path) is equal to the given value.",
+            "description": "Checks if the diameter (length of the longest path) is equal to the given value. (Takes the largest diameter of any connected component in case of a disconnected graph.)",
             "params": [
                 {
                     "param": "expected",

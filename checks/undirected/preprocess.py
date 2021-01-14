@@ -32,5 +32,5 @@ def preprocess(graph):
             col = '000000'
         else:
             col = edge['color']
-        g.add_edge(edge['from'], edge['to'], label = edge['label'], highlighted = highlight, color = col)
+        g.add_edge(edge['from'], edge['to'], label = edge['label'].strip(), highlighted = highlight, color = col)
     return g
