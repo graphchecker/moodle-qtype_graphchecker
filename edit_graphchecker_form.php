@@ -189,10 +189,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addHelpButton('checks', 'checks', 'qtype_graphchecker');
     }
 
+
     protected function add_student_interaction_field($mform) {
         $mform->addElement('header', 'studentinteractionhdr',
                     'Student interaction', '');
-        $mform->setExpanded('studentinteractionhdr', 1);
+        $mform->setExpanded('studentinteractionhdr', 0);
 
         // preload field
         $attributes = array(
@@ -230,6 +231,30 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addGroup($highlightBoxes, 'highlight',
                 'Highlighting', [''], false);
         $mform->addHelpButton('highlight', 'highlight', 'qtype_graphchecker');
+
+        // penalty for multiple tries
+        // (taken from edit_question_form.php)
+        $penalties = array(
+            1.0000000,
+            0.5000000,
+            0.3333333,
+            0.2500000,
+            0.2000000,
+            0.1000000,
+            0.0000000
+        );
+        if (!empty($this->question->penalty) && !in_array($this->question->penalty, $penalties)) {
+            $penalties[] = $this->question->penalty;
+            sort($penalties);
+        }
+        $penaltyoptions = array();
+        foreach ($penalties as $penalty) {
+            $penaltyoptions["{$penalty}"] = (100 * $penalty) . '%';
+        }
+        $mform->addElement('select', 'penalty',
+                get_string('penaltyforeachincorrecttry', 'question'), $penaltyoptions);
+        $mform->addHelpButton('penalty', 'penaltyforeachincorrecttry', 'question');
+        $mform->setDefault('penalty', 0.3333333);
     }
 
 
