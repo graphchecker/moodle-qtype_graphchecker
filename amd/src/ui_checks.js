@@ -541,8 +541,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('visible');
         $('body').addClass('unscrollable');
 
-        let $checkContainer = $(e.target).closest('.test-container');
-        let $graphField = $checkContainer.find('.argument-value');
+        let $argumentRow = $(e.target).closest('.argument-row');
+        let $graphField = $argumentRow.find('.argument-value');
 
         let $body = $('<div/>');
 
