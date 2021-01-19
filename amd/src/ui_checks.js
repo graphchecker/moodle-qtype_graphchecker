@@ -551,20 +551,6 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .val($graphField.val())
             .appendTo($body);
 
-        let $copyFromPreloadButton = $('<button/>')
-            .addClass('btn')
-            .text('Copy from preload')
-            .appendTo($body);
-
-        $copyFromPreloadButton.on('click', function() {
-            $('#id_answerpreload').data('current-ui-wrapper').stop();
-            $newField.data('current-ui-wrapper').stop();
-            $newField.val($('#id_answerpreload').val());
-            $('#id_answerpreload').data('current-ui-wrapper').restart();
-            $newField.data('current-ui-wrapper').restart();
-            return false;
-        });
-
         let $copyFromSampleButton = $('<button/>')
             .addClass('btn')
             .text('Copy from sample answer')
@@ -574,6 +560,20 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             $('#id_answer').data('current-ui-wrapper').stop();
             $newField.data('current-ui-wrapper').stop();
             $newField.val($('#id_answer').val());
+            $('#id_answer').data('current-ui-wrapper').restart();
+            $newField.data('current-ui-wrapper').restart();
+            return false;
+        });
+
+        let $copyToSampleButton = $('<button/>')
+            .addClass('btn')
+            .text('Copy to sample answer')
+            .appendTo($body);
+
+        $copyToSampleButton.on('click', function() {
+            $('#id_answer').data('current-ui-wrapper').stop();
+            $newField.data('current-ui-wrapper').stop();
+            $('#id_answer').val($newField.val());
             $('#id_answer').data('current-ui-wrapper').restart();
             $newField.data('current-ui-wrapper').restart();
             return false;
