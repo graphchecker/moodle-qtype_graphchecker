@@ -16,7 +16,7 @@
         "python_modules": ["igraph"]
     },
     "fsm": {
-        "name": "Finite state machine",
+        "name": "DFA",
         "ui_plugin": "graph",
         "ui_params": {
             "type": "fsm"
