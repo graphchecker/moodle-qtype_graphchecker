@@ -136,19 +136,9 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                     get_string('answer', 'qtype_graphchecker'), '');
         $mform->setExpanded('answerhdr', 1);
 
-        $params = qtype_graphchecker_question::get_ui_params_for_type($this->answertype);
-        // always allow highlighting in the sample answer field
-        $params['highlight_vertices'] = true;
-        $params['highlight_edges'] = true;
-        $params['highlight_edges'] = true;
-        $params['ignore_locked'] = true;
-        $params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
-        $params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
-
         $attributes = array(
             'rows' => 9,
-            'class' => 'answer edit_code',
-            'data-params' => json_encode($params)
+            'class' => 'answer edit_code'
         );
         $mform->addElement('textarea', 'answer',
                 get_string('answer', 'qtype_graphchecker'),
@@ -177,12 +167,10 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('header', 'checkshdr',
                     get_string('checks', 'qtype_graphchecker'), '');
         $mform->setExpanded('checkshdr', 1);
-        $availableTests = qtype_graphchecker_check::get_available_checks($this->answertype);
         $mform->addElement('textarea', 'checks',
             get_string('checks', 'qtype_graphchecker'),
             array(
-                'class' => 'edit_code',
-                'data-available-checks' => json_encode($availableTests)
+                'class' => 'edit_code'
             )
         );
         $mform->setDefault('checks', '[]');
@@ -198,8 +186,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         // preload field
         $attributes = array(
             'rows' => 5,
-            'class' => 'preloadanswer edit_code',
-            'data-params' => json_encode(qtype_graphchecker_question::get_ui_params_for_preload($this->answertype))
+            'class' => 'preloadanswer edit_code'
         );
         $mform->addElement('textarea', 'answerpreload',
                 get_string('answerpreload', 'qtype_graphchecker'),

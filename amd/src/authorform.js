@@ -68,46 +68,51 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             $checksField.data('current-ui-wrapper').stop();
         }
 
-        setUis();  // Set up UI controllers on answer and answerpreload.
+        function updateUis() {
+            type = $typeCombo.val();
+
+            $.getJSON(M.cfg.wwwroot + '/question/type/graphchecker/api/typeinfo.php',
+                {
+                    answertype: type
+                },
+                function(data) {
+                    let params = data['ui_params'];
+                    params['type'] = type;
+                    params['highlight_vertices'] = true;
+                    params['highlight_edges'] = true;
+                    params['highlight_edges'] = true;
+                    params['ignore_locked'] = true;
+                    params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
+                    params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
+                    let jsonParams = JSON.stringify(params);
+                    $sampleAnswerField.attr('data-params', jsonParams);
+
+                    params['save_locked'] = true;
+                    jsonParams = JSON.stringify(params);
+                    $preloadField.attr('data-params', jsonParams);
+
+                    $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
+
+                    setUis();
+                }
+            ).fail(function() {
+                window.alert('Could not read answer type data. ' +
+                    'Please reload this page to retry, or notify the ' +
+                    'teacher if this keeps happening.');
+            });
+        }
+
+        updateUis();  // Set up UI controllers on answer and answerpreload.
 
         $typeCombo.on('change', function() {
             if (window.confirm('Changing the answer type will clear the ' +
                     'Answer box preload, Checks, and Sample answer ' +
                     'sections below.')) {
-
-                type = $typeCombo.val();
-
                 stopUis();
                 $sampleAnswerField.val('');
                 $preloadField.val('');
                 $checksField.val('');
-
-                $.getJSON(M.cfg.wwwroot + '/question/type/graphchecker/api/typeinfo.php',
-                    {
-                        answertype: type
-                    },
-                    function(data) {
-                        // again empty the fields to be sure that the user
-                        // hasn't entered something in the meantime
-                        $sampleAnswerField.val('');
-                        $preloadField.val('');
-                        $checksField.val('');
-
-                        let params = data['ui_params'];
-                        params['type'] = type;
-                        params = JSON.stringify(params);
-                        $sampleAnswerField.attr('data-params', params);
-                        $preloadField.attr('data-params', params);
-                        $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
-
-                        setUis();
-                    }
-                ).fail(function() {
-                    window.alert('Could not read answer type data. ' +
-                        'Please reload this page to retry, or notify the ' +
-                        'teacher if this keeps happening.');
-                });
-
+                updateUis();
             } else {
                 $typeCombo.val(type);
             }
