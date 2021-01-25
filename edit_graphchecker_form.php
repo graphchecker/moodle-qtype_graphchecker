@@ -181,7 +181,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     protected function add_student_interaction_field($mform) {
         $mform->addElement('header', 'studentinteractionhdr',
                     'Student interaction', '');
-        $mform->setExpanded('studentinteractionhdr', 0);
+        $mform->setExpanded('studentinteractionhdr', 1);
 
         // preload field
         $attributes = array(
