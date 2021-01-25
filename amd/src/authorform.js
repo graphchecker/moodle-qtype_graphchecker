@@ -105,16 +105,22 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         updateUis();  // Set up UI controllers on answer and answerpreload.
 
         $typeCombo.on('change', function() {
-            if (window.confirm('Changing the answer type will clear the ' +
-                    'Answer box preload, Checks, and Sample answer ' +
-                    'sections below.')) {
-                stopUis();
-                $sampleAnswerField.val('');
-                $preloadField.val('');
-                $checksField.val('');
-                updateUis();
-            } else {
-                $typeCombo.val(type);
+            let needsToClear =
+                    $sampleAnswerField.val() !== '' ||
+                    $preloadField.val() !== '' ||
+                    $checksField.val() !== '';
+            if (needsToClear) {
+                if (window.confirm('Changing the answer type will clear the ' +
+                        'Answer box preload, Checks, and Sample answer ' +
+                        'sections below.')) {
+                    stopUis();
+                    $sampleAnswerField.val('');
+                    $preloadField.val('');
+                    $checksField.val('');
+                    updateUis();
+                } else {
+                    $typeCombo.val(type);
+                }
             }
         });
 

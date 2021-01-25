@@ -173,7 +173,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 'class' => 'edit_code'
             )
         );
-        $mform->setDefault('checks', '[]');
         $mform->addHelpButton('checks', 'checks', 'qtype_graphchecker');
     }
 
