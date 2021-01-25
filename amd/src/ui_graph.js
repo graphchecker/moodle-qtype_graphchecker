@@ -1157,9 +1157,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.selectionRectangle = null;
         } else if (this.uiMode === util.ModeType.SELECT) {
 
-            // Save the graph when selected nodes and/or edges have moved
+            // Save the graph when dragged nodes and/or edges have moved
             let hasSelectionMoved = false;
-            this.selectedObjects.forEach(element => {
+            this.draggedObjects.forEach(element => {
                 hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved;
             });
 
