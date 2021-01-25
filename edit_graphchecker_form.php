@@ -153,7 +153,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
         $mform->addGroup($copyButtons, 'copy_buttons', '', [''], false);
 
-        $mform->setDefault('validateonsave', true);
+        $mform->setDefault('validateonsave', false);
         $mform->addHelpButton('copy_buttons', 'validateonsave', 'qtype_graphchecker');
     }
 
