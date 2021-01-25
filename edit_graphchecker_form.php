@@ -308,12 +308,15 @@ class qtype_graphchecker_edit_form extends question_edit_form {
             $errors['checks'] = 'Checks specification is invalid JSON';
         } else {
             foreach ($checks as $check) {
-                if (!qtype_graphchecker_check::has_check(
-                        $data['answertype'],
-                        $check['module'], $check['method'])) {
-                    $errors['checks'] = 'Unavailable check used: ' .
-                            $check['module'] . '.' . $check['method'];
-                    break;
+                if (!array_key_exists("type", $check) ||
+                        $check["type"] === "check") {
+                    if (!qtype_graphchecker_check::has_check(
+                            $data['answertype'],
+                            $check['module'], $check['method'])) {
+                        $errors['checks'] = 'Unavailable check used: ' .
+                                $check['module'] . '.' . $check['method'];
+                        break;
+                    }
                 }
             }
         }
