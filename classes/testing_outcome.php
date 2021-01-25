@@ -124,6 +124,8 @@ class qtype_graphchecker_testing_outcome {
             return get_string('run_failed', 'qtype_graphchecker');
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
+        } else if ($this->preprocessor_error()) {
+            return 'Sample answer failed a sanity check:' . html_writer::tag('p', $this->errormessage);
         }
 
         $message = 'Sample answer fails checks (' . $this->grade * 100 . '% of points awarded):<ul>';
