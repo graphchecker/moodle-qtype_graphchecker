@@ -323,6 +323,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('points-field')
             .attr('type', 'number')
             .attr('min', 0)
+            .attr('max', 100)
             .appendTo($gradeRow);
         $('<span/>')
             .text(' % of the points')

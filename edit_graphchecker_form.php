@@ -303,13 +303,16 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $errors = parent::validation($data, $files);
 
         // validate that all checks in the checks JSON actually exist
+        // and that partial grades sum up to at most 100%
         $checks = json_decode($data['checks'], true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             $errors['checks'] = 'Checks specification is invalid JSON';
         } else {
+            $gradeSum = 0;
             foreach ($checks as $check) {
                 if (!array_key_exists("type", $check) ||
                         $check["type"] === "check") {
+                    // check
                     if (!qtype_graphchecker_check::has_check(
                             $data['answertype'],
                             $check['module'], $check['method'])) {
@@ -317,7 +320,13 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                                 $check['module'] . '.' . $check['method'];
                         break;
                     }
+                } else if ($check['type'] === 'grade') {
+                    // grade
+                    $gradeSum += $check['points'];
                 }
+            }
+            if ($gradeSum > 100) {
+                $errors['checks'] = 'Partial grades sum up to more than 100%';
             }
         }
 
