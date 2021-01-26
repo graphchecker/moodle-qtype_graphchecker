@@ -1432,6 +1432,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
     };
 
     Graph.prototype.removeInitialFSMVertex = function(vertex) {
+        vertex.isInitial = false;
         // Remove all start links incoming to this vertex
         for (let i = 0; i < this.links.length; i++) {
             if (this.links[i] instanceof elements.StartLink && this.links[i].node === vertex) {
