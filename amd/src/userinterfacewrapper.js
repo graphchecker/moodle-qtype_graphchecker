@@ -279,6 +279,7 @@ define(['jquery'], function($) {
                                 resize: 'vertical',
                                 overflow: 'hidden',
                                 minHeight: h,
+                                maxWidth: '900px',
                                 border: '1px solid darkgrey',
                                 backgroundColor: 'white'
                             });
