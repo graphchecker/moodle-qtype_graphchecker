@@ -71,7 +71,8 @@ class qtype_graphchecker_check {
         $checkFiles = scandir($checksDir);
         foreach ($checkFiles as $file) {
             $path = $checksDir . '/' . $file;
-            if (!is_dir($path) && pathinfo($path, PATHINFO_EXTENSION) === "json") {
+            if (!is_dir($path) && pathinfo($path, PATHINFO_EXTENSION) === "json" &&
+                    pathinfo($path, PATHINFO_FILENAME) !== "type") {
                 $json = file_get_contents($path);
                 $modules[pathinfo($path, PATHINFO_FILENAME)] = json_decode($json);
                 if (json_last_error() !== JSON_ERROR_NONE) {

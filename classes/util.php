@@ -42,63 +42,6 @@ class qtype_graphchecker_util {
     }
 
 
-    // Limit the length of the given string to MAX_STRING_LENGTH by
-    // removing the centre of the string, inserting the substring
-    // [... snip ... ] in its place.
-    public static function snip(&$s) {
-        $snipinsert = ' ...snip... ';
-        $len = mb_strlen($s);
-        if ($len > constants::MAX_STRING_LENGTH) {
-            $lentoremove = $len - constants::MAX_STRING_LENGTH + mb_strlen($snipinsert);
-            $partlength = ($len - $lentoremove) / 2;
-            $firstbit = mb_substr($s, 0, $partlength);
-            $lastbit = mb_substr($s, $len - $partlength, $partlength);
-            $s = $firstbit . $snipinsert . $lastbit;
-        }
-        return $s;
-    }
-
-
-    // Return a cleaned and snipped version of the string s (or null if s is null).
-    public static function tidy($s) {
-        if ($s === null) {
-            return null;
-        } else {
-            $cleaneds = self::clean($s);
-            return self::snip($cleaneds);
-        }
-    }
-
-
-    // Sanitise given text with 's()' and wrap in a <pre> element.
-    // TODO: expand tabs (which appear in Java traceback output).
-    public static function format_cell($cell) {
-        if (substr($cell, 0, 1) === "\n") {
-            $cell = "\n" . $cell;  // Fix <pre> quirk that ignores leading \n.
-        }
-        return s($cell);
-    }
-
-
-    // Clean the given html by wrapping it in <div> tags and parsing it with libxml
-    // and outputing the (supposedly) cleaned up HTML.
-    public static function clean_html($html) {
-        libxml_use_internal_errors(true);
-        $html = "<div>". $html . "</div>"; // Wrap it in a div (seems to help libxml).
-        $doc = new DOMDocument;
-        if ($doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
-            return $doc->saveHTML();
-        } else {
-            $message = "Errors in HTML\n<br />";
-            foreach (libxml_get_errors() as $error) {
-                $message .= "Line {$error->line} column {$error->line}: {$error->code}\n<br />";
-            }
-            libxml_clear_errors();
-            $message .= "\n<br />" + $html;
-            return $message;
-        }
-    }
-
     /**
      * Convert a given list of lines to an HTML <p> element.
      * @param type $lines
@@ -117,31 +60,6 @@ class qtype_graphchecker_util {
         return $para;
     }
 
-    /** Function to merge the JSON template parameters from the
-     *  the prototype with the child's template params. The prototype can
-     *  be overridden by the child.
-     */
-    public static function merge_json($prototypejson, $childjson) {
-        $result = new stdClass();
-        foreach (self::template_params($prototypejson) as $attr => $field) {
-            $result->$attr = $field;
-        }
-
-        foreach (self::template_params($childjson) as $attr => $field) {
-            $result->$attr = $field;
-        }
-
-        return json_encode($result);
-    }
-
-    // Decode given json-encoded template parameters, returning an associative
-    // array. Return an empty array if jsonparams is empty or invalid.
-    // This function is also responsible for normalising the JSON it is
-    // given, replacing the triple-quoted strings with standard JSON versions.
-    public static function template_params($jsonparams) {
-        $params = json_decode($jsonparams, true);
-        return $params === null ? array() : $params;
-    }
 
     /**
      * Checks if the given name is a valid type, module, or check name.
@@ -150,5 +68,41 @@ class qtype_graphchecker_util {
      */
     public static function check_valid_name($name) {
         return preg_match('[^A-Za-z0-9_]', $name) === 0;
+    }
+
+
+    /**
+     * Returns all answer types and their type data.
+     *
+     * This reads all types in checks/types.json, and for each type, it reads
+     * checks/<typename>/type.json. These are then returned as an array mapping
+     * the type name to the type data.
+     */
+    public static function get_type_data() {
+        global $CFG;
+        $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
+        $types = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON types list (checks/types.json)');
+        }
+
+        $result = [];
+        foreach ($types as $type) {
+            if (!qtype_graphchecker_util::check_valid_name($type)) {
+                throw new Exception('JSON types list (checks/types.json) contains type "' . $type . '" which is invalid');
+            }
+
+            $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/' . $type . '/type.json');
+            $typeData = json_decode($json, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Invalid JSON types file for type "' . $type . '"');
+            }
+
+            $result[$type] = $typeData;
+        }
+
+        return $result;
     }
 }

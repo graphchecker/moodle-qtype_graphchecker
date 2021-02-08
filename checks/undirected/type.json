@@ -1,0 +1,9 @@
+{
+    "name": "Undirected graph",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "undirected"
+    },
+    "python_modules": ["igraph"]
+}
+

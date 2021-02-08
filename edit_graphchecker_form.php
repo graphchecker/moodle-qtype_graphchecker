@@ -362,13 +362,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
      * names of the answer types.
      */
     private function get_types_array() {
-        global $CFG;
-        $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
-        $types = json_decode($json, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Invalid JSON types file");
-        }
+        $types = qtype_graphchecker_util::get_type_data();
 
         $result = [];
         foreach ($types as $key => $type) {

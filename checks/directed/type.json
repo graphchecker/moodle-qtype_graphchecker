@@ -1,0 +1,9 @@
+{
+    "name": "Directed graph",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "directed"
+    },
+    "python_modules": ["igraph"]
+}
+

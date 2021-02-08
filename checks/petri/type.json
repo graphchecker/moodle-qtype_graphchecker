@@ -1,0 +1,8 @@
+{
+    "name": "Petri net",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "petri"
+    }
+}
+

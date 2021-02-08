@@ -227,12 +227,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
 
 
     public static function get_ui_params_for_type($type) {
-        global $CFG;
-        $json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
-        $types = json_decode($json, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Invalid JSON types file");
-        }
+        $types = qtype_graphchecker_util::get_type_data();
         $params = $types[$type]["ui_params"];
         $params['type'] = $type;
         return $params;

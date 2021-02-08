@@ -1,0 +1,9 @@
+{
+    "name": "DFA",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "fsm"
+    },
+    "python_modules": ["automata"]
+}
+

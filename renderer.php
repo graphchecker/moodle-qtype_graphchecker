@@ -175,9 +175,7 @@ class qtype_graphchecker_renderer extends qtype_renderer {
             $table->attributes['class'] = 'graphchecker-test-results';
             $headers = $testresults[0];
             foreach ($headers as $header) {
-                if (strtolower($header) != 'ishidden') {
-                    $table->head[] = strtolower($header) === 'iscorrect' ? '' : $header;
-                }
+                $table->head[] = strtolower($header) === 'iscorrect' ? '' : $header;
             }
 
             $rowclasses = array();
@@ -192,12 +190,8 @@ class qtype_graphchecker_renderer extends qtype_renderer {
                     if (strtolower($headers[$j]) === 'iscorrect') {
                         $markfrac = (float) $cell;
                         $tablerow[] = $this->feedback_image($markfrac);
-                    } else if (strtolower($headers[$j]) === 'ishidden') { // Control column.
-                        if ($cell) { // Anything other than zero or false means hidden.
-                            $rowclass .= ' hidden-test';
-                        }
                     } else {
-                        $tablerow[] = qtype_graphchecker_util::format_cell($cell);
+                        $tablerow[] = s($cell);
                     }
                     $j++;
                 }

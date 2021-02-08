@@ -48,11 +48,7 @@ $type = required_param('answertype', PARAM_RAW_TRIMMED);
 
 header('Content-type: application/json; charset=utf-8');
 
-$json = file_get_contents($CFG->dirroot . '/question/type/graphchecker/checks/types.json');
-$types = json_decode($json, true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    throw new Exception("Invalid JSON types file");
-}
+$types = qtype_graphchecker_util::get_type_data();
 $response = $types[$type];
 $response['available_checks'] = qtype_graphchecker_check::get_available_checks($type);
 echo(json_encode($response));
