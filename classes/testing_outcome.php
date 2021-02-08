@@ -130,9 +130,13 @@ class qtype_graphchecker_testing_outcome {
 
         $message = 'Sample answer fails checks (' . $this->grade * 100 . '% of points awarded):<ul>';
         foreach ($this->testresults as $result) {
-            if (!$result['correct']) {
-                $checkName = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
-                $message .= '<li><b>' . $checkName . '</b>: ' . $result['feedback'];
+            $checkName = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
+            if (array_key_exists('error', $result)) {
+                $message .= '<li><b>' . $checkName . '</b> produced error:<pre>' . $result['error'] . '</pre>';
+            } else {
+                if (!$result['correct']) {
+                    $message .= '<li><b>' . $checkName . '</b>: ' . $result['feedback'];
+                }
             }
         }
         $message .= '</ul>';
