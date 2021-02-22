@@ -47,87 +47,26 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
-        'qtype_graphchecker/graph_components/graph_canvas', 'qtype_graphchecker/ui_toolbar',
+
+define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
+        'qtype_graphchecker/graph_canvas', 'qtype_graphchecker/help_overlay', 'qtype_graphchecker/ui_toolbar',
         'qtype_graphchecker/toolbar_elements'],
-    function($, util, elements, graph_canvas, ui_toolbar, toolbar_elements) {
+    function($, globals, util, elements, graph_canvas, help_overlay, ui_toolbar, toolbar_elements) {
 
-    /***********************************************************************
+    /**
+     * Function: Graph
+     * Constructor for the Graph object, the ui component for a graph-drawing graphchecker question
      *
-     * Define a class HelpOverlay for the help overlay (i.e. a help 'box')
-     *
-     ***********************************************************************/
-
-    function HelpOverlay(parent, divId, graphUIWrapper) {
-        // Constructor, of the Help overlay
-
-        let self = this;
-        this.parent = parent;
-        this.graphUIWrapper = graphUIWrapper;
-        // Create the background div
-        this.div = $(document.createElement("div"));
-        this.div.attr({
-            id:         divId + '_background',
-            class:      "graphchecker_overlay",
-            tabindex:   0
-        });
-        $(this.div).on('click', function() {
-            // Hide the background element only after the CSS transition has finished
-            self.div.removeClass('visible');
-            setTimeout(function() {
-                self.div.css('display', 'none');
-                $('body').removeClass('unscrollable');
-
-                // Enable the resizing of the graph interface wrapper again
-                self.graphUIWrapper.enableResize();
-            }.bind(this), 500);
-        });
-
-        // Create the dialog div
-        this.divDialog = $(document.createElement("div"));
-        this.divDialog.attr({
-            id:         divId + 'dialog',
-            class:      'dialog',
-            tabindex:   0
-        });
-        $(this.divDialog).on('click', function() {
-            return false;  // avoid bubbling to the backdrop
-        });
-        this.div.append(this.divDialog);
-    }
-
-    // Sets the (HTML) help text of the dialog
-    HelpOverlay.prototype.insertHelpText = function(text) {
-        this.divDialog.append(text);
-    };
-
-    /***********************************************************************
-     *
-     *  This is the ui component for a graph-drawing graphchecker question.
-     *
-     ***********************************************************************/
-
+     * Parameters:
+     *    textareaId - The id of the text area that this graph UI is to manage
+     *    uiWrapper - The wrapper object of this graph
+     *    width - The width of the wrapper node
+     *    height - The height of the wrapper node
+     *    templateParams - The parameters used for defining the graph
+     */
     function Graph(textareaId, uiWrapper, width, height, templateParams) {
         // Constructor.
         var self = this;
-
-        this.SNAP_TO_PADDING = 6;
-        this.DUPLICATE_LINK_OFFSET = 16; // Pixels offset for a duplicate link
-        this.HIT_TARGET_PADDING = 6;    // Pixels. Denotes the extra pixels added to make selecting nodes/edges easier
-        this.DEFAULT_NODE_RADIUS = 26;  // Pixels. Template parameter noderadius can override this.
-        this.TEXT_NODE_HORIZONTAL_PADDING = 4;  // Pixels. Denotes the space between the text and the node border
-        // (horizontally), when the text is on the inside of the node
-        this.TEXT_NODE_VERTICAL_PADDING = 12;  // Pixels. Denotes the space between the text and the node border
-        // (vertically), when the text is on the outside of the node
-        //this.INITIAL_HEIGHT = 350;  // px. The initial height of the toolbar and the canvas combined
-        this.DEFAULT_FONT_SIZE = 20;    // px. Template parameter fontsize can override this.
-        this.NUMBER_TOKENS_INPUT_RANGE = {  // The range (inclusive) for entering the number of tokens for petri nets
-            min: 0,
-            max: 100,
-        };       //TODO: assure that these values are met when saving (double check).
-                 //if > 100, set to 100. If <0 or a char, set to 0
-        this.INITIAL_FSM_NODE_LINK_LENGTH = 25; //px. The length of the initial FSM node's incoming link
-        this.MAX_UNDO_REDO = 100; // The maximum number of undo-redo comands the user can issue
 
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
@@ -139,8 +78,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.uiWrapper = uiWrapper;
         this.graphCanvas = new graph_canvas.GraphCanvas(this, this.canvasId, width, height);
 
-        this.helpOverlayId = 'graphcanvas_overlay_' + textareaId;
-        this.helpOverlay = new HelpOverlay(this, this.helpOverlayId, this.uiWrapper);
+        let helpOverlayId = 'graphcanvas_overlay_' + textareaId;
+        this.helpOverlay = new help_overlay.HelpOverlay(this, helpOverlayId, this.uiWrapper);
 
         this.toolbarId = 'toolbar_' + textareaId;
         this.toolbar = null;
@@ -186,14 +125,32 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.drawTimer = window.setInterval(function(){ self.update(); }, 50);
     }
 
+    /**
+     * Function: failed
+     *
+     * Returns:
+     *    Whether the graph failed on reload or not
+     */
     Graph.prototype.failed = function() {
         return this.fail;
     };
 
+    /**
+     * Function: failMessage
+     *
+     * Returns:
+     *    String for the fail error message
+     */
     Graph.prototype.failMessage = function() {
         return this.failString;
     };
 
+    /**
+     * Function: getElement
+     *
+     * Returns:
+     *    The HTML element that the wrapper is to insert into the HTML DOM.
+     */
     Graph.prototype.getElement = function() {
         this.containerDiv.append(this.getHelpOverlay());
         this.containerDiv.append(this.getToolbar());
@@ -201,14 +158,32 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return this.containerDiv;
     };
 
+    /**
+     * Function: hasFocus
+     *
+     * Returns:
+     *    Whether the canvas is the focused object
+     */
     Graph.prototype.hasFocus = function() {
-        return document.activeElement == this.getCanvas();
+        return document.activeElement === this.getCanvas();
     };
 
+    /**
+     * Function: getCanvas
+     *
+     * Returns:
+     *    The canvas HTML element of this graph
+     */
     Graph.prototype.getCanvas = function() {
         return this.graphCanvas.canvas[0];
     };
 
+    /**
+     * Function: getToolbar
+     *
+     * Returns:
+     *    The toolbar HTML element of this graph
+     */
     Graph.prototype.getToolbar = function() {
         if (this.toolbar !== null) {
             return this.toolbar.div[0];
@@ -217,10 +192,23 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
+    /**
+     * Function: getHelpOverlay
+     *
+     * Returns:
+     *    The help overlay HTML element of this graph
+     */
     Graph.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
     };
 
+    /**
+     * Function: setUIMode
+     * Sets the interaction UI mode type, which is either selecting or drawing
+     *
+     * Parameters:
+     *    modeType - The mode type which is to be set
+     */
     Graph.prototype.setUIMode = function(modeType) {
         this.uiMode = modeType;
         this.clickedObject = null;
@@ -261,21 +249,45 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
+    /**
+     * Function: nodeRadius
+     *
+     * Returns:
+     *    The node radius used for drawing nodes on the canvas
+     */
     Graph.prototype.nodeRadius = function() {
-        return this.templateParams.noderadius ? this.templateParams.noderadius : this.DEFAULT_NODE_RADIUS;
+        return this.templateParams.noderadius ? this.templateParams.noderadius : DEFAULT_NODE_RADIUS;
     };
 
+    /**
+     * Function: fontSize
+     *
+     * Returns:
+     *    The font size used for drawing text on the canvas
+     */
     Graph.prototype.fontSize = function() {
-        return this.templateParams.fontsize ? this.templateParams.fontsize : this.DEFAULT_FONT_SIZE;
+        return this.templateParams.fontsize ? this.templateParams.fontsize : DEFAULT_FONT_SIZE;
     };
 
-    // A function to return whether the graph is of the type denoted by the input parameter
+    /**
+     * Function: isType
+     *
+     * Returns:
+     *    Whether the graph is of the type as denoted by the input parameter
+     */
     Graph.prototype.isType = function(type) {
         return this.templateParams.type === type;
     };
 
-    // A function to return whether the graph allows the edits specified by the parameter.
-    // This parameter can be a single enum value, or an array of enums, to denote either 1 or more allowed edits
+    /**
+     * Function: allowEdits
+     *
+     * Parameters:
+     *    edits - One or more enum values (as an array) of possible edits which the user can conduct
+     *
+     * Returns:
+     *    Whether the graph allows the supplied edit(s), as specified by the allow_edits parameter
+     */
     Graph.prototype.allowEdits = function(edits) {
         let editsArray = [];
         let allowed_edits = this.templateParams.allow_edits;
@@ -311,7 +323,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return true;
     };
 
-    // This function returns whether the graph allows at least one edit (true) or not (false)
+    /**
+     * Function: allowsOneEdit
+     *
+     * Returns:
+     *    Whether the graph allows at least one type of edit
+     */
     Graph.prototype.allowsOneEdit = function() {
         for (let i = 0; i < Object.values(util.Edit).length; i++) {
             let edit = Object.values(util.Edit)[i];
@@ -323,7 +340,16 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return false;
     };
 
-    // This function checks the validity of a string as per the given regex for one selected object
+    /**
+     * Function: checkStringValidity
+     *
+     * Parameters:
+     *    string - The string for which to check the validity
+     *    selectedObject - The object (one) which is selected by the user, e.g. a node or a link
+     *
+     * Returns:
+     *    Whether the string is valid, as per the regex in the template parameters, for the selected object
+     */
     Graph.prototype.checkStringValidity = function(string, selectedObject) {
         // A variable denoting the used regex, without forward slashes around the regex. /.*/ is the default regex
         let regexString = '.*';
@@ -337,7 +363,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         return new RegExp(regexString).test(string);
     };
 
-    // This function checks the validity of a label as per the given regex, and applies effects
+    /**
+     * Function: checkStringValidity
+     *
+     * If the label is invalid, this is indicated by a red border around the input field
+     *
+     * Parameters:
+     *    labelInputField - The HTML input field of the label, used to indicate invalidity
+     *    labelText - The text of the label (i.e. node or link text) for which to check the validity
+     */
     Graph.prototype.checkLabelValidity = function(labelInputField, labelText) {
         let isValid = this.checkStringValidity(labelText, this.selectedObjects[0]);
 
@@ -350,7 +384,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
     };
 
-    // Create the help text to be displayed. This depends on the type of the graph (FSM, Petri net, etc.)
+    /**
+     * Function: getHelpText
+     *
+     * Returns:
+     *    The help text to be displayed, depending on the type of graph
+     *    TODO: in separate files
+     *    misschien edge string voor vertices/edges in losse function
+     */
     Graph.prototype.getHelpText = function() {
 
         let isFSM = this.isType(util.Type.FSM);
@@ -370,7 +411,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         let anEdge = (isFSM ? "a " : "an ") + edge;
 
         let hasDrawMode = this.allowEdits(util.Edit.ADD_VERTEX) ||
-                this.allowEdits(util.Edit.ADD_EDGE);
+            this.allowEdits(util.Edit.ADD_EDGE);
         let canEditVertex = this.allowEdits(util.Edit.ADD_VERTEX);
         let canEditEdge = this.allowEdits(util.Edit.ADD_EDGE);
         let editableList = [];
@@ -569,7 +610,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Enable the delete button if something is selected
             if ((this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) &&
-                    this.selectedObjects.length) {
+                this.selectedObjects.length) {
                 this.toolbar.rightButtons['delete'].setEnabled();
             }
 
@@ -786,7 +827,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
 
             // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
             if (this.uiMode !== util.ModeType.DRAW &&
-                    (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
+                (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
                 this.enableTemporaryDrawMode();
             }
         }
@@ -1094,7 +1135,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         } else if (this.uiMode === util.ModeType.SELECT) {
 
             // Save the graph when dragged nodes and/or edges have moved
-            let hasSelectionMoved = false;
+            let hasSelectionMoved = false;  // TODO: throws error
             this.draggedObjects.forEach(element => {
                 hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved;
             });
@@ -1302,15 +1343,15 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             let angles = util.getAnglesOfIncidentLinks(this.links, vertex);
 
             let topLeft = (3.0/4.0 * Math.PI); // The top-left of the vertex's circle in radians
-            let nodeLinkDrawRadius = this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
+            let nodeLinkDrawRadius = this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
             // edges in the last two cases
 
             // Execute different cases, to fill the startLinkPos variable's x and y values
             let startLinkPos = {};
             if (angles.length === 0) {
                 // Set the start link position to the top-left of the vertex
-                startLinkPos.x = vertex.x - (this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH);
-                startLinkPos.y = vertex.y - (this.nodeRadius() + this.INITIAL_FSM_NODE_LINK_LENGTH);
+                startLinkPos.x = vertex.x - (this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH);
+                startLinkPos.y = vertex.y - (this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH);
             } else if (angles.length === 1) {
                 // Divide the circle of the vertex in an arbitrary number of equal parts (e.g. 8).
                 // For each of these parts' borders (except for the location of the incident edge itself) check which
@@ -1385,11 +1426,11 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 continue;
             }
 
-            if (Math.abs(node.x - notSelectedNodes[i].x) < this.SNAP_TO_PADDING && snapXDirection) {
+            if (Math.abs(node.x - notSelectedNodes[i].x) < SNAP_TO_PADDING && snapXDirection) {
                 node.x = notSelectedNodes[i].x;
             }
 
-            if (Math.abs(node.y - notSelectedNodes[i].y) < this.SNAP_TO_PADDING && snapYDirection) {
+            if (Math.abs(node.y - notSelectedNodes[i].y) < SNAP_TO_PADDING && snapYDirection) {
                 node.y = notSelectedNodes[i].y;
             }
         }
@@ -1414,7 +1455,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             }
         }
         if (maxPerpRHS) {
-            newLink.perpendicularPart = maxPerpRHS + this.DUPLICATE_LINK_OFFSET;
+            newLink.perpendicularPart = maxPerpRHS + DUPLICATE_LINK_OFFSET;
         }
         this.links.push(newLink);
     };
@@ -1429,7 +1470,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         this.save();
         let graphInstance = $(this.textArea).val();
         this.historyStack.push(graphInstance);
-        if (this.historyStack.length > this.MAX_UNDO_REDO + 1) {
+        if (this.historyStack.length > MAX_UNDO_REDO + 1) {
             this.historyStack.shift();
         } else {
             this.historyStackPointer++;
@@ -1858,13 +1899,13 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.fillStyle = util.Color.BLACK;
         width = c.measureText(text).width;
 
-        let isSmallWidth = width <= 2 * this.nodeRadius() - this.TEXT_NODE_HORIZONTAL_PADDING;
+        let isSmallWidth = width <= 2 * this.nodeRadius() - TEXT_NODE_HORIZONTAL_PADDING;
         if (isSmallWidth &&
             !(this.isType(util.Type.PETRI) && originalObject instanceof elements.Node &&
                 originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
             (originalObject instanceof elements.Link ||
-            originalObject instanceof elements.SelfLink ||
-            originalObject instanceof elements.StartLink)) {
+                originalObject instanceof elements.SelfLink ||
+                originalObject instanceof elements.StartLink)) {
             // Center the text inside the node if it fits
             x -= width / 2;
 
@@ -1881,14 +1922,14 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
                 (sidesOfNodeLinkIntersections.bottom && sidesOfNodeLinkIntersections.right &&
                     sidesOfNodeLinkIntersections.top && sidesOfNodeLinkIntersections.left)) {
                 x -= width / 2;
-                y += this.nodeRadius() + this.TEXT_NODE_VERTICAL_PADDING;
+                y += this.nodeRadius() + TEXT_NODE_VERTICAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.right) {
-                x += this.nodeRadius() + this.TEXT_NODE_HORIZONTAL_PADDING;
+                x += this.nodeRadius() + TEXT_NODE_HORIZONTAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.top) {
                 x -= width / 2;
-                y -= this.nodeRadius() + this.TEXT_NODE_VERTICAL_PADDING;
+                y -= this.nodeRadius() + TEXT_NODE_VERTICAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.left) {
-                x -= width + this.nodeRadius() + this.TEXT_NODE_HORIZONTAL_PADDING;
+                x -= width + this.nodeRadius() + TEXT_NODE_HORIZONTAL_PADDING;
             }
         }
 

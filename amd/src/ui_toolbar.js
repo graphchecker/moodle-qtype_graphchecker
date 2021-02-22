@@ -319,8 +319,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.parent.isType(util.Type.PETRI)
             && allow_edge_labels) {
             // Create the spinner to set the label
-            let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = NUMBER_TOKENS_INPUT_RANGE.max;
             let labelInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriLinkLable', 'Label:', 'Edge label',
                 this.onEnterPetriLinkLabelInput, this.onFocusInPetriLinkLabelInput, this.onFocusOutPetriLinkLabelInput);
@@ -679,8 +679,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if (selectedObjects.length && this.parent.allowEdits(util.Edit.PETRI_MARKING)) {
-            let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = NUMBER_TOKENS_INPUT_RANGE.max;
             let tokenInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriToken', 'Tokens:', 'Number of tokens (' + min + '-' + max + ')',
                 this.onEnterPetriTokenInput);
