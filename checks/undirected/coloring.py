@@ -1,7 +1,7 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
-import utilities
+from utilities import filter_orig_name
 
 def coloring(student_answer, noColors):
     colors = set()

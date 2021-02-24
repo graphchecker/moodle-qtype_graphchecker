@@ -1,7 +1,7 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
-import utilities
+from utilities import filter_orig_name
 
 def connected(student_answer):
     if (student_answer.is_connected(False)):
@@ -157,15 +157,3 @@ def vertex_count(student_answer, expected, highlighted):
     else:
         return {'correct': False,
                 'feedback': 'Number of vertices does not match expected number'}
-
-# helper methods
-def _make_integer_checker(method_name, readable_name):
-    def result(student_answer, expected):
-        actual = getattr(student_answer, method_name)()
-        if actual == expected:
-            return {'correct': True}
-        else:
-            return {'correct': False,
-                    'feedback': '{0} was {1}, expected {2}'.format(
-                        readable_name, actual, expected)}
-    return result
