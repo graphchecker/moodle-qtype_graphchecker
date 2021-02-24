@@ -33,7 +33,6 @@ class GCTester:
 	def test(self, graph, checks):
 		class RaiseStream:
 			def write(self, s):
-				print("OH NO", file=sys.stderr)
 				raise Exception('Check functions are not permited to print to stdout. Tried to print: ' + s)
 
 		sys.stdout = RaiseStream()
@@ -47,15 +46,15 @@ class GCTester:
 
 		# see get_ui_params() in question.php
 
-		types_file = os.path.join(root_dir, 'checks', 'types.json')
-		with open(types_file) as types:
-			types = json.load(types)
-		params = types[graph_type]['ui_params']
+		type_file = os.path.join(root_dir, 'checks', graph_type, 'type.json')
+		with open(type_file) as f:
+			type_info = json.load(f)
+		params = type_info['ui_params']
 
 		# for easy debugging, allow highlighting
 		params['highlight_vertices'] = True
 		params['highlight_edges'] = True
-		params['vertex_colors'] = ['black','red','blue','green','yellow','orange','purple','white']
+		params['vertex_colors'] = ['white', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'black']
 
 		return params
 
