@@ -48,10 +48,12 @@
  */
 
 
-define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
-        'qtype_graphchecker/graph_components/graph_representation', 'qtype_graphchecker/graph_components/graph_canvas',
-        'qtype_graphchecker/graph_components/help_overlay', 'qtype_graphchecker/ui_toolbar',
-        'qtype_graphchecker/toolbar_elements'],
+define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
+        'qtype_graphchecker/graph_checker/graphelements',
+        'qtype_graphchecker/graph_checker/graph_components/graph_representation',
+        'qtype_graphchecker/graph_checker/graph_components/graph_canvas',
+        'qtype_graphchecker/graph_checker/graph_components/help_overlay', 'qtype_graphchecker/graph_checker/ui_toolbar',
+        'qtype_graphchecker/graph_checker/toolbar_elements'],
     function($, globals, util, elements, graph_representation, graph_canvas, help_overlay, ui_toolbar, toolbar_elements) {
 
     let self;

@@ -115,6 +115,15 @@
 
 define(['jquery'], function($) {
 
+    /**
+     * Enum: InterfaceElement
+     * Defines a set of choices regarding the names of interface elements
+     */
+    InterfaceWrapper.prototype.InterfaceElement = Object.freeze({
+        GRAPH: 'graph',
+        CHECKS: 'checks',
+    });
+
     function InterfaceWrapper(uiname, textareaId) {
         // Constructor for a new user interface.
         // uiname is the name of the interface element (e.g. ace, graph, etc)
@@ -245,7 +254,18 @@ define(['jquery'], function($) {
             this.uiInstance = null;
         } else {
             this.isLoading = true;
-            require(['qtype_graphchecker/ui_' + this.uiname],
+
+            // Find the correct path to the referenced file
+            let partialFilePath;
+            switch(this.uiname) {
+                case this.InterfaceElement.GRAPH:
+                    partialFilePath = 'graph_checker/ui_';
+                    break;
+                case this.InterfaceElement.CHECKS:
+                    partialFilePath = '/ui_';
+                    break;
+            }
+            require(['qtype_graphchecker/' + partialFilePath + this.uiname],
                 function(ui) {
                     var uiInstance,loadFailDiv, jqLoadFailDiv, h, w;
 
@@ -260,7 +280,7 @@ define(['jquery'], function($) {
                         uiInstance.destroy();
                         t.uiInstance = null;
                         t.textArea.addClass('uiloadfailed');
-                        loadFailDiv = '<div id="' + t.loadFailId + '"class="uiloadfailed"></div>';
+                        loadFailDiv = '<div id="' + t.loadFailId + '" class="uiloadfailed"></div>';
                         jqLoadFailDiv = $(loadFailDiv);
                         jqLoadFailDiv.insertBefore(t.textArea);
                         setLoadFailMessage(uiInstance.failMessage(), jqLoadFailDiv);  // Insert error by AJAX

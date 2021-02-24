@@ -5,7 +5,8 @@
  * @copyright TU Eindhoven, The Netherlands
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'], function ($, util, elements) {
+define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchecker/graph_checker/graphelements'],
+    function ($, util, elements) {
 
     let self;
 

@@ -45,7 +45,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil'], function($, globals, util) {
+define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil'],
+    function($, globals, util) {
 
     /***********************************************************************
      *

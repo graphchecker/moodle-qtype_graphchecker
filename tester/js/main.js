@@ -9,7 +9,7 @@ requirejs.config({
 requirejs(["jquery",
 			"qtype_graphchecker/userinterfacewrapper",
 			"qtype_graphchecker/ui_checks",
-			"qtype_graphchecker/ui_graph"],
+			"qtype_graphchecker/graph_checker/ui_graph"],
 		function($, ui, ui_checks, ui_graph) {
 	console.log('modules loaded!');
 
