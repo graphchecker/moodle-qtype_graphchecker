@@ -1,33 +1,6 @@
-{
-    "undirected": {
-        "name": "Undirected graph",
-        "ui_plugin": "graph",
-        "ui_params": {
-            "type": "undirected"
-        },
-        "python_modules": ["igraph"]
-    },
-    "directed": {
-        "name": "Directed graph",
-        "ui_plugin": "graph",
-        "ui_params": {
-            "type": "directed"
-        },
-        "python_modules": ["igraph"]
-    },
-    "fsm": {
-        "name": "DFA",
-        "ui_plugin": "graph",
-        "ui_params": {
-            "type": "fsm"
-        },
-        "python_modules": ["automata"]
-    },
-    "petri": {
-        "name": "Petri net",
-        "ui_plugin": "graph",
-        "ui_params": {
-            "type": "petri"
-        }
-    }
-}
+[
+    "undirected",
+    "directed",
+    "fsm",
+    "petri"
+]
