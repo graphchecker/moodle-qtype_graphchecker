@@ -1,5 +1,5 @@
 def filter_orig_name(v):
-    return v['name'].split("_")[1:]
+    return ''.join(v['name'].split("_")[1:])
     
 def _make_integer_checker(method_name, readable_name):
     def result(student_answer,

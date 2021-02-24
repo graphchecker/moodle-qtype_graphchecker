@@ -30,24 +30,26 @@ def equivalent(student_answer, graph_answer):
         return {'correct': False, 'feedback' : 'Number of vertices does not match the expected number of vertices.'}
     if len(student_answer.es) != len(graph_answer.es):
         return {'correct': False, 'feedback' : 'Number of edges does not match the expected number of edges.'}
-    vs_stud = sorted(student_answer.vs)
+    vs_stud = sorted(student_answer.vs, key = lambda vertex: vertex['name'])
+    vs_graph = sorted(graph_answer.vs, key = lambda vertex: vertex['name'])
     
-    for v in graph_answer.vs:
-        try:
-            w = student_answer.vs.find(v['name'])
-        except:
-            return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(v))}
-    for e in graph_answer.es:
-        try:
-            f = student_answer.es.find(label = e['label'])
-            sourceStud = student_answer.vs[f.source]
-            targetStud = student_answer.vs[f.target]
-            sourceGrap = graph_answer.vs[e.source]
-            targetGrap = graph_answer.vs[e.target]
-            if ((filter_orig_name(sourceStud) != filter_orig_name(sourceGrap)) or (filter_orig_name(targetStud) != filter_orig_name(targetGrap))):
-                return {'correct': False, 'feedback' : ('Edge with label \'{0}\' does not run from vertex \'{1}\' to vertex \'{2}\' as expected.').format(e['label'],filter_orig_name(sourceGrap), filter_orig_name(targetGrap))}
-        except:
-            return {'correct': False, 'feedback': ('Answer missing edge labelled: \'{0}\'').format(e['label'])}
+    for i in range(0,len(vs_graph)):
+        #check if the matching vertex exists
+        if (vs_stud[i]['name'] != vs_graph[i]['name']):
+            return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(vs_graph[i]))}
+        if (vs_stud[i].degree() != vs_graph[i].degree()):
+            return {'correct': False, 'feedback' : ('Degree of vertex \'{0}\' does not match expected degree.').format(filter_orig_name(vs_graph[i]))}
+        graph_neigh = sorted(vs_graph[i].neighbors(), key = lambda vertex: vertex['name'])
+        stud_neigh = sorted(vs_stud[i].neighbors(), key = lambda vertex: vertex['name'])
+        for j in range(0,len(graph_neigh)):
+            if (graph_neigh[j]['name'] != stud_neigh[j]['name']):
+                return {'correct': False, 'feedback': ('Neighbors for vertex with label \'{0}\' are not as expected.').format(filter_orig_name(vs_graph[i]))}
+        graph_edges = sorted(vs_graph[i].all_edges(), key = lambda edge: edge['label'])
+        stud_edges = sorted(vs_stud[i].all_edges(), key = lambda edge: edge['label'])
+        
+        for j in range(0, len(graph_edges)):
+            if (graph_edges[j]['label'] != stud_edges[j]['label']):
+                return {'correct': False, 'feedback': ('Edge label does not match with expected label for edge from \'{0}\' to \'{1}\'.').format(filter_orig_name(student_answer.vs[stud_edges[j].source]), filter_orig_name(student_answer.vs[stud_edges[j].target]))}
     return {'correct': True}
 
 def mst(student_answer):
