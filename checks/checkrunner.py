@@ -8,11 +8,11 @@ root_dir = os.getcwd()
 def run(graph_type, graph, checks):
 	preprocess = importlib.import_module('preprocess')
 
-	types_file = os.path.join(root_dir, 'types.json')
-	with open(types_file) as types:
-		types = json.load(types)
-	if 'python_modules' in types[graph_type]:
-		for module in types[graph_type]['python_modules']:
+	type_file = os.path.join(root_dir, graph_type, 'type.json')
+	with open(type_file) as f:
+		type_info = json.load(f)
+	if 'python_modules' in type_info:
+		for module in type_info['python_modules']:
 			globals()[module] = importlib.import_module(module)
 
 	if not graph:
