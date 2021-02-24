@@ -1,10 +1,7 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
-
-#helper
-def filter_orig_name(v):
-    return v['name'].split("_")[1]
+import utilities
 
 def coloring(student_answer, noColors):
     colors = set()

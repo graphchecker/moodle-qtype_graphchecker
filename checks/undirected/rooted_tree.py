@@ -1,10 +1,7 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
-
-#helper
-def filter_orig_name(v):
-    return v['name'].split("_")[1]
+import utilities
 
 #helper - return root or None if multiple roots or unclear layout
 def findRoot(student_answer, down):

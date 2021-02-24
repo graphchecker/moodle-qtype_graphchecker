@@ -1,22 +1,14 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
+import utilities
 
-#helper
-def filter_orig_name(v):
-    return v['name'].split("_")[1]
-
-# helper methods
-def _make_integer_checker(method_name, readable_name):
-    def result(student_answer, expected):
-        actual = getattr(student_answer, method_name)()
-        if actual == expected:
-            return {'correct': True}
-        else:
-            return {'correct': False,
-                    'feedback': '{0} was {1}, expected {2}'.format(
-                        readable_name, actual, expected)}
-    return result
+def connected(student_answer):
+    if (student_answer.is_connected(False)):
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': 'Graph is not connected'}
 
 def edge_count(student_answer, expected, highlighted):
     if highlighted == "only highlighted edges":
@@ -33,40 +25,30 @@ def edge_count(student_answer, expected, highlighted):
         return {'correct': False,
                 'feedback': 'Number of edges does not match expected number'}
 
-def vertex_count(student_answer, expected, highlighted):
-    if highlighted == "only highlighted vertices":
-        onlyHighlighted = True
-    else:
-        onlyHighlighted = False
-    count = 0
-    for v in student_answer.vs:
-        if (not onlyHighlighted or v['highlighted']):
-            count = count + 1
-    if count == expected:
-        return {'correct': True}
-    else:
-        return {'correct': False,
-                'feedback': 'Number of vertices does not match expected number'}
-
-def no_cycles(student_answer, highlighted):
-    if highlighted == "only highlighted edges":
-        onlyHighlighted = True
-    else:
-        onlyHighlighted = False
-
-    tree_copy = student_answer.copy()
-    if onlyHighlighted:
-        tree_copy.es.select(highlighted=False).delete()
-        span_tree = tree_copy.spanning_tree()
-    else:
-        span_tree = student_answer.spanning_tree()
-    edgespan  = getattr(span_tree, "ecount")()
-    edgegraph = getattr(tree_copy, "ecount")()
-    if edgespan == edgegraph:
-        return {'correct': True}
-    else:
-        return {'correct': False,
-                'feedback': 'Your answer contains a cycle'}
+def equivalent(student_answer, graph_answer):
+    if len(student_answer.vs) != len(graph_answer.vs):
+        return {'correct': False, 'feedback' : 'Number of vertices does not match the expected number of vertices.'}
+    if len(student_answer.es) != len(graph_answer.es):
+        return {'correct': False, 'feedback' : 'Number of edges does not match the expected number of edges.'}
+    vs_stud = sorted(student_answer.vs)
+    
+    for v in graph_answer.vs:
+        try:
+            w = student_answer.vs.find(v['name'])
+        except:
+            return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(v))}
+    for e in graph_answer.es:
+        try:
+            f = student_answer.es.find(label = e['label'])
+            sourceStud = student_answer.vs[f.source]
+            targetStud = student_answer.vs[f.target]
+            sourceGrap = graph_answer.vs[e.source]
+            targetGrap = graph_answer.vs[e.target]
+            if ((filter_orig_name(sourceStud) != filter_orig_name(sourceGrap)) or (filter_orig_name(targetStud) != filter_orig_name(targetGrap))):
+                return {'correct': False, 'feedback' : ('Edge with label \'{0}\' does not run from vertex \'{1}\' to vertex \'{2}\' as expected.').format(e['label'],filter_orig_name(sourceGrap), filter_orig_name(targetGrap))}
+        except:
+            return {'correct': False, 'feedback': ('Answer missing edge labelled: \'{0}\'').format(e['label'])}
+    return {'correct': True}
 
 def mst(student_answer):
     try:
@@ -94,12 +76,25 @@ def mst(student_answer):
     thirdCheck = edge_count(student_answer, len(span_tree.es), highlightSelect)
     return thirdCheck
 
-def connected(student_answer):
-    if (student_answer.is_connected(False)):
+def no_cycles(student_answer, highlighted):
+    if highlighted == "only highlighted edges":
+        onlyHighlighted = True
+    else:
+        onlyHighlighted = False
+
+    tree_copy = student_answer.copy()
+    if onlyHighlighted:
+        tree_copy.es.select(highlighted=False).delete()
+        span_tree = tree_copy.spanning_tree()
+    else:
+        span_tree = student_answer.spanning_tree()
+    edgespan  = getattr(span_tree, "ecount")()
+    edgegraph = getattr(tree_copy, "ecount")()
+    if edgespan == edgegraph:
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': 'Graph is not connected'}
+                'feedback': 'Your answer contains a cycle'}
 
 def same_highlights(student_answer, expected):
     if not student_answer.isomorphic(expected):
@@ -148,27 +143,29 @@ def sumEdgeWeights(student_answer, expected, highlighted):
         return {'correct': False,
                 'feedback': 'The sum of edge weights {0} did not match the required sum of edge weights {1}.'.format(weight,expected)}
 
-def equivalent(student_answer, graph_answer):
-    if len(student_answer.vs) != len(graph_answer.vs):
-        return {'correct': False, 'feedback' : 'Number of vertices does not match the expected number of vertices.'}
-    if len(student_answer.es) != len(graph_answer.es):
-        return {'correct': False, 'feedback' : 'Number of edges does not match the expected number of edges.'}
-    vs_stud = sorted(student_answer.vs)
-    
-    for v in graph_answer.vs:
-        try:
-            w = student_answer.vs.find(v['name'])
-        except:
-            return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(v))}
-    for e in graph_answer.es:
-        try:
-            f = student_answer.es.find(label = e['label'])
-            sourceStud = student_answer.vs[f.source]
-            targetStud = student_answer.vs[f.target]
-            sourceGrap = graph_answer.vs[e.source]
-            targetGrap = graph_answer.vs[e.target]
-            if ((filter_orig_name(sourceStud) != filter_orig_name(sourceGrap)) or (filter_orig_name(targetStud) != filter_orig_name(targetGrap))):
-                return {'correct': False, 'feedback' : ('Edge with label \'{0}\' does not run from vertex \'{1}\' to vertex \'{2}\' as expected.').format(e['label'],filter_orig_name(sourceGrap), filter_orig_name(targetGrap))}
-        except:
-            return {'correct': False, 'feedback': ('Answer missing edge labelled: \'{0}\'').format(e['label'])}
-    return {'correct': True}
+def vertex_count(student_answer, expected, highlighted):
+    if highlighted == "only highlighted vertices":
+        onlyHighlighted = True
+    else:
+        onlyHighlighted = False
+    count = 0
+    for v in student_answer.vs:
+        if (not onlyHighlighted or v['highlighted']):
+            count = count + 1
+    if count == expected:
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': 'Number of vertices does not match expected number'}
+
+# helper methods
+def _make_integer_checker(method_name, readable_name):
+    def result(student_answer, expected):
+        actual = getattr(student_answer, method_name)()
+        if actual == expected:
+            return {'correct': True}
+        else:
+            return {'correct': False,
+                    'feedback': '{0} was {1}, expected {2}'.format(
+                        readable_name, actual, expected)}
+    return result
