@@ -67,7 +67,8 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
      *    height - The height of the wrapper node
      *    templateParams - The parameters used for defining the graph
      */
-    function Graph(textareaId, uiWrapper, width, height, templateParams) { //TODO: rename class to GraphUI? I think it should be some sort of manager class
+    function Graph(textareaId, uiWrapper, width, height, templateParams) {
+        //TODO: rename this class to GraphUI? I think it should be some sort of manager class
         self = this;
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
@@ -257,7 +258,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
      *    The node radius used for drawing nodes on the canvas
      */
     Graph.prototype.nodeRadius = function() {
-        return self.templateParams.noderadius ? self.templateParams.noderadius : DEFAULT_NODE_RADIUS;
+        return self.templateParams.noderadius ? self.templateParams.noderadius : globals.DEFAULT_NODE_RADIUS;
     };
 
     /**
@@ -267,7 +268,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
      *    The font size used for drawing text on the canvas
      */
     Graph.prototype.fontSize = function() {
-        return self.templateParams.fontsize ? self.templateParams.fontsize : DEFAULT_FONT_SIZE;
+        return self.templateParams.fontsize ? self.templateParams.fontsize : globals.DEFAULT_FONT_SIZE;
     };
 
     /**
@@ -635,7 +636,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
     };
 
     // Copy the serialised version of the graph to the TextArea.
-    // TODO: remove function, as it does nothing?
+    // TODO: Keep function
     Graph.prototype.sync = function() {
         // Nothing to do ... always sync'd.
     };
@@ -682,7 +683,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                     if (this.isType(util.Type.PETRI)) { // Consider the node a place if it is a petri net
                         newNode.petriNodeType = this.petriNodeType;
                     }
-                    this.graphRepr.addNode(newNode)
+                    this.graphRepr.addNode(newNode);
 
                     // Set as initial node if it is the first node, and if the type is FSM
                     if (this.graphRepr.getNodes().length === 1 && this.isType(util.Type.FSM)) {
@@ -764,7 +765,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                     && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)) {
                     this.canMoveObjects = true;
                     this.draggedObjects = [...this.selectedObjects];
-                    if (this.clickedObject != null && !this.draggedObjects.includes(this.clickedObject)) {
+                    if (this.clickedObject !== null && !this.draggedObjects.includes(this.clickedObject)) {
                         this.draggedObjects.push(this.clickedObject);
                     }
                     for (let i = 0; i < this.draggedObjects.length; i++) {
@@ -1053,8 +1054,10 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                 } else if (this.isType(util.Type.UNDIRECTED)) {
                     // In case of an undirected graph, only 1 edge in between two nodes is permitted
                     for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
-                        if ((this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeA && this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeB) ||
-                            (this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeB && this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeA)) {
+                        if ((this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeA &&
+                            this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeB) ||
+                            (this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeB &&
+                                this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeA)) {
                             this.alertPopup('Two edges between two nodes is not permitted.');
                             return;
                         }
@@ -1065,7 +1068,8 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                     // nodes v_1 to v_2 is permitted
                     for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
                         if (!(this.currentLink instanceof elements.SelfLink)) {
-                            if (this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeA && this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeB) {
+                            if (this.graphRepr.getLinks()[i].nodeA === this.currentLink.nodeA &&
+                                this.graphRepr.getLinks()[i].nodeB === this.currentLink.nodeB) {
                                 this.alertPopup('Two edges from one node to another is not permitted.');
                                 return;
                             }
@@ -1244,15 +1248,15 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
             let angles = util.getAnglesOfIncidentLinks(this.graphRepr.getLinks(), vertex);
 
             let topLeft = (3.0/4.0 * Math.PI); // The top-left of the vertex's circle in radians
-            let nodeLinkDrawRadius = this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
+            let nodeLinkDrawRadius = this.nodeRadius() + globals.INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
             // edges in the last two cases
 
             // Execute different cases, to fill the startLinkPos variable's x and y values
             let startLinkPos = {};
             if (angles.length === 0) {
                 // Set the start link position to the top-left of the vertex
-                startLinkPos.x = vertex.x - (this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH);
-                startLinkPos.y = vertex.y - (this.nodeRadius() + INITIAL_FSM_NODE_LINK_LENGTH);
+                startLinkPos.x = vertex.x - (this.nodeRadius() + globals.INITIAL_FSM_NODE_LINK_LENGTH);
+                startLinkPos.y = vertex.y - (this.nodeRadius() + globals.INITIAL_FSM_NODE_LINK_LENGTH);
             } else if (angles.length === 1) {
                 // Divide the circle of the vertex in an arbitrary number of equal parts (e.g. 8).
                 // For each of these parts' borders (except for the location of the incident edge itself) check which
@@ -1327,11 +1331,11 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                 continue;
             }
 
-            if (Math.abs(node.x - notSelectedNodes[i].x) < SNAP_TO_PADDING && snapXDirection) {
+            if (Math.abs(node.x - notSelectedNodes[i].x) < globals.SNAP_TO_PADDING && snapXDirection) {
                 node.x = notSelectedNodes[i].x;
             }
 
-            if (Math.abs(node.y - notSelectedNodes[i].y) < SNAP_TO_PADDING && snapYDirection) {
+            if (Math.abs(node.y - notSelectedNodes[i].y) < globals.SNAP_TO_PADDING && snapYDirection) {
                 node.y = notSelectedNodes[i].y;
             }
         }
@@ -1356,7 +1360,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
             }
         }
         if (maxPerpRHS) {
-            newLink.perpendicularPart = maxPerpRHS + DUPLICATE_LINK_OFFSET;
+            newLink.perpendicularPart = maxPerpRHS + globals.DUPLICATE_LINK_OFFSET;
         }
         this.graphRepr.addLink(newLink);
     };
@@ -1371,7 +1375,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
         this.save();
         let graphInstance = $(this.textArea).val();
         this.historyStack.push(graphInstance);
-        if (this.historyStack.length > MAX_UNDO_REDO + 1) {
+        if (this.historyStack.length > globals.MAX_UNDO_REDO + 1) {
             this.historyStack.shift();
         } else {
             this.historyStackPointer++;
@@ -1511,7 +1515,8 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
                             util.colorObjectFromColorCode(inputLink['color']) : null;
                         link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
-                        link = new elements.Link(this, this.graphRepr.getNodes()[inputLink['from']], this.graphRepr.getNodes()[inputLink['to']]);
+                        link = new elements.Link(this, this.graphRepr.getNodes()[inputLink['from']],
+                            this.graphRepr.getNodes()[inputLink['to']]);
                         link.text = inputLink['label'];
                         link.colorObject = (this.templateParams.edge_colors) ?
                             util.colorObjectFromColorCode(inputLink['color']) : null;
@@ -1684,9 +1689,9 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 
      * Draws the graph and its components, and saves the graph in the JSON object afterwards
      */
     Graph.prototype.draw = function() {
-        this.graphCanvas.draw(this, this.graphRepr.getNodes(), this.graphRepr.getLinks(), this.uiMode, this.petriNodeType, this.fontSize(),
-            this.allowEdits, this.isType, this.graphRepr.getObjectOnMousePos, this.selectionRectangle, this.currentLink,
-            this.mousePosition);
+        this.graphCanvas.draw(this, this.graphRepr.getNodes(), this.graphRepr.getLinks(), this.uiMode, this.petriNodeType,
+            this.fontSize(), this.allowEdits, this.isType, this.graphRepr.getObjectOnMousePos, this.selectionRectangle,
+            this.currentLink, this.mousePosition);
         this.save();
     };
 

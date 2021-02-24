@@ -34,7 +34,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.getNodes = function() {
         return this.nodes;
-    }
+    };
 
     /**
      * Function: addNode
@@ -44,7 +44,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.addNode = function(node) {
         this.nodes.push(node);
-    }
+    };
 
     /**
      * Function: clearNodes
@@ -52,7 +52,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.clearNodes = function() {
         this.nodes = [];
-    }
+    };
 
     /**
      * Function: getLinks
@@ -62,7 +62,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.getLinks = function() {
         return this.links;
-    }
+    };
 
     /**
      * Function: addLink
@@ -72,7 +72,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.addLink = function(link) {
         this.links.push(link);
-    }
+    };
 
     /**
      * Function: clearLinks
@@ -80,7 +80,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      */
     GraphRepresentation.prototype.clearLinks = function() {
         this.links = [];
-    }
+    };
 
     /**
      * Function: getObjectOnMousePos

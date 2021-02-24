@@ -46,8 +46,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
-    'qtype_graphchecker/toolbar_elements'], function($, util, elements, toolbar_elements) {
+define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
+    'qtype_graphchecker/toolbar_elements'], function($, globals, util, elements, toolbar_elements) {
 
     /***********************************************************************
      *
@@ -319,8 +319,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.parent.isType(util.Type.PETRI)
             && allow_edge_labels) {
             // Create the spinner to set the label
-            let min = NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
             let labelInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriLinkLable', 'Label:', 'Edge label',
                 this.onEnterPetriLinkLabelInput, this.onFocusInPetriLinkLabelInput, this.onFocusOutPetriLinkLabelInput);
@@ -679,8 +679,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if (selectedObjects.length && this.parent.allowEdits(util.Edit.PETRI_MARKING)) {
-            let min = NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
             let tokenInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriToken', 'Tokens:', 'Number of tokens (' + min + '-' + max + ')',
                 this.onEnterPetriTokenInput);

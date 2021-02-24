@@ -6,7 +6,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'], function ($, util, elements) {
+define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements'],
+    function ($, globals, util, elements) {
 
     /**
      * Function: GraphCanvas
@@ -103,7 +104,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         c.save();
 
         // Scale the canvas so that it is nominalWidth 'virtual pixels' wide
-        const scaleFactor = 1;//canvas[0].width / util.nominalWidth; //TODO: Fix scalefactor
+        const scaleFactor = canvas[0].width / util.nominalWidth;
         c.scale(scaleFactor, scaleFactor);
 
         // Use Segoe UI as that is the default Moodle font (at least on Windows)
@@ -253,7 +254,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         width = c.measureText(text).width;
 
         // Test whether the text can fit inside the node, depending on the node width and the type of node
-        let isSmallWidth = width <= 2 * nodeRadius - TEXT_NODE_HORIZONTAL_PADDING;
+        let isSmallWidth = width <= 2 * nodeRadius - globals.TEXT_NODE_HORIZONTAL_PADDING;
         if (isSmallWidth &&
             !(isTypeFunc(util.Type.PETRI) && originalObject instanceof elements.Node &&
                 originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
@@ -270,20 +271,21 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         } else if (originalObject instanceof elements.Node && (!isSmallWidth ||
             originalObject.petriNodeType === util.PetriNodeType.PLACE)) {
             // If the text does not fit, or if it is a Place node (of a Petri net), position the element either on the
-            // bottom, right, top or left of the node, depending on which side do not have incoming nodes //TODO: what happens if no side is available. It seems like it doesn't check for that
+            // bottom, right, top or left of the node, depending on which side do not have incoming nodes
+            // TODO: what happens if no side is available. It seems like it doesn't check for that
             let sidesOfNodeLinkIntersections = originalObject.getLinkIntersectionSides(links);
             if (!sidesOfNodeLinkIntersections.bottom ||
                 (sidesOfNodeLinkIntersections.bottom && sidesOfNodeLinkIntersections.right &&
                     sidesOfNodeLinkIntersections.top && sidesOfNodeLinkIntersections.left)) {
                 x -= width / 2;
-                y += nodeRadius + TEXT_NODE_VERTICAL_PADDING;
+                y += nodeRadius + globals.TEXT_NODE_VERTICAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.right) {
-                x += nodeRadius + TEXT_NODE_HORIZONTAL_PADDING;
+                x += nodeRadius + globals.TEXT_NODE_HORIZONTAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.top) {
                 x -= width / 2;
-                y -= nodeRadius + TEXT_NODE_VERTICAL_PADDING;
+                y -= nodeRadius + globals.TEXT_NODE_VERTICAL_PADDING;
             } else if (!sidesOfNodeLinkIntersections.left) {
-                x -= width + nodeRadius + TEXT_NODE_HORIZONTAL_PADDING;
+                x -= width + nodeRadius + globals.TEXT_NODE_HORIZONTAL_PADDING;
             }
         }
 
