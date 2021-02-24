@@ -52,7 +52,13 @@ define(['jquery'], function ($) {
         this.div.append(this.divDialog);
     }
 
-    // Sets the (HTML) help text of the dialog
+    /**
+     * Function: insertHelpText
+     * Sets the (HTML) help text of the help dialog
+     *
+     * Parameters:
+     *    text - The text to be set
+     */
     HelpOverlay.prototype.insertHelpText = function (text) {
         this.divDialog.append(text);
     };

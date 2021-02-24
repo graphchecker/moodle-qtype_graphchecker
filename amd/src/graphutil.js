@@ -211,7 +211,7 @@ define(function() {
 
     Util.prototype.mousePos = function(e) {
         const rect = e.target.getBoundingClientRect();
-        const scaleFactor = rect.width / this.nominalWidth;
+        const scaleFactor = 1;//rect.width / this.nominalWidth; TODO: What does the scalefactor do? Remove it?
         return {
             'x': (e.clientX - rect.x) / scaleFactor,
             'y': (e.clientY - rect.y) / scaleFactor

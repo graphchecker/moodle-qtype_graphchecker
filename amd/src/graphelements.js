@@ -90,6 +90,7 @@ define(['jquery', 'qtype_graphchecker/globals', 'qtype_graphchecker/graphutil'],
 
     // Given a new mouse position during a drag, move to the appropriate
     // new position.
+    // TODO: isn't used
     Node.prototype.trackMouse = function(mouseX, mouseY) {
         this.x = this.mouseOffsetX + mouseX;
         this.y = this.mouseOffsetY + mouseY;
