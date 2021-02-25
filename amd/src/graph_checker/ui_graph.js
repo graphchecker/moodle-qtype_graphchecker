@@ -59,8 +59,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     let self;
 
     /**
-     * Function: Graph
-     * Constructor for the Graph object, the ui component for a graph-drawing graphchecker question
+     * Function: GraphUI
+     * Constructor for the GraphUI object, the ui component for a graph-drawing graphchecker question
      *
      * Parameters:
      *    textareaId - The id of the text area that this graph UI is to manage
@@ -69,8 +69,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    height - The height of the wrapper node
      *    templateParams - The parameters used for defining the graph
      */
-    function Graph(textareaId, uiWrapper, width, height, templateParams) {
-        //TODO: rename this class to GraphUI? I think it should be some sort of manager class
+    function GraphUI(textareaId, uiWrapper, width, height, templateParams) {
         self = this;
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
@@ -109,7 +108,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.mousePosition = null; // A variable to denote the position of the mouse on the canvas.
         // Format: {x: number, y: number}
         this.canMoveObjects = false;
-        this.fail = false;  // Will be set true if reload fails (can't deserialise).
+        this.fail = false;  // Will be set true if load fails (can't deserialise).
         this.failString = null;  // Language string key for fail error message.
 
         let newHelpString = self.getHelpText();
@@ -120,22 +119,22 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.historyStack = [$(this.textArea).val()];
         this.historyStackPointer = 0; // A pointer pointing to an entry in the historyStack
 
-        this.reload();
+        this.load();
         if (!this.fail) {
             this.draw();
         }
 
-        // Call the draw function at a fixed interval
-        this.drawTimer = window.setInterval(function(){ self.update(); }, 50);
+        // Call the update function at a fixed interval
+        this.updateTimer = window.setInterval(function(){ self.update(); }, 50);
     }
 
     /**
      * Function: failed
      *
      * Returns:
-     *    Whether the graph failed on reload or not
+     *    Whether the graph failed on load or not
      */
-    Graph.prototype.failed = function() {
+    GraphUI.prototype.failed = function() {
         return this.fail;
     };
 
@@ -145,7 +144,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    String for the fail error message
      */
-    Graph.prototype.failMessage = function() {
+    GraphUI.prototype.failMessage = function() {
         return this.failString;
     };
 
@@ -155,7 +154,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The HTML element that the wrapper is to insert into the HTML DOM.
      */
-    Graph.prototype.getElement = function() {
+    GraphUI.prototype.getElement = function() {
         this.containerDiv.append(this.getHelpOverlay());
         this.containerDiv.append(this.getToolbar());
         this.containerDiv.append(this.getCanvas());
@@ -168,7 +167,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    Whether the canvas is the focused object
      */
-    Graph.prototype.hasFocus = function() {
+    GraphUI.prototype.hasFocus = function() {
         return document.activeElement === this.getCanvas();
     };
 
@@ -178,7 +177,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The canvas HTML element of this graph
      */
-    Graph.prototype.getCanvas = function() {
+    GraphUI.prototype.getCanvas = function() {
         return this.graphCanvas.canvas[0];
     };
 
@@ -188,7 +187,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The toolbar HTML element of this graph
      */
-    Graph.prototype.getToolbar = function() {
+    GraphUI.prototype.getToolbar = function() {
         if (this.toolbar !== null) {
             return this.toolbar.div[0];
         } else {
@@ -202,7 +201,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The help overlay HTML element of this graph
      */
-    Graph.prototype.getHelpOverlay = function() {
+    GraphUI.prototype.getHelpOverlay = function() {
         return this.helpOverlay.div;
     };
 
@@ -213,7 +212,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    modeType - The mode type which is to be set
      */
-    Graph.prototype.setUIMode = function(modeType) {
+    GraphUI.prototype.setUIMode = function(modeType) {
         this.uiMode = modeType;
         this.clickedObject = null;
 
@@ -259,7 +258,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The node radius used for drawing nodes on the canvas
      */
-    Graph.prototype.nodeRadius = function() {
+    GraphUI.prototype.nodeRadius = function() {
         return self.templateParams.noderadius ? self.templateParams.noderadius : globals.DEFAULT_NODE_RADIUS;
     };
 
@@ -269,7 +268,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The font size used for drawing text on the canvas
      */
-    Graph.prototype.fontSize = function() {
+    GraphUI.prototype.fontSize = function() {
         return self.templateParams.fontsize ? self.templateParams.fontsize : globals.DEFAULT_FONT_SIZE;
     };
 
@@ -282,7 +281,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    Whether the graph is of the type as denoted by the input parameter
      */
-    Graph.prototype.isType = function(type) {
+    GraphUI.prototype.isType = function(type) {
         return self.templateParams.type === type;
     };
 
@@ -295,7 +294,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    Whether the graph allows the supplied edit(s), as specified by the allow_edits parameter
      */
-    Graph.prototype.allowEdits = function(edits) {
+    GraphUI.prototype.allowEdits = function(edits) {
         let editsArray = [];
         let allowed_edits = self.templateParams.allow_edits;
 
@@ -336,7 +335,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    Whether the graph allows at least one type of edit
      */
-    Graph.prototype.allowsOneEdit = function() {
+    GraphUI.prototype.allowsOneEdit = function() {
         for (let i = 0; i < Object.values(util.Edit).length; i++) {
             let edit = Object.values(util.Edit)[i];
             if (this.allowEdits(edit)) {
@@ -357,7 +356,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    Whether the string is valid, as per the regex in the template parameters, for the selected object
      */
-    Graph.prototype.checkStringValidity = function(string, selectedObject) {
+    GraphUI.prototype.checkStringValidity = function(string, selectedObject) {
         // A variable denoting the used regex, without forward slashes around the regex. /.*/ is the default regex
         let regexString = '.*';
         if (selectedObject instanceof elements.Node && this.templateParams.vertex_label_regex) { //TODO: fix changed templateParams
@@ -378,7 +377,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    labelInputField - The HTML input field of the label, used to indicate invalidity
      *    labelText - The text of the label (i.e. node or link text) for which to check the validity
      */
-    Graph.prototype.checkLabelValidity = function(labelInputField, labelText) {
+    GraphUI.prototype.checkLabelValidity = function(labelInputField, labelText) {
         let isValid = this.checkStringValidity(labelText, this.selectedObjects[0]);
 
         if (!isValid) {
@@ -397,7 +396,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    The help text to be displayed, depending on the type of graph
      *    TODO: in separate file
      */
-    Graph.prototype.getHelpText = function() {
+    GraphUI.prototype.getHelpText = function() {
 
         let isFSM = this.isType(util.Type.FSM);
         let isPetri = this.isType(util.Type.PETRI);
@@ -585,13 +584,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    y - The y-coordinate of the arrow head's tip
      *    angle - The angle for which to draw the arrow head, in radians TODO: DRAW
      */
-    Graph.prototype.arrowIfReqd = function(c, x, y, angle) {
+    GraphUI.prototype.arrowIfReqd = function(c, x, y, angle) {
         if (this.isType(util.Type.DIRECTED) || this.isType(util.Type.FSM) || this.isType(util.Type.PETRI)) {
             util.drawArrow(c, x, y, angle);
         }
     };
 
-    Graph.prototype.enableTemporaryDrawMode = function() {
+    GraphUI.prototype.enableTemporaryDrawMode = function() {
         if (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE)) {
             // Assign the latest selected object
             this.previousSelectedObjects = this.selectedObjects;
@@ -603,7 +602,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.disableTemporaryDrawMode = function() {
+    GraphUI.prototype.disableTemporaryDrawMode = function() {
         if (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE)) {
             // A variable denoting whether the label input has focus or not
             let hasLabelFocus = false;
@@ -639,11 +638,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
     // Copy the serialised version of the graph to the TextArea.
     // TODO: Keep function
-    Graph.prototype.sync = function() {
+    GraphUI.prototype.sync = function() {
         // Nothing to do ... always sync'd.
     };
 
-    Graph.prototype.focusElement = function(element, timeout) {
+    GraphUI.prototype.focusElement = function(element, timeout) {
         // Applying a focus with a short unnoticable delay works. Directly applying without delay does not work
         setTimeout(function () {
             if (element) {
@@ -652,7 +651,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }, timeout);
     };
 
-    Graph.prototype.keypress = function(e) {
+    GraphUI.prototype.keypress = function(e) {
         var key = util.crossBrowserKey(e);
 
         if (this.readOnly) {
@@ -665,7 +664,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.mousedown = function(e) {
+    GraphUI.prototype.mousedown = function(e) {
         var mouse = util.mousePos(e);
 
         if (this.readOnly) {
@@ -811,7 +810,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.keydown = function(e) {
+    GraphUI.prototype.keydown = function(e) {
         var key = util.crossBrowserKey(e);
 
         let elementName = document.activeElement.localName;
@@ -897,7 +896,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.keyup = function(e) {
+    GraphUI.prototype.keyup = function(e) {
         var key = util.crossBrowserKey(e);
 
         if (this.readOnly) {
@@ -913,7 +912,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     // This function is executed to check for certain key presses
-    Graph.prototype.checkKeyPressed = function(e) {
+    GraphUI.prototype.checkKeyPressed = function(e) {
         if (!e.ctrlKey && this.isTempDrawModeActive) {
             // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
             // This happens for example when releasing the CTRL key on an alert box popup
@@ -921,7 +920,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.resize = function(w, h) {
+    GraphUI.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
         let isToolbarNull = this.toolbar === null;
@@ -938,7 +937,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.draw();
     };
 
-    Graph.prototype.mousemove = function(e) {
+    GraphUI.prototype.mousemove = function(e) {
         var mouse = util.mousePos(e),
             closestPoint;
 
@@ -1029,7 +1028,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.draw();
     };
 
-    Graph.prototype.mouseup = function(e) {
+    GraphUI.prototype.mouseup = function(e) {
         if (this.readOnly) {
             return;
         }
@@ -1182,26 +1181,26 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     // This event function is activated when the mouse enters the graph canvas
-    Graph.prototype.mouseenter = function(e) {
+    GraphUI.prototype.mouseenter = function(e) {
         // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
         this.checkKeyPressed(e);
     };
 
     // This event function is activated when the mouse leaves the graph canvas
-    Graph.prototype.mouseleave = function(e) {
+    GraphUI.prototype.mouseleave = function(e) {
         // Set the mouse position to null
         this.mousePosition = null;
         this.mouseup(e);
     };
 
-    Graph.prototype.alertPopup = function(message) {
+    GraphUI.prototype.alertPopup = function(message) {
         this.currentLink = null;
         this.clickedObject = null;
         this.draw();
         window.alert(message);
     };
 
-    Graph.prototype.deleteSelectedObjects = function(graphUI) {
+    GraphUI.prototype.deleteSelectedObjects = function(graphUI) {
         if (graphUI.selectedObjects.length) {
             if (graphUI.allowEdits(util.Edit.DELETE_VERTEX)) {
                 for (let i = 0; i < graphUI.graphRepr.getNodes().length; i++) {
@@ -1238,7 +1237,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.setInitialFSMVertex = function(vertex) {
+    GraphUI.prototype.setInitialFSMVertex = function(vertex) {
         // TODO: use the input parameter to decide whether there is only 1 input vertex, or whether there can be any
         //  number of input vertices
 
@@ -1315,7 +1314,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.removeInitialFSMVertex = function(vertex) {
+    GraphUI.prototype.removeInitialFSMVertex = function(vertex) {
         vertex.isInitial = false;
         // Remove all start links incoming to this vertex
         for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
@@ -1327,7 +1326,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
     // A function to snap the input node to any other node not present in the selection. This snapping happens either
     // horizontally or vertically
-    Graph.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
+    GraphUI.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
         for (let i = 0; i < notSelectedNodes.length; i++) {
             if (notSelectedNodes[i] === node) {
                 continue;
@@ -1346,7 +1345,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     // Add a new link (always 'this.currentLink') to the set of links.
     // If the link connects two nodes already linked, the angle of the new link
     // is tweaked so it is distinguishable from the existing links.
-    Graph.prototype.addLink = function(newLink) {
+    GraphUI.prototype.addLink = function(newLink) {
         var maxPerpRHS = null;
         for (var i = 0; i < this.graphRepr.getLinks().length; i++) {
             var link = this.graphRepr.getLinks()[i];
@@ -1368,7 +1367,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     // A function to add a new graph instance, upon a change of the graph, to the history stack
-    Graph.prototype.onGraphChange = function() {
+    GraphUI.prototype.onGraphChange = function() {
         // Remove the part of the stack above the pointer, so the 'redo-able' graph instances are lost
         this.historyStack.length = this.historyStackPointer + 1;
 
@@ -1389,7 +1388,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     // A function to handle the undo operation of the graph UI
-    Graph.prototype.undo = function(graphUI) {
+    GraphUI.prototype.undo = function(graphUI) {
         let g = graphUI;
 
         // If there is something on the stack, retrieve it
@@ -1412,7 +1411,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     // A function to handle the redo operation of the graph UI
-    Graph.prototype.redo = function(graphUI) {
+    GraphUI.prototype.redo = function(graphUI) {
         let g = graphUI;
 
         // Check if there is an operation to be redone
@@ -1432,8 +1431,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
+    //TODO: historystack functions here: get, update pointers etc
+
     // A function to update the graph with a new graph
-    Graph.prototype.updateGraph = function(graphUI, graphInstance) {
+    GraphUI.prototype.updateGraph = function(graphUI, graphInstance) {
         // Update the value:
         $(this.textArea).val(graphInstance);
 
@@ -1443,8 +1444,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.selectedObjects = [];
         this.previousSelectedObjects = [];
 
-        // Save and reload the graphUI
-        this.reload();
+        // Save and load the graphUI
+        this.load();
 
         // Reload the toolbar
         this.toolbar.addSelectionOptions(this.selectedObjects);
@@ -1457,221 +1458,37 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    Graph.prototype.reload = function() {
-        var content = $(this.textArea).val();
-        if (content) {
-            try {
-                // Load up the student's previous answer if non-empty.
-                var input = JSON.parse(content), i;
-
-                if (!input.hasOwnProperty('_version') || input['_version'] !== 1) {
-                    throw "invalid version";
-                }
-
-                for (i = 0; i < input.vertices.length; i++) {
-                    var inputNode = input.vertices[i];
-                    var node = new elements.Node(this, inputNode['position'][0], inputNode['position'][1]);
-                    if (!this.templateParams.ignore_locked && 'locked' in inputNode) {
-                        // note: don't set the locked flag if we're in ignore_locked mode,
-                        // because then we're supposed to be able to edit locked objects
-                        // (when saving this will lose the locked flags)
-                        node.locked = inputNode['locked'];
-                    }
-                    node.text = inputNode['label'];
-                    if (this.templateParams.vertex_colors) {
-                        node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
-                    }
-                    if (this.templateParams.highlight_vertices) {
-                        node.isHighlighted = inputNode['highlighted'];
-                    }
-                    if (this.isType(util.Type.FSM)) {
-                        node.isInitial = inputNode['initial'];
-                        node.isFinal = inputNode['final'];
-                    }
-                    if (this.isType(util.Type.PETRI)) {
-                        node.petriNodeType = inputNode['petri_type'];
-                        if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
-                            node.petriTokens = inputNode['tokens'];
-                        }
-                    }
-                    this.graphRepr.addNode(node);
-                }
-
-                for (i = 0; i < input.edges.length; i++) {
-                    var inputLink = input.edges[i];
-                    var link = null;
-
-                    if (inputLink['from'] === inputLink['to']) {
-                        // Self link has two identical nodes.
-                        link = new elements.SelfLink(this, this.graphRepr.getNodes()[inputLink['from']]);
-                        link.text = inputLink['label'];
-                        link.colorObject = (this.templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
-                        link.anchorAngle = inputLink['bend']['anchorAngle'];
-                    } else if (inputLink['from'] === -1) {
-                        link = new elements.StartLink(this, this.graphRepr.getNodes()[inputLink['to']]);
-                        link.deltaX = inputLink['bend']['deltaX'];
-                        link.deltaY = inputLink['bend']['deltaY'];
-                        link.colorObject = (this.templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
-                    } else {
-                        link = new elements.Link(this, this.graphRepr.getNodes()[inputLink['from']],
-                            this.graphRepr.getNodes()[inputLink['to']]);
-                        link.text = inputLink['label'];
-                        link.colorObject = (this.templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (this.templateParams.highlight_edges)? inputLink['highlighted'] : false;
-                        link.parallelPart = inputLink['bend']['parallelPart'];
-                        link.perpendicularPart = inputLink['bend']['perpendicularPart'];
-                        link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
-                    }
-                    if (!this.templateParams.ignore_locked && 'locked' in inputLink) {
-                        link.locked = inputLink['locked'];
-                    }
-                    this.graphRepr.addLink(link);
-                }
-
-                // Update the history stack if it's empty
-                if (this.historyStack.length === []) {
-                    this.historyStack.push(content);
-                    this.historyStackPointer++;
-                }
-            } catch(e) {
-                this.fail = true;
-                this.failString = 'graph_ui_invalidserialisation';
-            }
-        } else {
-            // Push an empty graph to the history stack if it's empty
-            if (this.historyStack.length === []) {
-                this.historyStack.push("");
-                this.historyStackPointer++;
-            }
-        }
+    /**
+     * Function: load
+     * Loads the graph representation from the JSON string in the textArea. Calls a function in GraphRepresentation
+     */
+    GraphUI.prototype.load = function() {
+        this.graphRepr.load(this.textArea, this.templateParams, this.isType);
     };
 
-    Graph.prototype.save = function() {
-        var output = {
-            '_version': 1,
-            'vertices': [],
-            'edges': []
-        };
-        var i;
-
-        if(!JSON || (this.textArea.val().trim() === '' && this.graphRepr.getNodes().length === 0)) {
-            return;  // Don't save if we have an empty textbox and no graphic content.
-        }
-
-        for (i = 0; i < this.graphRepr.getNodes().length; i++) {
-            var node = this.graphRepr.getNodes()[i];
-            let vertex = {
-                'label': node.text,
-                'position': [node.x, node.y],
-                'locked': node.locked
-            };
-            if (this.templateParams.vertex_colors && node.colorObject) {
-                vertex['color'] = node.colorObject.colorCode;
-            }
-            if (this.templateParams.highlight_vertices) {
-                vertex['highlighted'] = node.isHighlighted;
-            }
-            if (this.isType(util.Type.FSM)) {
-                vertex['initial'] = node.isInitial;
-                vertex['final'] = node.isFinal;
-            }
-            if (this.isType(util.Type.PETRI)) {
-                vertex['petri_type'] = node.petriNodeType;
-                if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
-                    vertex['tokens'] = node.petriTokens;
-                }
-            }
-            // if we're in the save_locked mode, make sure to put the locked flag back on save
-            if (this.templateParams.save_locked) {
-                vertex['locked'] = true;
-            }
-            output.vertices.push(vertex);
-        }
-
-        for (i = 0; i < this.graphRepr.getLinks().length; i++) {
-            var link = this.graphRepr.getLinks()[i];
-            if (link instanceof elements.SelfLink) {
-                let linkObject = {
-                    'from': this.graphRepr.getNodes().indexOf(link.node),
-                    'to': this.graphRepr.getNodes().indexOf(link.node),
-                    'bend': {
-                        'anchorAngle': link.anchorAngle
-                    },
-                    'label': link.text,
-                    'locked': link.locked
-                };
-                if (this.templateParams.edge_colors && link.colorObject) {
-                    linkObject.color = link.colorObject.colorCode;
-                }
-                if (this.templateParams.highlight_edges) {
-                    linkObject.highlighted = link.isHighlighted;
-                }
-                // if we're in the save_locked mode, make sure to put the locked flag back on save
-                if (this.templateParams.save_locked) {
-                    linkObject['locked'] = true;
-                }
-                output.edges.push(linkObject);
-            } else if (link instanceof elements.StartLink) {
-                let linkObject = {
-                    'from': -1,
-                    'to': this.graphRepr.getNodes().indexOf(link.node),
-                    'bend': {
-                        'deltaX': link.deltaX,
-                        'deltaY': link.deltaY
-                    },
-                    'locked': link.locked
-                };
-                if (this.templateParams.edge_colors && link.colorObject) {
-                    linkObject.color = link.colorObject.colorCode;
-                }
-                if (this.templateParams.highlight_edges) {
-                    linkObject.highlighted = link.isHighlighted;
-                }
-                if (this.templateParams.save_locked) {
-                    linkObject['locked'] = true;
-                }
-                output.edges.push(linkObject);
-            } else if (link instanceof elements.Link) {
-                let linkObject = {
-                    'from': this.graphRepr.getNodes().indexOf(link.nodeA),
-                    'to': this.graphRepr.getNodes().indexOf(link.nodeB),
-                    'bend': {
-                        'lineAngleAdjust': link.lineAngleAdjust,
-                        'parallelPart': link.parallelPart,
-                        'perpendicularPart': link.perpendicularPart
-                    },
-                    'label': link.text,
-                    'locked': link.locked
-                };
-                if (this.templateParams.edge_colors && link.colorObject) {
-                    linkObject.color = link.colorObject.colorCode;
-                }
-                if (this.templateParams.highlight_edges) {
-                    linkObject.highlighted = link.isHighlighted;
-                }
-                if (this.templateParams.save_locked) {
-                    linkObject['locked'] = true;
-                }
-                output.edges.push(linkObject);
-            }
-        }
-        this.textArea.val(JSON.stringify(output));
+    /**
+     * Function: save
+     * Saves the graph representation to the JSON string in the textArea. Calls a function in GraphRepresentation
+     */
+    GraphUI.prototype.save = function() {
+        this.graphRepr.save(this.textArea, this.templateParams, this.isType);
     };
 
-    // A function which is configured to be ran periodically
-    Graph.prototype.update = function() {
-        // Draw the graph
+    /**
+     * Function: update
+     * A function which is configured, in the constructor of this class, to run periodically. It draws the graph
+     */
+    GraphUI.prototype.update = function() {
         this.draw();
     };
 
-    Graph.prototype.destroy = function () {
-        this.graphCanvas.canvas.off();  // Stop all events.
-        this.graphCanvas.canvas.remove();
+    /**
+     * Function: destroy
+     * A function, called by the UI wrapper, that destroys all created HTML elements
+     */
+    GraphUI.prototype.destroy = function () {
+        this.graphCanvas.canvas.off(); // The off() method removes all event handlers
+        this.graphCanvas.canvas.remove(); // Remove the HTML element
 
         this.toolbar.div.off();
         this.toolbar.div.remove();
@@ -1681,8 +1498,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         this.containerDiv.remove();
 
-        if (this.drawTimer) {
-            clearInterval(this.drawTimer);
+        // Stop the update function from repeatedly executing
+        if (this.updateTimer) {
+            clearInterval(this.updateTimer);
         }
     };
 
@@ -1690,7 +1508,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: draw
      * Draws the graph and its components, and saves the graph in the JSON object afterwards
      */
-    Graph.prototype.draw = function() {
+    GraphUI.prototype.draw = function() {
         this.graphCanvas.draw(this, this.graphRepr.getNodes(), this.graphRepr.getLinks(), this.uiMode, this.petriNodeType,
             this.fontSize(), this.allowEdits, this.isType, this.graphRepr.getObjectOnMousePos, this.selectionRectangle,
             this.currentLink, this.mousePosition);
@@ -1708,12 +1526,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    y - The y-position at which to place the text
      *    angleOrNull - The angle, if any, for which to place the text intelligently around the object
      */
-    Graph.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
+    GraphUI.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
         this.graphCanvas.drawText(originalObject, originalText, x, y, angleOrNull, this.graphRepr.getLinks(), this.nodeRadius(),
             this.fontSize(), this.isType);
     };
 
     return {
-        Constructor: Graph
+        Constructor: GraphUI
     };
 });

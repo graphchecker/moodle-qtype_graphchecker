@@ -245,6 +245,228 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchec
         return objects;
     };
 
+    /**
+     * Function: load
+     * Loads the graph representation, the nodes and links, in this object, and updates the state of the graph UI
+     * accordingly
+     *
+     * Parameters:
+     *    textArea - The HTML text area which contains the JSON string representing the graph
+     *    templateParams - The parameters used for defining the graph
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
+     */
+    GraphRepresentation.prototype.load = function(textArea, templateParams, isTypeFunc) {
+        var content = $(textArea).val();
+        if (content) {
+            // If there is content in the text area
+            try {
+                // Load up the student's previous answer if non-empty.
+                let input = JSON.parse(content), i;
+
+                if (!input.hasOwnProperty('_version') || input['_version'] !== 1) {
+                    throw "invalid version";
+                }
+
+                // Load all nodes, with their properties
+                for (i = 0; i < input.vertices.length; i++) {
+                    let inputNode = input.vertices[i];
+                    let node = new elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
+                    if (!templateParams.ignore_locked && 'locked' in inputNode) {
+                        // note: don't set the locked flag if we're in ignore_locked mode,
+                        // because then we're supposed to be able to edit locked objects
+                        // (when saving this will lose the locked flags)
+                        node.locked = inputNode['locked'];
+                    }
+                    node.text = inputNode['label'];
+                    if (templateParams.vertex_colors) {
+                        node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
+                    }
+                    if (templateParams.highlight_vertices) {
+                        node.isHighlighted = inputNode['highlighted'];
+                    }
+                    if (isTypeFunc(util.Type.FSM)) {
+                        node.isInitial = inputNode['initial'];
+                        node.isFinal = inputNode['final'];
+                    }
+                    if (isTypeFunc(util.Type.PETRI)) {
+                        node.petriNodeType = inputNode['petri_type'];
+                        if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
+                            node.petriTokens = inputNode['tokens'];
+                        }
+                    }
+                    this.addNode(node);
+                }
+
+                // Load all links, with their properties
+                for (i = 0; i < input.edges.length; i++) {
+                    let inputLink = input.edges[i];
+                    let link = null;
+
+                    if (inputLink['from'] === inputLink['to']) {
+                        // Self link has two identical nodes.
+                        link = new elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
+                        link.text = inputLink['label'];
+                        link.colorObject = (templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
+                        link.anchorAngle = inputLink['bend']['anchorAngle'];
+                    } else if (inputLink['from'] === -1) {
+                        // Start link
+                        link = new elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
+                        link.deltaX = inputLink['bend']['deltaX'];
+                        link.deltaY = inputLink['bend']['deltaY'];
+                        link.colorObject = (templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
+                    } else {
+                        // Normal link
+                        link = new elements.Link(this.parent, this.getNodes()[inputLink['from']],
+                            this.getNodes()[inputLink['to']]);
+                        link.text = inputLink['label'];
+                        link.colorObject = (templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
+                        link.parallelPart = inputLink['bend']['parallelPart'];
+                        link.perpendicularPart = inputLink['bend']['perpendicularPart'];
+                        link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
+                    }
+                    if (!templateParams.ignore_locked && 'locked' in inputLink) {
+                        link.locked = inputLink['locked'];
+                    }
+                    this.addLink(link);
+                }
+            } catch(e) {
+                this.fail = true;
+                this.failString = 'graph_ui_invalidserialisation';
+            }
+        }
+    };
+
+    /**
+     * Function: save
+     * Creates from the graph representation (i.e. nodes and links) an output object, and writes that object as a JSON
+     * string to the text area containing the graph definition
+     *
+     * Parameters:
+     *    textArea - The HTML text area which contains the JSON string representing the graph
+     *    templateParams - The parameters used for defining the graph
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
+     */
+    GraphRepresentation.prototype.save = function(textArea, templateParams, isTypeFunc) {
+        // Create an output structure, which is used to save the vertices and edges to the JSON string
+        let output = {
+            '_version': 1,
+            'vertices': [],
+            'edges': []
+        };
+        let i;
+
+        if(!JSON || (textArea.val().trim() === '' && this.getNodes().length === 0)) {
+            return;  // Don't save if we have an empty textbox and no graphic content.
+        }
+
+        // For every node in the representation, create a vertex object, in order to later save it to the JSON string
+        for (i = 0; i < this.getNodes().length; i++) {
+            let node = this.getNodes()[i];
+            let vertex = {
+                'label': node.text,
+                'position': [node.x, node.y],
+                'locked': node.locked
+            };
+            if (templateParams.vertex_colors && node.colorObject) {
+                vertex['color'] = node.colorObject.colorCode;
+            }
+            if (templateParams.highlight_vertices) {
+                vertex['highlighted'] = node.isHighlighted;
+            }
+            if (isTypeFunc(util.Type.FSM)) {
+                vertex['initial'] = node.isInitial;
+                vertex['final'] = node.isFinal;
+            }
+            if (isTypeFunc(util.Type.PETRI)) {
+                vertex['petri_type'] = node.petriNodeType;
+                if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
+                    vertex['tokens'] = node.petriTokens;
+                }
+            }
+            // if we're in the save_locked mode, make sure to put the locked flag back on save
+            if (templateParams.save_locked) {
+                vertex['locked'] = true;
+            }
+            output.vertices.push(vertex);
+        }
+
+        // For every link in the representation, create a link object, in order to later save it to the JSON string
+        for (i = 0; i < this.getLinks().length; i++) {
+            let link = this.getLinks()[i];
+            if (link instanceof elements.SelfLink) {
+                let linkObject = {
+                    'from': this.getNodes().indexOf(link.node),
+                    'to': this.getNodes().indexOf(link.node),
+                    'bend': {
+                        'anchorAngle': link.anchorAngle
+                    },
+                    'label': link.text,
+                    'locked': link.locked
+                };
+                linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
+                output.edges.push(linkObject);
+            } else if (link instanceof elements.StartLink) {
+                let linkObject = {
+                    'from': -1,
+                    'to': this.getNodes().indexOf(link.node),
+                    'bend': {
+                        'deltaX': link.deltaX,
+                        'deltaY': link.deltaY
+                    },
+                    'locked': link.locked
+                };
+                linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
+                output.edges.push(linkObject);
+            } else if (link instanceof elements.Link) {
+                let linkObject = {
+                    'from': this.getNodes().indexOf(link.nodeA),
+                    'to': this.getNodes().indexOf(link.nodeB),
+                    'bend': {
+                        'lineAngleAdjust': link.lineAngleAdjust,
+                        'parallelPart': link.parallelPart,
+                        'perpendicularPart': link.perpendicularPart
+                    },
+                    'label': link.text,
+                    'locked': link.locked
+                };
+                linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
+                output.edges.push(linkObject);
+            }
+        }
+
+        // Save the output object, including vertices and links, to the JSON string in the text area
+        textArea.val(JSON.stringify(output));
+    };
+
+    /**
+     * Function: assignStandardLinkFields
+     * Linkobjects (to be saved) have common fields for different kind of links (i.e. self link, start link, or
+     * regular link). These are assigned in this function to the object, to avoid repetition
+     *
+     * Parameters:
+     *    link - The link in the graph representation which is iterated over, when performing the saving process
+     *    templateParams - The parameters used for defining the graph
+     *    linkObject - The link object which is to be saved to the JSON string
+     */
+    GraphRepresentation.prototype.assignStandardLinkFields = function(link, templateParams, linkObject) {
+        if (templateParams.edge_colors && link.colorObject) {
+            linkObject.color = link.colorObject.colorCode;
+        }
+        if (templateParams.highlight_edges) {
+            linkObject.highlighted = link.isHighlighted;
+        }
+        if (templateParams.save_locked) {
+            linkObject['locked'] = true;
+        }
+        return linkObject;
+    };
+
     return {
         GraphRepresentation: GraphRepresentation
     };

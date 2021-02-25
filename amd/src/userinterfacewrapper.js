@@ -262,7 +262,7 @@ define(['jquery'], function($) {
                     partialFilePath = 'graph_checker/ui_';
                     break;
                 case this.InterfaceElement.CHECKS:
-                    partialFilePath = '/ui_';
+                    partialFilePath = 'ui_';
                     break;
             }
             require(['qtype_graphchecker/' + partialFilePath + this.uiname],

@@ -86,8 +86,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    uiMode - The UI mode of the graph (e.g. drawing or selecting)
      *    petriNodeType - The type of Petri node, if any
      *    fontSize - The font size of the drawn text
-     *    allowEditsFunc - A callable reference to the Graph.allowEdits function
-     *    isTypeFunc - A callable reference to the Graph.isType function
+     *    allowEditsFunc - A callable reference to the GraphUI.allowEdits function
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
      *    getObjectOnMousePosFunc - A callable reference to the GraphRepresentation.getObjectOnMousePos function
      *    selectionRectangle - The rectangle (i.e. top-left/bottom-right corners) representing the selection rectangle,
      *        if it exists, used in the form [{x: null, y: null}, {x: null, y: null}]
@@ -169,7 +169,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    drawOption - The draw option with which to draw the links (i.e. the object itself, selection, or highlighting)
      *    uiMode - The UI mode of the graph (e.g. drawing or selecting)
      *    mousePosition - The current position of the mouse
-     *    allowEditsFunc - A callable reference to the Graph.allowEdits function
+     *    allowEditsFunc - A callable reference to the GraphUI.allowEdits function
      *    getObjectOnMousePosFunc - A callable reference to the GraphRepresentation.getObjectOnMousePos function
      */
     GraphCanvas.prototype.drawNodes = function(c, nodes, drawOption, uiMode, mousePosition, allowEditsFunc,
@@ -241,7 +241,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    links - The array of links used in the graph
      *    nodeRadius - The radius of nodes
      *    fontSize - The text size
-     *    isTypeFunc - A callable reference to the Graph.isType function
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
     GraphCanvas.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull, links, nodeRadius,
                                               fontSize, isTypeFunc) {
