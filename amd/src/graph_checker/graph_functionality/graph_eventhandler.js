@@ -88,9 +88,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    e - The generated event
      */
+    /* TODO: create
     GraphEventHandler.prototype.mouseup = function(e) {
         //console.log(e);
     };
+     */
 
     /**
      * Function: mouseenter
@@ -167,9 +169,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    e - The generated event
      */
+    /* TODO: create
     GraphEventHandler.prototype.keydown = function(e) {
-        /*
-        TODO
         let pressedKey = util.crossBrowserKey(e);
 
         // Find the name and type of the active HTML elements, and don't proceed if they are input fields
@@ -236,8 +237,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         this.par.draw();
-         */
     };
+     */
 
     /**
      * Function: keyup
