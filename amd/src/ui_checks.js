@@ -160,7 +160,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                     .appendTo($result);
                 let checks = module['checks'];
                 for (let checkName in checks) {
-                    if (checks.hasOwnProperty(checkName)) {
+                    if (checks.hasOwnProperty(checkName) &&
+                            !checks[checkName]['deprecated']) {
                         this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
                             .appendTo($result);
                     }
@@ -246,6 +247,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         if (checkInfo) {
             if (checkInfo['params']) {
                 this.createArgsContainer(checkInfo, check)
+                    .appendTo($container);
+            }
+            if (checkInfo['deprecated']) {
+                $('<div/>')
+                    .html('This check is deprecated. It will still work, but ' +
+                        'is not available in the Add check list anymore.')
+                    .addClass('invalid-feedback')
+                    .css('display', 'block')
                     .appendTo($container);
             }
         } else {
