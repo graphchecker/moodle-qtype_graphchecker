@@ -45,7 +45,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
+define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil'],
+    function($, globals, util) {
 
     /***********************************************************************
      *
@@ -86,13 +87,6 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
 
     Node.prototype.resetHasMoved = function() {
         this.hasMoved = false;
-    };
-
-    // Given a new mouse position during a drag, move to the appropriate
-    // new position.
-    Node.prototype.trackMouse = function(mouseX, mouseY) {
-        this.x = this.mouseOffsetX + mouseX;
-        this.y = this.mouseOffsetY + mouseY;
     };
 
     // This function draws the node on the canvas.
@@ -396,7 +390,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
     Node.prototype.containsPoint = function(x, y, usePadding) {
         let radius = this.parent.nodeRadius();
         if (usePadding) {
-            radius += this.parent.HIT_TARGET_PADDING;
+            radius += globals.HIT_TARGET_PADDING;
         }
         if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
             // Check for a circle
@@ -555,7 +549,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.parallelPart = (dx * (x - this.nodeA.x) + dy * (y - this.nodeA.y)) / (scale * scale);
         this.perpendicularPart = (dx * (y - this.nodeA.y) - dy * (x - this.nodeA.x)) / scale;
         // Snap to a straight line.
-        if(this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < this.parent.SNAP_TO_PADDING) {
+        if(this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < globals.SNAP_TO_PADDING) {
             this.lineAngleAdjust = (this.perpendicularPart < 0) * Math.PI;
             this.perpendicularPart = 0;
             return true;
@@ -741,7 +735,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             dx = x - linkInfo.circleX;
             dy = y - linkInfo.circleY;
             distance = Math.sqrt(dx * dx + dy * dy) - linkInfo.circleRadius;
-            if(Math.abs(distance) < this.parent.HIT_TARGET_PADDING) {
+            if(Math.abs(distance) < globals.HIT_TARGET_PADDING) {
                 var angle = Math.atan2(dy, dx);
                 var startAngle = linkInfo.startAngle;
                 var endAngle = linkInfo.endAngle;
@@ -766,7 +760,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
             var length = Math.sqrt(dx * dx + dy * dy);
             var percent = (dx * (x - linkInfo.startX) + dy * (y - linkInfo.startY)) / (length * length);
             distance = (dx * (y - linkInfo.startY) - dy * (x - linkInfo.startX)) / length;
-            return (percent > 0 && percent < 1 && Math.abs(distance) < this.parent.HIT_TARGET_PADDING);
+            return (percent > 0 && percent < 1 && Math.abs(distance) < globals.HIT_TARGET_PADDING);
         }
         return false;
     };
@@ -965,7 +959,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         var dx = x - linkInfo.circleX;
         var dy = y - linkInfo.circleY;
         var distance = Math.sqrt(dx * dx + dy * dy) - linkInfo.circleRadius;
-        return (Math.abs(distance) < this.parent.HIT_TARGET_PADDING);
+        return (Math.abs(distance) < globals.HIT_TARGET_PADDING);
     };
 
     /***********************************************************************
@@ -992,11 +986,11 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         this.deltaX = x - this.node.x;
         this.deltaY = y - this.node.y;
 
-        if(Math.abs(this.deltaX) < this.parent.SNAP_TO_PADDING) {
+        if(Math.abs(this.deltaX) < globals.SNAP_TO_PADDING) {
             this.deltaX = 0;
         }
 
-        if(Math.abs(this.deltaY) < this.parent.SNAP_TO_PADDING) {
+        if(Math.abs(this.deltaY) < globals.SNAP_TO_PADDING) {
             this.deltaY = 0;
         }
 
@@ -1107,7 +1101,7 @@ define(['jquery', 'qtype_graphchecker/graphutil'], function($, util) {
         var length = Math.sqrt(dx * dx + dy * dy);
         var percent = (dx * (x - endPoints.startX) + dy * (y - endPoints.startY)) / (length * length);
         var distance = (dx * (y - endPoints.startY) - dy * (x - endPoints.startX)) / length;
-        return (percent > 0 && percent < 1 && Math.abs(distance) < this.parent.HIT_TARGET_PADDING);
+        return (percent > 0 && percent < 1 && Math.abs(distance) < globals.HIT_TARGET_PADDING);
     };
 
     /***********************************************************************

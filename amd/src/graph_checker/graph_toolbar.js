@@ -46,8 +46,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/graphelements',
-    'qtype_graphchecker/toolbar_elements'], function($, util, elements, toolbar_elements) {
+define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
+    'qtype_graphchecker/graph_checker/graphelements', 'qtype_graphchecker/graph_checker/toolbar_elements'],
+    function($, globals, util, elements, toolbar_elements) {
 
     /***********************************************************************
      *
@@ -56,7 +57,9 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, uiMode, helpOverlay) {
+    function GraphToolbar(parent, divId, w, uiMode, helpOverlay, eventHandler) {
+        // TODO: rename this file, so doesnt start with ui_, since that's confusing because of the standard interface
+        //  element file names from userinterfacewrapper.js
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
@@ -70,6 +73,7 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         };
         this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
         this.helpOverlay = helpOverlay;
+        this.eventHandler = eventHandler;
         this.div = $(document.createElement('div'));
         this.div.attr({
             id: divId,
@@ -167,12 +171,12 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             self.parent.setUIMode(util.ModeType.SELECT);
         });
 
-        this.div.on('keydown', function (e) {
-            return parent.keydown(e);
+        this.div.on('keydown', function (e) { //TODO: incorporate new event handlers. Also search for other hidden event listeners
+            return eventHandler.keydown(e);
         });
 
         this.div.on('keyup', function (e) {
-            return parent.keyup(e);
+            return eventHandler.keyup(e);
         });
 
         this.onModeButtonPressed = function (buttonModeType) {
@@ -319,8 +323,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
             this.parent.isType(util.Type.PETRI)
             && allow_edge_labels) {
             // Create the spinner to set the label
-            let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
             let labelInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriLinkLable', 'Label:', 'Edge label',
                 this.onEnterPetriLinkLabelInput, this.onFocusInPetriLinkLabelInput, this.onFocusOutPetriLinkLabelInput);
@@ -679,8 +683,8 @@ define(['jquery', 'qtype_graphchecker/graphutil', 'qtype_graphchecker/grapheleme
         }
 
         if (selectedObjects.length && this.parent.allowEdits(util.Edit.PETRI_MARKING)) {
-            let min = this.parent.NUMBER_TOKENS_INPUT_RANGE.min;
-            let max = this.parent.NUMBER_TOKENS_INPUT_RANGE.max;
+            let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
+            let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
             let tokenInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
                 45, this.buttonSize.h, min, max, 'PetriToken', 'Tokens:', 'Number of tokens (' + min + '-' + max + ')',
                 this.onEnterPetriTokenInput);

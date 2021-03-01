@@ -44,7 +44,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(function() {
+define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
 
     function Util() {
         // Constructor for the Util class.
@@ -387,6 +387,33 @@ define(function() {
         }
 
         return true;
+    };
+
+    /**
+     * Function: snapNode //TODO: refactor this class, Util, into multiple (two?) separate classes
+     * Snaps the input (i.e. currently selected) node to any other nodes not present in the selection. This selection
+     * happens either horizontally or vertically
+     *
+     * Parameters:
+     *    node - A node which is currently selected
+     *    notSelectedNodes - All nodes which are currently not selected
+     *    snapXDirection - Whether to perform snapping in the X direction or not
+     *    snapYDirection - Whether to perform snapping in the Y direction or not
+     */
+    Util.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
+        for (let i = 0; i < notSelectedNodes.length; i++) {
+            if (notSelectedNodes[i] === node) {
+                continue;
+            }
+
+            if (Math.abs(node.x - notSelectedNodes[i].x) < globals.SNAP_TO_PADDING && snapXDirection) {
+                node.x = notSelectedNodes[i].x;
+            }
+
+            if (Math.abs(node.y - notSelectedNodes[i].y) < globals.SNAP_TO_PADDING && snapYDirection) {
+                node.y = notSelectedNodes[i].y;
+            }
+        }
     };
 
     return new Util();
