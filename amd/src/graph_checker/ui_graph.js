@@ -51,10 +51,12 @@
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
         'qtype_graphchecker/graph_checker/graphelements',
         'qtype_graphchecker/graph_checker/graph_components/graph_representation',
+        'qtype_graphchecker/graph_checker/graph_functionality/graph_eventhandler',
         'qtype_graphchecker/graph_checker/graph_components/graph_canvas',
-        'qtype_graphchecker/graph_checker/graph_components/help_overlay', 'qtype_graphchecker/graph_checker/ui_toolbar',
+        'qtype_graphchecker/graph_checker/graph_components/help_overlay', 'qtype_graphchecker/graph_checker/graph_toolbar',
         'qtype_graphchecker/graph_checker/toolbar_elements'],
-    function($, globals, util, elements, graph_representation, graph_canvas, help_overlay, ui_toolbar, toolbar_elements) {
+    function($, globals, util, elements, graph_representation, graph_eventhandler, graph_canvas, help_overlay,
+             ui_toolbar, toolbar_elements) {
 
     let self;
 
@@ -70,46 +72,48 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    templateParams - The parameters used for defining the graph
      */
     function GraphUI(textareaId, uiWrapper, width, height, templateParams) {
-        self = this;
+        self = this; //TODO: comments here to show what is what + neater
         this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
         this.uiMode = util.ModeType.SELECT; // Set the UI mode to be 'Select' initially //TODO
         this.isTempDrawModeActive = false;
-        this.petriNodeType = util.PetriNodeType.NONE;
-        this.readOnly = this.textArea.prop('readonly');
+        this.petriNodeType = util.PetriNodeType.NONE; // The current Petri node type, when creating new Petri net nodes
+        this.readOnly = this.textArea.prop('readonly'); // Whether the graph is readonly or also editable
         this.templateParams = templateParams;
         this.uiWrapper = uiWrapper;
 
-        this.graphRepr = new graph_representation.GraphRepresentation(this, this.nodeRadius);
-
-        this.graphCanvas = new graph_canvas.GraphCanvas(this, this.canvasId, width, height);
-
         let helpOverlayId = 'graphcanvas_overlay_' + textareaId;
         this.helpOverlay = new help_overlay.HelpOverlay(this, helpOverlayId, this.uiWrapper);
+
+        this.graphRepr = new graph_representation.GraphRepresentation(this, this.nodeRadius);
+        this.graphEventHandler = new graph_eventhandler.GraphEventHandler(this, this.graphRepr, this.readOnly);
+        this.graphCanvas = new graph_canvas.GraphCanvas(this, this.canvasId, width, height, this.graphEventHandler);
 
         this.toolbarId = 'toolbar_' + textareaId;
         this.toolbar = null;
         if (!this.readOnly) {
             // Set the toolbar only if readonly is disabled
-            this.toolbar = new ui_toolbar.GraphToolbar(this, this.toolbarId, width, this.uiMode, this.helpOverlay);
+            this.toolbar = new ui_toolbar.GraphToolbar(this, this.toolbarId, width, this.uiMode, this.helpOverlay,
+                this.graphEventHandler);
         }
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay)
         this.containerDiv = $(document.createElement('div'));
         $(this.containerDiv).addClass('graph_ui_container_div');
 
+        // Variables for configuring the state of the UI
         this.selectedObjects = []; // One or more elements.Link or elements.Node objects. Default: empty array
         this.previousSelectedObjects = []; // Same as selectedObjects, but previous selected ones
         this.draggedObjects = []; // The elements that are currently being dragged; [] if not dragging
-        this.clickedObject = null; // The last manually clicked object
+        this.clickedObject = null; // The last manually clicked object, without releasing the mouse button
         this.selectionRectangle = null; // The top-left/bottom-right corners of the selection rectangle,
-        // used in the form [{x: null, y: null}, {x: null, y: null}]
-        this.currentLink = null;
+        // used in the form [{x: number, y: number}, {x: number, y: number}]
+        this.currentLink = null; //The current (temporary) draggable link. Used to create new links
         this.mousePosition = null; // A variable to denote the position of the mouse on the canvas.
         // Format: {x: number, y: number}
-        this.canMoveObjects = false;
-        this.fail = false;  // Will be set true if load fails (can't deserialise).
-        this.failString = null;  // Language string key for fail error message.
+        this.canMoveObjects = false; // TODO: refactor this away, if possible
+        this.fail = false; // Will be set true if load fails (can't deserialise).
+        this.failString = null; // Language string key for fail error message.
 
         // Creates and sets the HTML help text for the help overlay
         this.helpOverlay.setHelpText(this.templateParams, this.isType, this.allowEdits);
@@ -161,7 +165,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         return this.containerDiv;
     };
 
-    /**
+    /** // TODO: move getters and setters?
      * Function: hasFocus
      *
      * Returns:
@@ -466,275 +470,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }, timeout);
     };
 
-    GraphUI.prototype.keypress = function(e) {
-        var key = util.crossBrowserKey(e);
-
-        if (this.readOnly) {
-            return;
-        }
-
-        if (key === 8 || key === 0x20 || key === 9) {
-            // Disable scrolling on backspace, tab and space.
-            return false;
-        }
-    };
-
-    GraphUI.prototype.mousedown = function(e) {
-        var mouse = util.mousePos(e);
-
-        if (this.readOnly) {
-            return;
-        }
-
-        this.clickedObject = this.graphRepr.getObjectOnMousePos(mouse.x, mouse.y, true);
-        this.canMoveObjects = false;
-
-        // Check whether the click is a left mouse click
-        if (e.button === 0) {
-            // Depending on the mode, perform different tasks
-            if (this.uiMode === util.ModeType.DRAW) {
-                if (!this.clickedObject && !this.currentLink && this.allowEdits(util.Edit.ADD_VERTEX)) {
-                    // Draw a node
-                    let newNode = new elements.Node(this, mouse.x, mouse.y);
-                    if (this.isType(util.Type.PETRI)) { // Consider the node a place if it is a petri net
-                        newNode.petriNodeType = this.petriNodeType;
-                    }
-                    this.graphRepr.addNode(newNode);
-
-                    // Set as initial node if it is the first node, and if the type is FSM
-                    if (this.graphRepr.getNodes().length === 1 && this.isType(util.Type.FSM)) {
-                        this.setInitialFSMVertex(newNode);
-                    }
-
-                    // Set this node as the only selected object, so it shows a blue outline
-                    this.selectedObjects = [newNode];
-                    this.previousSelectedObjects = this.selectedObjects;
-
-                    // Also enable the editing fields
-                    this.toolbar.addSelectionOptions(this.selectedObjects);
-                    if (this.allowEdits(util.Edit.DELETE_VERTEX)) {
-                        this.toolbar.rightButtons['delete'].setEnabled();
-                    }
-                    if (this.isType(util.Type.FSM)) {
-                        this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
-                    }
-                    if (this.isType(util.Type.PETRI)) {
-                        this.toolbar.addPetriSelectionOptions(this.selectedObjects);
-                    }
-                    this.onGraphChange();
-                }
-
-            } else if (this.uiMode === util.ModeType.SELECT) {
-                if (e.shiftKey) {
-                    if (this.clickedObject && !this.clickedObject.locked) {
-                        if (!this.selectedObjects.includes(this.clickedObject)) {
-                            // Add to selection
-                            this.selectedObjects.push(this.clickedObject);
-                        } else {
-                            // Remove from selection
-                            this.selectedObjects = this.selectedObjects.filter(e => e !== this.clickedObject);
-                        }
-                    }
-                } else {
-                    if (!this.selectedObjects.includes(this.clickedObject)) {
-                        // Set this object as the only selected if it was not selected yet
-                        this.selectedObjects = (this.clickedObject && !this.clickedObject.locked) ? [this.clickedObject] : [];
-                    }
-                }
-
-                // If a new object is selected (apart from TemporaryLinks),
-                // display the according input elements in the toolbar
-                if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
-                    this.clickedObject instanceof elements.SelfLink ||
-                    this.clickedObject instanceof elements.StartLink) {
-                    this.toolbar.addSelectionOptions(this.selectedObjects);
-                } else {
-                    this.toolbar.removeSelectionOptions();
-                }
-
-                // If the type is FSM, display the according buttons in the toolbar, depending on the situation
-                if (this.isType(util.Type.FSM)) {
-                    let hasSelectionOneNode = false;
-                    for (let i = 0; i < this.selectedObjects.length; i++) {
-                        if (this.selectedObjects[i] instanceof elements.Node) {
-                            hasSelectionOneNode = true;
-                        }
-                    }
-                    if (hasSelectionOneNode) {
-                        this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);
-                    } else {
-                        this.toolbar.removeFSMNodeSelectionOptions();
-                    }
-                }
-
-                // If the type is Petri, display the according token input field in the toolbar
-                if (this.isType(util.Type.PETRI)) {
-                    if (this.selectedObjects.length) {
-                        this.toolbar.addPetriSelectionOptions(this.selectedObjects);
-                    } else {
-                        this.toolbar.removePetriSelectionOptions();
-                    }
-                }
-
-                // Start dragging objects
-                if (!(this.templateParams.locknodes && this.clickedObject instanceof elements.Node)
-                    && !(this.templateParams.lockedges && this.clickedObject instanceof elements.Link)) {
-                    this.canMoveObjects = true;
-                    this.draggedObjects = [...this.selectedObjects];
-                    if (this.clickedObject !== null && !this.draggedObjects.includes(this.clickedObject)) {
-                        this.draggedObjects.push(this.clickedObject);
-                    }
-                    for (let i = 0; i < this.draggedObjects.length; i++) {
-                        let object = this.draggedObjects[i];
-                        if (object && object.setMouseStart) {
-                            object.setMouseStart(mouse.x, mouse.y);
-                        }
-                    }
-                }
-
-                // If an object is selected, activate the delete button.
-                // Else, deactivate it
-                if (this.clickedObject instanceof elements.Node || this.clickedObject instanceof elements.Link ||
-                    this.clickedObject instanceof elements.SelfLink ||
-                    this.clickedObject instanceof elements.StartLink) {
-                    if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
-                        this.toolbar.rightButtons['delete'].setEnabled();
-                    }
-                } else {
-                    if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
-                        this.toolbar.rightButtons['delete'].setDisabled();
-                    }
-                }
-
-                if (!this.clickedObject) {
-                    // Clicking on an empty canvas spot marks one corner of the selection rectangle
-                    // The other one will be the same position
-                    this.selectionRectangle = [{x: mouse.x, y :mouse.y}, {x: mouse.x, y :mouse.y}];
-                }
-            }
-        }
-
-        this.draw();
-
-        if(this.hasFocus()) {
-            // Disable drag-and-drop only if the canvas is already focused.
-            return false;
-        } else {
-            // Otherwise, let the browser switch the focus away from wherever it was.
-            return true;
-        }
-    };
-
-    GraphUI.prototype.keydown = function(e) {
-        var key = util.crossBrowserKey(e);
-
-        let elementName = document.activeElement.localName;
-        let elementType = document.activeElement.type;
-
-        if (this.readOnly || (elementName === "input" && (elementType === "text" || elementType === "number"))) {
-            return;
-        }
-
-        if (key === 46) { // Delete key.
-            if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
-                this.deleteSelectedObjects(this);
-            }
-        } else if (key === 27) { // Escape key.
-            // Deselect the objects, and remove the select bar
-            this.selectedObjects = [];
-            this.toolbar.removeSelectionOptions();
-            if (this.isType(util.Type.FSM)) {
-                this.toolbar.removeFSMNodeSelectionOptions();
-            }
-            if (this.isType(util.Type.PETRI)) {
-                this.toolbar.removePetriSelectionOptions();
-            }
-            this.draw();
-        }
-
-        if (key === 17) { // Control key
-
-            // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
-            if (this.uiMode !== util.ModeType.DRAW &&
-                (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
-                this.enableTemporaryDrawMode();
-            }
-        }
-
-        // If an object, having a label or token input field, is selected in SELECT mode, and the user presses a key
-        // which produces a character, then focus the input field and add the typed character to the input field.
-        // This enables the delete key to delete the item, instead of deleting the input field text
-        // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
-        let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
-        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key) || e.key === "Backspace") &&
-            !e.originalEvent.ctrlKey) {
-            let inputField = this.toolbar.middleInput['label'];
-
-            // If the input field exists, and a number (or backspace) is entered for a number input field, continue
-            if (inputField && (!(isNaN(parseInt(e.key, 10)) &&
-                inputField instanceof toolbar_elements.NumberInputField) || e.key === "Backspace")) {
-                // Find the input field
-                let element;
-                if (inputField instanceof toolbar_elements.TextField) {
-                    element = inputField.object[0].childNodes[1].childNodes[0];
-                } else if (inputField instanceof toolbar_elements.NumberInputField) {
-                    element = inputField.object[0].childNodes[1];
-                }
-
-                if (e.key !== "Backspace") {
-                    // Add the typed character to the input field and to the object's label
-                    element.value += e.key;
-                    this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
-
-                    if (element.value > inputField.maxValue) {
-                        // Set to the max value
-                        element.value = inputField.maxValue + '';
-                        this.selectedObjects[0].text = inputField.maxValue + '';
-                    }
-                } else {
-                    // Remove the last character from the input field
-                    element.value = element.value.slice(0, -1);
-                    this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
-                }
-
-                // Check for the validity of the label and take corresponding actions
-                this.checkLabelValidity(element, element.value);
-
-                // Focus the label
-                this.focusElement(element, 100);
-            }
-        }
-
-        if (e.key === "Backspace") {
-            // Backspace is a shortcut for the back button, but do NOT want to change pages. Therefore return false
-            return false;
-        }
-    };
-
-    GraphUI.prototype.keyup = function(e) {
-        var key = util.crossBrowserKey(e);
-
-        if (this.readOnly) {
-            return;
-        }
-
-        if (key === 17) { // Control key
-            // Set the mode to SELECT if it is not set already
-            if (this.uiMode !== util.ModeType.SELECT && this.isTempDrawModeActive) {
-                this.disableTemporaryDrawMode();
-            }
-        }
-    };
-
-    // This function is executed to check for certain key presses
-    GraphUI.prototype.checkKeyPressed = function(e) {
-        if (!e.ctrlKey && this.isTempDrawModeActive) {
-            // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
-            // This happens for example when releasing the CTRL key on an alert box popup
-            this.disableTemporaryDrawMode();
-        }
-    };
-
     GraphUI.prototype.resize = function(w, h) {
         // Setting w to w+1 in order to fill the resizable area's width with the canvases completely
         w = w+1;
@@ -752,104 +487,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.draw();
     };
 
-    GraphUI.prototype.mousemove = function(e) {
-        var mouse = util.mousePos(e),
-            closestPoint;
-
-        if (this.readOnly) {
-            return;
-        }
-
-        this.mousePosition = {x: mouse.x, y: mouse.y};
-
-        // Depending on the mode, perform different tasks
-        if (this.uiMode === util.ModeType.DRAW) {
-            if (this.clickedObject instanceof elements.Node && this.allowEdits(util.Edit.ADD_EDGE)) {
-                let targetNode = this.graphRepr.getObjectOnMousePos(mouse.x, mouse.y, true);
-                let targetNodeStrict = this.graphRepr.getObjectOnMousePos(mouse.x, mouse.y, false);
-                if(!(targetNode instanceof elements.Node)) {
-                    // If the target node is not a node (e.g. an edge) set it to null
-                    targetNode = null;
-                }
-
-                // Depending on the mouse position, draw different kind of links
-                if (targetNode === this.clickedObject &&
-                    (this.isType(util.Type.DIRECTED) || this.isType(util.Type.FSM))) {
-                    this.currentLink = new elements.SelfLink(this, this.clickedObject, mouse);
-                } else if (targetNode && targetNode !== this.clickedObject) {
-                    this.currentLink = new elements.Link(this, this.clickedObject, targetNode);
-                } else if (!targetNodeStrict) {
-                    closestPoint = this.clickedObject.closestPointOnNode(mouse.x, mouse.y);
-                    this.currentLink = new elements.TemporaryLink(this, closestPoint, mouse);
-                } else {
-                    this.currentLink = new elements.TemporaryLink(this, this, mouse);
-                }
-            }
-
-            if (this.isTempDrawModeActive) {
-                this.selectionRectangle = null;
-            }
-        } else if (this.uiMode === util.ModeType.SELECT) {
-            if (this.draggedObjects.length) {
-                if (this.canMoveObjects && this.clickedObject) {
-                    // Apply horizontal/vertical snapping to all selected objects if they align horizontally/vertically
-                    let isAlignedHorizontally = true;
-                    let isAlignedVertically = true;
-                    for (let i = 0; i < this.draggedObjects.length - 1; i++) {
-                        if (this.draggedObjects[i].x !== this.draggedObjects[i + 1].x) {
-                            isAlignedVertically = false;
-                        }
-                        if (this.draggedObjects[i].y !== this.draggedObjects[i + 1].y) {
-                            isAlignedHorizontally = false;
-                        }
-                    }
-
-                    // Get all nodes that are not in the draggedObjects
-                    let nodesSet = new Set(this.graphRepr.getNodes());
-                    let draggedObjectsSet = new Set(this.draggedObjects);
-                    let nodesNotSelected = [...nodesSet].filter(x => !draggedObjectsSet.has(x));
-
-                    if (this.allowEdits(util.Edit.MOVE)) {
-                        for (let i = 0; i < this.draggedObjects.length; i++) {
-                            let object = this.draggedObjects[i];
-                            if (this.clickedObject instanceof elements.Node && object instanceof elements.Node) {
-                                object.setAnchorPoint(mouse.x, mouse.y);
-                                this.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
-                            } else if ((this.clickedObject instanceof elements.Link ||
-                                this.clickedObject instanceof elements.SelfLink ||
-                                this.clickedObject instanceof elements.StartLink) && this.clickedObject === object) {
-                                let isSnapped = object.setAnchorPoint(mouse.x, mouse.y);
-                                if (!isSnapped) {
-                                    // Deselect all other objects if the link has moved.
-                                    // In case of SelfLinks and StartLinks, which cannot be snapped,
-                                    // all objects are also deselected
-                                    this.draggedObjects = [this.clickedObject];
-                                }
-                            }
-
-                            // Set the object to have moved
-                            object.hasMoved = true;
-                        }
-                    }
-                }
-            }
-
-            if (!this.clickedObject && this.selectionRectangle) {
-                // Overwrite the other corner of the selection rectangle
-                this.selectionRectangle[1] = {x: mouse.x, y: mouse.y};
-            }
-        }
-
-        this.draw();
-    };
-
     GraphUI.prototype.mouseup = function(e) {
         if (this.readOnly) {
             return;
         }
         // After an alert popup (e.g. originating from this function), this function is called again
         // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
-        this.checkKeyPressed(e);
+        // TODO: repetitive
+        if (!e.ctrlKey && this.isTempDrawModeActive) {
+            // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
+            // This happens for example when releasing the CTRL key on an alert box popup
+            this.par.disableTemporaryDrawMode();
+        }
 
         if (this.currentLink) {
             if (!(this.currentLink instanceof elements.TemporaryLink) && this.allowEdits(util.Edit.ADD_EDGE)) {
@@ -995,17 +644,90 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.draw();
     };
 
-    // This event function is activated when the mouse enters the graph canvas
-    GraphUI.prototype.mouseenter = function(e) {
-        // Check what keys are pressed (used to for example deactive temporary draw mode, if applicable)
-        this.checkKeyPressed(e);
-    };
+    GraphUI.prototype.keydown = function(e) {
+        var key = util.crossBrowserKey(e);
 
-    // This event function is activated when the mouse leaves the graph canvas
-    GraphUI.prototype.mouseleave = function(e) {
-        // Set the mouse position to null
-        this.mousePosition = null;
-        this.mouseup(e);
+        let elementName = document.activeElement.localName;
+        let elementType = document.activeElement.type;
+
+        if (this.readOnly || (elementName === "input" && (elementType === "text" || elementType === "number"))) {
+            return;
+        }
+
+        if (key === 46) { // Delete key.
+            if (this.allowEdits(util.Edit.DELETE_VERTEX) || this.allowEdits(util.Edit.DELETE_EDGE)) {
+                this.deleteSelectedObjects(this);
+            }
+        } else if (key === 27) { // Escape key.
+            // Deselect the objects, and remove the select bar
+            this.selectedObjects = [];
+            this.toolbar.removeSelectionOptions();
+            if (this.isType(util.Type.FSM)) {
+                this.toolbar.removeFSMNodeSelectionOptions();
+            }
+            if (this.isType(util.Type.PETRI)) {
+                this.toolbar.removePetriSelectionOptions();
+            }
+            this.draw();
+        }
+
+        if (key === 17) { // Control key
+
+            // Set the mode to Draw if it is not set already, and if drawing (i.e. adding) is allowed
+            if (this.uiMode !== util.ModeType.DRAW &&
+                (this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
+                this.enableTemporaryDrawMode();
+            }
+        }
+
+        // If an object, having a label or token input field, is selected in SELECT mode, and the user presses a key
+        // which produces a character, then focus the input field and add the typed character to the input field.
+        // This enables the delete key to delete the item, instead of deleting the input field text
+        // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
+        let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
+        if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key) || e.key === "Backspace") &&
+            !e.originalEvent.ctrlKey) {
+            let inputField = this.toolbar.middleInput['label'];
+
+            // If the input field exists, and a number (or backspace) is entered for a number input field, continue
+            if (inputField && (!(isNaN(parseInt(e.key, 10)) &&
+                inputField instanceof toolbar_elements.NumberInputField) || e.key === "Backspace")) {
+                // Find the input field
+                let element;
+                if (inputField instanceof toolbar_elements.TextField) {
+                    element = inputField.object[0].childNodes[1].childNodes[0];
+                } else if (inputField instanceof toolbar_elements.NumberInputField) {
+                    element = inputField.object[0].childNodes[1];
+                }
+
+                if (e.key !== "Backspace") {
+                    // Add the typed character to the input field and to the object's label
+                    element.value += e.key;
+                    this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+
+                    if (element.value > inputField.maxValue) {
+                        // Set to the max value
+                        element.value = inputField.maxValue + '';
+                        this.selectedObjects[0].text = inputField.maxValue + '';
+                    }
+                } else {
+                    // Remove the last character from the input field
+                    element.value = element.value.slice(0, -1);
+                    this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
+                }
+
+                // Check for the validity of the label and take corresponding actions
+                this.checkLabelValidity(element, element.value);
+
+                // Focus the label
+                this.focusElement(element, 100);
+            }
+        }
+
+        if (e.key === "Backspace") {
+            // Backspace is a shortcut for the back button, but do NOT want to change pages. Therefore return false
+            return false;
+        }
     };
 
     GraphUI.prototype.alertPopup = function(message) {
@@ -1135,24 +857,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
             if (this.graphRepr.getLinks()[i] instanceof elements.StartLink && this.graphRepr.getLinks()[i].node === vertex) {
                 this.graphRepr.getLinks().splice(i--, 1);
-            }
-        }
-    };
-
-    // A function to snap the input node to any other node not present in the selection. This snapping happens either
-    // horizontally or vertically
-    GraphUI.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
-        for (let i = 0; i < notSelectedNodes.length; i++) {
-            if (notSelectedNodes[i] === node) {
-                continue;
-            }
-
-            if (Math.abs(node.x - notSelectedNodes[i].x) < globals.SNAP_TO_PADDING && snapXDirection) {
-                node.x = notSelectedNodes[i].x;
-            }
-
-            if (Math.abs(node.y - notSelectedNodes[i].y) < globals.SNAP_TO_PADDING && snapYDirection) {
-                node.y = notSelectedNodes[i].y;
             }
         }
     };
@@ -1344,6 +1048,205 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     GraphUI.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull) {
         this.graphCanvas.drawText(originalObject, originalText, x, y, angleOrNull, this.graphRepr.getLinks(), this.nodeRadius(),
             this.fontSize(), this.isType);
+    };
+
+    // TODO: getters and setters, some header part here to show more clearly
+    /**
+     * Function: getUIMode
+     *
+     * Returns:
+     *    The current UI mode of this application
+     */
+    GraphUI.prototype.getUIMode = function() {
+        return this.uiMode;
+    };
+
+    /**
+     * Function: getTempDrawModeActive
+     *
+     * Returns:
+     *    Whether the temporary draw mode is currently active or not
+     */
+    GraphUI.prototype.getTempDrawModeActive = function() {
+        return this.isTempDrawModeActive;
+    };
+
+    /**
+     * Function: setTempDrawModeActive
+     *
+     * Parameters:
+     *    value - The value to which to set the tempDrawmode variable
+     */
+    GraphUI.prototype.setTempDrawModeActive = function(value) {
+        this.isTempDrawModeActive = value;
+    };
+
+    /**
+     * Function: getMousePosition
+     *
+     * Returns:
+     *    The position of the mouse, in the format: {x: number, y: number}
+     */
+    GraphUI.prototype.getMousePosition = function() {
+        return this.mousePosition;
+    };
+
+    /**
+     * Function: setMousePosition
+     * Sets the position of the mouse, in the format: {x: number, y: number}
+     *
+     * Parameters:
+     *    mousePosition -  The position of the mouse, in the format: {x: number, y: number}
+     */
+    GraphUI.prototype.setMousePosition = function(mousePosition) {
+        this.mousePosition = mousePosition;
+    };
+
+    /**
+     * Function: getClickedObject
+     *
+     * Returns:
+     *    The last clicked object, if any, as clicked by the user
+     */
+    GraphUI.prototype.getClickedObject = function() {
+        return this.clickedObject;
+    };
+
+    /**
+     * Function: setClickedObject
+     * Sets the object, if any, clicked by the user
+     *
+     * Parameters:
+     *    object - The object clicked by the user, or null
+     */
+    GraphUI.prototype.setClickedObject = function(object) {
+        this.clickedObject = object;
+    };
+
+    /**
+     * Function: getSelectedObjects
+     *
+     * Returns:
+     *    The currently selected objects, as selected by the user
+     */
+    GraphUI.prototype.getSelectedObjects = function() {
+        return this.selectedObjects;
+    };
+
+    /**
+     * Function: setSelectedObjects
+     * Sets the selected objects, if any
+     *
+     * Parameters:
+     *    selectedObjects - The selected object(s) to be set
+     */
+    GraphUI.prototype.setSelectedObjects = function(selectedObjects) {
+        this.selectedObjects = selectedObjects;
+    };
+
+    /**
+     * Function: getPreviousSelectedObjects
+     *
+     * Returns:
+     *    The previously selected objects, as selected by the user
+     */
+    GraphUI.prototype.getPreviousSelectedObjects = function() {
+        return this.previousSelectedObjects;
+    };
+
+    /**
+     * Function: setPreviousSelectedObjects
+     * Sets the previously selected objects, if any
+     *
+     * Parameters:
+     *    prevSelectedObjects - The previously selected object(s) to be set
+     */
+    GraphUI.prototype.setPreviousSelectedObjects = function(prevSelectedObjects) {
+        this.previousSelectedObjects = prevSelectedObjects;
+    };
+
+    /**
+     * Function: getSelectionRectangle
+     *
+     * Returns:
+     *    The currently-set selection rectangle
+     */
+    GraphUI.prototype.getSelectionRectangle = function() {
+        return this.selectionRectangle;
+    };
+
+    /**
+     * Function: setSelectionRectangle
+     * Sets the current selection rectangle
+     *
+     * Parameters:
+     *    selectionRectangle - The selection rectangle to be set. Format: [{x: number, y: number}, {x: number, y: number}]
+     */
+    GraphUI.prototype.setSelectionRectangle = function(selectionRectangle) {
+        this.selectionRectangle = selectionRectangle;
+    };
+
+    /**
+     * Function: getCurrentLink
+     *
+     * Returns:
+     *    The currently selected objects, as selected by the user
+     */
+    GraphUI.prototype.getCurrentLink = function() {
+        return this.currentLink;
+    };
+
+    /**
+     * Function: setCurrentLink
+     * Sets the selected objects, if any
+     *
+     * Parameters:
+     *    selectedObjects - The selected object(s) to be set
+     */
+    GraphUI.prototype.setCurrentLink = function(selectedObjects) {
+        this.currentLink = selectedObjects;
+    };
+
+    /**
+     * Function: getCanMoveObjects
+     *
+     * Returns:
+     *    Whether the user can move any objects at this point in time TODO: useful func or not, maybe can be refactored away
+     */
+    GraphUI.prototype.getCanMoveObjects = function() {
+        return this.canMoveObjects;
+    };
+
+    /**
+     * Function: setCanMoveObjects
+     * Sets whether the user can move objects at this point in time TODO: refactor out?
+     *
+     * Parameters:
+     *    value - The boolean value to which to set this parameter
+     */
+    GraphUI.prototype.setCanMoveObjects = function(value) {
+        this.canMoveObjects = value;
+    };
+
+    /**
+     * Function: getDraggedObjects
+     *
+     * Returns:
+     *    The elements that are currently being dragged, if any
+     */
+    GraphUI.prototype.getDraggedObjects = function() {
+        return this.draggedObjects;
+    };
+
+    /**
+     * Function: setDraggedObjects
+     * Assigns objects which are currently being dragged
+     *
+     * Parameters:
+     *    objects - The objects which are set to be dragged
+     */
+    GraphUI.prototype.setDraggedObjects = function(objects) {
+        this.draggedObjects = objects;
     };
 
     return {

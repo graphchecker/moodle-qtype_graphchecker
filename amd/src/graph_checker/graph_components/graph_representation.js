@@ -151,7 +151,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchec
     };
 
     /**
-     * Function: getObjectsInRectangle
+     * Function: getObjectsInRectangle //TODO: refactor further
      *
      * Parameters:
      *    rect - The input rectangle in the form: [{x: null, y: null}, {x: null, y: null}], representing two opposite corners
@@ -256,7 +256,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchec
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
     GraphRepresentation.prototype.load = function(textArea, templateParams, isTypeFunc) {
-        var content = $(textArea).val();
+        let content = $(textArea).val();
         if (content) {
             // If there is content in the text area
             try {

@@ -20,8 +20,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    canvasId - The id value given to the canvas
      *    w - The width of the wrapper enclosing the canvas
      *    h - The height of the wrapper enclosing the canvas
+     *    eventHandler - The object that handles events, upon notice of the listeners implemented in this object
      */
-    function GraphCanvas(parent, canvasId, w, h) {
+    function GraphCanvas(parent, canvasId, w, h, eventHandler) {
         this.selectionRectangleOffset = 0; // Used for animating the border of the selection rectangle (marching ants)
 
         this.parent = parent;
@@ -33,36 +34,52 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         });
         this.canvas.css({'background-color': util.Color.WHITE});
 
-        this.canvas.on('mousedown', function (e) {
-            return parent.mousedown(e);
+        this.canvas.on('mousedown', function (e) { //TODO: incorporate new event handlers
+            if (eventHandler.allowEvents()) {
+                eventHandler.mousedown(e); //TODO: i think no return needed
+            }
         });
 
         this.canvas.on('mouseup', function (e) {
-            return parent.mouseup(e);
+            if (eventHandler.allowEvents()) {
+                parent.mouseup(e); //TODO
+            }
         });
 
         this.canvas.on('mouseenter', function (e) {
-            return parent.mouseenter(e);
+            if (eventHandler.allowEvents()) {
+                eventHandler.mouseenter(e);
+            }
         });
 
         this.canvas.on('mouseleave', function (e) {
-            return parent.mouseleave(e);
-        });
-
-        this.canvas.on('keydown', function (e) {
-            return parent.keydown(e);
-        });
-
-        this.canvas.on('keyup', function (e) {
-            return parent.keyup(e);
+            if (eventHandler.allowEvents()) {
+                eventHandler.mouseleave(e);
+            }
         });
 
         this.canvas.on('mousemove', function (e) {
-            return parent.mousemove(e);
+            if (eventHandler.allowEvents()) {
+                eventHandler.mousemove(e);
+            }
+        });
+
+        this.canvas.on('keydown', function (e) {
+            if (eventHandler.allowEvents()) {
+                parent.keydown(e); //TODO
+            }
+        });
+
+        this.canvas.on('keyup', function (e) {
+            if (eventHandler.allowEvents()) {
+                eventHandler.keyup(e);
+            }
         });
 
         this.canvas.on('keypress', function (e) {
-            return parent.keypress(e);
+            if (eventHandler.allowEvents()) {
+                eventHandler.keypress(e);
+            }
         });
 
         this.resize = function (w, h) {

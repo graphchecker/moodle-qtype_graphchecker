@@ -57,7 +57,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, uiMode, helpOverlay) {
+    function GraphToolbar(parent, divId, w, uiMode, helpOverlay, eventHandler) {
         // TODO: rename this file, so doesnt start with ui_, since that's confusing because of the standard interface
         //  element file names from userinterfacewrapper.js
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
@@ -73,6 +73,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         };
         this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
         this.helpOverlay = helpOverlay;
+        this.eventHandler = eventHandler;
         this.div = $(document.createElement('div'));
         this.div.attr({
             id: divId,
@@ -170,12 +171,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             self.parent.setUIMode(util.ModeType.SELECT);
         });
 
-        this.div.on('keydown', function (e) {
-            return parent.keydown(e);
+        this.div.on('keydown', function (e) { //TODO: incorporate new event handlers. Also search for other hidden event listeners
+            return eventHandler.keydown(e);
         });
 
         this.div.on('keyup', function (e) {
-            return parent.keyup(e);
+            return eventHandler.keyup(e);
         });
 
         this.onModeButtonPressed = function (buttonModeType) {
