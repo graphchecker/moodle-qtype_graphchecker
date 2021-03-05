@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[{"label":"","position":[377.66497461928935,196.52282405020622],"locked":false,"color":"#ffffff","highlighted":false}],"edges":[]}
+{"type":"check","module":"basic","method":"no_cycles","arguments":{"highlighted":"only highlighted edges"}}
+pass
