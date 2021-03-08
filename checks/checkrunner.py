@@ -11,12 +11,14 @@ def run(graph_type, graph, checks):
 	# search either in ./type.json (on the server)
 	# or in ./<graph_type>/type.json (on the tester)
 	type_file = os.path.join(root_dir, 'type.json')
-	with open(type_file) as f:
-		type_info = json.load(f)
+	try:
+		with open(type_file) as f:
+			type_info = json.load(f)
 	except FileNotFoundError:
 		type_file = os.path.join(root_dir, graph_type, 'type.json')
 		with open(type_file) as f:
-			type_file = os.path.join(root_dir, 'type.json')
+			type_info = json.load(f)
+
 	if 'python_modules' in type_info:
 		for module in type_info['python_modules']:
 			globals()[module] = importlib.import_module(module)
