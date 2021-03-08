@@ -504,6 +504,12 @@ body#page-question-type-graphchecker .tests-ui .test-name {
     font-weight: bold;
 }
 
+body#page-question-type-graphchecker .tests-ui .test-used-check {
+    float: right;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
 body#page-question-type-graphchecker .tests-ui .available-tests-list .button-group {
     position: absolute;
 }

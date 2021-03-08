@@ -636,6 +636,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('test-name')
             .appendTo($header);
 
+        let used = this.hasCheck(module, method);
+        if (used) {
+            $('<span/>')
+                .html('✓')
+                .addClass('test-used-check')
+                .appendTo($header);
+        }
+
         if (check['description']) {
             //let $helpButton = this.createHelpButton(check['description'])
             //    .appendTo($header);
@@ -646,6 +654,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         }
 
         return $container;
+    };
+
+    ChecksUi.prototype.hasCheck = function(module, method) {
+        let $containers = this.$checksPanel.find('.test-container');
+        let used = false;
+        let self = this;
+        $containers.each(function() {
+            let json = self.checkContainerToJson($(this));
+            if (json['module'] === module && json['method'] === method) {
+                used = true;
+            }
+        });
+        return used;
     };
 
     ChecksUi.prototype.createDialog = function(title, content, buttonText) {
