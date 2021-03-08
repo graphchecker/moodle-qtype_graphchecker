@@ -2,9 +2,14 @@ def preprocess(graph):
     text = ""
 
     final_states = []
+    state_labels_seen = set()
     for state in graph['vertices']:
         if (not 'label' in state) or (state['label'] == ''):
             raise Exception("Automaton contains a state without a label")
+        label = state['label']
+        if label in state_labels_seen:
+            raise Exception("Automaton contains duplicate state '" + label + "'")
+        state_labels_seen.add(label)
         if state['initial']:
             text += "initial " + state['label'] + "\n"
         if state['final']:
