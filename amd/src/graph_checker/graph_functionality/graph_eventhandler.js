@@ -685,7 +685,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Disable the selection rectangle
         this.par.setSelectionRectangle(null);
-    }
+    };
 
     /**
      * Function: uponGraphDragRelease
@@ -712,7 +712,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Reset the 'hasMoved' parameter of all selected objects
         this.par.getSelectedObjects().forEach(element => element.resetHasMoved());
-    }
+    };
 
     /**
      * Function: checkConfigurationKeysPressed

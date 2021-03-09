@@ -277,7 +277,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      */
     GraphUI.prototype.disableTemporaryDrawMode = function() {
         if (!(this.allowEdits(util.Edit.ADD_VERTEX) || this.allowEdits(util.Edit.ADD_EDGE))) {
-            return
+            return;
         }
 
         // A variable denoting whether the label input has focus or not
