@@ -1,7 +1,6 @@
 /******************************************************************************
  *
- * A module for use by ui_graph, defining classes Node, Link, SelfLink,
- * StartLink, TemporaryLink, and HTML elements
+ * A module for use by ui_graph, defining (generic) graph elements
  *
  ******************************************************************************/
 // This code is a modified version of Finite State Machine Designer
@@ -43,10 +42,33 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Implementation of the graph editor, which is used both in the question
+ * editing page and in the student question submission page.
+ *
+ * @package   qtype_graphchecker
+ * @copyright TU Eindhoven, The Netherlands
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil'],
     function($, globals, util) {
+
+    /***********************************************************************
+     *
+     * Define a generic class for graph elements
+     *
+     ***********************************************************************/
+    // function GraphElement(parent) {
+    //     this.parent = parent; // The ui_graph instance
+    //
+    //     this.locked = false; // Whether this element is locked or not
+    //     this.hasMoved = false; // Whether the element has moved or not
+    //
+    //     this.text = ''; // The (user-entered) text for this element
+    //     this.isHighlighted = false; // Whether the element is highlighted or not
+    // }
 
     /***********************************************************************
      *
