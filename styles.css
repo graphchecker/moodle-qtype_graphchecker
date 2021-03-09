@@ -432,9 +432,10 @@ body#page-question-type-graphchecker .tests-ui .grade-container:last-child {
 }
 
 body#page-question-type-graphchecker .tests-ui .module-container {
-    background-color: #f0f0f0;
-    border-bottom: 1px solid darkgray;
-    padding: 6px 8px;
+    padding: 5px 0px;
+}
+body#page-question-type-graphchecker .tests-ui .module-container summary {
+    padding: 3px 0px;
 }
 
 /* definitions for button styling taken from atto for consistency */

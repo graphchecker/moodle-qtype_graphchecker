@@ -156,14 +156,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         for (let moduleName in this.modules) {
             if (this.modules.hasOwnProperty(moduleName)) {
                 let module = this.modules[moduleName];
-                this.createModuleContainer(moduleName, module)
+                let $moduleContainer = this.createModuleContainer(moduleName, module)
                     .appendTo($result);
                 let checks = module['checks'];
                 for (let checkName in checks) {
                     if (checks.hasOwnProperty(checkName) &&
                             !checks[checkName]['deprecated']) {
                         this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
-                            .appendTo($result);
+                            .appendTo($moduleContainer);
                     }
                 }
             }
@@ -473,10 +473,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
      * @param module The name of the module.
      */
     ChecksUi.prototype.createModuleContainer = function(module) {
-        let $container = $('<div/>')
+        let $container = $('<details/>')
             .addClass('module-container');
 
-        let $header = $('<div/>')
+        let $header = $('<summary/>')
             .addClass('module-header')
             .appendTo($container);
 
