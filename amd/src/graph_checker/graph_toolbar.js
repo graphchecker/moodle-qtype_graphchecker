@@ -58,8 +58,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      ************************************************************************/
 
     function GraphToolbar(parent, divId, w, uiMode, helpOverlay, eventHandler) {
-        // TODO: rename this file, so doesnt start with ui_, since that's confusing because of the standard interface
-        //  element file names from userinterfacewrapper.js
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
         // the required canvasId and the height and width of the wrapper that
         // encloses the Div.
@@ -71,7 +69,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             w: 35,
             h: 25,
         };
-        this.uiMode = uiMode; //TODO: remove, or rename to initialUIMode
+        this.uiMode = uiMode;
         this.helpOverlay = helpOverlay;
         this.eventHandler = eventHandler;
         this.div = $(document.createElement('div'));
@@ -123,7 +121,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             if (self.parent.allowEdits(util.Edit.DELETE_VERTEX) || self.parent.allowEdits(util.Edit.DELETE_EDGE)) {
                 let deleteButton = new toolbar_elements.GrayOutButton(self, self.toolbarRightPart,
                     self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects,
-                    self.parent);
+                    null);
                 deleteButton.create();
                 self.rightButtons['delete'] = deleteButton;
             }
@@ -139,7 +137,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Create the redo button
             if (self.parent.allowsOneEdit()) {
                 let redoButton = new toolbar_elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent);
+                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, null);
                 redoButton.create();
                 self.rightButtons['redo'] = redoButton;
             }
@@ -171,7 +169,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             self.parent.setUIMode(util.ModeType.SELECT);
         });
 
-        this.div.on('keydown', function (e) { //TODO: incorporate new event handlers. Also search for other hidden event listeners
+        this.div.on('keydown', function (e) {
             return eventHandler.keydown(e);
         });
 
@@ -568,7 +566,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let numberOfVertices = 0, numberOfInitialVertices = 0, numberOfFinalVertices = 0;
         for (let i = 0; i < selectedObjects.length; i++) {
             if (selectedObjects[i] instanceof elements.Node) {
-                if (selectedObjects[i].hasStartLink(this.parent.links)) {
+                if (selectedObjects[i].hasStartLink(this.parent.graphRepr.links)) {
                     numberOfInitialVertices++;
                 }
                 if (selectedObjects[i].isFinal) {

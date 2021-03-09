@@ -34,15 +34,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         });
         this.canvas.css({'background-color': util.Color.WHITE});
 
-        this.canvas.on('mousedown', function (e) { //TODO: incorporate new event handlers
+        this.canvas.on('mousedown', function (e) {
             if (eventHandler.allowEvents()) {
-                eventHandler.mousedown(e); //TODO: i think no return needed
+                eventHandler.mousedown(e);
             }
         });
 
         this.canvas.on('mouseup', function (e) {
             if (eventHandler.allowEvents()) {
-                parent.mouseup(e); //TODO
+                eventHandler.mouseup(e);
             }
         });
 
@@ -66,7 +66,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         this.canvas.on('keydown', function (e) {
             if (eventHandler.allowEvents()) {
-                parent.keydown(e); //TODO
+                eventHandler.keydown(e);
             }
         });
 
@@ -290,7 +290,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             originalObject.petriNodeType === util.PetriNodeType.PLACE)) {
             // If the text does not fit, or if it is a Place node (of a Petri net), position the element either on the
             // bottom, right, top or left of the node, depending on which side do not have incoming nodes
-            // TODO: what happens if no side is available. It seems like it doesn't check for that
+            // If all sides have incoming nodes, place it at the bottom
             let sidesOfNodeLinkIntersections = originalObject.getLinkIntersectionSides(links);
             if (!sidesOfNodeLinkIntersections.bottom ||
                 (sidesOfNodeLinkIntersections.bottom && sidesOfNodeLinkIntersections.right &&
@@ -324,7 +324,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         } else {
             x = Math.round(x);
             y = Math.round(y);
-            dy = Math.round(fontSize / 3); // TODO: I don't understand this
+            dy = Math.round(fontSize / 3); // Define how close the text is to the object
             c.fillText(text, x, y + dy);
         }
     };

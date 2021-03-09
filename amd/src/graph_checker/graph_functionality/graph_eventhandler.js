@@ -7,8 +7,8 @@
  */
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graphelements'], //TODO
-    function ($, globals, util, elements) { //TODO
+        'qtype_graphchecker/graph_checker/graphelements', 'qtype_graphchecker/graph_checker/toolbar_elements'],
+    function ($, globals, util, elements, toolbar_elements) {
 
     /**
      * Function: GraphEventHandler
@@ -56,7 +56,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Otherwise, set the clicked object (if any)
         this.par.setClickedObject(this.graphRepr.getObjectOnMousePos(mouse.x, mouse.y, true));
-        this.par.setCanMoveObjects(false); //TODO: refactor away if possible
 
         // If the click was a left mouse click, then proceed with event handling
         if (e.button === 0) {
@@ -88,11 +87,35 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    e - The generated event
      */
-    /* TODO: create
     GraphEventHandler.prototype.mouseup = function(e) {
-        //console.log(e);
+        // Define some used functions
+        let allowedEditsFunc = this.par.allowEdits;
+        let isTypeFunc = this.par.isType;
+
+        if (!e.ctrlKey && this.par.getTempDrawModeActive()) {
+            // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
+            // This happens for example when releasing the CTRL key on an alert box popup
+            this.par.disableTemporaryDrawMode();
+        }
+
+        // Upon mouseup, check what condition applies and perform according actions
+        if (this.par.getCurrentLink()) {
+            if (!(this.par.getCurrentLink() instanceof elements.TemporaryLink) && this.par.allowEdits(util.Edit.ADD_EDGE)) {
+                this.createNewLink(allowedEditsFunc, isTypeFunc);
+            }
+            this.par.setCurrentLink(null);
+            this.par.setClickedObject(false);
+        } else if (this.par.getSelectionRectangle()) {
+            this.selectWithinSelectionRectangle(e, allowedEditsFunc, isTypeFunc);
+        } else if (this.par.getUIMode() === util.ModeType.SELECT) {
+            this.uponGraphDragRelease(e);
+            this.par.setClickedObject(null);
+        } else {
+            this.par.setClickedObject(null);
+        }
+
+        this.par.draw();
     };
-     */
 
     /**
      * Function: mouseenter
@@ -102,7 +125,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    e - The generated event
      */
     GraphEventHandler.prototype.mouseenter = function(e) {
-        if (!e.ctrlKey && this.isTempDrawModeActive) {
+        if (!e.ctrlKey && this.par.isTempDrawModeActive) {
             // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
             // This happens for example when releasing the CTRL key on an alert box popup
             this.par.disableTemporaryDrawMode();
@@ -121,7 +144,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.par.setMousePosition(null);
 
         // Call the mouseup event, as it uses the same code
-        this.par.mouseup(e); // TODO
+        this.mouseup(e);
     };
 
     /**
@@ -169,9 +192,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    e - The generated event
      */
-    /* TODO: create
     GraphEventHandler.prototype.keydown = function(e) {
-        let pressedKey = util.crossBrowserKey(e);
+        let key = util.crossBrowserKey(e);
 
         // Find the name and type of the active HTML elements, and don't proceed if they are input fields
         let elementName = document.activeElement.localName;
@@ -180,23 +202,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             return;
         }
 
-        // Define functions to be used
-        let allowedEditsFunc = this.par.allowEdits;
-        let isTypeFunc = this.par.isType;
-
         // Otherwise, if configuration keys (i.e. non-character keys) are pressed
-        this.checkConfigurationKeysPressed();
+        this.checkConfigurationKeysPressed(key, this.par.allowEdits, this.par.isType);
 
-        // If an object, having a label or token input field, is selected in SELECT mode, and the user presses a key
-        // which produces a character, then focus the input field and add the typed character to the input field.
-        // This enables the delete key to delete the item, instead of deleting the input field text
-        // Furthermore, also check if the control key is not pressed, to still enable keyboad-control actions
+        // When an object is selected, and control is not pressed, and the user presses a key producing a character,
+        // then focus the input field and add that character. Also works with backspace key
         let specialDoubleCharacters = ['``', '~~', '\'\'', '^^', '""']; // Typed 'characters' which are not of length 1
         if ((e.key.length === 1 || specialDoubleCharacters.includes(e.key) || e.key === "Backspace") &&
             !e.originalEvent.ctrlKey) {
-            let inputField = this.toolbar.middleInput['label'];
 
             // If the input field exists, and a number (or backspace) is entered for a number input field, continue
+            let inputField = this.par.toolbar.middleInput['label'];
             if (inputField && (!(isNaN(parseInt(e.key, 10)) &&
                 inputField instanceof toolbar_elements.NumberInputField) || e.key === "Backspace")) {
                 // Find the input field
@@ -210,35 +226,34 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 if (e.key !== "Backspace") {
                     // Add the typed character to the input field and to the object's label
                     element.value += e.key;
-                    this.selectedObjects[0].text += e.key; // There is only one selected object if there is a label
+                    this.par.getSelectedObjects()[0].text += e.key; // There is only one selected object if there is a label
 
                     if (element.value > inputField.maxValue) {
                         // Set to the max value
                         element.value = inputField.maxValue + '';
-                        this.selectedObjects[0].text = inputField.maxValue + '';
+                        this.par.getSelectedObjects()[0].text = inputField.maxValue + '';
                     }
                 } else {
                     // Remove the last character from the input field
                     element.value = element.value.slice(0, -1);
-                    this.selectedObjects[0].text = this.selectedObjects[0].text.slice(0, -1);
+                    this.par.getSelectedObjects()[0].text = this.par.getSelectedObjects()[0].text.slice(0, -1);
                 }
 
                 // Check for the validity of the label and take corresponding actions
-                this.checkLabelValidity(element, element.value);
+                this.par.checkLabelValidity(element, element.value);
 
                 // Focus the label
-                this.focusElement(element, 100);
+                this.par.focusElement(element, 100);
             }
         }
 
         if (e.key === "Backspace") {
-            // Backspace is a shortcut for the back button, but do NOT want to change pages. Therefore return false
+            // Backspace is a shortcut for the back button, but we do NOT want to change pages. Therefore return false
             return false;
         }
 
         this.par.draw();
     };
-     */
 
     /**
      * Function: keyup
@@ -433,7 +448,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Start dragging objects
         if (!(this.par.templateParams.locknodes && this.par.getClickedObject() instanceof elements.Node)
             && !(this.par.templateParams.lockedges && this.par.getClickedObject() instanceof elements.Link)) {
-            this.par.setCanMoveObjects(true);
             this.par.setDraggedObjects([...this.par.getSelectedObjects()]);
             if (this.par.getClickedObject() !== null && !this.par.getDraggedObjects().includes(this.par.getClickedObject())) {
                 this.par.getDraggedObjects().push(this.par.getClickedObject());
@@ -479,7 +493,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 let closestPoint = this.par.getClickedObject().closestPointOnNode(mousePos.x, mousePos.y);
                 this.par.setCurrentLink(new elements.TemporaryLink(this.par, closestPoint, mousePos));
             } else {
-                // TODO: does it ever get here? //TODO: this.par as 2nd arg works as intended?
+                // Case triggered when an invalid self link is made (i.e. in undirected graphs or Petri nets)
+                // Set the current link from the node to itself, so in the UI no partial link is visible
                 this.par.setCurrentLink(new elements.TemporaryLink(this.par, this.par, mousePos));
             }
         }
@@ -495,7 +510,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    allowedEditsFunc - A callable reference to the GraphUI.allowEdits function
      */
     GraphEventHandler.prototype.moveObjects = function(mousePos, allowedEditsFunc) {
-        if (this.par.getDraggedObjects().length && this.par.getCanMoveObjects() && this.par.getClickedObject()) {
+        if (this.par.getDraggedObjects().length && this.par.getClickedObject()) {
             // Check whether the objects are all aligned
             let isAlignedHorizontally = true;
             let isAlignedVertically = true;
@@ -536,10 +551,167 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     }
 
                     // Set the object to have moved
-                    object.hasMoved = true; //TODO: create and use .setHasMoved() function?
+                    object.hasMoved = true;
                 }
             }
         }
+    };
+
+    /**
+     * Function: createNewLink
+     * Creates a new link, and assigns properties according to the current graph settings
+     *
+     * Parameters:
+     *    allowedEditsFunc - A callable reference to the GraphUI.allowEdits function
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
+     */
+    GraphEventHandler.prototype.createNewLink = function(allowedEditsFunc, isTypeFunc) {
+        // Determine the start node of the current to be created link
+        let startNode = (this.par.getCurrentLink() instanceof elements.SelfLink)?
+            this.par.getCurrentLink().node : this.par.getCurrentLink().nodeA;
+
+        // Find out cases in which creating a node would be invalid. In such cases: Deny the creation of a link,
+        // and display a warning in the form of an alert
+        if (isTypeFunc(util.Type.PETRI) && startNode.petriNodeType === this.par.getCurrentLink().nodeB.petriNodeType &&
+            this.par.getCurrentLink().nodeA !== this.par.getCurrentLink().nodeB) {
+            // In case of a petri net, if a link is made to a node of the same type (e.g. place->place, or
+            // transition->transition), deny it
+            let nodeType = this.par.getCurrentLink().nodeA.petriNodeType;
+            this.par.alertPopup('An edge between two ' + nodeType + 's of a Petri net is not permitted.');
+            return;
+        } else if (isTypeFunc(util.Type.UNDIRECTED)) {
+            // In case of an undirected graph, only 1 edge in between two nodes is permitted
+            for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
+                if ((this.graphRepr.getLinks()[i].nodeA === this.par.getCurrentLink().nodeA &&
+                    this.graphRepr.getLinks()[i].nodeB === this.par.getCurrentLink().nodeB) ||
+                    (this.graphRepr.getLinks()[i].nodeA === this.par.getCurrentLink().nodeB &&
+                        this.graphRepr.getLinks()[i].nodeB === this.par.getCurrentLink().nodeA)) {
+                    this.par.alertPopup('Two edges between two nodes is not permitted.');
+                    return;
+                }
+            }
+        } else if (isTypeFunc(util.Type.DIRECTED) && !isTypeFunc(util.Type.FSM) && !isTypeFunc(util.Type.PETRI)) {
+            // In case of a directed graph (non-FSM, non-Petri), only 1 edge from two arbitrary nodes v_1 to v_2 is
+            // permitted
+            for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
+                if (!(this.par.getCurrentLink() instanceof elements.SelfLink)) {
+                    if (this.graphRepr.getLinks()[i].nodeA === this.par.getCurrentLink().nodeA &&
+                        this.graphRepr.getLinks()[i].nodeB === this.par.getCurrentLink().nodeB) {
+                        this.par.alertPopup('Two edges from one node to another is not permitted.');
+                        return;
+                    }
+                } else {
+                    if (this.graphRepr.getLinks()[i].node === this.par.getCurrentLink().node) {
+                        this.par.alertPopup('Two self-loops for a node is not permitted.');
+                        return;
+                    }
+                }
+            }
+        }
+
+        // If creating a node would not be invalid, create it
+        this.par.addLink(this.par.getCurrentLink());
+
+        // Set this link as the only selected object, so it shows a blue outline
+        this.par.setSelectedObjects([this.par.getCurrentLink()]);
+        this.par.setPreviousSelectedObjects(this.par.getSelectedObjects());
+
+        // Remove FSM/Petri selection fields in the toolbar
+        if (isTypeFunc(util.Type.FSM)) {
+            this.par.toolbar.removeFSMNodeSelectionOptions();
+        } else if (isTypeFunc(util.Type.PETRI)) {
+            this.par.toolbar.removePetriNodeTypeOptions();
+            this.par.toolbar.removePetriSelectionOptions();
+        }
+
+        // (Re)Enable the correct editing fields
+        this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
+
+        // Enable the delete button as well
+        if (allowedEditsFunc(util.Edit.DELETE_EDGE)) {
+            this.par.toolbar.rightButtons['delete'].setEnabled();
+        }
+
+        this.par.onGraphChange();
+    };
+
+    /**
+     * Function: selectWithinSelectionRectangle
+     * Removes the selection rectangle, and selects or deselects all elements in it
+     *
+     * Parameters:
+     *    e - The event from the event handler function from which this function is called
+     *    allowedEditsFunc - A callable reference to the GraphUI.allowEdits function
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
+     */
+    GraphEventHandler.prototype.selectWithinSelectionRectangle = function(e, allowedEditsFunc, isTypeFunc) {
+        let objects = this.graphRepr.getObjectsInRectangle(this.par.getSelectionRectangle());
+        if (e.shiftKey) {
+            // If shift: If all selected objects (within the rectangle) are already selected, deselect these
+            // Otherwise, add all items to the selection
+            let areAllObjectsAlreadySelected = true;
+            for (let i = 0; i < objects.length; i++) {
+                if (!this.par.getSelectedObjects().includes(objects[i])) {
+                    areAllObjectsAlreadySelected = false;
+                }
+            }
+
+            // Perform the addition/deletion of the selected objects, depending on areAllObjectsAlreadySelected
+            for (let i = 0; i < objects.length; i++) {
+                if (!areAllObjectsAlreadySelected) {
+                    this.par.getSelectedObjects().push(objects[i]);
+                } else {
+                    this.par.setSelectedObjects(this.par.getSelectedObjects().filter(e => e !== objects[i]));
+                }
+            }
+        } else {
+            // If not shift: select only those object within the rectangle
+            this.par.setSelectedObjects(objects);
+        }
+
+        // Add the appropriate selection options in the toolbar
+        if (this.par.getSelectedObjects().length) {
+            this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
+            if (allowedEditsFunc(util.Edit.DELETE_VERTEX) || allowedEditsFunc(util.Edit.DELETE_EDGE)) {
+                this.par.toolbar.rightButtons['delete'].setEnabled();
+            }
+            if (isTypeFunc(util.Type.FSM)) {
+                this.par.toolbar.addFSMNodeSelectionOptions(this.par.getSelectedObjects());
+            }
+            if (isTypeFunc(util.Type.PETRI)) {
+                this.par.toolbar.addPetriSelectionOptions(this.par.getSelectedObjects());
+            }
+        }
+
+        // Disable the selection rectangle
+        this.par.setSelectionRectangle(null);
+    };
+
+    /**
+     * Function: uponGraphDragRelease
+     * Saves the graph upon release of dragging, and sets certain parameters
+     * If the selection did not move while dragged, set the clicked object as the sole selected object
+     */
+    GraphEventHandler.prototype.uponGraphDragRelease = function(e) {
+        // Determine whether the selection has moved or not
+        let hasSelectionMoved = false;
+        this.par.getDraggedObjects().forEach(element => {
+            hasSelectionMoved = (element.hasMoved) ? true : hasSelectionMoved;
+        });
+
+        // Save a different graph state if the user dragged (and thus clicked) and the selection has moved
+        if (this.par.getClickedObject() && hasSelectionMoved) {
+            this.par.onGraphChange();
+        }
+
+        // If none of the selected objects has moved, and shift is not pressed, set the selected object to the
+        // clicked object. I.e., unselect all other selected objects
+        if (this.par.getClickedObject() && !this.par.getClickedObject().locked && !hasSelectionMoved && !e.shiftKey) {
+            this.par.setSelectedObjects([this.par.getClickedObject()]);
+        }
+
+        // Reset the 'hasMoved' parameter of all selected objects
+        this.par.getSelectedObjects().forEach(element => element.resetHasMoved());
     };
 
     /**
@@ -555,7 +727,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         if (pressedKey === 46) {
             // Delete key. If it is allowed, delete the object
             if (allowedEditsFunc(util.Edit.DELETE_VERTEX) || allowedEditsFunc(util.Edit.DELETE_EDGE)) {
-                this.deleteSelectedObjects(this); //TODO: where to place this function
+                this.par.deleteSelectedObjects();
             }
         } else if (pressedKey === 27) {
             // Escape key. Deselect the objects, and remove the selection options

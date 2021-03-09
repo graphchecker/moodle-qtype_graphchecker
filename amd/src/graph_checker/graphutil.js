@@ -163,7 +163,7 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
         return text;
     };
 
-    Util.prototype.drawArrow = function(c, x, y, angle) {
+    Util.prototype.drawArrow = function(c, x, y, angle) { //TODO: DRAW in other function
         // Draw an arrow head on the graphics context c at (x, y) with given angle.
 
         var dx = Math.cos(angle);
