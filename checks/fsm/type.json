@@ -1,5 +1,5 @@
 {
-    "name": "DFA",
+    "name": "DFA / NFA",
     "ui_plugin": "graph",
     "ui_params": {
         "type": "fsm"
