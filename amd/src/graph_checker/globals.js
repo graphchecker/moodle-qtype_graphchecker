@@ -38,7 +38,7 @@ define(function() {
         this.NUMBER_TOKENS_INPUT_RANGE = {
             min: 0,
             max: 100,
-        }; //TODO: assure that these values are met when saving (double check). //if > 100, set to 100. If <0 or a char, set to 0
+        };
 
         // The length of the initial FSM node's incoming link in pixels
         this.INITIAL_FSM_NODE_LINK_LENGTH = 25;

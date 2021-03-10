@@ -280,8 +280,12 @@ define(['jquery'], function($) {
         // Add the event listener
         $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
         $number_input[0].addEventListener('keydown', (event) => this.handleInteraction(event));
-        $number_input[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
-        $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
+        if (typeof this.onFocusInFunction !== 'undefined') {
+            $number_input[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
+        }
+        if (typeof this.onFocusOutFunction !== 'undefined') {
+            $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
+        }
         this.object = $number_input;
     };
 

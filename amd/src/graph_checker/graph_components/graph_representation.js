@@ -5,8 +5,9 @@
  * @copyright TU Eindhoven, The Netherlands
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchecker/graph_checker/graphelements'],
-    function ($, util, elements) {
+define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
+        'qtype_graphchecker/graph_checker/graphelements'],
+    function ($, globals, util, elements) {
 
     let self;
 
@@ -15,9 +16,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchec
      * Constructor for the GraphRepresentation (i.e. a graph data) object.
      * Furthermore, this class also contains methods with which the graph representation can be inspected and/or modified
      *
-     * Parameters: todo
+     * Parameters:
      *    parent - The parent of this object in the HTML DOM
-     *    TODO - More parameters: e.g. nodes and links
+     *    nodeRadius - A callable reference to the GraphUI.nodeRadius function
      */
     function GraphRepresentation(parent, nodeRadius) {
         self = this;
@@ -386,6 +387,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil', 'qtype_graphchec
             if (isTypeFunc(util.Type.PETRI)) {
                 vertex['petri_type'] = node.petriNodeType;
                 if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
+                    // Ensure that the petri tokens are within the range as specified in the globals
+                    node.petriTokens = Math.max(globals.NUMBER_TOKENS_INPUT_RANGE.min, Math.min(node.petriTokens,
+                        globals.NUMBER_TOKENS_INPUT_RANGE.max));
                     vertex['tokens'] = node.petriTokens;
                 }
             }

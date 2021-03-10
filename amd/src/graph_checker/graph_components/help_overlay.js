@@ -55,7 +55,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
     /**
      * Function: setHelpText
      * Creates and sets the help text, used in the help overlay, based on the graph parameters and characteristics
-     * TODO: This function should be refactored further
      *
      * Parameters:
      *    templateParams - The parameters used for defining the graph
