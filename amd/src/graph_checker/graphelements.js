@@ -72,7 +72,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     }
 
     GraphElement.prototype.resetHasMoved = function() {
-        console.log("hola");
         this.hasMoved = false;
     };
 
