@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * A module for use by ui_graph, defining (generic) graph elements
+ * A module for use by ui_graph, defining (generic) graph elements TODO: accurate description
  *
  ******************************************************************************/
 // This code is a modified version of Finite State Machine Designer
@@ -60,15 +60,21 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Define a generic class for graph elements
      *
      ***********************************************************************/
-    // function GraphElement(parent) {
-    //     this.parent = parent; // The ui_graph instance
-    //
-    //     this.locked = false; // Whether this element is locked or not
-    //     this.hasMoved = false; // Whether the element has moved or not
-    //
-    //     this.text = ''; // The (user-entered) text for this element
-    //     this.isHighlighted = false; // Whether the element is highlighted or not
-    // }
+    function GraphElement(parent) {
+        this.parent = parent; // The ui_graph instance
+
+        this.locked = false; // Whether this element is locked or not
+        this.hasMoved = false; // Whether the element has moved or not
+
+        this.text = ''; // The (user-entered) text for this element
+        this.isHighlighted = false; // Whether the element is highlighted or not
+        this.colorObject = null; // The applicable colors to this element
+    }
+
+    GraphElement.prototype.resetHasMoved = function() {
+        console.log("hola");
+        this.hasMoved = false;
+    };
 
     /***********************************************************************
      *
@@ -77,13 +83,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      ***********************************************************************/
 
     function Node(parent, x, y) {
-        this.parent = parent;  // The ui_graph instance.
+        GraphElement.call(this, parent);
         this.x = x;
         this.y = y;
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
-        this.locked = false;
-        this.hasMoved = false;
         this.isInitial = false;
         this.isFinal = false;
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
@@ -91,9 +95,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.petriTokens = 0;
         this.colorObject = (this.parent.templateParams.vertex_colors) ?
             util.colors[this.parent.templateParams.vertex_colors[0]] : null;
-        this.isHighlighted = false;
-        this.text = '';
     }
+
+    Node.prototype = Object.create(GraphElement.prototype);
+    Node.prototype.constructor = Node;
 
     // At the start of a drag, record our position relative to the mouse.
     Node.prototype.setMouseStart = function(mouseX, mouseY) {
@@ -105,10 +110,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.x = x + this.mouseOffsetX;
         this.y = y + this.mouseOffsetY;
         this.hasMoved = true;
-    };
-
-    Node.prototype.resetHasMoved = function() {
-        this.hasMoved = false;
     };
 
     // This function draws the node on the canvas.
