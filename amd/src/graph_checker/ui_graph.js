@@ -76,9 +76,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         self = this;
 
         // Variables for HTML IDs/elements
-        this.canvasId = 'graphcanvas_' + textareaId;
         this.textArea = $(document.getElementById(textareaId));
         this.uiWrapper = uiWrapper;
+        this.id = 'graphcanvas_' + textareaId;
 
         // The template parameters, used in the graph configuration
         this.templateParams = templateParams; // TODO: fix changed templateParams
@@ -109,13 +109,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.historyStackPointer = 0; // A pointer pointing to an entry in the historyStack
 
         // The help-overlay, representation, event handler, and canvas of the graph
-        this.helpOverlay = new help_overlay.HelpOverlay(this, 'graphcanvas_overlay_' + textareaId, this.uiWrapper);
+        this.helpOverlay = new help_overlay.HelpOverlay(this, this.uiWrapper);
         this.graphRepr = new graph_representation.GraphRepresentation(this, this.nodeRadius);
         this.graphEventHandler = new graph_eventhandler.GraphEventHandler(this, this.graphRepr, this.readOnly);
-        this.graphCanvas = new graph_canvas.GraphCanvas(this, this.canvasId, width, height, this.graphEventHandler);
+        this.graphCanvas = new graph_canvas.GraphCanvas(this, width, height, this.graphEventHandler);
 
         // The graph toolbar. Set it only if readonly is disabled (i.e. we can edit)
-        this.toolbar = (!this.readOnly)? new ui_toolbar.GraphToolbar(this, 'toolbar_' + textareaId, width, this.uiMode,
+        this.toolbar = (!this.readOnly)? new ui_toolbar.GraphToolbar(this, width, this.uiMode,
             this.helpOverlay, this.graphEventHandler) : null;
 
         // Creates and sets the HTML help text for the help overlay

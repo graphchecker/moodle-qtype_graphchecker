@@ -17,18 +17,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      * Parameters:
      *    parent - The parent of the canvas object
-     *    canvasId - The id value given to the canvas
      *    w - The width of the wrapper enclosing the canvas
      *    h - The height of the wrapper enclosing the canvas
      *    eventHandler - The object that handles events, upon notice of the listeners implemented in this object
      */
-    function GraphCanvas(parent, canvasId, w, h, eventHandler) {
+    function GraphCanvas(parent, w, h, eventHandler) {
         this.selectionRectangleOffset = 0; // Used for animating the border of the selection rectangle (marching ants)
 
         this.parent = parent;
         this.canvas = $(document.createElement("canvas"));
         this.canvas.attr({
-            id: canvasId,
             class: "graphchecker_graphcanvas",
             tabindex: 1 // So canvas can get focus.
         });

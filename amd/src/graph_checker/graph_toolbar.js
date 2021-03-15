@@ -57,9 +57,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, uiMode, helpOverlay, eventHandler) {
+    function GraphToolbar(parent, w, uiMode, helpOverlay, eventHandler) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
-        // the required canvasId and the height and width of the wrapper that
+        // and the height and width of the wrapper that
         // encloses the Div.
 
         let self = this;
@@ -74,7 +74,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.eventHandler = eventHandler;
         this.div = $(document.createElement('div'));
         this.div.attr({
-            id: divId,
             class: "graphchecker_toolbar",
             tabindex: 0
         });
@@ -225,8 +224,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
         let $part = $('<div/>')
             .attr({
-                'id': 'toolbar_part_' + side,
-                'class': 'toolbar_part',
+                'class': 'toolbar_part' + ' ' + side,
             });
         $(parentDiv).append($part);
         return $part;

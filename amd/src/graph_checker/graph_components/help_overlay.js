@@ -13,17 +13,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
      *
      * Parameters:
      *    parent - The parent of this object in the HTML DOM
-     *    divId - The id value for this HTML div object
      *    graphUIWrapper - The parent of this object in the HTML DOM
      */
-    function HelpOverlay(parent, divId, graphUIWrapper) {
+    function HelpOverlay(parent, graphUIWrapper) {
         let self = this;
         this.parent = parent;
         this.graphUIWrapper = graphUIWrapper;
         // Create the background div
         this.div = $(document.createElement("div"));
         this.div.attr({
-            id: divId + '_background',
             class: "graphchecker_overlay",
             tabindex: 0
         });
@@ -42,7 +40,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         // Create the dialog div
         this.divDialog = $(document.createElement("div"));
         this.divDialog.attr({
-            id: divId + 'dialog',
             class: 'dialog',
             tabindex: 0
         });
