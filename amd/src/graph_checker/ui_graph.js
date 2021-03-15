@@ -49,7 +49,7 @@
 
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graphelements',
+        'qtype_graphchecker/graph_checker/graph_components/graph_elements',
         'qtype_graphchecker/graph_checker/graph_components/graph_representation',
         'qtype_graphchecker/graph_checker/graph_functionality/graph_eventhandler',
         'qtype_graphchecker/graph_checker/graph_components/graph_canvas',

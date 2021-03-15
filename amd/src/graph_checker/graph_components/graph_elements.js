@@ -80,18 +80,25 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Define a class Node that represents a node in a graph
      *
      ***********************************************************************/
-
     function Node(parent, x, y) {
         GraphElement.call(this, parent);
+        // The x and y positions of the node
         this.x = x;
         this.y = y;
+
+        // The position of the mouse
         this.mouseOffsetX = 0;
         this.mouseOffsetY = 0;
+
+        // Information relating to fsm nodes
         this.isInitial = false;
         this.isFinal = false;
+
         // When in Petri mode, this variable denotes whether the node is a place or a transition:
         this.petriNodeType = util.PetriNodeType.NONE;
         this.petriTokens = 0;
+
+        // The color of the node
         this.colorObject = (this.parent.templateParams.vertex_colors) ?
             util.colors[this.parent.templateParams.vertex_colors[0]] : null;
     }
@@ -99,21 +106,44 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     Node.prototype = Object.create(GraphElement.prototype);
     Node.prototype.constructor = Node;
 
-    // At the start of a drag, record our position relative to the mouse.
+    /**
+     * Function: setMouseStart
+     * Records the position relative to the mouse. Performed at the start of a drag
+     *
+     * Parameters:
+     *    mouseX - The x coordinate of the mouse position
+     *    mouseY - The y coordinate of the mouse position
+     */
     Node.prototype.setMouseStart = function(mouseX, mouseY) {
         this.mouseOffsetX = this.x - mouseX;
         this.mouseOffsetY = this.y - mouseY;
     };
 
+    /**
+     * Function: setAnchorPoint
+     * Sets the anchor point of this node, using the mouse position
+     *
+     * Parameters:
+     *    x - The x coordinate to be used
+     *    y - The y coordinate to be used
+     */
     Node.prototype.setAnchorPoint = function(x, y) {
         this.x = x + this.mouseOffsetX;
         this.y = y + this.mouseOffsetY;
         this.hasMoved = true;
     };
 
-    // This function draws the node on the canvas.
+    /**
+     * Function: draw
+     * Draws the node on the canvas
+     *
+     * Parameters:
+     *    c - The context object
+     *    isShadowNode - Whether the node has a shadow or not
+     *    drawOption - Denotes how to draw the node
+     */
     Node.prototype.draw = function(c, isShadowNode, drawOption) {
-        // A function used to draw the node
+        // Define function used to draw the node
         const drawShape = function () {
             if (this.petriNodeType === util.PetriNodeType.NONE || this.petriNodeType === util.PetriNodeType.PLACE) {
                 c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
@@ -139,7 +169,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             }
 
             // Draw a double circle for an accept state.
-            if(this.isFinal) {
+            if (this.isFinal) {
                 c.beginPath();
                 c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
                 c.stroke();
@@ -149,7 +179,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    // A function to draw the selection halo around the object
+    /**
+     * Function: drawSelection
+     * Draws the selection halo around the node
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawShape - A function used to draw nodes
+     *    isShadowNode - Whether the node has a shadow or not
+     */
     Node.prototype.drawSelection = function(c, drawShape, isShadowNode) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
@@ -165,8 +203,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.drawObject(c, drawShape, isShadowNode, true);
     };
 
-    // A function to draw the object itself and the according highlighting
-    Node.prototype.drawObject = function(c, drawShape, isShadowNode, invisible) {
+    /**
+     * Function: drawObject
+     * Draws the node itself and the according highlighting
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawShape - A function used to draw nodes
+     *    isShadowNode - Whether the node has a shadow or not
+     *    drawInvisible - Whether or not to draw the node invisibly
+     */
+    Node.prototype.drawObject = function(c, drawShape, isShadowNode, drawInvisible) {
         // If the node is highlighted, draw a highlight ring around it
         if (this.isHighlighted) {
             // Set the stroke color and the line width
@@ -195,7 +242,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Draw the node itself, on top of the highlighting
         c.beginPath();
-        c.strokeStyle = (!invisible)? util.Color.BLACK : 'rgba(0,0,0,0)';
+        c.strokeStyle = (!drawInvisible)? util.Color.BLACK : 'rgba(0,0,0,0)';
         drawShape();
 
         // Use the color to fill the node
@@ -219,6 +266,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         c.stroke();
     };
 
+    /**
+     * Function: drawHoverObject
+     * Draws the hover node (when the user hovers over an empty area)
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawShape - A function used to draw nodes
+     */
     Node.prototype.drawHoverObject = function(c, drawShape) {
         // Draw the hover node
         c.beginPath();
@@ -242,6 +297,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         c.globalAlpha = 1;
     };
 
+    /**
+     * Function: closestPointOnNode
+     *
+     * Parameters:
+     *    x - The x coordinate of the input point
+     *    y - The y coordinate of the input point
+     *
+     * Returns:
+     *    The closest point on the node's circle from the input point
+     */
     Node.prototype.closestPointOnNode = function(x, y) {
         let dx = x - this.x;
         let dy = y - this.y;
@@ -303,8 +368,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    // Method of a Node, being of PetriNodeType 'TRANSITION', that given a circle, calculates
-    // the points of intersection
+    /**
+     * Function: calculateIntersectionsCircle
+     * For a Petri transition node (i.e. a square) calculate the intersections given a circle
+     *
+     * Parameters:
+     *    circleX - The x coordinate of the circle's center
+     *    circleY - The y coordinate of the circle's center
+     *    circleR - The radius of the circle
+     *
+     * Returns:
+     *    The points of intersection
+     */
     Node.prototype.calculateIntersectionsCircle = function(circleX, circleY, circleR) {
         if (this.petriNodeType !== util.PetriNodeType.TRANSITION) {
             // Currently no functionality is implemented to calculate the intersections of
@@ -318,54 +393,54 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let points = [];
 
         // Intersections of the circle, in the form (x-circleX)^2 + (y-circleY)^2 - circleR^2 = 0,
-        // with the top side of the square. Using the Quadratic Formula (i.e. the abc formula)
-        let y = this.y - halfSideLength;
-        let a = 1;
-        let b = -circleX*2;
-        let c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
-        let results = util.quadraticFormula(a, b, c);
-        for (let i = 0; i < 2; i++) {
-            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
-                points.push({x: results[i], y: y});
-            }
-        }
-
-        // Intersections with the bottom side. The variables a and b remain the same
-        y = this.y + halfSideLength;
-        c = Math.pow(circleX, 2) + Math.pow(y - circleY, 2) - Math.pow(circleR, 2);
-        results = util.quadraticFormula(a, b, c);
-        for (let i = 0; i < 2; i++) {
-            if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
-                points.push({x: results[i], y: y});
+        // with the top and bottom side of the square. Using the Quadratic Formula (i.e. the abc formula)
+        let x, y, a, b, c, results;
+        y = [this.y - halfSideLength, this.y + halfSideLength];
+        a = 1;
+        b = -circleX*2;
+        for (let j = 0; j < y.length; j++) {
+            c = Math.pow(circleX, 2) + Math.pow(y[j] - circleY, 2) - Math.pow(circleR, 2);
+            results = util.quadraticFormula(a, b, c);
+            for (let i = 0; i < 2; i++) {
+                if (this.x - halfSideLength <= results[i] && results[i] <= this.x + halfSideLength) {
+                    points.push({x: results[i], y: y[j]});
+                }
             }
         }
 
         // Intersections with the right side
-        let x = this.x + halfSideLength;
+        x = [this.x + halfSideLength, this.x - halfSideLength];
         a = 1;
         b = -circleY*2;
-        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
-        results = util.quadraticFormula(a, b, c);
-        for (let i = 0; i < 2; i++) {
-            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
-                points.push({x: x, y: results[i]});
-            }
-        }
-
-        // Intersections with the left side. The variables a and b remain the same
-        x = this.x - halfSideLength;
-        c = Math.pow(x - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
-        results = util.quadraticFormula(a, b, c);
-        for (let i = 0; i < 2; i++) {
-            if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
-                points.push({x: x, y: results[i]});
+        for (let j = 0; j < y.length; j++) {
+            c = Math.pow(x[j] - circleX, 2) + Math.pow(circleY, 2) - Math.pow(circleR, 2);
+            results = util.quadraticFormula(a, b, c);
+            for (let i = 0; i < 2; i++) {
+                if (this.y - halfSideLength <= results[i] && results[i] <= this.y + halfSideLength) {
+                    points.push({x: x[j], y: results[i]});
+                }
             }
         }
 
         return points;
     };
 
-    Node.prototype.getadjustedLinkInfo = function(circle, linkInfo, reverseScale, nodeA, nodeB, isStart) {
+    /**
+     * Function: getAdjustedLinkInfoTransition
+     * For a Petri transition node get adjusted link information
+     *
+     * Parameters:
+     *    circle - Circle object based on three points
+     *    linkInfo - Former link information
+     *    reverseScale - Whether the link is reversed or not
+     *    nodeA - The start node of the link
+     *    nodeB - The end node of the link
+     *    isStart - Whether the node (i.e. this node) is a start node w.r.t. the link
+     *
+     * Returns:
+     *    The linkInfo object with new information
+     */
+    Node.prototype.getAdjustedLinkInfoTransition = function(circle, linkInfo, reverseScale, nodeA, nodeB, isStart) {
         // Calculate the intersections of the circle with the square
         let intersections = this.calculateIntersectionsCircle(circle.x, circle.y, circle.radius);
 
@@ -409,6 +484,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         return linkInfo;
     };
 
+    /**
+     * Function: containsPoint
+     *
+     * Parameters:
+     *    x - The x coordinate of the point
+     *    y - The y coordinate of the point
+     *    usePadding - Whether to use padding or not (to make clicking easier)
+     *
+     * Returns:
+     *    Whether the point is contained in the node
+     */
     Node.prototype.containsPoint = function(x, y, usePadding) {
         let radius = this.parent.nodeRadius();
         if (usePadding) {
@@ -423,12 +509,20 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
-    // Method of a Node that, given a list of all links in a graph, returns
-    // a list of any nodes that contain a link to this node (excluding StartLinks
-    // and SelfLinks).
+    /**
+     * Function: neighbours
+     * Return, given a list of links, a list of any other nodes that contain a link to this node
+     * (excluding StartLinks and SelfLinks), i.e. neighbours
+     *
+     * Parameters:
+     *    links - The input list of links
+     *
+     * Returns:
+     *    The neighbours
+     */
     Node.prototype.neighbours = function(links) {
-        var neighbours = [], link;
-        for (var i = 0; i < links.length; i++) {
+        let neighbours = [], link;
+        for (let i = 0; i < links.length; i++) {
             link = links[i];
             if (link instanceof Link) { // Exclude SelfLinks and StartLinks.
                 if (link.nodeA === this && !neighbours.includes(link.nodeB)) {
@@ -441,7 +535,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         return neighbours;
     };
 
-    // A function returning whether or not the node has any incoming start links
+    /**
+     * Function: hasStartLink
+     *
+     * Parameters:
+     *    links - The input list of links
+     *
+     * Returns:
+     *    Whether or not the node has any incoming start links, from the input list
+     */
     Node.prototype.hasStartLink = function(links) {
         let hasStartLink = false;
         for (let i = 0; i < links.length; i++) {
@@ -453,17 +555,25 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         return hasStartLink;
     };
 
-    // Method of Node that traverses a graph defined by a given set of links
-    // starting at 'this' node and updating the visited list for each new
-    // node. Returns the updated visited list, which (for the root call)
-    // is a list of all nodes connected to the given start node.
+    /**
+     * Function: traverseGraph
+     * Traverses the graph, defined by links, starting at 'this' node and updating the visited list for each new node.
+     * Returns the updated visited list, which (for the root call) is a list of all nodes connected to the given start node.
+     *
+     * Parameters:
+     *    links - The input list of links
+     *    visited - A list of visited nodes
+     *
+     * Returns:
+     *    The list of visited nodes
+     */
     Node.prototype.traverseGraph = function(links, visited) {
-        var neighbours,
+        let neighbours,
             neighbour;
         if (!visited.includes(this)) {
             visited.push(this);
             neighbours = this.neighbours(links);
-            for (var i = 0; i < neighbours.length; i++) {
+            for (let i = 0; i < neighbours.length; i++) {
                 neighbour = neighbours[i];
                 if (!visited.includes(neighbour)) {
                     neighbour.traverseGraph(links, visited);
@@ -473,8 +583,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         return visited;
     };
 
-    // This function determines which sides of a node have an incoming or outgoing edge.
-    // The sides are: right, top, left, and bottom.
+    /**
+     * Function: getLinkIntersectionSides
+     *
+     * Parameters:
+     *    links - The input list of considered links
+     *
+     * Returns:
+     *    A dictionary determining which sides (right, top, left, and bottom) of a node have an incoming or outgoing edge
+     */
     Node.prototype.getLinkIntersectionSides = function(links) {
         // Get all angles of the incoming/outgoing links w.r.t. the node
         let angles = [];
@@ -483,7 +600,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             let v2 = [{x: 0, y: 0}];
             let isAdjacentLink = false;
             if (links[i] instanceof Link) {
-                let linkInfo = links[i].getEndPointsAndCircle();
+                let linkInfo = links[i].getLinkInfo();
                 if (links[i].nodeA === this) {
                     v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
                     isAdjacentLink = true;
@@ -492,7 +609,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     isAdjacentLink = true;
                 }
             } else if (links[i] instanceof SelfLink) {
-                let linkInfo = links[i].getEndPointsAndCircle();
+                let linkInfo = links[i].getLinkInfo();
                 if (links[i].node === this) {
                     v2[0] = {x: this.x - linkInfo.startX, y: linkInfo.startY - this.y};
                     v2[1] = {x: this.x - linkInfo.endX, y: linkInfo.endY - this.y};
@@ -537,14 +654,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      ***********************************************************************/
     function Link(parent, a, b) {
-        this.parent = parent;  // The parent ui_digraph instance.
+        GraphElement.call(this, parent);
         this.nodeA = a;
         this.nodeB = b;
-        this.locked = false;
-        this.text = '';
         this.colorObject = (this.parent.templateParams.edge_colors) ?
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
-        this.isHighlighted = false;
         this.lineAngleAdjust = 0; // Value to add to textAngle when link is straight line.
 
         // Make anchor point relative to the locations of nodeA and nodeB.
@@ -553,25 +667,45 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // This is set to 0.1, to enable the tweaking of links (when there are multiple links present) to enhance visibility
     }
 
+    Link.prototype = Object.create(GraphElement.prototype);
+    Link.prototype.constructor = Link;
+
+    /**
+     * Function: getAnchorPoint
+     * Gets the anchor point of this link
+     *
+     * Returns:
+     *    The anchor point in the form of a dictionary
+     */
     Link.prototype.getAnchorPoint = function() {
-        var dx = this.nodeB.x - this.nodeA.x;
-        var dy = this.nodeB.y - this.nodeA.y;
-        var scale = Math.sqrt(dx * dx + dy * dy);
+        let dx = this.nodeB.x - this.nodeA.x;
+        let dy = this.nodeB.y - this.nodeA.y;
+        let scale = Math.sqrt(dx * dx + dy * dy);
         return {
             'x': this.nodeA.x + dx * this.parallelPart - dy * this.perpendicularPart / scale,
             'y': this.nodeA.y + dy * this.parallelPart + dx * this.perpendicularPart / scale
         };
     };
 
-    // Method to set the anchor point of a link. It returns whether the link is snapped (true) or not (false)
+    /**
+     * Function: setAnchorPoint
+     * Sets the anchor point of this link, using the mouse position
+     *
+     * Parameters:
+     *    x - The x coordinate to be used
+     *    y - The y coordinate to be used
+     *
+     * Returns:
+     *    Whether the link is snapped or not
+     */
     Link.prototype.setAnchorPoint = function(x, y) {
-        var dx = this.nodeB.x - this.nodeA.x;
-        var dy = this.nodeB.y - this.nodeA.y;
-        var scale = Math.sqrt(dx * dx + dy * dy);
+        let dx = this.nodeB.x - this.nodeA.x;
+        let dy = this.nodeB.y - this.nodeA.y;
+        let scale = Math.sqrt(dx * dx + dy * dy);
         this.parallelPart = (dx * (x - this.nodeA.x) + dy * (y - this.nodeA.y)) / (scale * scale);
         this.perpendicularPart = (dx * (y - this.nodeA.y) - dy * (x - this.nodeA.x)) / scale;
         // Snap to a straight line.
-        if(this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < globals.SNAP_TO_PADDING) {
+        if (this.parallelPart > 0 && this.parallelPart < 1 && Math.abs(this.perpendicularPart) < globals.SNAP_TO_PADDING) {
             this.lineAngleAdjust = (this.perpendicularPart < 0) * Math.PI;
             this.perpendicularPart = 0;
             return true;
@@ -581,16 +715,28 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
+    /**
+     * Function: resetHasMoved
+     *
+     * Returns:
+     *    The this.hasMoved parameter
+     */
     Link.prototype.resetHasMoved = function() {
         this.hasMoved = false;
     };
 
-    Link.prototype.getEndPointsAndCircle = function() {
-        if(this.perpendicularPart === 0) {
-            var midX = (this.nodeA.x + this.nodeB.x) / 2;
-            var midY = (this.nodeA.y + this.nodeB.y) / 2;
-            var start = this.nodeA.closestPointOnNode(midX, midY);
-            var end = this.nodeB.closestPointOnNode(midX, midY);
+    /**
+     * Function: getLinkInfo
+     *
+     * Returns:
+     *    Information about the link, most notably the endpoints and the circle on which this link is located (if any!)
+     */
+    Link.prototype.getLinkInfo = function() {
+        if (this.perpendicularPart === 0) {
+            let midX = (this.nodeA.x + this.nodeB.x) / 2;
+            let midY = (this.nodeA.y + this.nodeB.y) / 2;
+            let start = this.nodeA.closestPointOnNode(midX, midY);
+            let end = this.nodeB.closestPointOnNode(midX, midY);
             return {
                 'hasCircle': false,
                 'startX': start.x,
@@ -599,18 +745,20 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 'endY': end.y,
             };
         }
-        var anchor = this.getAnchorPoint();
-        var circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
-        var isReversed = (this.perpendicularPart > 0);
-        var reverseScale = isReversed ? 1 : -1;
+        let anchor = this.getAnchorPoint();
+        let circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
+        let isReversed = (this.perpendicularPart > 0);
+        let reverseScale = isReversed ? 1 : -1;
         let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius());
         // If the start node is a TRANSITION node, adjust the start of the link
         if (this.nodeA.petriNodeType === util.PetriNodeType.TRANSITION) {
-            linkInfo = this.nodeA.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, true);
+            linkInfo = this.nodeA.getAdjustedLinkInfoTransition(circle, linkInfo, reverseScale, this.nodeA, this.nodeB,
+                true);
         }
         // If the end node is a TRANSITION node
         if (this.nodeB.petriNodeType === util.PetriNodeType.TRANSITION) {
-            linkInfo = this.nodeB.getadjustedLinkInfo(circle, linkInfo, reverseScale, this.nodeA, this.nodeB, false);
+            linkInfo = this.nodeB.getAdjustedLinkInfoTransition(circle, linkInfo, reverseScale, this.nodeA, this.nodeB,
+                false);
         }
         return {
             'hasCircle': true,
@@ -628,8 +776,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         };
     };
 
+    /**
+     * Function: draw
+     * Draws the link on the canvas
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawOption - Denotes how to draw the node
+     */
     Link.prototype.draw = function(c, drawOption) {
-        var linkInfo = this.getEndPointsAndCircle(), textX, textY, textAngle;
+        let linkInfo = this.getLinkInfo(), textX, textY, textAngle;
 
         // A function used to draw the link
         const drawLink = function () {
@@ -648,7 +804,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // A function used to draw the arrow head
         const drawArrowHead = function () {
-            if(linkInfo.hasCircle) {
+            if (linkInfo.hasCircle) {
                 this.parent.arrowIfReqd(c,
                     linkInfo.endX,
                     linkInfo.endY,
@@ -669,10 +825,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // Draw the text.
             c.strokeStyle = c.fillStyle = util.Color.BLACK;
-            if(linkInfo.hasCircle) {
-                var startAngle = linkInfo.startAngle;
-                var endAngle = linkInfo.endAngle;
-                if(endAngle < startAngle) {
+            if (linkInfo.hasCircle) {
+                let startAngle = linkInfo.startAngle;
+                let endAngle = linkInfo.endAngle;
+                if (endAngle < startAngle) {
                     endAngle += Math.PI * 2;
                 }
                 textAngle = (startAngle + endAngle) / 2 + linkInfo.isReversed * Math.PI;
@@ -688,6 +844,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
+    /**
+     * Function: drawSelection
+     * Draws the selection halo around the link
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */
     Link.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
         // Enable the selection effect
         let isSelected = this.parent.selectedObjects.includes(this);
@@ -704,6 +869,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.drawObject(c, drawLink, drawArrowHead, true);
     };
 
+    /**
+     * Function: drawObject
+     * Draws the link itself and the according highlighting
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */
     Link.prototype.drawObject = function(c, drawLink, drawArrowHead) {
         // Enable the highlight effect
         if (this.isHighlighted) {
@@ -734,16 +908,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
         c.beginPath();
         drawLink();
-        c.stroke();
-        c.stroke();
-        c.stroke();
-        c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
             c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
                 this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
-        c.stroke();
+
+        // Draw the arrow head
         drawArrowHead();
         c.stroke();
 
@@ -751,27 +922,37 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         c.shadowBlur = 0;
     };
 
+    /**
+     * Function: containsPoint
+     *
+     * Parameters:
+     *    x - The x coordinate of the point
+     *    y - The y coordinate of the point
+     *
+     * Returns:
+     *    Whether the point is contained in the link, incorporating padding
+     */
     Link.prototype.containsPoint = function(x, y) {
-        var linkInfo = this.getEndPointsAndCircle(), dx, dy, distance;
-        if(linkInfo.hasCircle) {
+        let linkInfo = this.getLinkInfo(), dx, dy, distance;
+        if (linkInfo.hasCircle) {
             dx = x - linkInfo.circleX;
             dy = y - linkInfo.circleY;
             distance = Math.sqrt(dx * dx + dy * dy) - linkInfo.circleRadius;
-            if(Math.abs(distance) < globals.HIT_TARGET_PADDING) {
-                var angle = Math.atan2(dy, dx);
-                var startAngle = linkInfo.startAngle;
-                var endAngle = linkInfo.endAngle;
-                if(linkInfo.isReversed) {
-                    var temp = startAngle;
+            if (Math.abs(distance) < globals.HIT_TARGET_PADDING) {
+                let angle = Math.atan2(dy, dx);
+                let startAngle = linkInfo.startAngle;
+                let endAngle = linkInfo.endAngle;
+                if (linkInfo.isReversed) {
+                    let temp = startAngle;
                     startAngle = endAngle;
                     endAngle = temp;
                 }
-                if(endAngle < startAngle) {
+                if (endAngle < startAngle) {
                     endAngle += Math.PI * 2;
                 }
-                if(angle < startAngle) {
+                if (angle < startAngle) {
                     angle += Math.PI * 2;
-                } else if(angle > endAngle) {
+                } else if (angle > endAngle) {
                     angle -= Math.PI * 2;
                 }
                 return (angle > startAngle && angle < endAngle);
@@ -779,19 +960,27 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         } else {
             dx = linkInfo.endX - linkInfo.startX;
             dy = linkInfo.endY - linkInfo.startY;
-            var length = Math.sqrt(dx * dx + dy * dy);
-            var percent = (dx * (x - linkInfo.startX) + dy * (y - linkInfo.startY)) / (length * length);
+            let length = Math.sqrt(dx * dx + dy * dy);
+            let percent = (dx * (x - linkInfo.startX) + dy * (y - linkInfo.startY)) / (length * length);
             distance = (dx * (y - linkInfo.startY) - dy * (x - linkInfo.startX)) / length;
             return (percent > 0 && percent < 1 && Math.abs(distance) < globals.HIT_TARGET_PADDING);
         }
         return false;
     };
 
+    /**
+     * Function: calculateAngle
+     *
+     * Parameters:
+     *    node - The node to be used in the calculation
+     *
+     * Returns:
+     *    The angle (radians) of the point of the link touching the selected node's circle, with the selected node itself.
+     *    I.e. the incident angle
+     */
     Link.prototype.calculateAngle = function(node) {
-        // Calculates the angle in radians of the point of the link touching the selected node's circle with
-        // the selected node itself
         let linkPoint = {};
-        let linkInfo = this.getEndPointsAndCircle();
+        let linkInfo = this.getLinkInfo();
 
         if (this.nodeA === node) {
             // If the link originates in the node
@@ -826,56 +1015,85 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      ***********************************************************************/
 
     function SelfLink(parent, node, mouse) {
-        this.parent = parent;
+        GraphElement.call(this, parent);
         this.node = node;
         this.anchorAngle = 0;
         this.mouseOffsetAngle = 0;
         this.colorObject = (this.parent.templateParams.edge_colors) ?
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
-        this.isHighlighted = false;
-        this.text = '';
 
         if (mouse) {
             this.setAnchorPoint(mouse.x, mouse.y);
         }
     }
 
+    SelfLink.prototype = Object.create(GraphElement.prototype);
+    SelfLink.prototype.constructor = SelfLink;
+
+    /**
+     * Function: setMouseStart
+     * Records the position relative to the mouse. Performed at the start of a drag
+     *
+     * Parameters:
+     *    mouseX - The x coordinate of the mouse position
+     *    mouseY - The y coordinate of the mouse position
+     */
     SelfLink.prototype.setMouseStart = function(x, y) {
         this.mouseOffsetAngle = this.anchorAngle - Math.atan2(y - this.node.y, x - this.node.x);
     };
 
+    /**
+     * Function: setAnchorPoint
+     * Sets the anchor point of this link, using the mouse position
+     *
+     * Parameters:
+     *    x - The x coordinate to be used
+     *    y - The y coordinate to be used
+     */
     SelfLink.prototype.setAnchorPoint = function(x, y) {
         this.anchorAngle = Math.atan2(y - this.node.y, x - this.node.x) + this.mouseOffsetAngle;
         // Snap to 90 degrees.
-        var snap = Math.round(this.anchorAngle / (Math.PI / 2)) * (Math.PI / 2);
-        if(Math.abs(this.anchorAngle - snap) < 0.1) {
+        let snap = Math.round(this.anchorAngle / (Math.PI / 2)) * (Math.PI / 2);
+        if (Math.abs(this.anchorAngle - snap) < 0.1) {
             this.anchorAngle = snap;
         }
         // Keep in the range -pi to pi so our containsPoint() function always works.
-        if(this.anchorAngle < -Math.PI) {
+        if (this.anchorAngle < -Math.PI) {
             this.anchorAngle += 2 * Math.PI;
         }
-        if(this.anchorAngle > Math.PI) {
+        if (this.anchorAngle > Math.PI) {
             this.anchorAngle -= 2 * Math.PI;
         }
 
         this.hasMoved = true;
     };
 
+    /**
+     * Function: resetHasMoved
+     *
+     * Returns:
+     *    The this.hasMoved parameter
+     */
     SelfLink.prototype.resetHasMoved = function() {
         this.hasMoved = false;
     };
 
-    SelfLink.prototype.getEndPointsAndCircle = function() {
-        var circleX = this.node.x + 1.5 * this.parent.nodeRadius() * Math.cos(this.anchorAngle);
-        var circleY = this.node.y + 1.5 * this.parent.nodeRadius() * Math.sin(this.anchorAngle);
-        var circleRadius = 0.75 * this.parent.nodeRadius();
-        var startAngle = this.anchorAngle - Math.PI * 0.8;
-        var endAngle = this.anchorAngle + Math.PI * 0.8;
-        var startX = circleX + circleRadius * Math.cos(startAngle);
-        var startY = circleY + circleRadius * Math.sin(startAngle);
-        var endX = circleX + circleRadius * Math.cos(endAngle);
-        var endY = circleY + circleRadius * Math.sin(endAngle);
+    /**
+     * Function: getLinkInfo
+     *
+     * Returns:
+     *    Information about the link, most notably the endpoints and the circle on which this link is located
+     */
+    SelfLink.prototype.getLinkInfo = function() {
+        let circleX = this.node.x + 1.5 * this.parent.nodeRadius() * Math.cos(this.anchorAngle);
+        let circleY = this.node.y + 1.5 * this.parent.nodeRadius() * Math.sin(this.anchorAngle);
+        let circleRadius = 0.75 * this.parent.nodeRadius();
+        let startAngle = this.anchorAngle - Math.PI * 0.8;
+        let endAngle = this.anchorAngle + Math.PI * 0.8;
+        let startX = circleX + circleRadius * Math.cos(startAngle);
+        let startY = circleY + circleRadius * Math.sin(startAngle);
+        let endX = circleX + circleRadius * Math.cos(endAngle);
+        let endY = circleY + circleRadius * Math.sin(endAngle);
         return {
             'hasCircle': true,
             'startX': startX,
@@ -890,8 +1108,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         };
     };
 
+    /**
+     * Function: draw
+     * Draws the link on the canvas
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawOption - Denotes how to draw the node
+     */
     SelfLink.prototype.draw = function(c, drawOption) {
-        var linkInfo = this.getEndPointsAndCircle();
+        let linkInfo = this.getLinkInfo();
 
         // A function used to draw the link
         const drawLink = function() {
@@ -911,12 +1137,21 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // Draw the text on the loop farthest from the node.
             c.strokeStyle = c.fillStyle = util.Color.BLACK;
-            var textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
-            var textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
+            let textX = linkInfo.circleX + linkInfo.circleRadius * Math.cos(this.anchorAngle);
+            let textY = linkInfo.circleY + linkInfo.circleRadius * Math.sin(this.anchorAngle);
             this.parent.drawText(this, this.text, textX, textY, this.anchorAngle);
         }
     };
 
+    /**
+     * Function: drawSelection
+     * Draws the selection halo around the link
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */
     SelfLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
@@ -926,9 +1161,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead); //TODO: this function, and funct below
+        this.drawObject(c, drawLink, drawArrowHead);
     };
 
+    /**
+     * Function: drawObject
+     * Draws the link itself and the according highlighting
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */ //TODO: DRAW LINK AS ONE FUNCTION FOR MULTIPLE LINKS
     SelfLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
         // Enable the highlight effect
         if (this.isHighlighted) {
@@ -959,16 +1203,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
         c.beginPath();
         drawLink();
-        c.stroke();
-        c.stroke();
-        c.stroke();
-        c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
             c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
                 this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
-        c.stroke();
+
+        // Draw the arrow head
         drawArrowHead();
         c.stroke();
 
@@ -976,11 +1217,21 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         c.shadowBlur = 0;
     };
 
+    /**
+     * Function: containsPoint
+     *
+     * Parameters:
+     *    x - The x coordinate of the point
+     *    y - The y coordinate of the point
+     *
+     * Returns:
+     *    Whether the point is contained in the link, incorporating padding
+     */
     SelfLink.prototype.containsPoint = function(x, y) {
-        var linkInfo = this.getEndPointsAndCircle();
-        var dx = x - linkInfo.circleX;
-        var dy = y - linkInfo.circleY;
-        var distance = Math.sqrt(dx * dx + dy * dy) - linkInfo.circleRadius;
+        let linkInfo = this.getLinkInfo();
+        let dx = x - linkInfo.circleX;
+        let dy = y - linkInfo.circleY;
+        let distance = Math.sqrt(dx * dx + dy * dy) - linkInfo.circleRadius;
         return (Math.abs(distance) < globals.HIT_TARGET_PADDING);
     };
 
@@ -991,42 +1242,67 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      ***********************************************************************/
     function StartLink(parent, node, start) {
-        this.parent = parent;
+        GraphElement.call(this, parent);
         this.node = node;
         this.deltaX = 0;
         this.deltaY = 0;
         this.colorObject = (this.parent.templateParams.edge_colors) ?
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
-        this.isHighlighted = false;
 
-        if(start) {
+        if (start) {
             this.setAnchorPoint(start.x, start.y);
         }
     }
 
+    StartLink.prototype = Object.create(GraphElement.prototype);
+    StartLink.prototype.constructor = StartLink;
+
+    /**
+     * Function: setAnchorPoint
+     * Sets the anchor point of this link, using the mouse position
+     *
+     * Parameters:
+     *    x - The x coordinate to be used
+     *    y - The y coordinate to be used
+     *
+     * Returns:
+     *    Whether the link is snapped or not
+     */
     StartLink.prototype.setAnchorPoint = function(x, y) {
         this.deltaX = x - this.node.x;
         this.deltaY = y - this.node.y;
 
-        if(Math.abs(this.deltaX) < globals.SNAP_TO_PADDING) {
+        if (Math.abs(this.deltaX) < globals.SNAP_TO_PADDING) {
             this.deltaX = 0;
         }
 
-        if(Math.abs(this.deltaY) < globals.SNAP_TO_PADDING) {
+        if (Math.abs(this.deltaY) < globals.SNAP_TO_PADDING) {
             this.deltaY = 0;
         }
 
         this.hasMoved = true;
     };
 
+    /**
+     * Function: resetHasMoved
+     *
+     * Returns:
+     *    The this.hasMoved parameter
+     */
     StartLink.prototype.resetHasMoved = function() {
         this.hasMoved = false;
     };
 
+    /**
+     * Function: getEndPoints
+     *
+     * Returns:
+     *    The start and endpoints of this link
+     */
     StartLink.prototype.getEndPoints = function() {
-        var startX = this.node.x + this.deltaX;
-        var startY = this.node.y + this.deltaY;
-        var end = this.node.closestPointOnNode(startX, startY);
+        let startX = this.node.x + this.deltaX;
+        let startY = this.node.y + this.deltaY;
+        let end = this.node.closestPointOnNode(startX, startY);
         return {
             'startX': startX,
             'startY': startY,
@@ -1035,8 +1311,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         };
     };
 
+    /**
+     * Function: draw
+     * Draws the link on the canvas
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawOption - Denotes how to draw the node
+     */
     StartLink.prototype.draw = function(c, drawOption) {
-        var endPoints = this.getEndPoints();
+        let endPoints = this.getEndPoints();
 
         // A function used to draw the link
         const drawLink = function() {
@@ -1057,6 +1341,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
     };
 
+    /**
+     * Function: drawSelection
+     * Draws the selection halo around the link
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */
     StartLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
         // Enable the selection effect when applicable
         if (this.parent.selectedObjects.includes(this)) {
@@ -1066,9 +1359,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead, true); //TODO: this function, and funct below
+        this.drawObject(c, drawLink, drawArrowHead, true);
     };
 
+    /**
+     * Function: drawObject
+     * Draws the link itself and the according highlighting
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     */
     StartLink.prototype.drawObject = function(c, drawLink, drawArrowHead) {
         // Enable the highlight effect
         if (this.isHighlighted) {
@@ -1099,16 +1401,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
         c.beginPath();
         drawLink();
-        c.stroke();
-        c.stroke();
-        c.stroke();
-        c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
             c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
                 this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
         }
         c.stroke();
-        c.stroke();
+
+        // Draw the arrow head
         drawArrowHead();
         c.stroke();
 
@@ -1116,13 +1415,23 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         c.shadowBlur = 0;
     };
 
+    /**
+     * Function: containsPoint
+     *
+     * Parameters:
+     *    x - The x coordinate of the point
+     *    y - The y coordinate of the point
+     *
+     * Returns:
+     *    Whether the point is contained in the link, incorporating padding
+     */
     StartLink.prototype.containsPoint = function(x, y) {
-        var endPoints = this.getEndPoints();
-        var dx = endPoints.endX - endPoints.startX;
-        var dy = endPoints.endY - endPoints.startY;
-        var length = Math.sqrt(dx * dx + dy * dy);
-        var percent = (dx * (x - endPoints.startX) + dy * (y - endPoints.startY)) / (length * length);
-        var distance = (dx * (y - endPoints.startY) - dy * (x - endPoints.startX)) / length;
+        let endPoints = this.getEndPoints();
+        let dx = endPoints.endX - endPoints.startX;
+        let dy = endPoints.endY - endPoints.startY;
+        let length = Math.sqrt(dx * dx + dy * dy);
+        let percent = (dx * (x - endPoints.startX) + dy * (y - endPoints.startY)) / (length * length);
+        let distance = (dx * (y - endPoints.startY) - dy * (x - endPoints.startX)) / length;
         return (percent > 0 && percent < 1 && Math.abs(distance) < globals.HIT_TARGET_PADDING);
     };
 
@@ -1132,15 +1441,24 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * process of being created.
      *
      ***********************************************************************/
-
     function TemporaryLink(parent, from, to) {
-        this.parent = parent;
+        GraphElement.call(this, parent);
         this.from = from;
         this.to = to;
         this.colorObject = (this.parent.templateParams.edge_colors) ?
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
     }
 
+    TemporaryLink.prototype = Object.create(GraphElement.prototype);
+    TemporaryLink.prototype.constructor = TemporaryLink;
+
+    /**
+     * Function: draw
+     * Draws the link on the canvas
+     *
+     * Parameters:
+     *    c - The context object
+     */
     TemporaryLink.prototype.draw = function(c) {
         // Draw the line.
         c.beginPath();

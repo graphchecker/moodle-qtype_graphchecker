@@ -330,7 +330,7 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
 
     // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
     // link, and the start and end angles.
-    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    // This code was originally written in the function graph_elements.getEndPointsAndCircle()
     Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
         let rRatio = reverseScale * distance / circle.radius;
         let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;
