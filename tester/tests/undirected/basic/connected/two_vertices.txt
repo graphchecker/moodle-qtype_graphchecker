@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[{"label":"","position":[404.7450453210156,157.55735219345596],"locked":false,"color":"#ffffff","highlighted":false},{"label":"","position":[443.5135300095017,591.6216051256334],"locked":false,"color":"#ffffff","highlighted":false}],"edges":[]}
+{"type":"check","module":"basic","method":"connected","arguments":{}}
+fail

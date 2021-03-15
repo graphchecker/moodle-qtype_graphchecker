@@ -6,7 +6,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graphelements'],
+        'qtype_graphchecker/graph_checker/graph_components/graph_elements'],
     function ($, globals, util, elements) {
 
     let self;
@@ -196,7 +196,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 points.push({x: l.endX, y: l.endY});
             } else {
                 // Else if normal link or self link
-                let l = this.links[i].getEndPointsAndCircle();
+                let l = this.links[i].getLinkInfo();
                 let r = l.circleRadius;
                 let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
                 let circleEndAngle = Math.atan2(((l.endY - l.circleY) / r), ((l.endX - l.circleX) / r));

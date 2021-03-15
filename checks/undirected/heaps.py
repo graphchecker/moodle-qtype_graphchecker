@@ -1,40 +1,42 @@
 # Tests for undirected graphs using igraph.
 
 import igraph
+from utilities import filter_orig_name
+from treeUtilities import *
 
-#helper
-def filter_orig_name(v):
-    return v['name'].split("_")[1]
+def MaxHeap_structure(student_answer):
+    layout = heap_layout(student_answer)
+    if not layout['correct']:
+        return layout
 
-#helper
-def splitParentChildren(v):
-    parents = []
-    children = []
+    return check_heap_structure(student_answer, lambda a,b : a < b, "smaller")
     
-    for w in v.neighbors():
-        if w['y'] < v['y']:
-            parents.append(w)
-        elif w['y'] > v['y']:
-            children.append(w)
-        else:
-            return None
-    return (parents, children)
-    
-#helper - return root or None if multiple roots or unclear layout
-def findRoot(student_answer):
-    root = None
+def MinHeap_structure(student_answer):
+    layout = heap_layout(student_answer)
+    if not layout['correct']:
+        return layout
+
+    return check_heap_structure(student_answer, lambda a,b : a > b, "larger")
+
+#-----------------
+#helper functions
+#-----------------
+def check_heap_structure(student_answer, comparator, textual):
+    #for each node, check that the children are smaller or equally large as the parent
     for v in student_answer.vs:
         split = splitParentChildren(v)
-        if split == None:
-            return None
+        if (split == None):
+            return {'correct': False,
+                    'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
         (par, chil) = split
-        if len(par) == 0 and root == None:
-            root = v
-        elif len(par) == 0 and not root == None:
-            return None
-    return root
-
-#helper
+        valueV = int(filter_orig_name(v))
+        for w in chil:
+            valueW = int(filter_orig_name(w))
+            if comparator(valueV, valueW):
+                return {'correct': False,
+                        'feedback': 'Vertex {0} is {1} than it\'s child {2}.'.format(filter_orig_name(v), textual, filter_orig_name(w))}
+    return {'correct': True}
+    
 def heap_layout(student_answer):
     #find the root
     #throw error if there is more than one root, or if a node has multiple parents
@@ -79,33 +81,3 @@ def heap_layout(student_answer):
         nextLayer = []
     return {'correct': True}
 
-#helper
-def check_heap_structure(student_answer, comparator, textual):
-    #for each node, check that the children are smaller or equally large as the parent
-    for v in student_answer.vs:
-        split = splitParentChildren(v)
-        if (split == None):
-            return {'correct': False,
-                    'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
-        (par, chil) = split
-        valueV = int(filter_orig_name(v))
-        for w in chil:
-            valueW = int(filter_orig_name(w))
-            if comparator(valueV, valueW):
-                return {'correct': False,
-                        'feedback': 'Vertex {0} is {1} than it\'s child {2}.'.format(filter_orig_name(v), textual, filter_orig_name(w))}
-    return {'correct': True}
-
-def MaxHeap_structure(student_answer):
-    layout = heap_layout(student_answer)
-    if not layout['correct']:
-        return layout
-
-    return check_heap_structure(student_answer, lambda a,b : a < b, "smaller")
-    
-def MinHeap_structure(student_answer):
-    layout = heap_layout(student_answer)
-    if not layout['correct']:
-        return layout
-
-    return check_heap_structure(student_answer, lambda a,b : a > b, "larger")

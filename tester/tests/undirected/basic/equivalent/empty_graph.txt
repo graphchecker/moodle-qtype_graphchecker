@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"basic","method":"equivalent","arguments":{"graph_answer":"{\"_version\":1,\"vertices\":[],\"edges\":[]}"}}
+pass
