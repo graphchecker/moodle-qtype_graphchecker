@@ -174,7 +174,7 @@ class qtype_graphchecker_jobrunner {
         $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/checkrunner.py';
         $filemap['checkrunner.py'] = file_get_contents($full_name);
         $types = qtype_graphchecker_util::get_type_data();
-        $filemap['types.json'] = json_encode($types);
+        $filemap['type.json'] = json_encode($types);
 
         return $filemap;
     }

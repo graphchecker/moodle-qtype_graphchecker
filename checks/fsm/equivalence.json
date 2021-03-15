@@ -1,0 +1,41 @@
+{
+    "name": "Equivalence",
+    "checks": {
+        "language_equivalence_automaton": {
+            "name": "Language equivalence (to automaton)",
+            "description": "Checks if the automaton accepts exactly the same words (up until a given length) as the given automaton.",
+            "params": [
+                {
+                    "param": "other",
+                    "name": "Automaton",
+                    "type": "graph"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
+                }
+            ]
+        },
+        "language_equivalence_words": {
+            "name": "Language equivalence (to word list)",
+            "description": "Checks if the automaton accepts exactly the given words (up until a given length).",
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
+                }
+            ]
+        }
+    }
+}

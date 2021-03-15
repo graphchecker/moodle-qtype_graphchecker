@@ -156,13 +156,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         for (let moduleName in this.modules) {
             if (this.modules.hasOwnProperty(moduleName)) {
                 let module = this.modules[moduleName];
-                this.createModuleContainer(moduleName, module)
+                let $moduleContainer = this.createModuleContainer(moduleName, module)
                     .appendTo($result);
                 let checks = module['checks'];
                 for (let checkName in checks) {
-                    if (checks.hasOwnProperty(checkName)) {
+                    if (checks.hasOwnProperty(checkName) &&
+                            !checks[checkName]['deprecated']) {
                         this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
-                            .appendTo($result);
+                            .appendTo($moduleContainer);
                     }
                 }
             }
@@ -246,6 +247,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         if (checkInfo) {
             if (checkInfo['params']) {
                 this.createArgsContainer(checkInfo, check)
+                    .appendTo($container);
+            }
+            if (checkInfo['deprecated']) {
+                $('<div/>')
+                    .html('This check is deprecated. It will still work, but ' +
+                        'is not available in the Add check list anymore.')
+                    .addClass('invalid-feedback')
+                    .css('display', 'block')
                     .appendTo($container);
             }
         } else {
@@ -464,10 +473,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
      * @param module The name of the module.
      */
     ChecksUi.prototype.createModuleContainer = function(module) {
-        let $container = $('<div/>')
+        let $container = $('<details/>')
             .addClass('module-container');
 
-        let $header = $('<div/>')
+        let $header = $('<summary/>')
             .addClass('module-header')
             .appendTo($container);
 
@@ -627,6 +636,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('test-name')
             .appendTo($header);
 
+        let used = this.hasCheck(module, method);
+        if (used) {
+            $('<span/>')
+                .html('✓')
+                .addClass('test-used-check')
+                .appendTo($header);
+        }
+
         if (check['description']) {
             //let $helpButton = this.createHelpButton(check['description'])
             //    .appendTo($header);
@@ -637,6 +654,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         }
 
         return $container;
+    };
+
+    ChecksUi.prototype.hasCheck = function(module, method) {
+        let $containers = this.$checksPanel.find('.test-container');
+        let used = false;
+        let self = this;
+        $containers.each(function() {
+            let json = self.checkContainerToJson($(this));
+            if (json['module'] === module && json['method'] === method) {
+                used = true;
+            }
+        });
+        return used;
     };
 
     ChecksUi.prototype.createDialog = function(title, content, buttonText) {

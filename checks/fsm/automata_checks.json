@@ -17,7 +17,8 @@
                     "min": 0,
                     "default": 4
                 }
-            ]
+            ],
+            "deprecated": true
         },
         "check_dfa_language_from_answer": {
             "name": "Compare DFA language to given DFA",
@@ -35,7 +36,8 @@
                     "min": 0,
                     "default": 4
                 }
-            ]
+            ],
+            "deprecated": true
         },
         "check_dfa_max_states": {
             "name": "State count",
@@ -48,7 +50,8 @@
                     "min": 0,
                     "default": 1
                 }
-            ]
+            ],
+            "deprecated": true
         }
     }
 }
