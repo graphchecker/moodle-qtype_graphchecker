@@ -115,8 +115,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                                            mousePosition) {
         let canvas = this.canvas,
             c = canvas[0].getContext('2d');
-        let nodes = graphRepr.getNodes();
-        let links = graphRepr.getLinks();
 
         // Clear the rectangle each draw, so we can redraw on a clean canvas
         c.clearRect(0, 0, canvas[0].width, canvas[0].height);
