@@ -54,13 +54,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
      * Creates and sets the help text, used in the help overlay, based on the graph parameters and characteristics
      *
      * Parameters:
+     *    graphUi - The graphUi object
      *    templateParams - The parameters used for defining the graph
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      *    allowedEditsFunc - A callable reference to the GraphUI.allowEdits function
      */
-    HelpOverlay.prototype.setHelpText = function(templateParams, isTypeFunc, allowedEditsFunc) {
-        let isFSM = isTypeFunc(util.Type.FSM);
-        let isPetri = isTypeFunc(util.Type.PETRI);
+    HelpOverlay.prototype.setHelpText = function(graphUi, templateParams, isTypeFunc, allowedEditsFunc) {
+        let isFSM = isTypeFunc(this.parent, graphUi, util.Type.FSM);
+        let isPetri = isTypeFunc(this.parent, graphUi, util.Type.PETRI);
 
         let node = "node";
         if (isFSM) {
@@ -75,10 +76,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         }
         let anEdge = (isFSM ? "a " : "an ") + edge;
 
-        let hasDrawMode = allowedEditsFunc(util.Edit.ADD_VERTEX) ||
-            allowedEditsFunc(util.Edit.ADD_EDGE);
-        let canEditVertex = allowedEditsFunc(util.Edit.ADD_VERTEX);
-        let canEditEdge = allowedEditsFunc(util.Edit.ADD_EDGE);
+        let hasDrawMode = allowedEditsFunc(this.parent, util.Edit.ADD_VERTEX) ||
+            allowedEditsFunc(this.parent, util.Edit.ADD_EDGE);
+        let canEditVertex = allowedEditsFunc(this.parent, util.Edit.ADD_VERTEX);
+        let canEditEdge = allowedEditsFunc(this.parent, util.Edit.ADD_EDGE);
         let editableList = [];
         if (canEditVertex) {
             if (isFSM) {
@@ -102,20 +103,20 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         let editables = editableList.map(e => e + "s").join("/");
 
         let labelEditableList = [];
-        if (allowedEditsFunc(util.Edit.VERTEX_LABELS)) {
+        if (allowedEditsFunc(this.parent, util.Edit.VERTEX_LABELS)) {
             labelEditableList.push(node);
         }
-        if (allowedEditsFunc(util.Edit.EDGE_LABELS)) {
+        if (allowedEditsFunc(this.parent, util.Edit.EDGE_LABELS)) {
             labelEditableList.push(edge);
         }
         let labelEditable = labelEditableList.join("/");
         let aLabelEditable = (labelEditableList[0] === "edge" ? "an " : "a ") + labelEditable;
 
         let colorEditableList = [];
-        if (allowedEditsFunc(util.Edit.VERTEX_COLORS)) {
+        if (allowedEditsFunc(this.parent, util.Edit.VERTEX_COLORS)) {
             colorEditableList.push(node);
         }
-        if (allowedEditsFunc(util.Edit.EDGE_COLORS)) {
+        if (allowedEditsFunc(this.parent, util.Edit.EDGE_COLORS)) {
             colorEditableList.push(edge);
         }
         let colorEditable = colorEditableList.join("/");
@@ -159,12 +160,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
             + "Click " + anEdge + "."
             + (canEditEdge ? " Dragging it changes the arc curvature." : "") + "</li>";
 
-        if (isFSM && allowedEditsFunc(util.Edit.FSM_FLAGS)) {
+        if (isFSM && allowedEditsFunc(this.parent, util.Edit.FSM_FLAGS)) {
             selectModeText += "<li><b>Mark state as initial/final:</b> &nbsp;"
                 + "Select a state and click the initial/final checkboxes in the toolbar.</li>";
         }
 
-        if (isPetri && allowedEditsFunc(util.Edit.PETRI_MARKING)) {
+        if (isPetri && allowedEditsFunc(this.parent, util.Edit.PETRI_MARKING)) {
             selectModeText += "<li><b>Edit marking:</b> &nbsp;"
                 + "Select a place and edit its number of tokens using the field "
                 + "in the toolbar.</li>";

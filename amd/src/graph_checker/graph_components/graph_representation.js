@@ -9,8 +9,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         'qtype_graphchecker/graph_checker/graph_components/graph_elements'],
     function ($, globals, util, elements) {
 
-    let self;
-
     /**
      * Function: GraphRepresentation
      * Constructor for the GraphRepresentation (i.e. a graph data) object.
@@ -21,7 +19,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    nodeRadius - A callable reference to the GraphUI.nodeRadius function
      */
     function GraphRepresentation(parent, nodeRadius) {
-        self = this;
         this.parent = parent;
         this.nodes = [];
         this.links = [];
@@ -88,6 +85,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getObjectOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *    useNodePadding - Whether to include extra padding when selecting nodes. For links this is automatically enabled
@@ -95,15 +93,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The first object (i.e. a node or a link), if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getObjectOnMousePos = function(x, y, useNodePadding) {
+    GraphRepresentation.prototype.getObjectOnMousePos = function(graphRepr, x, y, useNodePadding) {
         // First check if the mouse position is over a node, i.e. nodes have precedence over links
-        let node = self.getNodeOnMousePos(x, y, useNodePadding);
+        let node = graphRepr.getNodeOnMousePos(graphRepr, x, y, useNodePadding);
         if (node) {
             return node;
         }
 
         // If not, check if it's over a link
-        let link = self.getLinkOnMousePos(x, y);
+        let link = graphRepr.getLinkOnMousePos(graphRepr, x, y);
         if (link) {
             return link;
         }
@@ -116,6 +114,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getNodeOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *    useNodePadding - Whether to include extra padding when selecting nodes. For links this is automatically enabled
@@ -123,10 +122,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The first node, if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getNodeOnMousePos = function(x, y, useNodePadding) {
-        for (let i = 0; i < self.nodes.length; i++) {
-            if (self.nodes[i].containsPoint(x, y, useNodePadding)) {
-                return self.nodes[i];
+    GraphRepresentation.prototype.getNodeOnMousePos = function(graphRepr, x, y, useNodePadding) {
+        for (let i = 0; i < graphRepr.nodes.length; i++) {
+            if (graphRepr.nodes[i].containsPoint(x, y, useNodePadding)) {
+                return graphRepr.nodes[i];
             }
         }
         return null;
@@ -136,16 +135,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getLinkOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *
      * Returns:
      *    The first link, if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getLinkOnMousePos = function(x, y) {
-        for (let i = 0; i < self.links.length; i++) {
-            if (self.links[i].containsPoint(x, y)) {
-                return self.links[i];
+    GraphRepresentation.prototype.getLinkOnMousePos = function(graphRepr, x, y) {
+        for (let i = 0; i < graphRepr.links.length; i++) {
+            if (graphRepr.links[i].containsPoint(x, y)) {
+                return graphRepr.links[i];
             }
         }
         return null;
@@ -170,8 +170,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             }
 
             // Calculate the corners of the smallest square around the (circular) node
-            let topLeft = {x: this.nodes[i].x - this.nodeRadiusFunction(), y: this.nodes[i].y - this.nodeRadiusFunction()};
-            let bottomRight = {x: this.nodes[i].x + this.nodeRadiusFunction(), y: this.nodes[i].y + this.nodeRadiusFunction()};
+            let topLeft = {x: this.nodes[i].x - this.nodeRadiusFunction(this.parent),
+                y: this.nodes[i].y - this.nodeRadiusFunction(this.parent)};
+            let bottomRight = {x: this.nodes[i].x + this.nodeRadiusFunction(this.parent),
+                y: this.nodes[i].y + this.nodeRadiusFunction(this.parent)};
             let testRect = [topLeft, bottomRight];
 
             // Perform the check
@@ -252,11 +254,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * accordingly
      *
      * Parameters:
+     *    graphUi - The graphUi object
      *    textArea - The HTML text area which contains the JSON string representing the graph
      *    templateParams - The parameters used for defining the graph
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
-    GraphRepresentation.prototype.load = function(textArea, templateParams, isTypeFunc) {
+    GraphRepresentation.prototype.load = function(graphUi, textArea, templateParams, isTypeFunc) {
         let content = $(textArea).val();
         if (content) {
             // If there is content in the text area
@@ -285,11 +288,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     if (templateParams.highlight_vertices) {
                         node.isHighlighted = inputNode['highlighted'];
                     }
-                    if (isTypeFunc(util.Type.FSM)) {
+                    if (isTypeFunc(graphUi, util.Type.FSM)) {
                         node.isInitial = inputNode['initial'];
                         node.isFinal = inputNode['final'];
                     }
-                    if (isTypeFunc(util.Type.PETRI)) {
+                    if (isTypeFunc(graphUi, util.Type.PETRI)) {
                         node.petriNodeType = inputNode['petri_type'];
                         if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
                             node.petriTokens = inputNode['tokens'];
@@ -380,11 +383,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             if (templateParams.highlight_vertices) {
                 vertex['highlighted'] = node.isHighlighted;
             }
-            if (isTypeFunc(util.Type.FSM)) {
+            if (isTypeFunc(this.parent, util.Type.FSM)) {
                 vertex['initial'] = node.isInitial;
                 vertex['final'] = node.isFinal;
             }
-            if (isTypeFunc(util.Type.PETRI)) {
+            if (isTypeFunc(this.parent, util.Type.PETRI)) {
                 vertex['petri_type'] = node.petriNodeType;
                 if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
                     // Ensure that the petri tokens are within the range as specified in the globals

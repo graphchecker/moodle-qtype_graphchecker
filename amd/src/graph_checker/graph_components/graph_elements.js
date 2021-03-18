@@ -146,10 +146,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Define function used to draw the node
         const drawShape = function () {
             if (this.petriNodeType === util.PetriNodeType.NONE || this.petriNodeType === util.PetriNodeType.PLACE) {
-                c.arc(this.x, this.y, this.parent.nodeRadius(), 0, 2 * Math.PI, false);
+                c.arc(this.x, this.y, this.parent.nodeRadius(this.parent), 0, 2 * Math.PI, false);
             } else if (this.petriNodeType === util.PetriNodeType.TRANSITION) {
-                c.rect(this.x - this.parent.nodeRadius(), this.y - this.parent.nodeRadius(),
-                    this.parent.nodeRadius()*2, this.parent.nodeRadius()*2);
+                c.rect(this.x - this.parent.nodeRadius(this.parent), this.y - this.parent.nodeRadius(this.parent),
+                    this.parent.nodeRadius(this.parent)*2, this.parent.nodeRadius(this.parent)*2);
             }
         }.bind(this);
 
@@ -171,7 +171,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Draw a double circle for an accept state.
             if (this.isFinal) {
                 c.beginPath();
-                c.arc(this.x, this.y, this.parent.nodeRadius() - 6, 0, 2 * Math.PI, false);
+                c.arc(this.x, this.y, this.parent.nodeRadius(this.parent) - 6, 0, 2 * Math.PI, false);
                 c.stroke();
             }
         } else if (drawOption === util.DrawOption.HOVER) {
@@ -314,8 +314,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Calculate the closest point on the node's circle
             let scale = Math.sqrt(dx * dx + dy * dy);
             return {
-                x: this.x + dx * this.parent.nodeRadius() / scale,
-                y: this.y + dy * this.parent.nodeRadius() / scale,
+                x: this.x + dx * this.parent.nodeRadius(this.parent) / scale,
+                y: this.y + dy * this.parent.nodeRadius(this.parent) / scale,
             };
         } else {
             // Calculate the closest point on the node's square
@@ -337,7 +337,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             let b = y - a*x;
 
             // The length of half the side of the square
-            let sideHalfLength = this.parent.nodeRadius();
+            let sideHalfLength = this.parent.nodeRadius(this.parent);
             let xRes, yRes;
             if (angle < util.degToRad(45) || angle >= util.degToRad(315)) {
                 xRes = this.x - sideHalfLength;
@@ -387,7 +387,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             return;
         }
         // The half side length of the square
-        let halfSideLength = this.parent.nodeRadius();
+        let halfSideLength = this.parent.nodeRadius(this.parent);
 
         // An array of valid points at which the circle intersects the square
         let points = [];
@@ -496,7 +496,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    Whether the point is contained in the node
      */
     Node.prototype.containsPoint = function(x, y, usePadding) {
-        let radius = this.parent.nodeRadius();
+        let radius = this.parent.nodeRadius(this.parent);
         if (usePadding) {
             radius += globals.HIT_TARGET_PADDING;
         }
@@ -749,7 +749,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let circle = util.circleFromThreePoints(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y, anchor.x, anchor.y);
         let isReversed = (this.perpendicularPart > 0);
         let reverseScale = isReversed ? 1 : -1;
-        let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius());
+        let linkInfo = util.calculateLinkInfo(this.nodeA, this.nodeB, circle, reverseScale, this.parent.nodeRadius(this.parent));
         // If the start node is a TRANSITION node, adjust the start of the link
         if (this.nodeA.petriNodeType === util.PetriNodeType.TRANSITION) {
             linkInfo = this.nodeA.getAdjustedLinkInfoTransition(circle, linkInfo, reverseScale, this.nodeA, this.nodeB,
@@ -906,8 +906,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         } else {
             c.strokeStyle = c.fillStyle = util.Color.WHITE;
         }
+
+        // If this object is selected, apply (blue selection) shading again to give more visibility
+        if (this.parent.selectedObjects.includes(this)) {
+            c.shadowBlur = 7;
+        }
+
         c.beginPath();
         drawLink();
+        c.stroke();
         if (this.colorObject === util.colors[util.Color.BLACK] || this.colorObject === null) {
             c.strokeStyle = c.fillStyle = (this.colorObject !== null) ?
                 this.colorObject.colorCode : util.colors[util.Color.BLACK].colorCode;
@@ -1085,9 +1092,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    Information about the link, most notably the endpoints and the circle on which this link is located
      */
     SelfLink.prototype.getLinkInfo = function() {
-        let circleX = this.node.x + 1.5 * this.parent.nodeRadius() * Math.cos(this.anchorAngle);
-        let circleY = this.node.y + 1.5 * this.parent.nodeRadius() * Math.sin(this.anchorAngle);
-        let circleRadius = 0.75 * this.parent.nodeRadius();
+        let circleX = this.node.x + 1.5 * this.parent.nodeRadius(this.parent) * Math.cos(this.anchorAngle);
+        let circleY = this.node.y + 1.5 * this.parent.nodeRadius(this.parent) * Math.sin(this.anchorAngle);
+        let circleRadius = 0.75 * this.parent.nodeRadius(this.parent);
         let startAngle = this.anchorAngle - Math.PI * 0.8;
         let endAngle = this.anchorAngle + Math.PI * 0.8;
         let startX = circleX + circleRadius * Math.cos(startAngle);
