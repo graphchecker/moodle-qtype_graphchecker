@@ -6,10 +6,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graphelements'],
-    function ($, globals, util, elements) {
-
-    let self;
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links'],
+    function ($, globals, util, node_elements, link_elements) {
 
     /**
      * Function: GraphRepresentation
@@ -21,7 +20,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    nodeRadius - A callable reference to the GraphUI.nodeRadius function
      */
     function GraphRepresentation(parent, nodeRadius) {
-        self = this;
         this.parent = parent;
         this.nodes = [];
         this.links = [];
@@ -88,6 +86,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getObjectOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *    useNodePadding - Whether to include extra padding when selecting nodes. For links this is automatically enabled
@@ -95,15 +94,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The first object (i.e. a node or a link), if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getObjectOnMousePos = function(x, y, useNodePadding) {
+    GraphRepresentation.prototype.getObjectOnMousePos = function(graphRepr, x, y, useNodePadding) {
         // First check if the mouse position is over a node, i.e. nodes have precedence over links
-        let node = self.getNodeOnMousePos(x, y, useNodePadding);
+        let node = graphRepr.getNodeOnMousePos(graphRepr, x, y, useNodePadding);
         if (node) {
             return node;
         }
 
         // If not, check if it's over a link
-        let link = self.getLinkOnMousePos(x, y);
+        let link = graphRepr.getLinkOnMousePos(graphRepr, x, y);
         if (link) {
             return link;
         }
@@ -116,6 +115,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getNodeOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *    useNodePadding - Whether to include extra padding when selecting nodes. For links this is automatically enabled
@@ -123,10 +123,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Returns:
      *    The first node, if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getNodeOnMousePos = function(x, y, useNodePadding) {
-        for (let i = 0; i < self.nodes.length; i++) {
-            if (self.nodes[i].containsPoint(x, y, useNodePadding)) {
-                return self.nodes[i];
+    GraphRepresentation.prototype.getNodeOnMousePos = function(graphRepr, x, y, useNodePadding) {
+        for (let i = 0; i < graphRepr.nodes.length; i++) {
+            if (graphRepr.nodes[i].containsPoint(x, y, useNodePadding)) {
+                return graphRepr.nodes[i];
             }
         }
         return null;
@@ -136,16 +136,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Function: getLinkOnMousePos
      *
      * Parameters:
+     *    graphRepr - The graph representation object
      *    x - The x position of the mouse
      *    y - The y position of the mouse
      *
      * Returns:
      *    The first link, if any, encountered at the user's mouse position
      */
-    GraphRepresentation.prototype.getLinkOnMousePos = function(x, y) {
-        for (let i = 0; i < self.links.length; i++) {
-            if (self.links[i].containsPoint(x, y)) {
-                return self.links[i];
+    GraphRepresentation.prototype.getLinkOnMousePos = function(graphRepr, x, y) {
+        for (let i = 0; i < graphRepr.links.length; i++) {
+            if (graphRepr.links[i].containsPoint(x, y)) {
+                return graphRepr.links[i];
             }
         }
         return null;
@@ -165,13 +166,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Check all nodes
         for (let i = 0; i < this.nodes.length; i++) {
-            if (this.nodes[i].locked) {
-                continue;
-            }
-
             // Calculate the corners of the smallest square around the (circular) node
-            let topLeft = {x: this.nodes[i].x - this.nodeRadiusFunction(), y: this.nodes[i].y - this.nodeRadiusFunction()};
-            let bottomRight = {x: this.nodes[i].x + this.nodeRadiusFunction(), y: this.nodes[i].y + this.nodeRadiusFunction()};
+            let topLeft = {x: this.nodes[i].x - this.nodeRadiusFunction(this.parent),
+                y: this.nodes[i].y - this.nodeRadiusFunction(this.parent)};
+            let bottomRight = {x: this.nodes[i].x + this.nodeRadiusFunction(this.parent),
+                y: this.nodes[i].y + this.nodeRadiusFunction(this.parent)};
             let testRect = [topLeft, bottomRight];
 
             // Perform the check
@@ -182,21 +181,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Check all links
         for (let i = 0; i < this.links.length; i++) {
-            if (this.links[i].locked) {
-                continue;
-            }
 
             // If the link is a straight line, check if the two endpoints are located inside the rectangle
             // If the link is an arc, generate 'steps' number of points on the arc,
             // and check if they are all located inside the rectangle
             let points = [];
-            if (this.links[i] instanceof elements.StartLink) {
+            if (this.links[i] instanceof link_elements.StartLink) {
                 let l = this.links[i].getEndPoints();
                 points.push({x: l.startX, y: l.startY});
                 points.push({x: l.endX, y: l.endY});
             } else {
                 // Else if normal link or self link
-                let l = this.links[i].getEndPointsAndCircle();
+                let l = this.links[i].getLinkInfo();
                 let r = l.circleRadius;
                 let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
                 let circleEndAngle = Math.atan2(((l.endY - l.circleY) / r), ((l.endX - l.circleX) / r));
@@ -252,11 +248,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * accordingly
      *
      * Parameters:
+     *    graphUi - The graphUi object
      *    textArea - The HTML text area which contains the JSON string representing the graph
      *    templateParams - The parameters used for defining the graph
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
-    GraphRepresentation.prototype.load = function(textArea, templateParams, isTypeFunc) {
+    GraphRepresentation.prototype.load = function(graphUi, textArea, templateParams, isTypeFunc) {
         let content = $(textArea).val();
         if (content) {
             // If there is content in the text area
@@ -271,7 +268,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 // Load all nodes, with their properties
                 for (i = 0; i < input.vertices.length; i++) {
                     let inputNode = input.vertices[i];
-                    let node = new elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
+                    let node = new node_elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
                     if (!templateParams.ignore_locked && 'locked' in inputNode) {
                         // note: don't set the locked flag if we're in ignore_locked mode,
                         // because then we're supposed to be able to edit locked objects
@@ -285,11 +282,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     if (templateParams.highlight_vertices) {
                         node.isHighlighted = inputNode['highlighted'];
                     }
-                    if (isTypeFunc(util.Type.FSM)) {
+                    if (isTypeFunc(graphUi, util.Type.FSM)) {
                         node.isInitial = inputNode['initial'];
                         node.isFinal = inputNode['final'];
                     }
-                    if (isTypeFunc(util.Type.PETRI)) {
+                    if (isTypeFunc(graphUi, util.Type.PETRI)) {
                         node.petriNodeType = inputNode['petri_type'];
                         if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
                             node.petriTokens = inputNode['tokens'];
@@ -305,7 +302,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                     if (inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
-                        link = new elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
+                        link = new link_elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
                         link.text = inputLink['label'];
                         link.colorObject = (templateParams.edge_colors) ?
                             util.colorObjectFromColorCode(inputLink['color']) : null;
@@ -313,7 +310,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
                     } else if (inputLink['from'] === -1) {
                         // Start link
-                        link = new elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
+                        link = new link_elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
                         link.colorObject = (templateParams.edge_colors) ?
@@ -321,7 +318,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
                         // Normal link
-                        link = new elements.Link(this.parent, this.getNodes()[inputLink['from']],
+                        link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],
                             this.getNodes()[inputLink['to']]);
                         link.text = inputLink['label'];
                         link.colorObject = (templateParams.edge_colors) ?
@@ -380,11 +377,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             if (templateParams.highlight_vertices) {
                 vertex['highlighted'] = node.isHighlighted;
             }
-            if (isTypeFunc(util.Type.FSM)) {
+            if (isTypeFunc(this.parent, util.Type.FSM)) {
                 vertex['initial'] = node.isInitial;
                 vertex['final'] = node.isFinal;
             }
-            if (isTypeFunc(util.Type.PETRI)) {
+            if (isTypeFunc(this.parent, util.Type.PETRI)) {
                 vertex['petri_type'] = node.petriNodeType;
                 if (vertex['petri_type'] === util.PetriNodeType.PLACE) {
                     // Ensure that the petri tokens are within the range as specified in the globals
@@ -403,7 +400,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // For every link in the representation, create a link object, in order to later save it to the JSON string
         for (i = 0; i < this.getLinks().length; i++) {
             let link = this.getLinks()[i];
-            if (link instanceof elements.SelfLink) {
+            if (link instanceof link_elements.SelfLink) {
                 let linkObject = {
                     'from': this.getNodes().indexOf(link.node),
                     'to': this.getNodes().indexOf(link.node),
@@ -415,7 +412,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 };
                 linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
                 output.edges.push(linkObject);
-            } else if (link instanceof elements.StartLink) {
+            } else if (link instanceof link_elements.StartLink) {
                 let linkObject = {
                     'from': -1,
                     'to': this.getNodes().indexOf(link.node),
@@ -427,7 +424,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 };
                 linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
                 output.edges.push(linkObject);
-            } else if (link instanceof elements.Link) {
+            } else if (link instanceof link_elements.Link) {
                 let linkObject = {
                     'from': this.getNodes().indexOf(link.nodeA),
                     'to': this.getNodes().indexOf(link.nodeB),

@@ -7,8 +7,9 @@
  */
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graphelements'],
-    function ($, globals, util, elements) {
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links',],
+    function ($, globals, util, node_elements, link_elements) {
 
     /**
      * Function: GraphCanvas
@@ -17,18 +18,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      * Parameters:
      *    parent - The parent of the canvas object
-     *    canvasId - The id value given to the canvas
      *    w - The width of the wrapper enclosing the canvas
      *    h - The height of the wrapper enclosing the canvas
      *    eventHandler - The object that handles events, upon notice of the listeners implemented in this object
      */
-    function GraphCanvas(parent, canvasId, w, h, eventHandler) {
+    function GraphCanvas(parent, w, h, eventHandler) {
         this.selectionRectangleOffset = 0; // Used for animating the border of the selection rectangle (marching ants)
 
         this.parent = parent;
         this.canvas = $(document.createElement("canvas"));
         this.canvas.attr({
-            id: canvasId,
             class: "graphchecker_graphcanvas",
             tabindex: 1 // So canvas can get focus.
         });
@@ -98,6 +97,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      * Parameters:
      *    graphUi - The graph UI object
+     *    graphRepr - The graph representation object
      *    nodes - The nodes which to draw
      *    links - The links which to draw
      *    uiMode - The UI mode of the graph (e.g. drawing or selecting)
@@ -111,7 +111,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    currentLink - The current (temporary) draggable link. Used to create new links
      *    mousePosition - The current position of the mouse
      */
-    GraphCanvas.prototype.draw = function (graphUi, nodes, links, uiMode, petriNodeType, fontSize, allowEditsFunc,
+    GraphCanvas.prototype.draw = function (graphUi, graphRepr, uiMode, petriNodeType, fontSize, allowEditsFunc,
                                            isTypeFunc, getObjectOnMousePosFunc, selectionRectangle, currentLink,
                                            mousePosition) {
         let canvas = this.canvas,
@@ -131,24 +131,26 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
         // can create a node here
         if (uiMode === util.ModeType.DRAW && mousePosition && !currentLink &&
-            !getObjectOnMousePosFunc(mousePosition.x, mousePosition.y, true) &&
-            allowEditsFunc(util.Edit.ADD_VERTEX)) {
+            !getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) &&
+            allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
 
             // Create the shadow node and draw it
-            let shadowNode = new elements.Node(graphUi, mousePosition.x, mousePosition.y);
-            if (isTypeFunc(util.Type.PETRI) && petriNodeType === util.PetriNodeType.TRANSITION) {
+            let shadowNode = new node_elements.Node(graphUi, mousePosition.x, mousePosition.y);
+            if (isTypeFunc(graphUi, util.Type.PETRI) && petriNodeType === util.PetriNodeType.TRANSITION) {
                 shadowNode.petriNodeType = util.PetriNodeType.TRANSITION;
             }
             shadowNode.draw(c, true, util.DrawOption.HOVER);
         }
 
         // Draw all selections of the nodes, and links
-        this.drawNodes(c, nodes, util.DrawOption.SELECTION, uiMode, mousePosition, allowEditsFunc, getObjectOnMousePosFunc);
-        this.drawLinks(c, links, util.DrawOption.SELECTION);
+        this.drawNodes(c, graphUi, graphRepr, util.DrawOption.SELECTION, uiMode, mousePosition, allowEditsFunc,
+            getObjectOnMousePosFunc);
+        this.drawLinks(c, graphRepr, util.DrawOption.SELECTION);
 
         // Draw all highlights of the nodes/links and the nodes/links themselves
-        this.drawNodes(c, nodes, util.DrawOption.OBJECT, uiMode, mousePosition, allowEditsFunc, getObjectOnMousePosFunc);
-        this.drawLinks(c, links, util.DrawOption.OBJECT);
+        this.drawNodes(c, graphUi, graphRepr, util.DrawOption.OBJECT, uiMode, mousePosition, allowEditsFunc,
+            getObjectOnMousePosFunc);
+        this.drawLinks(c, graphRepr, util.DrawOption.OBJECT);
 
         // Draw the current link (i.e. a temporary (dragging) link)
         if (currentLink) {
@@ -182,25 +184,28 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      * Parameters:
      *    c - The canvas 2D context object
-     *    nodes - The nodes which to draw
+     *    graphUi - The graphUI object
+     *    graphRepr - The graph representation object
      *    drawOption - The draw option with which to draw the links (i.e. the object itself, selection, or highlighting)
      *    uiMode - The UI mode of the graph (e.g. drawing or selecting)
      *    mousePosition - The current position of the mouse
      *    allowEditsFunc - A callable reference to the GraphUI.allowEdits function
      *    getObjectOnMousePosFunc - A callable reference to the GraphRepresentation.getObjectOnMousePos function
      */
-    GraphCanvas.prototype.drawNodes = function(c, nodes, drawOption, uiMode, mousePosition, allowEditsFunc,
+    GraphCanvas.prototype.drawNodes = function(c, graphUi, graphRepr, drawOption, uiMode, mousePosition, allowEditsFunc,
                                                getObjectOnMousePosFunc) {
         // If the option is not defined, don't draw anything
         if (!Object.values(util.DrawOption).includes(drawOption)) {
             return;
         }
 
+        let nodes = graphRepr.getNodes();
+
         // Draw the nodes with the draw option
         for (let i = 0; i < nodes.length; i++) {
             let drawNodeShadow = uiMode === util.ModeType.DRAW && mousePosition &&
-                getObjectOnMousePosFunc(mousePosition.x, mousePosition.y, true) === nodes[i] &&
-                allowEditsFunc(util.Edit.ADD_VERTEX);
+                getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) === nodes[i] &&
+                allowEditsFunc(graphUi, util.Edit.ADD_VERTEX);
             if (drawNodeShadow) {
                 // Enable the shadow
                 let shadowAlpha = 0.5;
@@ -209,7 +214,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                 // If the node is highlighted, draw another node below it, so the shadow is visible
                 if (nodes[i].isHighlighted) {
-                    let shadowNode = new elements.Node(this, nodes[i].x, nodes[i].y);
+                    let shadowNode = new node_elements.Node(this, nodes[i].x, nodes[i].y);
                     c.lineWidth = 1;
                     c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
                     shadowNode.draw(c, drawNodeShadow, null);
@@ -220,7 +225,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             c.fillStyle = c.strokeStyle = util.Color.BLACK;
             nodes[i].draw(c, drawNodeShadow, drawOption);
 
-            if (drawNodeShadow && allowEditsFunc(util.Edit.ADD_VERTEX)) {
+            if (drawNodeShadow && allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
                 // Disable the shadow
                 c.shadowBlur = 0;
                 c.globalAlpha = 1;
@@ -234,10 +239,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      * Parameters:
      *    c - The canvas 2D context object
-     *    links - The nodes which to draw
+     *    graphRepr - The graph representation object
      *    drawOption - The draw option with which to draw the links (i.e. the object itself, selection, or highlighting)
      */
-    GraphCanvas.prototype.drawLinks = function(c, links, drawOption) {
+    GraphCanvas.prototype.drawLinks = function(c, graphRepr, drawOption) {
+        let links = graphRepr.getLinks();
+
         // Draw the links with the draw option
         for (let i = 0; i < links.length; i++) {
             c.lineWidth = 1;
@@ -250,6 +257,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Draws the specified text for the specified object and parameters
      *
      * Parameters:
+     *    graphUi - The graphUi object
      *    originalObject - The object for which to place the text
      *    originalText - The original (i.e. unprocessed) text to be used
      *    x - The x-position at which to place the text
@@ -260,7 +268,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    fontSize - The text size
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
-    GraphCanvas.prototype.drawText = function(originalObject, originalText, x, y, angleOrNull, links, nodeRadius,
+    GraphCanvas.prototype.drawText = function(graphUi, originalObject, originalText, x, y, angleOrNull, links, nodeRadius,
                                               fontSize, isTypeFunc) {
         // Get the context, and convert any LaTeX shortcuts in the text to according symbols
         let c = this.canvas[0].getContext('2d'),
@@ -274,19 +282,19 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Test whether the text can fit inside the node, depending on the node width and the type of node
         let isSmallWidth = width <= 2 * nodeRadius - globals.TEXT_NODE_HORIZONTAL_PADDING;
         if (isSmallWidth &&
-            !(isTypeFunc(util.Type.PETRI) && originalObject instanceof elements.Node &&
+            !(isTypeFunc(graphUi, util.Type.PETRI) && originalObject instanceof node_elements.Node &&
                 originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
-            (originalObject instanceof elements.Link ||
-                originalObject instanceof elements.SelfLink ||
-                originalObject instanceof elements.StartLink)) {
+            (originalObject instanceof link_elements.Link ||
+                originalObject instanceof link_elements.SelfLink ||
+                originalObject instanceof link_elements.StartLink)) {
             // Center the text inside the node if it fits
             x -= width / 2;
 
             // If the node is a dark color, enhance the visibility of the text by changing the color to white
-            if (originalObject instanceof elements.Node && originalObject.colorObject.isDark) {
+            if (originalObject instanceof node_elements.Node && originalObject.colorObject.isDark) {
                 c.fillStyle = util.Color.WHITE;
             }
-        } else if (originalObject instanceof elements.Node && (!isSmallWidth ||
+        } else if (originalObject instanceof node_elements.Node && (!isSmallWidth ||
             originalObject.petriNodeType === util.PetriNodeType.PLACE)) {
             // If the text does not fit, or if it is a Place node (of a Petri net), position the element either on the
             // bottom, right, top or left of the node, depending on which side do not have incoming nodes
@@ -309,11 +317,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // If given an angle, position the text intelligently accordingly around the object
         if (angleOrNull) {
-            var cos = Math.cos(angleOrNull);
-            var sin = Math.sin(angleOrNull);
-            var cornerPointX = (width / 2) * (cos > 0 ? 1 : -1);
-            var cornerPointY = 10 * (sin > 0 ? 1 : -1);
-            var slide = sin * Math.pow(Math.abs(sin), 40) * cornerPointX - cos * Math.pow(Math.abs(cos), 10) * cornerPointY;
+            let cos = Math.cos(angleOrNull);
+            let sin = Math.sin(angleOrNull);
+            let cornerPointX = (width / 2) * (cos > 0 ? 1 : -1);
+            let cornerPointY = 10 * (sin > 0 ? 1 : -1);
+            let slide = sin * Math.pow(Math.abs(sin), 40) * cornerPointX - cos * Math.pow(Math.abs(cos), 10) * cornerPointY;
             x += cornerPointX - sin * slide;
             y += cornerPointY + cos * slide;
         }

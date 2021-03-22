@@ -44,7 +44,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
+define(['qtype_graphchecker/graph_checker/globals'],
+    function(globals) {
 
     function Util() {
         // Constructor for the Util class.
@@ -149,25 +150,25 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
 
     Util.prototype.convertLatexShortcuts = function(text) {
         // Html greek characters.
-        for(var i = 0; i < this.greekLetterNames.length; i++) {
-            var name = this.greekLetterNames[i];
+        for(let i = 0; i < this.greekLetterNames.length; i++) {
+            let name = this.greekLetterNames[i];
             text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(913 + i + (i > 16)));
             text = text.replace(new RegExp('\\\\' + name.toLowerCase(), 'g'), String.fromCharCode(945 + i + (i > 16)));
         }
 
         // Subscripts.
-        for(var i = 0; i < 10; i++) {
+        for(let i = 0; i < 10; i++) {
             text = text.replace(new RegExp('_' + i, 'g'), String.fromCharCode(8320 + i));
         }
         text = text.replace(new RegExp('_a', 'g'), String.fromCharCode(8336));
         return text;
     };
 
-    Util.prototype.drawArrow = function(c, x, y, angle) { //TODO: DRAW in other function
+    Util.prototype.drawArrow = function(c, x, y, angle) {
         // Draw an arrow head on the graphics context c at (x, y) with given angle.
 
-        var dx = Math.cos(angle);
-        var dy = Math.sin(angle);
+        let dx = Math.cos(angle);
+        let dy = Math.sin(angle);
         c.beginPath();
         c.moveTo(x, y);
         c.lineTo(x - 8 * dx + 5 * dy, y - 8 * dy - 5 * dx);
@@ -182,10 +183,10 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
 
     Util.prototype.circleFromThreePoints = function(x1, y1, x2, y2, x3, y3) {
         // Return {x, y, radius} of circle through (x1, y1), (x2, y2), (x3, y3).
-        var a = this.det(x1, y1, 1, x2, y2, 1, x3, y3, 1);
-        var bx = -this.det(x1 * x1 + y1 * y1, y1, 1, x2 * x2 + y2 * y2, y2, 1, x3 * x3 + y3 * y3, y3, 1);
-        var by = this.det(x1 * x1 + y1 * y1, x1, 1, x2 * x2 + y2 * y2, x2, 1, x3 * x3 + y3 * y3, x3, 1);
-        var c = -this.det(x1 * x1 + y1 * y1, x1, y1, x2 * x2 + y2 * y2, x2, y2, x3 * x3 + y3 * y3, x3, y3);
+        let a = this.det(x1, y1, 1, x2, y2, 1, x3, y3, 1);
+        let bx = -this.det(x1 * x1 + y1 * y1, y1, 1, x2 * x2 + y2 * y2, y2, 1, x3 * x3 + y3 * y3, y3, 1);
+        let by = this.det(x1 * x1 + y1 * y1, x1, 1, x2 * x2 + y2 * y2, x2, 1, x3 * x3 + y3 * y3, x3, 1);
+        let c = -this.det(x1 * x1 + y1 * y1, x1, y1, x2 * x2 + y2 * y2, x2, y2, x3 * x3 + y3 * y3, x3, y3);
         return {
             'x': -bx / (2 * a),
             'y': -by / (2 * a),
@@ -226,13 +227,22 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
         let angles = [];
         for (let i = 0; i < links.length; i++) {
-            let nodeA = links[i].nodeA;
-            let nodeB = links[i].nodeB;
-            //TODO: rekening houden met self links, zit er op dit moment nog niet in
+            let nodeA = null, nodeB = null;
+            if (links[i].constructor.name === 'Link') {
+                // In case of regular links
+                nodeA = links[i].nodeA;
+                nodeB = links[i].nodeB;
+            } else if (links[i].constructor.name === 'SelfLink') {
+                // TODO: referencing like this is not ideal, but otherwise including graph_links.js results in
+                //  circular dependencies...
+                // In case of self links
+                nodeA = links[i].node;
+            }
+
             if (nodeA === vertex || nodeB === vertex) {
-                // Calculate the angle (in radians) of the point of the link touching the selected vertex's
+                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
                 // circle with the selected node itself
-                angles.push(links[i].calculateAngle(vertex));
+                angles = angles.concat(links[i].calculateAngle(vertex));
             }
         }
         return angles;
@@ -330,7 +340,7 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
 
     // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
     // link, and the start and end angles.
-    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    // This code was originally written in the function graph_elements.getEndPointsAndCircle()
     Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
         let rRatio = reverseScale * distance / circle.radius;
         let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;

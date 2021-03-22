@@ -47,8 +47,9 @@
  */
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-    'qtype_graphchecker/graph_checker/graphelements', 'qtype_graphchecker/graph_checker/toolbar_elements'],
-    function($, globals, util, elements, toolbar_elements) {
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links', 'qtype_graphchecker/graph_checker/toolbar_elements'],
+    function($, globals, util, node_elements, link_elements, toolbar_elements) {
 
     /***********************************************************************
      *
@@ -57,9 +58,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *
      ************************************************************************/
 
-    function GraphToolbar(parent, divId, w, uiMode, helpOverlay, eventHandler) {
+    function GraphToolbar(parent, w, uiMode, helpOverlay, eventHandler) {
         // Constructor, given the Graph that owns this toolbar div, the canvas object of the graph,
-        // the required canvasId and the height and width of the wrapper that
+        // and the height and width of the wrapper that
         // encloses the Div.
 
         let self = this;
@@ -74,7 +75,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.eventHandler = eventHandler;
         this.div = $(document.createElement('div'));
         this.div.attr({
-            id: divId,
             class: "graphchecker_toolbar",
             tabindex: 0
         });
@@ -90,7 +90,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         $(document).ready(function () {
             // Create the 3 parts of the toolbar: left, middle and right
-            if (self.parent.allowEdits(util.Edit.ADD_VERTEX) || self.parent.allowEdits(util.Edit.ADD_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.ADD_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.ADD_EDGE)) {
                 self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
                     self.div[0].style.height, 'left');
             }
@@ -99,7 +100,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'right');
 
-            if (self.parent.allowEdits(util.Edit.ADD_VERTEX) || self.parent.allowEdits(util.Edit.ADD_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.ADD_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.ADD_EDGE)) {
                 // Left buttons
                 // Create the select button
                 let selectButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
@@ -118,10 +120,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // Right buttons
             // Create the delete button
-            if (self.parent.allowEdits(util.Edit.DELETE_VERTEX) || self.parent.allowEdits(util.Edit.DELETE_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.DELETE_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.DELETE_EDGE)) {
                 let deleteButton = new toolbar_elements.GrayOutButton(self, self.toolbarRightPart,
                     self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects,
-                    null);
+                    self.parent);
                 deleteButton.create();
                 self.rightButtons['delete'] = deleteButton;
             }
@@ -137,7 +140,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Create the redo button
             if (self.parent.allowsOneEdit()) {
                 let redoButton = new toolbar_elements.GrayOutButton(self, self.toolbarRightPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, null);
+                    self.buttonSize.w, self.buttonSize.h, 'fa-repeat', "Redo", self.parent.redo, self.parent);
                 redoButton.create();
                 self.rightButtons['redo'] = redoButton;
             }
@@ -158,7 +161,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // If the graph type is 'Petri net', and the initial mode is 'Draw', show the buttons for selection
             // different types of petri nodes: places and transitions
-            if (self.parent.isType(util.Type.PETRI) && self.uiMode === util.ModeType.DRAW) {
+            if (self.parent.isType(self.parent, util.Type.PETRI) && self.uiMode === util.ModeType.DRAW) {
                 self.addPetriNodeTypeOptions();
 
                 // Set the place button to highlighted
@@ -186,7 +189,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 self.removeSelectionOptions();
                 self.removeFSMNodeSelectionOptions();
                 self.removePetriSelectionOptions();
-                if (self.parent.isType(util.Type.PETRI)) {
+                if (self.parent.isType(self.parent, util.Type.PETRI)) {
                     self.onClickPetriNodeTypeButton(self.middleInput['place']);
                 }
             }
@@ -196,7 +199,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Update the width of the middle part of the toolbar
             if (this.toolbarMiddlePart !== undefined) {
                 let leftWidth = 0;
-                if (this.parent.allowEdits(util.Edit.ADD_VERTEX) || this.parent.allowEdits(util.Edit.ADD_EDGE)) {
+                if (this.parent.allowEdits(this.parent, util.Edit.ADD_VERTEX) || this.parent.allowEdits(this.parent,
+                    util.Edit.ADD_EDGE)) {
                     leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
                 }
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
@@ -225,8 +229,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // i.e. the left, middle, or right part of the toolbar, denoted by the variable 'side'
         let $part = $('<div/>')
             .attr({
-                'id': 'toolbar_part_' + side,
-                'class': 'toolbar_part',
+                'class': 'toolbar_part' + ' ' + side,
             });
         $(parentDiv).append($part);
         return $part;
@@ -243,6 +246,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Check whether all selected objects are either nodes or edges, or whether the color options are the same
         let colors;
         let areSameColors;
+        let containsLockedObjects = false;
         if (this.parent.templateParams.vertex_colors && this.parent.templateParams.edge_colors) {
             areSameColors = util.checkSameElementsArrays(this.parent.templateParams.vertex_colors,
                 this.parent.templateParams.edge_colors);
@@ -252,13 +256,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let areOnlyNodes = true;
         let areOnlyEdges = true;
         for (let i = 0; i < selectedObjects.length; i++) {
-            if (!(selectedObjects[i] instanceof elements.Node)) {
+            if (!(selectedObjects[i] instanceof node_elements.Node)) {
                 areOnlyNodes = false;
             }
-            if (!(selectedObjects[i] instanceof elements.Link ||
-                selectedObjects[i] instanceof elements.SelfLink ||
-                selectedObjects[i] instanceof elements.StartLink)) {
+            if (!(selectedObjects[i] instanceof link_elements.Link ||
+                selectedObjects[i] instanceof link_elements.SelfLink ||
+                selectedObjects[i] instanceof link_elements.StartLink)) {
                 areOnlyEdges = false;
+            }
+
+            // Check whether the selection contains locked objects
+            if (selectedObjects[i].locked) {
+                containsLockedObjects = true;
             }
         }
 
@@ -273,11 +282,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Create the color dropdown under the conditions specified by the following variables:
-        let areOnlyNodesAndAllowed = areOnlyNodes && !areOnlyEdges && this.parent.allowEdits(util.Edit.VERTEX_COLORS);
-        let areOnlyEdgesAndAllowed = !areOnlyNodes && areOnlyEdges && this.parent.allowEdits(util.Edit.EDGE_COLORS);
-        let nodesEdgesSameColorsAndAllowed = areSameColors && this.parent.allowEdits(util.Edit.VERTEX_COLORS) &&
-            this.parent.allowEdits(util.Edit.EDGE_COLORS);
-        if (colors && (areOnlyNodesAndAllowed || areOnlyEdgesAndAllowed || nodesEdgesSameColorsAndAllowed)) {
+        let areOnlyNodesAndAllowed = areOnlyNodes && !areOnlyEdges && this.parent.allowEdits(this.parent,
+            util.Edit.VERTEX_COLORS);
+        let areOnlyEdgesAndAllowed = !areOnlyNodes && areOnlyEdges && this.parent.allowEdits(this.parent,
+            util.Edit.EDGE_COLORS);
+        let nodesEdgesSameColorsAndAllowed = areSameColors && this.parent.allowEdits(this.parent,
+            util.Edit.VERTEX_COLORS) && this.parent.allowEdits(this.parent, util.Edit.EDGE_COLORS);
+        if (colors && (areOnlyNodesAndAllowed || areOnlyEdgesAndAllowed || nodesEdgesSameColorsAndAllowed) &&
+            !containsLockedObjects) {
             // Create the color dropdown menu
             let faIcons = []; // A variable denoting, for each node color: {typeOfIcon, iconColor}
             for (let i = 0; i < colors.length; i++) {
@@ -295,11 +307,11 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.middleInput['color'].setInitialFieldValue(selectedObjects);
         }
 
-        let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(util.Edit.VERTEX_LABELS));
-        let allow_edge_labels = !(areOnlyEdges && !this.parent.allowEdits(util.Edit.EDGE_LABELS));
-        if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof elements.StartLink ||
-            (selectedObjects[0] instanceof elements.Link && this.parent.isType(util.Type.PETRI))) &&
-            allow_vertex_labels && allow_edge_labels) {
+        let allow_vertex_labels = !(areOnlyNodes && !this.parent.allowEdits(this.parent, util.Edit.VERTEX_LABELS));
+        let allow_edge_labels = !(areOnlyEdges && !this.parent.allowEdits(this.parent, util.Edit.EDGE_LABELS));
+        if (selectedObjects.length === 1 && !(selectedObjects[0] instanceof link_elements.StartLink ||
+            (selectedObjects[0] instanceof link_elements.Link && this.parent.isType(this.parent, util.Type.PETRI))) &&
+            allow_vertex_labels && allow_edge_labels && !containsLockedObjects) {
             // Create the label textfield
             let labelTextField = new toolbar_elements.TextField(this, this.toolbarMiddlePart,
                 8, 'Label', selectedObjects[0], this.onInteractLabelTextField, this.onFocusInLabelTextfield,
@@ -317,9 +329,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Check for the validity of the label and take corresponding actions
             this.parent.checkLabelValidity(labelInput, labelInput.value);
 
-        } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof elements.Link &&
-            this.parent.isType(util.Type.PETRI)
-            && allow_edge_labels) {
+        } else if (selectedObjects.length === 1 && selectedObjects[0] instanceof link_elements.Link &&
+            this.parent.isType(this.parent, util.Type.PETRI)
+            && allow_edge_labels && !containsLockedObjects) {
             // Create the spinner to set the label
             let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
             let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
@@ -341,14 +353,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let containsEdges = false;
         let nrOfPotentialObjects = 0;
         for (let i = 0; i < selectedObjects.length; i++) {
-            if (selectedObjects[i] instanceof elements.Node) {
+            if (selectedObjects[i] instanceof node_elements.Node) {
                 containsVertices = true;
                 if (this.parent.templateParams.highlight_vertices) {
                     nrOfPotentialObjects++;
                 }
-            } else if (selectedObjects[i] instanceof elements.Link ||
-                selectedObjects[i] instanceof elements.SelfLink ||
-                selectedObjects[i] instanceof elements.StartLink) {
+            } else if (selectedObjects[i] instanceof link_elements.Link ||
+                selectedObjects[i] instanceof link_elements.SelfLink ||
+                selectedObjects[i] instanceof link_elements.StartLink) {
                 containsEdges = true;
                 if (this.parent.templateParams.highlight_edges) {
                     nrOfPotentialObjects++;
@@ -419,7 +431,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(toolbar.parent.graphCanvas.canvas).focus();
                 toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (toolbar.parent.allowEdits(util.Edit.ADD_VERTEX) || toolbar.parent.allowEdits(util.Edit.ADD_EDGE))) {
+                    (toolbar.parent.allowEdits(toolbar.parent, util.Edit.ADD_VERTEX) || toolbar.parent.allowEdits(toolbar.parent,
+                        util.Edit.ADD_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 if (toolbar.parent.uiMode !== util.ModeType.DRAW) {
                     toolbar.parent.enableTemporaryDrawMode();
@@ -503,7 +516,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 this.toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (toolbar.parent.allowEdits(util.Edit.ADD_VERTEX) || toolbar.parent.allowEdits(util.Edit.ADD_EDGE))) {
+                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_VERTEX) ||
+                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {
                     this.toolbar.parent.enableTemporaryDrawMode();
@@ -558,14 +572,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Clear the selection options, and re-add them below
         this.removeFSMNodeSelectionOptions();
 
-        if (!this.parent.allowEdits(util.Edit.FSM_FLAGS)) {
+        if (!this.parent.allowEdits(this.parent, util.Edit.FSM_FLAGS)) {
             return;
         }
 
         // Count the number of initial and final vertices
         let numberOfVertices = 0, numberOfInitialVertices = 0, numberOfFinalVertices = 0;
+        let containsLockedObjects = false;
         for (let i = 0; i < selectedObjects.length; i++) {
-            if (selectedObjects[i] instanceof elements.Node) {
+            if (selectedObjects[i] instanceof node_elements.Node) {
                 if (selectedObjects[i].hasStartLink(this.parent.graphRepr.links)) {
                     numberOfInitialVertices++;
                 }
@@ -574,6 +589,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 }
                 numberOfVertices++;
             }
+
+            if (selectedObjects[i].locked) {
+                containsLockedObjects = true;
+            }
         }
 
         if (numberOfVertices === 0) {
@@ -581,24 +600,28 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Create the FSM initial checkbox
-        let fsmInitialCheckbox = new toolbar_elements.Checkbox(
-            this, this.toolbarMiddlePart, util.CheckboxType.FSM_INITIAL, 'Initial',
-            this.onClickFSMInitialCheckbox);
-        fsmInitialCheckbox.create();
+        if (!containsLockedObjects) {
+            let fsmInitialCheckbox = new toolbar_elements.Checkbox(
+                this, this.toolbarMiddlePart, util.CheckboxType.FSM_INITIAL, 'Initial',
+                this.onClickFSMInitialCheckbox);
+            fsmInitialCheckbox.create();
 
-        // Set the initial checkbox value accordingly (in case it was pressed before) and save it
-        fsmInitialCheckbox.setChecked(numberOfInitialVertices, numberOfVertices);
-        this.middleInput['initial'] = fsmInitialCheckbox;
+            // Set the initial checkbox value accordingly (in case it was pressed before) and save it
+            fsmInitialCheckbox.setChecked(numberOfInitialVertices, numberOfVertices);
+            this.middleInput['initial'] = fsmInitialCheckbox;
+        }
 
         // Create the FSM final checkbox
-        let fsmFinalCheckbox = new toolbar_elements.Checkbox(
-            this, this.toolbarMiddlePart, util.CheckboxType.FSM_FINAL, 'Final',
-            this.onClickFSMFinalCheckbox);
-        fsmFinalCheckbox.create();
+        if (!containsLockedObjects) {
+            let fsmFinalCheckbox = new toolbar_elements.Checkbox(
+                this, this.toolbarMiddlePart, util.CheckboxType.FSM_FINAL, 'Final',
+                this.onClickFSMFinalCheckbox);
+            fsmFinalCheckbox.create();
 
-        // Set the final checkbox value accordingly (in case it was pressed before) and save it
-        fsmFinalCheckbox.setChecked(numberOfFinalVertices, numberOfVertices);
-        this.middleInput['final'] = fsmFinalCheckbox;
+            // Set the final checkbox value accordingly (in case it was pressed before) and save it
+            fsmFinalCheckbox.setChecked(numberOfFinalVertices, numberOfVertices);
+            this.middleInput['final'] = fsmFinalCheckbox;
+        }
     };
 
     GraphToolbar.prototype.removeFSMNodeSelectionOptions = function () {
@@ -620,7 +643,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Clear the existing petri node type options, and re-add them below
         this.removePetriNodeTypeOptions();
 
-        if (this.parent.allowEdits(util.Edit.ADD_VERTEX)) {
+        if (this.parent.allowEdits(this.parent, util.Edit.ADD_VERTEX)) {
             // Create the transition PetriNodeType button
             let petriNodeTypeTransitionButton = new toolbar_elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
                 this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', util.PetriNodeType.TRANSITION,
@@ -666,21 +689,27 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // The listSelectedPlaces variable is also later used to set the token field
         let listSelectedPlaces = [];
         let areTransitionsSelected = false;
+        let containsLockedObjects = false;
         for (let i = 0; i < selectedObjects.length; i++) {
-            if (selectedObjects[i] instanceof elements.Node &&
+            if (selectedObjects[i] instanceof node_elements.Node &&
                 selectedObjects[i].petriNodeType === util.PetriNodeType.PLACE) {
                 listSelectedPlaces.push(selectedObjects[i]);
             }
-            if (selectedObjects[i] instanceof elements.Node &&
+            if (selectedObjects[i] instanceof node_elements.Node &&
                 selectedObjects[i].petriNodeType === util.PetriNodeType.TRANSITION) {
                 areTransitionsSelected = true;
+            }
+
+            // Check whether there are selected objects which are locked
+            if (selectedObjects[i].locked) {
+                containsLockedObjects = true;
             }
         }
         if (!(listSelectedPlaces.length && !areTransitionsSelected)) {
             return;
         }
 
-        if (selectedObjects.length && this.parent.allowEdits(util.Edit.PETRI_MARKING)) {
+        if (selectedObjects.length && this.parent.allowEdits(this.parent, util.Edit.PETRI_MARKING) && !containsLockedObjects) {
             let min = globals.NUMBER_TOKENS_INPUT_RANGE.min;
             let max = globals.NUMBER_TOKENS_INPUT_RANGE.max;
             let tokenInputField = new toolbar_elements.NumberInputField(this, this.toolbarMiddlePart,
@@ -735,7 +764,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Set the token value in all objects which are place nodes
         for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
             let object = this.toolbar.parent.selectedObjects[i];
-            if (object instanceof elements.Node &&
+            if (object instanceof node_elements.Node &&
                 object.petriNodeType === util.PetriNodeType.PLACE) {
                 // Set the value
                 object.petriTokens = tokenValue;
@@ -752,7 +781,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 this.toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (toolbar.parent.allowEdits(util.Edit.ADD_VERTEX) || toolbar.parent.allowEdits(util.Edit.ADD_EDGE))) {
+                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_VERTEX) ||
+                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {
@@ -768,7 +798,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     GraphToolbar.prototype.onClickFSMInitialCheckbox = function (event) {
-        if (!this.toolbar.parent.isType(util.Type.FSM)) {
+        if (!this.toolbar.parent.isType(this.toolbar.parent, util.Type.FSM)) {
             return;
         }
 
@@ -808,18 +838,18 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     GraphToolbar.prototype.onClickFSMFinalCheckbox = function (event) {
-        if (this.toolbar.parent.isType(util.Type.FSM)) {
+        if (this.toolbar.parent.isType(this.toolbar.parent, util.Type.FSM)) {
             // Variables to denoting the state before incorporating the change made by this function
             let areAllNodesFinal = true;
             for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
-                if (this.toolbar.parent.selectedObjects[i] instanceof elements.Node) {
+                if (this.toolbar.parent.selectedObjects[i] instanceof node_elements.Node) {
                     if (!this.toolbar.parent.selectedObjects[i].isFinal) {
                         areAllNodesFinal = false;
                     }
                 }
             }
             for (let i = 0; i < this.toolbar.parent.selectedObjects.length; i++) {
-                if (this.toolbar.parent.selectedObjects[i] instanceof elements.Node) {
+                if (this.toolbar.parent.selectedObjects[i] instanceof node_elements.Node) {
                     if (!areAllNodesFinal) {
                         this.toolbar.parent.selectedObjects[i].isFinal = true;
                         // Enable the check

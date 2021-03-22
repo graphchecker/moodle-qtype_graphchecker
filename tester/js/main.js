@@ -20,6 +20,9 @@ requirejs(["jquery",
 			$('#graph-ui-textarea').attr('data-params', JSON.stringify(inputParams));
 			graphWrapper = new ui.InterfaceWrapper('graph', 'graph-ui-textarea');
 
+			$('#graph-ui-textarea-copy').attr('data-params', JSON.stringify(inputParams));
+			graphWrapper = new ui.InterfaceWrapper('graph', 'graph-ui-textarea-copy');
+
 			$.getJSON('/available_checks',
 				(availableChecks) => {
 					$('#checks-ui-textarea').attr('data-available-checks', JSON.stringify(availableChecks));

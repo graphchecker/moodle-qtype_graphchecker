@@ -610,17 +610,17 @@ li.bulktest.graphchecker.context.quiz {
     padding: 0 3px;
 }
 
-.graph_ui_container_div div#toolbar_part_left {
+.graph_ui_container_div div.toolbar_part.left {
     border-right: 1px solid DarkGray;
     flex-stretch: 0;
 }
 
-.graph_ui_container_div div#toolbar_part_right {
+.graph_ui_container_div div.toolbar_part.right {
     border-left: 1px solid DarkGray;
     flex-stretch: 0;
 }
 
-.graph_ui_container_div div#toolbar_part_middle {
+.graph_ui_container_div div.toolbar_part.middle {
     flex-stretch: 1;
     display: inline-flex;
     flex-wrap: wrap;
