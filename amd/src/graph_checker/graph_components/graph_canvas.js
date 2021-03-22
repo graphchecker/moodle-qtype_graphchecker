@@ -7,8 +7,9 @@
  */
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_elements'],
-    function ($, globals, util, elements) {
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links',],
+    function ($, globals, util, node_elements, link_elements) {
 
     /**
      * Function: GraphCanvas
@@ -134,7 +135,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
 
             // Create the shadow node and draw it
-            let shadowNode = new elements.Node(graphUi, mousePosition.x, mousePosition.y);
+            let shadowNode = new node_elements.Node(graphUi, mousePosition.x, mousePosition.y);
             if (isTypeFunc(graphUi, util.Type.PETRI) && petriNodeType === util.PetriNodeType.TRANSITION) {
                 shadowNode.petriNodeType = util.PetriNodeType.TRANSITION;
             }
@@ -213,7 +214,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                 // If the node is highlighted, draw another node below it, so the shadow is visible
                 if (nodes[i].isHighlighted) {
-                    let shadowNode = new elements.Node(this, nodes[i].x, nodes[i].y);
+                    let shadowNode = new node_elements.Node(this, nodes[i].x, nodes[i].y);
                     c.lineWidth = 1;
                     c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
                     shadowNode.draw(c, drawNodeShadow, null);
@@ -281,19 +282,19 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Test whether the text can fit inside the node, depending on the node width and the type of node
         let isSmallWidth = width <= 2 * nodeRadius - globals.TEXT_NODE_HORIZONTAL_PADDING;
         if (isSmallWidth &&
-            !(isTypeFunc(graphUi, util.Type.PETRI) && originalObject instanceof elements.Node &&
+            !(isTypeFunc(graphUi, util.Type.PETRI) && originalObject instanceof node_elements.Node &&
                 originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
-            (originalObject instanceof elements.Link ||
-                originalObject instanceof elements.SelfLink ||
-                originalObject instanceof elements.StartLink)) {
+            (originalObject instanceof link_elements.Link ||
+                originalObject instanceof link_elements.SelfLink ||
+                originalObject instanceof link_elements.StartLink)) {
             // Center the text inside the node if it fits
             x -= width / 2;
 
             // If the node is a dark color, enhance the visibility of the text by changing the color to white
-            if (originalObject instanceof elements.Node && originalObject.colorObject.isDark) {
+            if (originalObject instanceof node_elements.Node && originalObject.colorObject.isDark) {
                 c.fillStyle = util.Color.WHITE;
             }
-        } else if (originalObject instanceof elements.Node && (!isSmallWidth ||
+        } else if (originalObject instanceof node_elements.Node && (!isSmallWidth ||
             originalObject.petriNodeType === util.PetriNodeType.PLACE)) {
             // If the text does not fit, or if it is a Place node (of a Petri net), position the element either on the
             // bottom, right, top or left of the node, depending on which side do not have incoming nodes

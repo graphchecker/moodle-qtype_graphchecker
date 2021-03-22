@@ -6,8 +6,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_elements'],
-    function ($, globals, util, elements) {
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links'],
+    function ($, globals, util, node_elements, link_elements) {
 
     /**
      * Function: GraphRepresentation
@@ -165,10 +166,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Check all nodes
         for (let i = 0; i < this.nodes.length; i++) {
-            if (this.nodes[i].locked) {
-                continue;
-            }
-
             // Calculate the corners of the smallest square around the (circular) node
             let topLeft = {x: this.nodes[i].x - this.nodeRadiusFunction(this.parent),
                 y: this.nodes[i].y - this.nodeRadiusFunction(this.parent)};
@@ -184,15 +181,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Check all links
         for (let i = 0; i < this.links.length; i++) {
-            if (this.links[i].locked) {
-                continue;
-            }
 
             // If the link is a straight line, check if the two endpoints are located inside the rectangle
             // If the link is an arc, generate 'steps' number of points on the arc,
             // and check if they are all located inside the rectangle
             let points = [];
-            if (this.links[i] instanceof elements.StartLink) {
+            if (this.links[i] instanceof link_elements.StartLink) {
                 let l = this.links[i].getEndPoints();
                 points.push({x: l.startX, y: l.startY});
                 points.push({x: l.endX, y: l.endY});
@@ -274,7 +268,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 // Load all nodes, with their properties
                 for (i = 0; i < input.vertices.length; i++) {
                     let inputNode = input.vertices[i];
-                    let node = new elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
+                    let node = new node_elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
                     if (!templateParams.ignore_locked && 'locked' in inputNode) {
                         // note: don't set the locked flag if we're in ignore_locked mode,
                         // because then we're supposed to be able to edit locked objects
@@ -308,7 +302,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                     if (inputLink['from'] === inputLink['to']) {
                         // Self link has two identical nodes.
-                        link = new elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
+                        link = new link_elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
                         link.text = inputLink['label'];
                         link.colorObject = (templateParams.edge_colors) ?
                             util.colorObjectFromColorCode(inputLink['color']) : null;
@@ -316,7 +310,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         link.anchorAngle = inputLink['bend']['anchorAngle'];
                     } else if (inputLink['from'] === -1) {
                         // Start link
-                        link = new elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
+                        link = new link_elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
                         link.deltaX = inputLink['bend']['deltaX'];
                         link.deltaY = inputLink['bend']['deltaY'];
                         link.colorObject = (templateParams.edge_colors) ?
@@ -324,7 +318,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
                     } else {
                         // Normal link
-                        link = new elements.Link(this.parent, this.getNodes()[inputLink['from']],
+                        link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],
                             this.getNodes()[inputLink['to']]);
                         link.text = inputLink['label'];
                         link.colorObject = (templateParams.edge_colors) ?
@@ -406,7 +400,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // For every link in the representation, create a link object, in order to later save it to the JSON string
         for (i = 0; i < this.getLinks().length; i++) {
             let link = this.getLinks()[i];
-            if (link instanceof elements.SelfLink) {
+            if (link instanceof link_elements.SelfLink) {
                 let linkObject = {
                     'from': this.getNodes().indexOf(link.node),
                     'to': this.getNodes().indexOf(link.node),
@@ -418,7 +412,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 };
                 linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
                 output.edges.push(linkObject);
-            } else if (link instanceof elements.StartLink) {
+            } else if (link instanceof link_elements.StartLink) {
                 let linkObject = {
                     'from': -1,
                     'to': this.getNodes().indexOf(link.node),
@@ -430,7 +424,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 };
                 linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
                 output.edges.push(linkObject);
-            } else if (link instanceof elements.Link) {
+            } else if (link instanceof link_elements.Link) {
                 let linkObject = {
                     'from': this.getNodes().indexOf(link.nodeA),
                     'to': this.getNodes().indexOf(link.nodeB),

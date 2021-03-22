@@ -49,13 +49,14 @@
 
 
 define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_elements',
+        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
+        'qtype_graphchecker/graph_checker/graph_components/graph_links',
         'qtype_graphchecker/graph_checker/graph_components/graph_representation',
         'qtype_graphchecker/graph_checker/graph_functionality/graph_eventhandler',
         'qtype_graphchecker/graph_checker/graph_components/graph_canvas',
         'qtype_graphchecker/graph_checker/graph_components/help_overlay', 'qtype_graphchecker/graph_checker/graph_toolbar',
         'qtype_graphchecker/graph_checker/toolbar_elements'],
-    function($, globals, util, elements, graph_representation, graph_eventhandler, graph_canvas, help_overlay,
+    function($, globals, util, node_elements, link_elements, graph_representation, graph_eventhandler, graph_canvas, help_overlay,
              ui_toolbar, toolbar_elements) {
 
     /**
@@ -85,7 +86,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.petriNodeType = util.PetriNodeType.NONE; // The current Petri node type, when creating new Petri net nodes
 
         // More variables for configuring the state of the graph, w.r.t. selection
-        this.selectedObjects = []; // One or more elements.Link or elements.Node objects. Default: empty array
+        this.selectedObjects = []; // One or more link_elements.Link or node_elements.Node objects. Default: empty array
         this.previousSelectedObjects = []; // Same as selectedObjects, but previous selected ones
         this.draggedObjects = []; // The elements that are currently being dragged; [] if not dragging
         this.clickedObject = null; // The last manually clicked object, without releasing the mouse button
@@ -206,9 +207,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     GraphUI.prototype.checkStringValidity = function(string, selectedObject) {
         // A variable denoting the used regex, without forward slashes around the regex. /.*/ is the default regex
         let regexString = '.*';
-        if (selectedObject instanceof elements.Node && this.templateParams.vertex_label_regex) {
+        if (selectedObject instanceof node_elements.Node && this.templateParams.vertex_label_regex) {
             regexString = this.templateParams.vertex_label_regex;
-        } else if ((selectedObject instanceof elements.Link || selectedObject instanceof elements.SelfLink) &&
+        } else if ((selectedObject instanceof link_elements.Link || selectedObject instanceof link_elements.SelfLink) &&
             this.templateParams.edge_label_regex) {
             regexString = this.templateParams.edge_label_regex;
         }
@@ -425,7 +426,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    vertex - The given vertex
      */
     GraphUI.prototype.setInitialFSMVertex = function(vertex) {
-        if (!(this.isType(this, util.Type.FSM) && vertex instanceof elements.Node)) {
+        if (!(this.isType(this, util.Type.FSM) && vertex instanceof node_elements.Node)) {
             // If we do not work with a FSM graph and a node, we do not proceed
             return;
         }
@@ -449,7 +450,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             startLinkPos = this.setFSMStartLinkWhereSpace(vertex, angles, topLeft, nodeLinkDrawRadius);
         }
 
-        this.currentLink = new elements.StartLink(this, vertex, startLinkPos);
+        this.currentLink = new link_elements.StartLink(this, vertex, startLinkPos);
         this.addLink(this.currentLink);
         this.currentLink = null;
         this.toolbar.parent.draw();
@@ -528,7 +529,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     GraphUI.prototype.removeInitialFSMVertex = function(vertex) {
         vertex.isInitial = false;
         for (let i = 0; i < this.graphRepr.getLinks().length; i++) {
-            if (this.graphRepr.getLinks()[i] instanceof elements.StartLink && this.graphRepr.getLinks()[i].node === vertex) {
+            if (this.graphRepr.getLinks()[i] instanceof link_elements.StartLink && this.graphRepr.getLinks()[i].node === vertex) {
                 this.graphRepr.getLinks().splice(i--, 1);
             }
         }

@@ -44,7 +44,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
+define(['qtype_graphchecker/graph_checker/globals'],
+    function(globals) {
 
     function Util() {
         // Constructor for the Util class.
@@ -163,7 +164,7 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
         return text;
     };
 
-    Util.prototype.drawArrow = function(c, x, y, angle) { //TODO: DRAW in other function
+    Util.prototype.drawArrow = function(c, x, y, angle) {
         // Draw an arrow head on the graphics context c at (x, y) with given angle.
 
         let dx = Math.cos(angle);
@@ -226,13 +227,22 @@ define(['qtype_graphchecker/graph_checker/globals'], function(globals) {
     Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
         let angles = [];
         for (let i = 0; i < links.length; i++) {
-            let nodeA = links[i].nodeA;
-            let nodeB = links[i].nodeB;
-            //TODO: rekening houden met self links, zit er op dit moment nog niet in
+            let nodeA = null, nodeB = null;
+            if (links[i].constructor.name === 'Link') {
+                // In case of regular links
+                nodeA = links[i].nodeA;
+                nodeB = links[i].nodeB;
+            } else if (links[i].constructor.name === 'SelfLink') {
+                // TODO: referencing like this is not ideal, but otherwise including graph_links.js results in
+                //  circular dependencies...
+                // In case of self links
+                nodeA = links[i].node;
+            }
+
             if (nodeA === vertex || nodeB === vertex) {
-                // Calculate the angle (in radians) of the point of the link touching the selected vertex's
+                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
                 // circle with the selected node itself
-                angles.push(links[i].calculateAngle(vertex));
+                angles = angles.concat(links[i].calculateAngle(vertex));
             }
         }
         return angles;
