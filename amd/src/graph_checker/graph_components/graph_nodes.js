@@ -461,7 +461,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             let neighbours = [], link;
             for (let i = 0; i < links.length; i++) {
                 link = links[i];
-                if (link instanceof Link) { // Exclude SelfLinks and StartLinks.
+                if (link instanceof link_elements.Link) { // Exclude SelfLinks and StartLinks.
                     if (link.nodeA === this && !neighbours.includes(link.nodeB)) {
                         neighbours.push(link.nodeB);
                     } else if (link.nodeB === this && !neighbours.includes(link.nodeA)) {

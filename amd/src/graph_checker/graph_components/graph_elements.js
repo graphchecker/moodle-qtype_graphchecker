@@ -52,8 +52,8 @@
  */
 
 
-define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil'],
-    function($, globals, util) {
+define([],
+    function() {
 
     /***********************************************************************
      *
