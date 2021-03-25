@@ -82,8 +82,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.constMiddleWidthFix = 2;
 
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
-        // TODO: make one list per toolbar part (left, middle, right), and index by string, e.g. 'token'
-        // TODO: make button groups
         this.leftButtons = {};
         this.middleInput = {};
         this.rightButtons = {};
