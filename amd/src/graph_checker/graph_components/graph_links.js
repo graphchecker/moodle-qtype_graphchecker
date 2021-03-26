@@ -111,7 +111,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             c.shadowColor = '#999999';
             c.shadowBlur = 15;
         }
-    }
+    };
 
     /***********************************************************************
      *

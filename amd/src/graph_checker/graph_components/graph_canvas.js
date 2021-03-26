@@ -132,7 +132,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // can create a node here
         if (uiMode === util.ModeType.DRAW && mousePosition && !currentLink &&
             !getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) &&
-            allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
+            allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX)) {
 
             // Create the shadow node and draw it
             let shadowNode = new node_elements.Node(graphUi, mousePosition.x, mousePosition.y);
@@ -200,7 +200,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         for (let i = 0; i < nodes.length; i++) {
             let drawNodeShadow = uiMode === util.ModeType.DRAW && mousePosition &&
                 getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) === nodes[i] &&
-                allowEditsFunc(graphUi, util.Edit.ADD_VERTEX);
+                allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX);
             if (drawNodeShadow) {
                 // Enable the shadow
                 let shadowAlpha = 0.5;
@@ -220,7 +220,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             c.fillStyle = c.strokeStyle = util.Color.BLACK;
             nodes[i].draw(c, drawNodeShadow, drawOption);
 
-            if (drawNodeShadow && allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
+            if (drawNodeShadow && allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX)) {
                 // Disable the shadow
                 c.shadowBlur = 0;
                 c.globalAlpha = 1;

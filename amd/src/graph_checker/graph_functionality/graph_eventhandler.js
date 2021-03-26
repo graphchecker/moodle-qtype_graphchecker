@@ -102,7 +102,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Upon mouseup, check what condition applies and perform according actions
         if (this.par.getCurrentLink()) {
             if (!(this.par.getCurrentLink() instanceof link_elements.TemporaryLink) && this.par.allowEdits(this.par,
-                util.Edit.ADD_EDGE)) {
+                util.Edit.EDIT_EDGE)) {
                 this.createNewLink(allowedEditsFunc, isTypeFunc);
             }
             this.par.setCurrentLink(null);
@@ -308,7 +308,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
     GraphEventHandler.prototype.createNewNode = function(mousePos, allowedEditsFunc, isTypeFunc) {
-        if (!this.par.getClickedObject() && !this.par.getCurrentLink() && allowedEditsFunc(this.par, util.Edit.ADD_VERTEX)) {
+        if (!this.par.getClickedObject() && !this.par.getCurrentLink() && allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX)) {
             // Create a new node
             let newNode = new node_elements.Node(this.par, mousePos.x, mousePos.y);
 
@@ -332,9 +332,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // Also enable the editing fields
             this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
-            if (allowedEditsFunc(this.par, util.Edit.DELETE_VERTEX)) {
-                this.par.toolbar.rightButtons['delete'].setEnabled();
-            }
+            this.par.toolbar.rightButtons['delete'].setEnabled();
             if (isTypeFunc(this.par, util.Type.FSM)) {
                 this.par.toolbar.addFSMNodeSelectionOptions(this.par.getSelectedObjects());
             }
@@ -390,29 +388,29 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
     GraphEventHandler.prototype.displayToolbarElementsOnSelect = function(allowedEditsFunc, isTypeFunc) {
-        // Check whether there are selected objects which are locked
-        let containsLockedObjects = false;
-        for (let i = 0; i < this.par.getSelectedObjects().length; i++) {
-            if (this.par.getSelectedObjects()[i].locked) {
-                containsLockedObjects = true;
-            }
-        }
+        // Check whether there are selected objects which are locked, a vertex, or an edge
+        let containsObjectsInfo = this.containsCertainObjects(this.par.getSelectedObjects());
+        let containsLockedObjects = containsObjectsInfo['containsLockedObjects'];
+        let containsVertex = containsObjectsInfo['containsVertex'];
+        let containsEdge = containsObjectsInfo['containsEdge'];
 
         // If a new object is selected (apart from TemporaryLinks), display the according input elements in the
         // toolbar
-        if (this.par.getClickedObject() instanceof node_elements.Node ||
-            this.par.getClickedObject() instanceof link_elements.Link ||
-            this.par.getClickedObject() instanceof link_elements.SelfLink ||
-            this.par.getClickedObject() instanceof link_elements.StartLink) {
+        if (this.par.getClickedObject() instanceof node_elements.Node || this.isObjectLink(this.par.getClickedObject())) {
 
             // Display the selection options
             this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
 
             // Activate the delete button
-            if ((allowedEditsFunc(this.par, util.Edit.DELETE_VERTEX) || allowedEditsFunc(this.par, util.Edit.DELETE_EDGE)) &&
-                !containsLockedObjects) {
-                this.par.toolbar.rightButtons['delete'].setEnabled();
-            } else if (containsLockedObjects) {
+            if (!containsLockedObjects) {
+                // Check if we can activate the delete button
+                if(!((containsVertex && !allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX)) ||
+                    (containsEdge && !allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)))) {
+                    this.par.toolbar.rightButtons['delete'].setEnabled();
+                } else {
+                    this.par.toolbar.rightButtons['delete'].setDisabled();
+                }
+            } else {
                 this.par.toolbar.rightButtons['delete'].setDisabled();
             }
         } else {
@@ -420,7 +418,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.par.toolbar.removeSelectionOptions();
 
             // Deactivate the delete button
-            if (allowedEditsFunc(this.par, util.Edit.DELETE_VERTEX) || allowedEditsFunc(this.par, util.Edit.DELETE_EDGE)) {
+            if (allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)) {
                 this.par.toolbar.rightButtons['delete'].setDisabled();
             }
         }
@@ -448,6 +446,47 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 this.par.toolbar.removePetriSelectionOptions();
             }
         }
+    };
+
+    /**
+     * Function: containsCertainObjects
+     *
+     * Parameters:
+     *    objects - The objects to be checked
+     *
+     * Returns:
+     *    Whether the objects contain locked objects, vertices, or edges
+     */
+    GraphEventHandler.prototype.containsCertainObjects = function(objects) {
+        let containsLockedObjects = false;
+        let containsVertex = false;
+        let containsEdge = false;
+        for (let i = 0; i < objects.length; i++) {
+            if (objects[i].locked) {
+                containsLockedObjects = true;
+            }
+            if (objects[i] instanceof node_elements.Node) {
+                containsVertex = true;
+            }
+            if (this.isObjectLink(objects[i])) {
+                containsEdge = true;
+            }
+        }
+        return {'containsLockedObjects': containsLockedObjects, 'containsVertex': containsVertex, 'containsEdge': containsEdge};
+    };
+
+    /**
+     * Function: isObjectLink
+     *
+     * Parameters:
+     *    object - The object to be checked
+     *
+     * Returns:
+     *    Whether the object was a link of any type
+     */
+    GraphEventHandler.prototype.isObjectLink = function(object) {
+        return (object instanceof link_elements.Link || object instanceof link_elements.SelfLink ||
+            object instanceof link_elements.StartLink);
     };
 
     /**
@@ -486,7 +525,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      */
     GraphEventHandler.prototype.provisionallyCreateLink = function(mousePos, allowedEditsFunc, isTypeFunc) {
         // Check whether we have clicked a node, and if creating edges is allowed
-        if (this.par.getClickedObject() instanceof node_elements.Node && allowedEditsFunc(this.par, util.Edit.ADD_EDGE)) {
+        if (this.par.getClickedObject() instanceof node_elements.Node && allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)) {
             // Find the target node (we are hovering over), if any
             let targetNode = this.graphRepr.getObjectOnMousePos(this.graphRepr, mousePos.x, mousePos.y, true);
             let targetNodeStrict = this.graphRepr.getObjectOnMousePos(this.graphRepr, mousePos.x, mousePos.y, false);
@@ -551,9 +590,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         // Move and snap nodes
                         object.setAnchorPoint(mousePos.x, mousePos.y);
                         util.snapNode(object, nodesNotSelected, isAlignedVertically, isAlignedHorizontally);
-                    } else if ((this.par.getClickedObject() instanceof link_elements.Link ||
-                        this.par.getClickedObject() instanceof link_elements.SelfLink ||
-                        this.par.getClickedObject() instanceof link_elements.StartLink) && this.par.getClickedObject() === object) {
+                    } else if (this.isObjectLink(this.par.getClickedObject()) && this.par.getClickedObject() === object) {
                         // Move and snap links
                         let isSnapped = object.setAnchorPoint(mousePos.x, mousePos.y);
                         if (!isSnapped) {
@@ -642,7 +679,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
 
         // Enable the delete button as well
-        if (allowedEditsFunc(this.par, util.Edit.DELETE_EDGE)) {
+        if (allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)) {
             this.par.toolbar.rightButtons['delete'].setEnabled();
         }
 
@@ -696,7 +733,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.par.toolbar.addSelectionOptions(this.par.getSelectedObjects());
 
             if (!containsLockedObjects) {
-                if (allowedEditsFunc(this.par, util.Edit.DELETE_VERTEX) || allowedEditsFunc(this.par, util.Edit.DELETE_EDGE)) {
+                if (allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)) {
                     this.par.toolbar.rightButtons['delete'].setEnabled();
                 }
                 if (isTypeFunc(this.par, util.Type.FSM)) {
@@ -759,7 +796,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     GraphEventHandler.prototype.checkConfigurationKeysPressed = function(pressedKey, allowedEditsFunc, isTypeFunc) {
         if (pressedKey === 46) {
             // Delete key. If it is allowed, delete the object
-            if (allowedEditsFunc(this.par, util.Edit.DELETE_VERTEX) || allowedEditsFunc(this.par, util.Edit.DELETE_EDGE)) {
+            // Check if no selected object is locked, a vertex (while not allowed to be removed), or edge (while not allowed
+            // to be removed)
+            let containsObjectsInfo = this.containsCertainObjects(this.par.getSelectedObjects());
+            let containsLockedObjects = containsObjectsInfo['containsLockedObjects'];
+            let containsVertex = containsObjectsInfo['containsVertex'];
+            let containsEdge = containsObjectsInfo['containsEdge'];
+
+
+            if(!containsLockedObjects &&
+                !((containsVertex && !allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX)) ||
+                (containsEdge && !allowedEditsFunc(this.par, util.Edit.EDIT_EDGE)))) {
                 this.par.deleteSelectedObjects(this.par);
             }
         } else if (pressedKey === 27) {
@@ -777,7 +824,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         if (pressedKey === 17) {
             // Control key. If adding objects is allowed, set the mode to Draw
             if (this.par.getUIMode() !== util.ModeType.DRAW &&
-                (allowedEditsFunc(this.par, util.Edit.ADD_VERTEX) || allowedEditsFunc(this.par, util.Edit.ADD_EDGE))) {
+                (allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.par, util.Edit.EDIT_EDGE))) {
                 this.par.enableTemporaryDrawMode();
             }
         }

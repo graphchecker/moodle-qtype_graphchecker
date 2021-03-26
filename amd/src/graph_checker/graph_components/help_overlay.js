@@ -76,10 +76,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         }
         let anEdge = (isFSM ? "a " : "an ") + edge;
 
-        let hasDrawMode = allowedEditsFunc(this.parent, util.Edit.ADD_VERTEX) ||
-            allowedEditsFunc(this.parent, util.Edit.ADD_EDGE);
-        let canEditVertex = allowedEditsFunc(this.parent, util.Edit.ADD_VERTEX);
-        let canEditEdge = allowedEditsFunc(this.parent, util.Edit.ADD_EDGE);
+        let hasDrawMode = allowedEditsFunc(this.parent, util.Edit.EDIT_VERTEX) ||
+            allowedEditsFunc(this.parent, util.Edit.EDIT_EDGE);
+        let canEditVertex = allowedEditsFunc(this.parent, util.Edit.EDIT_VERTEX);
+        let canEditEdge = allowedEditsFunc(this.parent, util.Edit.EDIT_EDGE);
         let editableList = [];
         if (canEditVertex) {
             if (isFSM) {
