@@ -353,7 +353,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
-        this.graphCanvas.resize(w, h - toolbarHeight);// + (toolbarHeight - this.BASE_TOOLBAR_HEIGHT)));
+        this.graphCanvas.resize(w, h - toolbarHeight);
         if (!isToolbarNull) {
             this.toolbar.resize();
         }
