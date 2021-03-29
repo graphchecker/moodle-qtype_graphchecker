@@ -82,16 +82,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.constMiddleWidthFix = 2;
 
         // A list for the buttons in this toolbar, and a list for the (possible) checkboxes
-        // TODO: make one list per toolbar part (left, middle, right), and index by string, e.g. 'token'
-        // TODO: make button groups
         this.leftButtons = {};
         this.middleInput = {};
         this.rightButtons = {};
 
         $(document).ready(function () {
             // Create the 3 parts of the toolbar: left, middle and right
-            if (self.parent.allowEdits(self.parent, util.Edit.ADD_VERTEX) || self.parent.allowEdits(self.parent,
-                util.Edit.ADD_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.EDIT_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.EDIT_EDGE)) {
                 self.toolbarLeftPart = self.createToolbarPartObject(self.div[0],
                     self.div[0].style.height, 'left');
             }
@@ -100,8 +98,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             self.toolbarRightPart = self.createToolbarPartObject(self.div[0],
                 self.div[0].style.height, 'right');
 
-            if (self.parent.allowEdits(self.parent, util.Edit.ADD_VERTEX) || self.parent.allowEdits(self.parent,
-                util.Edit.ADD_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.EDIT_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.EDIT_EDGE)) {
                 // Left buttons
                 // Create the select button
                 let selectButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
@@ -120,8 +118,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // Right buttons
             // Create the delete button
-            if (self.parent.allowEdits(self.parent, util.Edit.DELETE_VERTEX) || self.parent.allowEdits(self.parent,
-                util.Edit.DELETE_EDGE)) {
+            if (self.parent.allowEdits(self.parent, util.Edit.EDIT_VERTEX) || self.parent.allowEdits(self.parent,
+                util.Edit.EDIT_EDGE)) {
                 let deleteButton = new toolbar_elements.GrayOutButton(self, self.toolbarRightPart,
                     self.buttonSize.w, self.buttonSize.h, 'fa-trash', "Delete", self.parent.deleteSelectedObjects,
                     self.parent);
@@ -199,8 +197,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // Update the width of the middle part of the toolbar
             if (this.toolbarMiddlePart !== undefined) {
                 let leftWidth = 0;
-                if (this.parent.allowEdits(this.parent, util.Edit.ADD_VERTEX) || this.parent.allowEdits(this.parent,
-                    util.Edit.ADD_EDGE)) {
+                if (this.parent.allowEdits(this.parent, util.Edit.EDIT_VERTEX) || this.parent.allowEdits(this.parent,
+                    util.Edit.EDIT_EDGE)) {
                     leftWidth = $(this.toolbarLeftPart[0]).outerWidth();
                 }
                 let rightWidth = $(this.toolbarRightPart[0]).outerWidth();
@@ -431,8 +429,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(toolbar.parent.graphCanvas.canvas).focus();
                 toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (toolbar.parent.allowEdits(toolbar.parent, util.Edit.ADD_VERTEX) || toolbar.parent.allowEdits(toolbar.parent,
-                        util.Edit.ADD_EDGE))) {
+                    (toolbar.parent.allowEdits(toolbar.parent, util.Edit.EDIT_VERTEX) || toolbar.parent.allowEdits(toolbar.parent,
+                        util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 if (toolbar.parent.uiMode !== util.ModeType.DRAW) {
                     toolbar.parent.enableTemporaryDrawMode();
@@ -516,8 +514,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 this.toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_VERTEX) ||
-                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_EDGE))) {
+                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_VERTEX) ||
+                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {
                     this.toolbar.parent.enableTemporaryDrawMode();
@@ -643,7 +641,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Clear the existing petri node type options, and re-add them below
         this.removePetriNodeTypeOptions();
 
-        if (this.parent.allowEdits(this.parent, util.Edit.ADD_VERTEX)) {
+        if (this.parent.allowEdits(this.parent, util.Edit.EDIT_VERTEX)) {
             // Create the transition PetriNodeType button
             let petriNodeTypeTransitionButton = new toolbar_elements.PetriNodeTypeButton(this, this.toolbarMiddlePart,
                 this.buttonSize.w, this.buttonSize.h, 'fa-square-o', 'Petri net transition', util.PetriNodeType.TRANSITION,
@@ -781,8 +779,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 this.toolbar.parent.selectedObjects = [];
             } else if (event.key === 'Control' &&
-                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_VERTEX) ||
-                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.ADD_EDGE))) {
+                    (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_VERTEX) ||
+                        this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
                 if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {

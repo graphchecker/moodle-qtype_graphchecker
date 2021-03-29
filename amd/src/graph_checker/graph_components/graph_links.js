@@ -68,7 +68,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // If this object is selected, apply (blue selection) shading again to give more visibility
-        if (parent.selectedObjects.includes(thisObject)) {
+        if (parent.selectedObjects.includes(thisObject) || thisObject.locked) {
             c.shadowBlur = 7;
         }
 
@@ -87,6 +87,30 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Reset the shadow parameter, in case the node was selected
         c.shadowBlur = 0;
+    };
+
+    /**
+     * Function: drawSelection
+     * Draws the selection halo around the link
+     *
+     * Parameters:
+     *    c - The context object
+     *    drawLink - A function used to draw links
+     *    drawArrowHead - Whether or not to draw the link's arrow head
+     *    parent - The parent object of the link to be drawn
+     *    thisObject - The object to be drawn
+     */
+    BaseLink.prototype.drawSelection = function(c, drawLink, drawArrowHead, parent, thisObject) {
+        // Enable the selection effect
+        let isSelected = parent.selectedObjects.includes(thisObject);
+        if (isSelected) {
+            // Set the shadow color to be blue
+            c.shadowColor = '#1f78b4';
+            c.shadowBlur = 15;
+        } else if (thisObject.locked) {
+            c.shadowColor = '#999999';
+            c.shadowBlur = 15;
+        }
     };
 
     /***********************************************************************
@@ -260,6 +284,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
         } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawSelection(c, drawLink, drawArrowHead);
             this.drawObject(c, drawLink, drawArrowHead, false);
 
             // Draw the text.
@@ -293,19 +318,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    drawArrowHead - Whether or not to draw the link's arrow head
      */
     Link.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
-        // Enable the selection effect
-        let isSelected = this.parent.selectedObjects.includes(this);
-        if (isSelected) {
-            // Set the shadow color to be blue
-            c.shadowColor = '#1f78b4';
-            c.shadowBlur = 15;
-        } else if (this.locked) {
-            c.shadowColor = '#999999';
-            c.shadowBlur = 15;
-        }
+        BaseLink.prototype.drawSelection(c, drawLink, drawArrowHead, this.parent, this);
 
-        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead, true);
+        // Now draw the object itself (again, to give it a more visible color/shadow), with or without the highlighting
+        this.drawObject(c, drawLink, drawArrowHead);
     };
 
     /**
@@ -532,6 +548,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
         } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawSelection(c, drawLink, drawArrowHead);
             this.drawObject(c, drawLink, drawArrowHead);
 
             // Draw the text on the loop farthest from the node.
@@ -552,14 +569,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    drawArrowHead - Whether or not to draw the link's arrow head
      */
     SelfLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
-        // Enable the selection effect when applicable
-        if (this.parent.selectedObjects.includes(this)) {
-            // Set the shadow color to be blue
-            c.shadowColor = '#1f78b4';
-            c.shadowBlur = 15;
-        }
+        BaseLink.prototype.drawSelection(c, drawLink, drawArrowHead, this.parent, this);
 
-        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
+        // Now draw the object itself (again, to give it a more visible color/shadow), with or without the highlighting
         this.drawObject(c, drawLink, drawArrowHead);
     };
 
@@ -729,6 +741,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         if (drawOption === util.DrawOption.SELECTION) {
             this.drawSelection(c, drawLink, drawArrowHead);
         } else if (drawOption === util.DrawOption.OBJECT) {
+            this.drawSelection(c, drawLink, drawArrowHead);
             this.drawObject(c, drawLink, drawArrowHead, false);
         }
     };
@@ -743,15 +756,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    drawArrowHead - Whether or not to draw the link's arrow head
      */
     StartLink.prototype.drawSelection = function(c, drawLink, drawArrowHead) {
-        // Enable the selection effect when applicable
-        if (this.parent.selectedObjects.includes(this)) {
-            // Set the shadow color to be blue
-            c.shadowColor = '#1f78b4';
-            c.shadowBlur = 15;
-        }
+        BaseLink.prototype.drawSelection(c, drawLink, drawArrowHead, this.parent, this);
 
-        // Now invisibly draw the object itself, with or without the highlight ring, showing the selection effect
-        this.drawObject(c, drawLink, drawArrowHead, true);
+        // Now draw the object itself (again, to give it a more visible color/shadow), with or without the highlighting
+        this.drawObject(c, drawLink, drawArrowHead);
     };
 
     /**

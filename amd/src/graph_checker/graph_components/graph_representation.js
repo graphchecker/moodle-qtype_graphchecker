@@ -301,21 +301,25 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     let link = null;
 
                     if (inputLink['from'] === inputLink['to']) {
-                        // Self link has two identical nodes.
-                        link = new link_elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
-                        link.text = inputLink['label'];
-                        link.colorObject = (templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
-                        link.anchorAngle = inputLink['bend']['anchorAngle'];
+                        if (inputLink['from'] >= 0) { // The node should exist
+                            // Self link has two identical nodes.
+                            link = new link_elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
+                            link.text = inputLink['label'];
+                            link.colorObject = (templateParams.edge_colors) ?
+                                util.colorObjectFromColorCode(inputLink['color']) : null;
+                            link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
+                            link.anchorAngle = inputLink['bend']['anchorAngle'];
+                        }
                     } else if (inputLink['from'] === -1) {
-                        // Start link
-                        link = new link_elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
-                        link.deltaX = inputLink['bend']['deltaX'];
-                        link.deltaY = inputLink['bend']['deltaY'];
-                        link.colorObject = (templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
+                        if (inputLink['to'] >= 0) { // The node should exist
+                            // Start link
+                            link = new link_elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
+                            link.deltaX = inputLink['bend']['deltaX'];
+                            link.deltaY = inputLink['bend']['deltaY'];
+                            link.colorObject = (templateParams.edge_colors) ?
+                                util.colorObjectFromColorCode(inputLink['color']) : null;
+                            link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
+                        }
                     } else {
                         // Normal link
                         link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],

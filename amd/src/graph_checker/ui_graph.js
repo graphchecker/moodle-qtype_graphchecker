@@ -258,7 +258,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Enables temporary draw mode
      */
     GraphUI.prototype.enableTemporaryDrawMode = function() {
-        if (this.allowEdits(this, util.Edit.ADD_VERTEX) || this.allowEdits(this, util.Edit.ADD_EDGE)) {
+        if (this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) {
             // Assign the latest selected object
             this.previousSelectedObjects = this.selectedObjects;
 
@@ -274,7 +274,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Disables temporary draw mode. Sets the according settings (e.g. internal, selected objects, toolbar fields, etc.)
      */
     GraphUI.prototype.disableTemporaryDrawMode = function() {
-        if (!(this.allowEdits(this, util.Edit.ADD_VERTEX) || this.allowEdits(this, util.Edit.ADD_EDGE))) {
+        if (!(this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE))) {
             return;
         }
 
@@ -296,7 +296,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.isTempDrawModeActive = false;
 
         // Enable the delete button if something is selected
-        if ((this.allowEdits(this, util.Edit.DELETE_VERTEX) || this.allowEdits(this, util.Edit.DELETE_EDGE)) &&
+        if ((this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) &&
             this.selectedObjects.length) {
             this.toolbar.rightButtons['delete'].setEnabled();
         }
@@ -353,7 +353,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Resize the canvas (possibly with additional height if there is no toolbar) and the toolbar (possibly)
-        this.graphCanvas.resize(w, h - toolbarHeight);// + (toolbarHeight - this.BASE_TOOLBAR_HEIGHT)));
+        this.graphCanvas.resize(w, h - toolbarHeight);
         if (!isToolbarNull) {
             this.toolbar.resize();
         }
@@ -383,14 +383,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      */
     GraphUI.prototype.deleteSelectedObjects = function(graphUI) {
         if (graphUI.selectedObjects.length) {
-            if (graphUI.allowEdits(graphUI, util.Edit.DELETE_VERTEX)) {
+            if (graphUI.allowEdits(graphUI, util.Edit.EDIT_VERTEX)) {
                 for (let i = 0; i < graphUI.graphRepr.getNodes().length; i++) {
                     if (graphUI.selectedObjects.includes(graphUI.graphRepr.getNodes()[i])) {
                         graphUI.graphRepr.getNodes().splice(i--, 1);
                     }
                 }
             }
-            if (graphUI.allowEdits(graphUI, util.Edit.DELETE_EDGE)) {
+            if (graphUI.allowEdits(graphUI, util.Edit.EDIT_EDGE)) {
                 for (let i = 0; i < graphUI.graphRepr.getLinks().length; i++) {
                     if (graphUI.selectedObjects.includes(graphUI.graphRepr.getLinks()[i]) ||
                         graphUI.selectedObjects.includes(graphUI.graphRepr.getLinks()[i].node) ||
@@ -405,7 +405,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             graphUI.draw();
 
             // Set the deleted button as disabled
-            if (graphUI.allowEdits(graphUI, util.Edit.DELETE_VERTEX) || graphUI.allowEdits(graphUI, util.Edit.DELETE_EDGE)) {
+            if (graphUI.allowEdits(graphUI, util.Edit.EDIT_VERTEX) || graphUI.allowEdits(graphUI, util.Edit.EDIT_EDGE)) {
                 graphUI.toolbar.rightButtons['delete'].setDisabled();
             }
 
@@ -585,8 +585,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Enable the undo button, and disable the redo button
-        this.toolbar.rightButtons['undo'].setEnabled();
-        this.toolbar.rightButtons['redo'].setDisabled();
+        if (this.toolbar.rightButtons['undo'] !== undefined) {
+            this.toolbar.rightButtons['undo'].setEnabled();
+        }
+        if (this.toolbar.rightButtons['redo'] !== undefined) {
+            this.toolbar.rightButtons['redo'].setDisabled();
+        }
     };
 
     /**
@@ -891,7 +895,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.selectedObjects = [];
 
             // Disable the delete button
-            if (this.allowEdits(this, util.Edit.DELETE_VERTEX) || this.allowEdits(this, util.Edit.DELETE_EDGE)) {
+            if (this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) {
                 this.toolbar.rightButtons['delete'].setDisabled();
             }
 

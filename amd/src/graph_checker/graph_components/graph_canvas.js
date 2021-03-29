@@ -132,7 +132,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // can create a node here
         if (uiMode === util.ModeType.DRAW && mousePosition && !currentLink &&
             !getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) &&
-            allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
+            allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX)) {
 
             // Create the shadow node and draw it
             let shadowNode = new node_elements.Node(graphUi, mousePosition.x, mousePosition.y);
@@ -142,12 +142,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             shadowNode.draw(c, true, util.DrawOption.HOVER);
         }
 
-        // Draw all selections of the nodes, and links
-        this.drawNodes(c, graphUi, graphRepr, util.DrawOption.SELECTION, uiMode, mousePosition, allowEditsFunc,
-            getObjectOnMousePosFunc);
-        this.drawLinks(c, graphRepr, util.DrawOption.SELECTION);
-
-        // Draw all highlights of the nodes/links and the nodes/links themselves
+        // Draw the node/link objects, including possible shading (e.g. from selection or locked objects) and highlighting
         this.drawNodes(c, graphUi, graphRepr, util.DrawOption.OBJECT, uiMode, mousePosition, allowEditsFunc,
             getObjectOnMousePosFunc);
         this.drawLinks(c, graphRepr, util.DrawOption.OBJECT);
@@ -205,7 +200,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         for (let i = 0; i < nodes.length; i++) {
             let drawNodeShadow = uiMode === util.ModeType.DRAW && mousePosition &&
                 getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) === nodes[i] &&
-                allowEditsFunc(graphUi, util.Edit.ADD_VERTEX);
+                allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX);
             if (drawNodeShadow) {
                 // Enable the shadow
                 let shadowAlpha = 0.5;
@@ -214,7 +209,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                 // If the node is highlighted, draw another node below it, so the shadow is visible
                 if (nodes[i].isHighlighted) {
-                    let shadowNode = new node_elements.Node(this, nodes[i].x, nodes[i].y);
+                    let shadowNode = new node_elements.Node(graphUi, nodes[i].x, nodes[i].y);
                     c.lineWidth = 1;
                     c.fillStyle = c.strokeStyle = 'rgb(192,192,192,' + shadowAlpha + ')';
                     shadowNode.draw(c, drawNodeShadow, null);
@@ -225,7 +220,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             c.fillStyle = c.strokeStyle = util.Color.BLACK;
             nodes[i].draw(c, drawNodeShadow, drawOption);
 
-            if (drawNodeShadow && allowEditsFunc(graphUi, util.Edit.ADD_VERTEX)) {
+            if (drawNodeShadow && allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX)) {
                 // Disable the shadow
                 c.shadowBlur = 0;
                 c.globalAlpha = 1;
