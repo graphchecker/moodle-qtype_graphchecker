@@ -267,27 +267,33 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 for (i = 0; i < input.vertices.length; i++) {
                     let inputNode = input.vertices[i];
                     let node = new node_elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
-                    if (!templateParams.ignore_locked && 'locked' in inputNode) {
+                    if (!templateParams.ignore_locked && 'locked' in inputNode && util.isBool(inputNode['locked'])) {
                         // note: don't set the locked flag if we're in ignore_locked mode,
                         // because then we're supposed to be able to edit locked objects
                         // (when saving this will lose the locked flags)
                         node.locked = inputNode['locked'];
                     }
-                    node.text = inputNode['label'];
+                    if (util.isStr(inputNode['label'])) {
+                        node.text = inputNode['label'];
+                    }
                     if (templateParams.vertex_colors) {
                         node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
                     }
-                    if (templateParams.highlight_vertices) {
+                    if (templateParams.highlight_vertices && util.isBool(inputNode['highlighted'])) {
                         node.isHighlighted = inputNode['highlighted'];
                     }
                     if (isTypeFunc(graphUi, util.Type.FSM)) {
-                        node.isInitial = inputNode['initial'];
-                        node.isFinal = inputNode['final'];
+                        if (util.isBool(inputNode['initial'])) {
+                            node.isInitial = inputNode['initial'];
+                        }
+                        if (util.isBool(inputNode['final'])) {
+                            node.isFinal = inputNode['final'];
+                        }
                         // Do not create a start link yet, as we do not have loaded the links yet
                     }
-                    if (isTypeFunc(graphUi, util.Type.PETRI)) {
+                    if (isTypeFunc(graphUi, util.Type.PETRI) && util.isStr(inputNode['petri_type'])) {
                         node.petriNodeType = inputNode['petri_type'];
-                        if (inputNode['petri_type'] === util.PetriNodeType.PLACE) {
+                        if (inputNode['petri_type'] === util.PetriNodeType.PLACE && util.isInt(inputNode['tokens'])) {
                             node.petriTokens = inputNode['tokens'];
                         }
                     }

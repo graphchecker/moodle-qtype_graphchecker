@@ -205,7 +205,7 @@ define(['qtype_graphchecker/graph_checker/globals'],
     Util.prototype.modulo = function (x, y) {
         // A modulo function which also works for negative numbers. Similar to: x % y
         return ((x % y) + y) % y;
-    }
+    };
 
     Util.prototype.crossBrowserKey = function(e) {
         // Return which key was pressed, given the event, in a browser-independent way.
