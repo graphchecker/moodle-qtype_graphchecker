@@ -141,11 +141,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    y - The y position of the mouse
      *
      * Returns:
-     *    The first link, if any, encountered at the user's mouse position
+     *    The first link (apart from start link, as these are not selectable), if any, encountered at the user's
+     *    mouse position
      */
     GraphRepresentation.prototype.getLinkOnMousePos = function(graphRepr, x, y) {
         for (let i = 0; i < graphRepr.links.length; i++) {
-            if (graphRepr.links[i].containsPoint(x, y)) {
+            if (!(graphRepr.links[i] instanceof link_elements.StartLink) && graphRepr.links[i].containsPoint(x, y)) {
                 return graphRepr.links[i];
             }
         }
@@ -159,7 +160,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    rect - The input rectangle in the form: [{x: null, y: null}, {x: null, y: null}], representing two opposite corners
      *
      * Returns:
-     *    All non-locked objects which are completely located in the input rectangle
+     *    All non-locked objects (apart from StartLinks, as these are not selectable) which are completely located
+     *    in the input rectangle
      */
     GraphRepresentation.prototype.getObjectsInRectangle = function(rect) {
         let objects = [];
@@ -186,12 +188,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             // If the link is an arc, generate 'steps' number of points on the arc,
             // and check if they are all located inside the rectangle
             let points = [];
-            if (this.links[i] instanceof link_elements.StartLink) {
-                let l = this.links[i].getEndPoints();
-                points.push({x: l.startX, y: l.startY});
-                points.push({x: l.endX, y: l.endY});
-            } else {
-                // Else if normal link or self link
+            if (!(this.links[i] instanceof link_elements.StartLink)) {
+                // A normal link or self link
                 let l = this.links[i].getLinkInfo();
                 let r = l.circleRadius;
                 let circleStartAngle = Math.atan2(((l.startY - l.circleY) / r), ((l.startX - l.circleX) / r));
@@ -234,7 +232,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     break;
                 }
             }
-            if (isLinkInside) {
+            if (isLinkInside && !(this.links[i] instanceof link_elements.StartLink)) {
                 objects.push(this.links[i]);
             }
         }
@@ -285,6 +283,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     if (isTypeFunc(graphUi, util.Type.FSM)) {
                         node.isInitial = inputNode['initial'];
                         node.isFinal = inputNode['final'];
+                        // Do not create a start link yet, as we do not have loaded the links yet
                     }
                     if (isTypeFunc(graphUi, util.Type.PETRI)) {
                         node.petriNodeType = inputNode['petri_type'];
@@ -310,16 +309,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                             link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
                             link.anchorAngle = inputLink['bend']['anchorAngle'];
                         }
-                    } else if (inputLink['from'] === -1) {
-                        if (inputLink['to'] >= 0) { // The node should exist
-                            // Start link
-                            link = new link_elements.StartLink(this.parent, this.getNodes()[inputLink['to']]);
-                            link.deltaX = inputLink['bend']['deltaX'];
-                            link.deltaY = inputLink['bend']['deltaY'];
-                            link.colorObject = (templateParams.edge_colors) ?
-                                util.colorObjectFromColorCode(inputLink['color']) : null;
-                            link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
-                        }
                     } else {
                         // Normal link
                         link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],
@@ -336,6 +325,15 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         link.locked = inputLink['locked'];
                     }
                     this.addLink(link);
+                }
+
+                // For all nodes, check if they are initial and then re-set the initial link. This can only be done now,
+                // as all other links have been loaded
+                for (let i = 0; i < this.nodes.length; i++) {
+                    if (this.parent.isType(this.parent, util.Type.FSM) && this.nodes[i].isInitial) {
+                        // Create and add a start link
+                        this.parent.setInitialFSMVertex(this.nodes[i]);
+                    }
                 }
             } catch(e) {
                 this.fail = true;
@@ -412,18 +410,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         'anchorAngle': link.anchorAngle
                     },
                     'label': link.text,
-                    'locked': link.locked
-                };
-                linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);
-                output.edges.push(linkObject);
-            } else if (link instanceof link_elements.StartLink) {
-                let linkObject = {
-                    'from': -1,
-                    'to': this.getNodes().indexOf(link.node),
-                    'bend': {
-                        'deltaX': link.deltaX,
-                        'deltaY': link.deltaY
-                    },
                     'locked': link.locked
                 };
                 linkObject = this.assignStandardLinkFields(link, templateParams, linkObject);

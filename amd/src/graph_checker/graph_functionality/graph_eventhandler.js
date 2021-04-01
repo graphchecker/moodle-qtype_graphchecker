@@ -174,7 +174,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             }
         } else if (this.par.getUIMode() === util.ModeType.SELECT) {
             // Move selected objects and possible apply snapping
-            this.moveObjects(mouse, allowedEditsFunc);
+            this.moveObjects(mouse, allowedEditsFunc, isTypeFunc);
 
             // Overwrite the other corner of the selection rectangle
             if (!this.par.getClickedObject() && this.par.getSelectionRectangle()) {
@@ -560,8 +560,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    mousePos - The position of the mouse in the format {x: number, y: number}
      *    allowedEditsFunc - A callable reference to the GraphUI.allowEdits function
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
      */
-    GraphEventHandler.prototype.moveObjects = function(mousePos, allowedEditsFunc) {
+    GraphEventHandler.prototype.moveObjects = function(mousePos, allowedEditsFunc, isTypeFunc) {
         if (this.par.getDraggedObjects().length && this.par.getClickedObject()) {
             // Check whether the objects are all aligned
             let isAlignedHorizontally = true;
@@ -594,14 +595,42 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         // Move and snap links
                         let isSnapped = object.setAnchorPoint(mousePos.x, mousePos.y);
                         if (!isSnapped) {
-                            // Deselect all other objects if the link has moved. In case of SelfLinks and StartLinks,
-                            // which cannot be snapped, all objects are also deselected
+                            // Deselect all other objects if the link has moved. In case of SelfLinks, which cannot be
+                            // snapped, all objects are also deselected
                             this.par.setDraggedObjects([this.par.getClickedObject()]);
                         }
                     }
 
+                    // Recalculate all initial nodes' start edges in case of an FSM
+                    this.recalculateFSMInitialLink(isTypeFunc);
+
                     // Set the object to have moved
                     object.hasMoved = true;
+                }
+            }
+        }
+    };
+
+    /**
+     * Function: recalculateFSMInitialLink
+     * Recalculates all initial FSM links, in case of an FSM graph
+     *
+     * Parameters:
+     *    isTypeFunc - A callable reference to the GraphUI.isType function
+     */
+    GraphEventHandler.prototype.recalculateFSMInitialLink = function(isTypeFunc) {
+        if (isTypeFunc(this.par, util.Type.FSM)) {
+            // Remove all initial links
+            for (let j = 0; j < this.graphRepr.links.length; j++) {
+                if (this.graphRepr.links[j] instanceof link_elements.StartLink) {
+                    this.graphRepr.links.splice(j--, 1);
+                }
+            }
+
+            for (let j = 0; j < this.graphRepr.nodes.length; j++) {
+                if (this.graphRepr.nodes[j].isInitial) {
+                    // Re-add all initial links
+                    this.par.setInitialFSMVertex(this.graphRepr.nodes[j]);
                 }
             }
         }
@@ -666,6 +695,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         // Set this link as the only selected object, so it shows a blue outline
         this.par.setSelectedObjects([this.par.getCurrentLink()]);
         this.par.setPreviousSelectedObjects(this.par.getSelectedObjects());
+
+        // Recalculate all initial nodes' start edges in case of an FSM
+        this.recalculateFSMInitialLink(isTypeFunc);
 
         // Remove FSM/Petri selection fields in the toolbar
         if (isTypeFunc(this.par, util.Type.FSM)) {

@@ -654,7 +654,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             util.colors[this.parent.templateParams.edge_colors[0]] : null;
 
         if (start) {
-            this.setAnchorPoint(start.x, start.y);
+            this.setAnchorPoint(start.x, start.y, true);
         }
     }
 
@@ -668,23 +668,26 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      * Parameters:
      *    x - The x coordinate to be used
      *    y - The y coordinate to be used
+     *    move - Whether to (potentially) move the link, or whether to perform no action (to have an empty function)
      *
      * Returns:
      *    Whether the link is snapped or not
      */
-    StartLink.prototype.setAnchorPoint = function(x, y) {
-        this.deltaX = x - this.node.x;
-        this.deltaY = y - this.node.y;
+    StartLink.prototype.setAnchorPoint = function(x, y, move) {
+        if (move) {
+            this.deltaX = x - this.node.x;
+            this.deltaY = y - this.node.y;
 
-        if (Math.abs(this.deltaX) < globals.SNAP_TO_PADDING) {
-            this.deltaX = 0;
+            if (Math.abs(this.deltaX) < globals.SNAP_TO_PADDING) {
+                this.deltaX = 0;
+            }
+
+            if (Math.abs(this.deltaY) < globals.SNAP_TO_PADDING) {
+                this.deltaY = 0;
+            }
+
+            this.hasMoved = true;
         }
-
-        if (Math.abs(this.deltaY) < globals.SNAP_TO_PADDING) {
-            this.deltaY = 0;
-        }
-
-        this.hasMoved = true;
     };
 
     /**

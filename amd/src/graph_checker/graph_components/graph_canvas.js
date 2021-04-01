@@ -280,8 +280,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             !(isTypeFunc(graphUi, util.Type.PETRI) && originalObject instanceof node_elements.Node &&
                 originalObject.petriNodeType === util.PetriNodeType.PLACE) ||
             (originalObject instanceof link_elements.Link ||
-                originalObject instanceof link_elements.SelfLink ||
-                originalObject instanceof link_elements.StartLink)) {
+                originalObject instanceof link_elements.SelfLink)) {
             // Center the text inside the node if it fits
             x -= width / 2;
 
