@@ -451,6 +451,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         this.currentLink = new link_elements.StartLink(this, vertex, startLinkPos);
+
+        // Enable highlighting for the start link if the according node is also highlighted
+        if (vertex.isHighlighted) {
+            this.currentLink.isHighlighted = true;
+        }
+
         this.addLink(this.currentLink);
         this.currentLink = null;
         this.toolbar.parent.draw();
