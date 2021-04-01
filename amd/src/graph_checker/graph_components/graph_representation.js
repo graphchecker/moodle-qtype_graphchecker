@@ -299,31 +299,51 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     let inputLink = input.edges[i];
                     let link = null;
 
+                    // If the 'from' or 'to' nodes are not defined, continue
+                    if (!util.isInt(inputLink['from']) || !util.isInt(inputLink['to'])) {
+                        continue;
+                    }
+
                     if (inputLink['from'] === inputLink['to']) {
                         if (inputLink['from'] >= 0) { // The node should exist
                             // Self link has two identical nodes.
                             link = new link_elements.SelfLink(this.parent, this.getNodes()[inputLink['from']]);
-                            link.text = inputLink['label'];
-                            link.colorObject = (templateParams.edge_colors) ?
-                                util.colorObjectFromColorCode(inputLink['color']) : null;
-                            link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
-                            link.anchorAngle = inputLink['bend']['anchorAngle'];
+                            if (inputLink['bend'] && util.isNum(inputLink['bend']['anchorAngle'])) {
+                                link.anchorAngle = inputLink['bend']['anchorAngle'];
+                            }
+                        } else {
+                            continue;
                         }
                     } else {
-                        // Normal link
+                        // Normal link,
                         link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],
                             this.getNodes()[inputLink['to']]);
-                        link.text = inputLink['label'];
-                        link.colorObject = (templateParams.edge_colors) ?
-                            util.colorObjectFromColorCode(inputLink['color']) : null;
-                        link.isHighlighted = (templateParams.highlight_edges)? inputLink['highlighted'] : false;
-                        link.parallelPart = inputLink['bend']['parallelPart'];
-                        link.perpendicularPart = inputLink['bend']['perpendicularPart'];
-                        link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
+                        if (inputLink['bend']) {
+                            if (util.isNum(inputLink['bend']['parallelPart'])) {
+                                link.parallelPart = inputLink['bend']['parallelPart'];
+                            }
+                            if (util.isNum(inputLink['bend']['perpendicularPart'])) {
+                                link.perpendicularPart = inputLink['bend']['perpendicularPart'];
+                            }
+                            if (util.isNum(inputLink['bend']['lineAngleAdjust'])) {
+                                link.lineAngleAdjust = inputLink['bend']['lineAngleAdjust'];
+                            }
+                        }
                     }
-                    if (!templateParams.ignore_locked && 'locked' in inputLink) {
+
+                    // Set general linkvalues
+                    if (util.isStr(inputLink['label'])) {
+                        link.text = inputLink['label'];
+                    }
+                    link.colorObject = (templateParams.edge_colors) ?
+                        util.colorObjectFromColorCode(inputLink['color']) : null;
+                    if (util.isBool(inputLink['highlighted'])) {
+                        link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
+                    }
+                    if (!templateParams.ignore_locked && 'locked' in inputLink && util.isBool(inputLink['locked'])) {
                         link.locked = inputLink['locked'];
                     }
+
                     this.addLink(link);
                 }
 

@@ -364,5 +364,57 @@ define(['qtype_graphchecker/graph_checker/globals'],
         }
     };
 
+    /**
+     * Function: isInt
+     *
+     * Parameters:
+     *    int - The integer to be checked
+     *
+     * Returns:
+     *    Whether or not the 'int' object is defined and is a integer
+     */
+    Util.prototype.isInt = function(int) {
+        return int !== undefined && Number.isInteger(int);
+    };
+
+    /**
+     * Function: isNum
+     *
+     * Parameters:
+     *    num - The number to be checked
+     *
+     * Returns:
+     *    Whether or not the 'num' object is defined and is a number
+     */
+    Util.prototype.isNum = function(num) {
+        return num !== undefined && typeof num === 'number';
+    };
+
+    /**
+     * Function: isBool
+     *
+     * Parameters:
+     *    bool - The boolean to be checked
+     *
+     * Returns:
+     *    Whether or not the 'bool' object is defined and is a boolean
+     */
+    Util.prototype.isBool = function(bool) {
+        return bool !== undefined && typeof bool === 'boolean';
+    };
+
+    /**
+     * Function: isStr
+     *
+     * Parameters:
+     *    str - The string to be checked
+     *
+     * Returns:
+     *    Whether or not the 'str' object is defined and is of type string
+     */
+    Util.prototype.isStr = function(str) {
+        return str !== undefined && Object.prototype.toString.call(str) === "[object String]";
+    };
+
     return new Util();
 });
