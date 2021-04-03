@@ -25,6 +25,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.par = parent;
         this.graphRepr = graphRepresentation;
         this.isGraphReadonly = isGraphReadonly;
+        this.previousClientPos = {x: 0, y: 0};
     }
 
     /**
@@ -158,6 +159,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      */
     GraphEventHandler.prototype.mousemove = function(e) {
         let mouse = util.mousePos(e);
+        this.previousClientPos = {x: e.clientX, y: e.clientY};
         let allowedEditsFunc = this.par.allowEdits;
         let isTypeFunc = this.par.isType;
 

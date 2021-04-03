@@ -266,6 +266,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.setUIMode(util.ModeType.DRAW);
             this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
             this.isTempDrawModeActive = true;
+
+            // Manually trigger a mousemove event, to correct the place of the hypothetical draw node location
+            // (shown as a shadow), by using the saved client (mouse) position
+            let evt = new Event('mousemove');
+            evt.clientX = this.graphEventHandler.previousClientPos.x;
+            evt.clientY = this.graphEventHandler.previousClientPos.y;
+            this.graphCanvas.canvas[0].dispatchEvent(evt);
         }
     };
 
@@ -435,7 +442,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         vertex.isInitial = true;
 
         // Get the angles of all incident (i.e. incoming and outgoing) edges of this vertex
-        let angles = util.getAnglesOfIncidentLinks(this.graphRepr.getLinks(), vertex);
+        let angles = this.getAnglesOfIncidentLinks(this.graphRepr.getLinks(), vertex);
 
         let topLeft = (3.0/4.0 * Math.PI); // The top-left of the vertex's circle in radians
         let nodeLinkDrawRadius = this.nodeRadius(this) + globals.INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
@@ -460,6 +467,38 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.addLink(this.currentLink);
         this.currentLink = null;
         this.toolbar.parent.draw();
+    };
+
+    /**
+     * Function: getAnglesOfIncidentLinks
+     *
+     * Parameters:
+     *    vertex - The given vertex for which to calculate all incident angles
+     *    links - All links present in the graph ui
+     *
+     * Returns:
+     *    All angles of all incident links of a given vertex
+     */
+    GraphUI.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
+        let angles = [];
+        for (let i = 0; i < links.length; i++) {
+            let nodeA = null, nodeB = null;
+            if (links[i] instanceof link_elements.Link) {
+                // In case of regular links
+                nodeA = links[i].nodeA;
+                nodeB = links[i].nodeB;
+            } else if (links[i] instanceof link_elements.SelfLink) {
+                // In case of self links
+                nodeA = links[i].node;
+            }
+
+            if (nodeA === vertex || nodeB === vertex) {
+                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
+                // circle with the selected node itself
+                angles = angles.concat(links[i].calculateAngle(vertex));
+            }
+        }
+        return angles;
     };
 
     /**

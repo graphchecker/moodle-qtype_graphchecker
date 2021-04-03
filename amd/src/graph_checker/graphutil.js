@@ -227,47 +227,6 @@ define(['qtype_graphchecker/graph_checker/globals'],
         return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
     };
 
-    Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
-        let angles = [];
-        for (let i = 0; i < links.length; i++) {
-            let nodeA = null, nodeB = null;
-            if (links[i].constructor.name === 'Link') {
-                // In case of regular links
-                nodeA = links[i].nodeA;
-                nodeB = links[i].nodeB;
-            } else if (links[i].constructor.name === 'SelfLink') {
-                // TODO: referencing like this is not ideal, but otherwise including graph_links.js results in
-                //  circular dependencies...
-                // In case of self links
-                nodeA = links[i].node;
-            }
-
-            if (nodeA === vertex || nodeB === vertex) {
-                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
-                // circle with the selected node itself
-                angles = angles.concat(links[i].calculateAngle(vertex));
-            }
-        }
-        return angles;
-    };
-
-    Util.prototype.getAnglesStartLinkFSMOneIncident = function(oppositeAngle, divisibleRange, topLeft, nrDivisions) {
-        // It is to be noted that this function expects an even number of divisions
-        if (nrDivisions % 2 !== 0) {
-            throw 'nrDivisions in Util.prototype.getAnglesBasedOnDivision() is not an even number.';
-        }
-        let angles = [];
-        let range = (nrDivisions / 2) - 1;
-        for (let i = -range; i <= range; i++) {
-            let angle = (oppositeAngle + (i / nrDivisions) * divisibleRange) % (2*Math.PI);
-            if (angle < 0) {
-                angle += 2*Math.PI;
-            }
-            angles.push(angle);
-        }
-        return angles;
-    };
-
     Util.prototype.quadraticFormula = function(a, b, c) {
         let D = Math.pow(b, 2) - 4*a*c;
 

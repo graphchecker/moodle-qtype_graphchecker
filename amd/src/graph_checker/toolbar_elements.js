@@ -107,8 +107,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Button.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -289,8 +287,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     NumberInputField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -354,8 +350,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Checkbox.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -410,8 +404,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     TextField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -555,8 +547,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Dropdown.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     return {

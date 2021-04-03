@@ -266,6 +266,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 // Load all nodes, with their properties
                 for (i = 0; i < input.vertices.length; i++) {
                     let inputNode = input.vertices[i];
+
+                    // If the position is not properly defined, set it to be (0, 0)
+                    if (!inputNode['position'] ||
+                        !util.isNum(inputNode['position'][0]) || !util.isNum(inputNode['position'][1])) {
+                        inputNode['position'] = [0, 0];
+                    }
+
                     let node = new node_elements.Node(this.parent, inputNode['position'][0], inputNode['position'][1]);
                     if (!templateParams.ignore_locked && 'locked' in inputNode && util.isBool(inputNode['locked'])) {
                         // note: don't set the locked flag if we're in ignore_locked mode,
@@ -276,7 +283,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     if (util.isStr(inputNode['label'])) {
                         node.text = inputNode['label'];
                     }
-                    if (templateParams.vertex_colors) {
+                    if (templateParams.vertex_colors && util.isStr(inputNode['color'])) {
                         node.colorObject = util.colorObjectFromColorCode(inputNode['color']);
                     }
                     if (templateParams.highlight_vertices && util.isBool(inputNode['highlighted'])) {
@@ -320,7 +327,17 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         } else {
                             continue;
                         }
+                    } else if (inputLink['from'] < 0) {
+                        // This is an old format for a start link. When we encounter this, we do not draw the start link
+                        // directly (in case of an FSM), but we instead set the according node to be an initial node
+                        if (this.parent.isType(this.parent, util.Type.FSM) && inputLink['to'] >= 0) {
+                            this.nodes[inputLink['to']].isInitial = true;
+                        }
+                        continue;
                     } else {
+                        if (inputLink['to'] < 0) {
+                            continue;
+                        }
                         // Normal link,
                         link = new link_elements.Link(this.parent, this.getNodes()[inputLink['from']],
                             this.getNodes()[inputLink['to']]);
@@ -341,8 +358,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     if (util.isStr(inputLink['label'])) {
                         link.text = inputLink['label'];
                     }
-                    link.colorObject = (templateParams.edge_colors) ?
-                        util.colorObjectFromColorCode(inputLink['color']) : null;
+                    if (templateParams.edge_colors && util.isStr(inputLink['color'])) {
+                        link.colorObject = (templateParams.edge_colors) ?
+                            util.colorObjectFromColorCode(inputLink['color']) : null;
+                    }
                     if (util.isBool(inputLink['highlighted'])) {
                         link.isHighlighted = (templateParams.highlight_edges) ? inputLink['highlighted'] : false;
                     }
@@ -362,6 +381,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     }
                 }
             } catch(e) {
+                //TODO: Possibly throw an error message here, indicating that the graph loading has (partially) failed
                 this.fail = true;
                 this.failString = 'graph_ui_invalidserialisation';
             }
