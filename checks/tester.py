@@ -55,9 +55,10 @@ class GCTester:
 		params['highlight_vertices'] = True
 		params['highlight_edges'] = True
 		params['vertex_colors'] = ['white', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'black']
+		params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple']
 
         # Add edit parameters
-		params['allow_edits'] = ['move', 'edit_vertex', 'vertex_labels', 'edge_labels', 'vertex_colors',
+		params['allow_edits'] = ['move', 'edit_vertex', 'edit_edge', 'vertex_labels', 'edge_labels', 'vertex_colors',
 		'edge_colors', 'fsm_flags', 'petri_marking']
 
 		return params

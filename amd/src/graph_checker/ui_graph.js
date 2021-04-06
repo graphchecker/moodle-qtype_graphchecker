@@ -266,6 +266,13 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.setUIMode(util.ModeType.DRAW);
             this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
             this.isTempDrawModeActive = true;
+
+            // Manually trigger a mousemove event, to correct the place of the hypothetical draw node location
+            // (shown as a shadow), by using the saved client (mouse) position
+            let evt = new Event('mousemove');
+            evt.clientX = this.graphEventHandler.previousClientPos.x;
+            evt.clientY = this.graphEventHandler.previousClientPos.y;
+            this.graphCanvas.canvas[0].dispatchEvent(evt);
         }
     };
 
@@ -435,7 +442,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         vertex.isInitial = true;
 
         // Get the angles of all incident (i.e. incoming and outgoing) edges of this vertex
-        let angles = util.getAnglesOfIncidentLinks(this.graphRepr.getLinks(), vertex);
+        let angles = this.getAnglesOfIncidentLinks(this.graphRepr.getLinks(), vertex);
 
         let topLeft = (3.0/4.0 * Math.PI); // The top-left of the vertex's circle in radians
         let nodeLinkDrawRadius = this.nodeRadius(this) + globals.INITIAL_FSM_NODE_LINK_LENGTH*2; // The radius used to draw
@@ -451,9 +458,47 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         this.currentLink = new link_elements.StartLink(this, vertex, startLinkPos);
+
+        // Enable highlighting for the start link if the according node is also highlighted
+        if (vertex.isHighlighted) {
+            this.currentLink.isHighlighted = true;
+        }
+
         this.addLink(this.currentLink);
         this.currentLink = null;
         this.toolbar.parent.draw();
+    };
+
+    /**
+     * Function: getAnglesOfIncidentLinks
+     *
+     * Parameters:
+     *    vertex - The given vertex for which to calculate all incident angles
+     *    links - All links present in the graph ui
+     *
+     * Returns:
+     *    All angles of all incident links of a given vertex
+     */
+    GraphUI.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
+        let angles = [];
+        for (let i = 0; i < links.length; i++) {
+            let nodeA = null, nodeB = null;
+            if (links[i] instanceof link_elements.Link) {
+                // In case of regular links
+                nodeA = links[i].nodeA;
+                nodeB = links[i].nodeB;
+            } else if (links[i] instanceof link_elements.SelfLink) {
+                // In case of self links
+                nodeA = links[i].node;
+            }
+
+            if (nodeA === vertex || nodeB === vertex) {
+                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
+                // circle with the selected node itself
+                angles = angles.concat(links[i].calculateAngle(vertex));
+            }
+        }
+        return angles;
     };
 
     /**
@@ -489,33 +534,60 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    startLinkPos - The new position of the start link
      */
     GraphUI.prototype.setFSMStartLinkWhereSpace = function(vertex, angles, topLeft, nodeLinkDrawRadius) {
-        let startLinkPos = {};
+        // Divide the circle in a number of parts divisible by 8
+        let divisions = 16;
 
-        // Sort the incident angles
-        angles = angles.sort(function (a, b) { return a - b; });
+        // Find the angles closest to the top-left, starting with the top-left index, based on an interleaving pattern
+        // Earlier angles in the preference array indicate a closer position to the top-left
+        // E.g., for divisions = 16, we get: [6, 7, 5, 8, 4, 9, 3, 10, 2, 11, 1, 12, 0, 13, 15, 14]
+        let optimalAngleIndex = 0.25 * divisions + 0.5 * 0.25 * divisions; // The index of the top-left angle
+        let preferencedAnglesIndices = [];
+        let lastIndex = optimalAngleIndex;
+        for (let i = 0; i < divisions; i++) {
+            let evenOrOdd = i % 2 === 0;
+            let positiveOrNegative = (evenOrOdd ? -1 : 1);
+            let index = util.modulo((lastIndex + positiveOrNegative * i), divisions);
+            lastIndex = index;
+            preferencedAnglesIndices.push(index);
+        }
 
-        // Create all candidate (initial link) angles, based on a division (as in the case of angles.length === 1),
-        // and filter out angles which are too close to existing incoming links, to not obscure them
-        let candidateAngles = util.getAnglesStartLinkFSMMultipleIncident(angles, topLeft, 8);
-        let candidateAnglesTemp = candidateAngles;
-        candidateAngles = util.filterOutCloseAngles(candidateAngles, angles, 0.05);
+        // For each of the preference angles in order, test if there is enough space around it (1/divisions-th of a
+        // circle on each side). If there is, directly place the angle there
+        let chosenAngle = null;
+        for (let i = 0; i < preferencedAnglesIndices.length; i++) {
+            let prefAngle = preferencedAnglesIndices[i] * (2*Math.PI / divisions);
+            let closestDistanceToIncidentEdge = 2 * Math.PI + 1; // Distance in terms of radians along the circle
+            for (let j = 0; j < angles.length; j++) {
+                // Calculate the distance
+                let distance = Math.abs(prefAngle - angles[j]);
 
-        let bestCandidateAngle = null;
-        if (candidateAngles.length > 0) {
-            // If there are angles which are far enough away from each other, use the one which is closest to the top-left
-            // to create the start link
-            bestCandidateAngle = candidateAngles.sort(function (a, b) {
-                return Math.abs(topLeft - a) - Math.abs(topLeft - b);
-            })[0];
-        } else {
-            // If there are no angles which are far enough away (i.e. the vertex has too many incident edges),
-            // use the one most far away (i.e. with the most space around itself)
-            bestCandidateAngle = util.getAngleMaximumMinimumProximity(candidateAnglesTemp, angles);
+                // If we are at angle 0, incorporate a special check
+                if (preferencedAnglesIndices[i] === 0 && Math.abs(2 * Math.PI - angles[j]) < distance) {
+                    distance = Math.abs(2 * Math.PI - angles[j]);
+                }
+
+                // Update the distance if it's smallest
+                if (distance < closestDistanceToIncidentEdge) {
+                    closestDistanceToIncidentEdge = distance;
+                }
+            }
+
+            // If there is enough space around it, directly place the angle here
+            if (closestDistanceToIncidentEdge >= (2*Math.PI / divisions)) {
+                chosenAngle = prefAngle;
+                break;
+            }
+        }
+
+        // If no angle has enough space around itself, choose the top-left one
+        if (chosenAngle === null) {
+            chosenAngle = optimalAngleIndex * (2*Math.PI / divisions);
         }
 
         // Assign and return the start link pos
-        startLinkPos.x = vertex.x + (nodeLinkDrawRadius * Math.cos(bestCandidateAngle));
-        startLinkPos.y = vertex.y - (nodeLinkDrawRadius * Math.sin(bestCandidateAngle));
+        let startLinkPos = {};
+        startLinkPos.x = vertex.x + (nodeLinkDrawRadius * Math.cos(chosenAngle));
+        startLinkPos.y = vertex.y - (nodeLinkDrawRadius * Math.sin(chosenAngle));
         return startLinkPos;
     };
 

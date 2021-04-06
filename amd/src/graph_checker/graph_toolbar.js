@@ -552,8 +552,16 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                 this.toolbar.parent.selectedObjects[i].isHighlighted = true;
                 // Enable the check
                 event.target.checked = true;
+
+                // Also enable highlighting for the initial link of an FSM node
+                this.toolbar.setInitialLinkHighlighting(this.toolbar.parent.selectedObjects[i],
+                    this.toolbar.parent.graphRepr.links, true);
             } else {
                 this.toolbar.parent.selectedObjects[i].isHighlighted = false;
+
+                // Also disable highlighting for the initial link of an FSM node
+                this.toolbar.setInitialLinkHighlighting(this.toolbar.parent.selectedObjects[i],
+                    this.toolbar.parent.graphRepr.links, false);
             }
         }
 
@@ -564,6 +572,28 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.toolbar.parent.onGraphChange();
 
         this.toolbar.parent.draw();
+    };
+
+    /**
+     * Function: setInitialLinkHighlighting
+     * Sets the highlighting of an initial link (if any) of a given object
+     *
+     * Parameters:
+     *    object - The object for which to set the initial link highlighting
+     *    links - All links of the graph ui
+     *    value - The value for which to set the highlighting to
+     */
+    GraphToolbar.prototype.setInitialLinkHighlighting = function(object, links, value) {
+        if (object instanceof node_elements.Node && object.isInitial) {
+            // Find the initial link according to this node
+            for (let i = 0; i < links.length; i++) {
+                if (links[i] instanceof link_elements.StartLink &&
+                    links[i].node === object) {
+                    links[i].isHighlighted = value;
+                    break;
+                }
+            }
+        }
     };
 
     GraphToolbar.prototype.addFSMNodeSelectionOptions = function (selectedObjects) {

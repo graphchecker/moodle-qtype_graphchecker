@@ -202,6 +202,11 @@ define(['qtype_graphchecker/graph_checker/globals'],
         return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
     };
 
+    Util.prototype.modulo = function (x, y) {
+        // A modulo function which also works for negative numbers. Similar to: x % y
+        return ((x % y) + y) % y;
+    };
+
     Util.prototype.crossBrowserKey = function(e) {
         // Return which key was pressed, given the event, in a browser-independent way.
         e = e || window.event;
@@ -220,112 +225,6 @@ define(['qtype_graphchecker/graph_checker/globals'],
     Util.prototype.calculateAngle = function(v1, v2) {
         // Return an angle a, where 0 <= a <= 2*PI, in radians
         return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
-    };
-
-    Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
-        let angles = [];
-        for (let i = 0; i < links.length; i++) {
-            let nodeA = null, nodeB = null;
-            if (links[i].constructor.name === 'Link') {
-                // In case of regular links
-                nodeA = links[i].nodeA;
-                nodeB = links[i].nodeB;
-            } else if (links[i].constructor.name === 'SelfLink') {
-                // TODO: referencing like this is not ideal, but otherwise including graph_links.js results in
-                //  circular dependencies...
-                // In case of self links
-                nodeA = links[i].node;
-            }
-
-            if (nodeA === vertex || nodeB === vertex) {
-                // Calculate the angle(s) (in radians) of the point(s) of the link touching the selected vertex's
-                // circle with the selected node itself
-                angles = angles.concat(links[i].calculateAngle(vertex));
-            }
-        }
-        return angles;
-    };
-
-    Util.prototype.getAnglesStartLinkFSMOneIncident = function(oppositeAngle, divisibleRange, topLeft, nrDivisions) {
-        // It is to be noted that this function expects an even number of divisions
-        if (nrDivisions % 2 !== 0) {
-            throw 'nrDivisions in Util.prototype.getAnglesBasedOnDivision() is not an even number.';
-        }
-        let angles = [];
-        let range = (nrDivisions / 2) - 1;
-        for (let i = -range; i <= range; i++) {
-            let angle = (oppositeAngle + (i / nrDivisions) * divisibleRange) % (2*Math.PI);
-            if (angle < 0) {
-                angle += 2*Math.PI;
-            }
-            angles.push(angle);
-        }
-        return angles;
-    };
-
-    Util.prototype.getAnglesStartLinkFSMMultipleIncident = function(angles, topLeft, nrDivisions) {
-        // Create, for each space between two incident links (occurring in the angles array), all possible angles
-        // based on the division
-        let candidateAngles = [];
-        for (let i = 0; i < angles.length; i++) {
-            let startAngle = angles[i];
-            let endAngle = angles[i+1];
-            if (i === angles.length-1) {
-                // Special case for the last value in the array
-                endAngle = angles[0] + 2*Math.PI;
-            }
-
-            let averageAngle = (startAngle + endAngle) / 2.0;
-            let divisibleRange = Math.abs(startAngle - endAngle);
-            let foundAngles = this.getAnglesStartLinkFSMOneIncident(averageAngle, divisibleRange, topLeft, nrDivisions);
-            for (let j = 0; j < foundAngles.length; j++) {
-                candidateAngles.push(foundAngles[j]);
-            }
-        }
-        return candidateAngles;
-    };
-
-    Util.prototype.filterOutCloseAngles = function(candidateAngles, fixedAngles, proximityPercentage) {
-        // Filters out the angles in the possibleAngles array that are too close to angles in the fixedAngles array
-        // An angle is deemed to close if it is withing proximityPercentage% of 2*Math.PI of another angle
-        let validAngles = [];
-        for (let i = 0; i < candidateAngles.length; i++) {
-            let isValid = true;
-            for (let j = 0; j < fixedAngles.length; j++) {
-                let proximity = Math.abs(fixedAngles[j] - candidateAngles[i]);
-                if (proximity < proximityPercentage * 2*Math.PI) {
-                    isValid = false;
-                    break;
-                }
-            }
-
-            if (isValid) {
-                validAngles.push(candidateAngles[i]);
-            }
-        }
-
-        return validAngles;
-    };
-
-    Util.prototype.getAngleMaximumMinimumProximity = function(candidateAngles, angles) {
-        let maximumSpace = 0;
-        let candidateAngle = candidateAngles[0];
-        for (let i = 0; i < candidateAngles.length; i++) {
-            let minimumProximity = Number.MAX_SAFE_INTEGER;
-            for (let j = 0; j < angles.length; j++) {
-                let proximity = Math.abs(angles[j] - candidateAngles[i]);
-                if (proximity < minimumProximity) {
-                    minimumProximity = proximity;
-                }
-            }
-
-            if (minimumProximity > maximumSpace) {
-                maximumSpace = minimumProximity;
-                candidateAngle = candidateAngles[i];
-            }
-        }
-
-        return candidateAngle;
     };
 
     Util.prototype.quadraticFormula = function(a, b, c) {
@@ -422,6 +321,58 @@ define(['qtype_graphchecker/graph_checker/globals'],
                 node.y = notSelectedNodes[i].y;
             }
         }
+    };
+
+    /**
+     * Function: isInt
+     *
+     * Parameters:
+     *    int - The integer to be checked
+     *
+     * Returns:
+     *    Whether or not the 'int' object is defined and is a integer
+     */
+    Util.prototype.isInt = function(int) {
+        return int !== undefined && Number.isInteger(int);
+    };
+
+    /**
+     * Function: isNum
+     *
+     * Parameters:
+     *    num - The number to be checked
+     *
+     * Returns:
+     *    Whether or not the 'num' object is defined and is a number
+     */
+    Util.prototype.isNum = function(num) {
+        return num !== undefined && typeof num === 'number';
+    };
+
+    /**
+     * Function: isBool
+     *
+     * Parameters:
+     *    bool - The boolean to be checked
+     *
+     * Returns:
+     *    Whether or not the 'bool' object is defined and is a boolean
+     */
+    Util.prototype.isBool = function(bool) {
+        return bool !== undefined && typeof bool === 'boolean';
+    };
+
+    /**
+     * Function: isStr
+     *
+     * Parameters:
+     *    str - The string to be checked
+     *
+     * Returns:
+     *    Whether or not the 'str' object is defined and is of type string
+     */
+    Util.prototype.isStr = function(str) {
+        return str !== undefined && Object.prototype.toString.call(str) === "[object String]";
     };
 
     return new Util();
