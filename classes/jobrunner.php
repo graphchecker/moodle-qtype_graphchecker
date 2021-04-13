@@ -147,13 +147,13 @@ class qtype_graphchecker_jobrunner {
 
         $filemap = [];
 
-        foreach ($this->get_checker_modules($checks) as $module) {
+        // avoid illegal answertype values (avoids possible path traversal
+        // attacks)
+        if (!qtype_graphchecker_util::check_valid_name($question->answertype)) {
+            throw new Exception('Illegal answertype');
+        }
 
-            // avoid illegal answertype or module name values (avoids possible
-            // path traversal attacks)
-            if (!qtype_graphchecker_util::check_valid_name($question->answertype)) {
-                throw new Exception('Illegal answertype');
-            }
+        foreach ($this->get_checker_modules($checks) as $module) {
             if (!qtype_graphchecker_util::check_valid_name($module)) {
                 throw new Exception('Illegal module name');
             }
@@ -173,8 +173,24 @@ class qtype_graphchecker_jobrunner {
         // also add the checkrunner and the types data
         $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/checkrunner.py';
         $filemap['checkrunner.py'] = file_get_contents($full_name);
-        $types = qtype_graphchecker_util::get_type_data();
-        $filemap['type.json'] = json_encode($types);
+        $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/type.json';
+        $type_json = file_get_contents($full_name);
+        $filemap['type.json'] = $type_json;
+
+        // finally, the helper_python_modules
+        $typeInfo = json_decode($type_json, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new coding_exception('Invalid JSON in type.json');
+        }
+        if (array_key_exists('helper_python_modules', $typeInfo)) {
+            foreach ($typeInfo['helper_python_modules'] as $helper) {
+                if (!qtype_graphchecker_util::check_valid_name($helper)) {
+                    throw new Exception('Illegal helper module name');
+                }
+                $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $helper . '.py';
+                $filemap[$helper . '.py'] = file_get_contents($full_name);
+            }
+        }
 
         return $filemap;
     }
