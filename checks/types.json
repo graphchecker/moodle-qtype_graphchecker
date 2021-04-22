@@ -2,5 +2,6 @@
     "undirected",
     "directed",
     "fsm",
+    "pda",
     "petri"
 ]

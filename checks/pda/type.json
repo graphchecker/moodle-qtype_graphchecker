@@ -1,0 +1,9 @@
+{
+    "name": "PDA",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "fsm"
+    },
+    "python_modules": ["automata"]
+}
+
