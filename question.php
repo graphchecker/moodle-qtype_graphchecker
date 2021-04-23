@@ -229,7 +229,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
     public static function get_ui_params_for_type($type) {
         $types = qtype_graphchecker_util::get_type_data();
         $params = $types[$type]["ui_params"];
-        $params['type'] = $type;
         return $params;
     }
 

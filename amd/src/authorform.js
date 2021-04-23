@@ -77,7 +77,6 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 },
                 function(data) {
                     let params = data['ui_params'];
-                    params['type'] = type;
                     params['highlight_vertices'] = true;
                     params['highlight_edges'] = true;
                     params['highlight_edges'] = true;
