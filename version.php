@@ -25,12 +25,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2021020400;
+$plugin->version  = 2021042800;
 $plugin->requires = 2015051200;
 $plugin->cron = 0;
 $plugin->component = 'qtype_graphchecker';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.2';
+$plugin->maturity = MATURITY_BETA;
+$plugin->release = '0.3';
 
 $plugin->dependencies = array(
     'qbehaviour_adaptive_adapted_for_coderunner' => 2018042800,
