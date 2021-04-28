@@ -432,7 +432,12 @@ body#page-question-type-graphchecker .tests-ui .grade-container:last-child {
 }
 
 body#page-question-type-graphchecker .tests-ui .module-container {
-    padding: 5px 0px;
+    padding: 6px 8px;
+    border-bottom: 1px solid darkgray;
+    background-color: #f0f0f0;
+}
+body#page-question-type-graphchecker .tests-ui .module-container:last-child {
+    border-bottom: none;
 }
 body#page-question-type-graphchecker .tests-ui .module-container summary {
     padding: 3px 0px;
