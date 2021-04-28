@@ -167,8 +167,7 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
-            minHeight: this.MIN_WRAPPER_HEIGHT,
-            height: this.MIN_WRAPPER_HEIGHT
+            minHeight: this.MIN_WRAPPER_HEIGHT
         });
 
         // Record a reference to this wrapper in the text area's data attribute
@@ -299,6 +298,7 @@ define(['jquery'], function($) {
                                 resize: 'vertical',
                                 overflow: 'hidden',
                                 minHeight: h,
+                                height: h,
                                 maxWidth: '900px',
                                 border: '1px solid darkgrey',
                                 backgroundColor: 'white'
