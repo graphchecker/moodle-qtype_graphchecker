@@ -309,11 +309,6 @@ define(['jquery'], function($) {
 
         let $checkbox = $('<div/>')
             .addClass('toolbar_field' + ' ' + this.id)
-            .append($('<label/>')
-                .attr('for', this.id)
-                .addClass('checkbox_label')
-                .text(this.text)
-            )
             .append($('<input/>')
                 .attr({
                     'id':       this.id,
@@ -325,6 +320,11 @@ define(['jquery'], function($) {
                 .attr({
                     'class':    'toolbar_checkbox toolbar_checkbox_black',
                 })
+            )
+            .append($('<label/>')
+                .attr('for', this.id)
+                .addClass('checkbox_label')
+                .text(this.text)
             )
             .appendTo(this.parent[0]);
 

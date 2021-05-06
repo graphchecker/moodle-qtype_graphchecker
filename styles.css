@@ -644,6 +644,7 @@ li.bulktest.graphchecker.context.quiz {
 .graph_ui_container_div div.toolbar_field label.checkbox_label {
     display: inline-block;
     position: relative;
+    margin-left: 20px;
     margin-right: 10px;
     margin-bottom: 0;
     color: black;
