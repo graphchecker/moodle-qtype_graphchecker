@@ -1,5 +1,6 @@
-from pm4py.objects.petri.petrinet import PetriNet
+import json
 
+from pm4py.objects.petri.petrinet import PetriNet
 
 def has_keys(graph):
     """
@@ -76,11 +77,14 @@ def no_empty_label(graph):
 
 def preprocess(graph):
     """
-    Takes in graph, a json object representing a petrinet.
+    Takes in graph, a json string representing a petrinet.
     Checks if graph conforms to the standard, if it doesn't an exception is thrown.
     If it does, creates a pm4py PetriNet object out of the petri net encoded in the graph object.
     :return: A PetriNet object.
     """
+
+    graph = json.loads(graph)
+
     # Check if the given json has all the keys we need
     if not has_keys(graph):
         return None

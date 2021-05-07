@@ -30,7 +30,7 @@ def run(graph_type, graph, checks):
 		}
 
 	try:
-		graph = preprocess.preprocess(json.loads(graph))
+		graph = preprocess.preprocess(graph)
 	except Exception as e:
 		return {
 			'type': 'preprocess_fail',
@@ -98,7 +98,7 @@ def convert_argument(name, value, check, preprocess):
 			values = values[0].split(',')
 		return values
 	elif param_type == 'graph':
-		return preprocess.preprocess(json.loads(value))
+		return preprocess.preprocess(value)
 	else:
 		return value
 

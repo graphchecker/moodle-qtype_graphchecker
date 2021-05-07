@@ -1,4 +1,8 @@
+import json
+
 def preprocess(graph):
+    graph = json.loads(graph)
+
     text = ""
 
     final_states = []

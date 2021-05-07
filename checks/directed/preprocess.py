@@ -1,6 +1,9 @@
 import igraph
+import json
 
 def preprocess(graph):
+    graph = json.loads(graph)
+
     g = igraph.Graph(directed=True)
     if not graph:
         return g
