@@ -17,8 +17,11 @@ requirejs(["jquery",
 
 	$.getJSON('/input_params',
 		(inputParams) => {
-			$('#graph-ui-textarea').attr('data-params', JSON.stringify(inputParams));
-			graphWrapper = new ui.InterfaceWrapper('graph', 'graph-ui-textarea');
+			const uiPlugin = inputParams[0];
+			$('#graph-ui-textarea').attr('data-params', JSON.stringify(inputParams[1]));
+			if (uiPlugin !== "text") {
+				graphWrapper = new ui.InterfaceWrapper(uiPlugin, 'graph-ui-textarea');
+			}
 
 			$.getJSON('/available_checks',
 				(availableChecks) => {
