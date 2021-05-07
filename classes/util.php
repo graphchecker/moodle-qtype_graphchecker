@@ -37,8 +37,12 @@ class qtype_graphchecker_util {
      */
     public static function load_uiplugin_js($question, $textareaid) {
         global $CFG, $PAGE;
-        $params = array('graph', $textareaid);
-        $PAGE->requires->js_call_amd('qtype_graphchecker/userinterfacewrapper', 'newUiWrapper', $params);
+        $type_data = qtype_graphchecker_util::get_type_data();
+        $ui_plugin = $type_data[$question->answertype]['ui_plugin'];
+        if ($ui_plugin !== "text") {
+            $params = array($ui_plugin, $textareaid);
+            $PAGE->requires->js_call_amd('qtype_graphchecker/userinterfacewrapper', 'newUiWrapper', $params);
+        }
     }
 
 

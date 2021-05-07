@@ -2,6 +2,7 @@
     "undirected",
     "directed",
     "fsm",
+    "regex",
     "pda",
     "petri"
 ]
