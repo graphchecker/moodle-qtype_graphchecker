@@ -1,6 +1,6 @@
 # The checks format
 
-This directory contains the checks for GraphChecker. Each answer type (undirected, directed, etc.) has its own set of checks, and correspondingly, its own subdirectory containing these checks, along with some metadata about the answer type. The file `types.json` contains a list of answer types that GraphChecker should show in the question editor. Hence, removing an answer type from this list allows an admin to effectively disable that answer type.
+The `checks` directory contains the checks for GraphChecker. Each answer type (undirected, directed, etc.) has its own set of checks, and correspondingly, its own subdirectory containing these checks, along with some metadata about the answer type. The file `checks/types.json` contains a list of answer types that GraphChecker should show in the question editor. Hence, removing an answer type from this list allows an admin to effectively disable that answer type.
 
 The remainder of this file specifies the contents of each answer type's subdirectory.
 
