@@ -33,7 +33,7 @@ class GCTester:
 	def test(self, graph, checks):
 		class RaiseStream:
 			def write(self, s):
-				raise Exception('Check functions are not permited to print to stdout. Tried to print: ' + s)
+				raise Exception('Check functions are not permitted to print to stdout. Tried to print: ' + s)
 
 		sys.stdout = RaiseStream()
 		result = checkrunner.run(graph_type, graph, checks)
@@ -57,11 +57,11 @@ class GCTester:
 		params['vertex_colors'] = ['white', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'black']
 		params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple']
 
-        # Add edit parameters
+		# Add edit parameters
 		params['allow_edits'] = ['move', 'edit_vertex', 'edit_edge', 'vertex_labels', 'edge_labels', 'vertex_colors',
 		'edge_colors', 'fsm_flags', 'petri_marking']
 
-		return params
+		return [type_info['ui_plugin'], params]
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
