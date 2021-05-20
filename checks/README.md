@@ -120,7 +120,7 @@ In turn, a check is described by an JSON object, which has the following three k
 * `params` *(array)*: A list of parameters needed for the check. The order of parameters in this array determines in what order they will be shown in the question editing interface.
 
 
-### Parameters
+#### Parameters
 
 Again, each parameter is represented by a JSON object with the following keys:
 
