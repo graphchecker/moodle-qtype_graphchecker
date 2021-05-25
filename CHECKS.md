@@ -125,11 +125,12 @@ The metadata JSON file for a checker module consists of one JSON object, with th
 
 #### Checks
 
-In turn, a check is described by an JSON object, which has the following three keys:
+In turn, a check is described by an JSON object, which has the following keys:
 
 * `name` *(string)* The human-readable name of the check that will be presented to the question author (and to the student, in the feedback table).
 * `description` *(string)*: A description of what the check does which is presented to the question author when they click the question mark icon. This is not shown to students.
 * `params` *(array)*: A list of parameters needed for the check. The order of parameters in this array determines in what order they will be shown in the question editing interface.
+* `deprecated` *(boolean, optional)*: If `true`, the check is considered deprecated. While the check will still work, it will not be shown in the *Add check* dialog anymore. Moreover, existing questions using the check will show a ‘deprecated’ warning in the question editor. Use this to hide existing checks instead of removing them completely because that could break existing questions.
 
 
 #### Parameters
