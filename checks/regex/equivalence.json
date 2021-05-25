@@ -1,0 +1,23 @@
+{
+    "name": "Equivalence",
+    "checks": {
+        "language_equivalence_words": {
+            "name": "Language equivalence (to word list)",
+            "description": "Checks if the regex accepts exactly the given words (up until a given length).",
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
+                }
+            ]
+        }
+    }
+}
