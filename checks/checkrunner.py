@@ -56,12 +56,15 @@ def run(graph_type, graph, checks):
 			try:
 				check_module = importlib.import_module(check['module'])
 				check_method = getattr(check_module, check['method'])
-				argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
+				data = check_data[check['module']]['checks'][check['method']]
+				argument = convert_arguments(check['arguments'], data, preprocess)
 				result = check_method(graph, **argument)
 				result['module'] = check['module']
 				result['method'] = check['method']
 				if not result['correct']:
 					correct = False
+				if 'feedback' in result:
+					result['feedback'] = convert_feedback(check, data, result['feedback'])
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
@@ -122,4 +125,21 @@ def available_checks(graph_type):
 			modules[file[:-5]] = checks
 
 	return modules
+
+def convert_feedback(check, data, feedback):
+
+	# if the check specifies simple feedback, just return the feedback directly
+	if not 'feedback' in data:
+		return feedback
+
+	# else replace each feedback field in the template string
+	template = data['feedback']['default']
+	if 'feedback' in check:
+		template = check['feedback']
+
+	for field in data['feedback']['fields']:
+		if field in feedback:
+			template = template.replace('[[' + field + ']]', str(feedback[field]))
+
+	return template
 
