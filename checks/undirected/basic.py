@@ -84,7 +84,12 @@ def no_cycles(student_answer, highlighted):
     else:
         onlyHighlighted = False
 
+    #trivially a graph with no edges has no cycles
+    if (len(student_answer.es)==0):
+        return {'correct': True}
+
     tree_copy = student_answer.copy()
+
     if onlyHighlighted:
         tree_copy.es.select(highlighted=False).delete()
         span_tree = tree_copy.spanning_tree()
