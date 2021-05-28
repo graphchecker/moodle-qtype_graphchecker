@@ -4,7 +4,7 @@ import igraph
 from utilities import filter_orig_name
 from treeUtilities import *
 
-def BinaryTree(student_answer, downwards):
+def binaryTree(student_answer, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
@@ -33,7 +33,7 @@ def BinaryTree(student_answer, downwards):
     return {'correct': True }
 
 #BROKEN
-def BinarySearchTree(student_answer, downwards):
+def binarySearchTree(student_answer, downwards):
     bTree = BinaryTree(student_answer, downwards)
     if not bTree['correct']:
         return bTree
@@ -54,7 +54,7 @@ def BinarySearchTree(student_answer, downwards):
     else:
         return {'correct': True}
 
-def NodeDepth(student_answer, label, depth, downwards):
+def nodeDepth(student_answer, label, depth, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
@@ -104,7 +104,7 @@ def traverse(node, labels, downwards):
         labels = traverse(right, labels, downwards)
     return labels
 
-def InOrderTraversal(student_answer, labels, downwards):
+def inOrderTraversal(student_answer, labels, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":
@@ -130,7 +130,7 @@ def InOrderTraversal(student_answer, labels, downwards):
         
     return {'correct': True}
 
-def InLeaf(student_answer, labels, downwards):
+def inLeaf(student_answer, labels, downwards):
     if downwards == "top":
         down = True
     elif downwards == "bottom":

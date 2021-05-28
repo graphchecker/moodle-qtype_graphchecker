@@ -4,14 +4,14 @@ import igraph
 from utilities import filter_orig_name
 from treeUtilities import *
 
-def MaxHeap_structure(student_answer):
+def maxheap_structure(student_answer):
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout
 
     return check_heap_structure(student_answer, lambda a,b : a < b, "smaller")
     
-def MinHeap_structure(student_answer):
+def minheap_structure(student_answer):
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout

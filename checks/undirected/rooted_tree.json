@@ -1,7 +1,7 @@
 {
     "name": "Binary tree properties",
     "checks": {
-        "NodeDepth": {
+        "nodeDepth": {
             "name": "Vertex depth",
             "description": "Checks if the vertex with the given unique label is at the given depth.",
             "params": [
@@ -24,7 +24,7 @@
                     }
             ]
         },
-        "BinaryTree": {
+        "binaryTree": {
             "name": "Binary tree",
             "description": "Checks if the given graph is a binary tree.",
             "params": [
@@ -37,7 +37,7 @@
                 }
             ]
         },
-        "BinarySearchTree": {
+        "binarySearchTree": {
             "name": "Binary search tree.",
             "description": "Checks if the given graph is a valid binary <i>search</i> tree.",
             "params": [
@@ -50,7 +50,7 @@
                 }
             ]
         },
-        "InOrderTraversal": {
+        "inOrderTraversal": {
             "name": "In-order traversal",
             "description": "Checks if an in-order traversal gives the required order.",
             "params": [
@@ -69,7 +69,7 @@
                 }
             ]
         },
-        "InLeaf": {
+        "inLeaf": {
             "name": "Elements in leaves",
             "description": "Checks if the specified elements are in leaves of the tree.",
             "params": [

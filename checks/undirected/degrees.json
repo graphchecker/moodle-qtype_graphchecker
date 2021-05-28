@@ -1,17 +1,6 @@
 {
     "name": "Degree properties",
     "checks": {
-        "vertex_degree_sequence": {
-            "name": "Degree sequence",
-            "description": "Checks if the graph has the given degree sequence (comma separated, e.g. <i>1,2,2,3</i>).",
-            "params": [
-                {
-                    "param": "degree_sequence",
-                    "name": "Expected sequence",
-                    "type": "string"
-                }
-            ]
-        },
         "number_vertices_of_degree": {
             "name": "Count vertices of given degree",
             "description": "Checks if there are a given number of vertices in the graph with the given degree.",
@@ -29,6 +18,17 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                }
+            ]
+        },
+        "vertex_degree_sequence": {
+            "name": "Degree sequence",
+            "description": "Checks if the graph has the given degree sequence (comma separated, e.g. <i>1,2,2,3</i>).",
+            "params": [
+                {
+                    "param": "degree_sequence",
+                    "name": "Expected sequence",
+                    "type": "string"
                 }
             ]
         },
