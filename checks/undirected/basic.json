@@ -35,7 +35,7 @@
                     "type" : "graph"
                 }
             ]
-        },                    
+        },
         "same_highlights": {
             "name": "Match highlighting",
             "description": "Checks if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
@@ -100,7 +100,11 @@
                     "options": ["all vertices", "only highlighted vertices"],
                     "default": "all vertices"
                 }
-            ]
+            ],
+            "feedback": {
+                "fields": ["actual", "expected"],
+                "default": "Your answer had [[actual]] vertices; [[expected]] expected"
+            }
         }
     }
 }

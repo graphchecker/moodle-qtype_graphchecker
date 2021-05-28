@@ -40,9 +40,17 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         // given as the first parameter to the given UI controller.
         function setUi($textArea, uiName) {
 
+            let uiWrapper = $textArea.data('current-ui-wrapper');
+
+            if (uiName === "text") {
+                if (uiWrapper) {
+                    uiWrapper.stop();
+                }
+                return;
+            }
+
             // if the right UI controller is not yet present, create it
             // otherwise, just reload
-            let uiWrapper = $textArea.data('current-ui-wrapper');
             if (!uiWrapper || uiWrapper.uiname !== uiName) {
                 uiWrapper = new ui.InterfaceWrapper(uiName, $textArea.attr('id'));
 
@@ -56,16 +64,22 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         }
 
         // Set the correct Ui controller on both the sample answer and the answer preload.
-        function setUis() {
-            setUi($sampleAnswerField, 'graph');  // TODO change this into whatever UI the question wants
-            setUi($preloadField, 'graph');
+        function setUis(pluginName) {
+            setUi($sampleAnswerField, pluginName);
+            setUi($preloadField, pluginName);
             setUi($checksField, 'checks');
         }
 
         function stopUis() {
-            $sampleAnswerField.data('current-ui-wrapper').stop();
-            $preloadField.data('current-ui-wrapper').stop();
-            $checksField.data('current-ui-wrapper').stop();
+            if ($sampleAnswerField.data('current-ui-wrapper')) {
+                $sampleAnswerField.data('current-ui-wrapper').stop();
+            }
+            if ($preloadField.data('current-ui-wrapper')) {
+                $preloadField.data('current-ui-wrapper').stop();
+            }
+            if ($checksField.data('current-ui-wrapper')) {
+                $checksField.data('current-ui-wrapper').stop();
+            }
         }
 
         function updateUis() {
@@ -77,7 +91,6 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 },
                 function(data) {
                     let params = data['ui_params'];
-                    params['type'] = type;
                     params['highlight_vertices'] = true;
                     params['highlight_edges'] = true;
                     params['highlight_edges'] = true;
@@ -93,7 +106,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
                     $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
 
-                    setUis();
+                    setUis(data['ui_plugin']);
                 }
             ).fail(function() {
                 window.alert('Could not read answer type data. ' +

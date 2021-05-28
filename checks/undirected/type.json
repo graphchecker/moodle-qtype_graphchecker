@@ -4,6 +4,7 @@
     "ui_params": {
         "type": "undirected"
     },
+    "helper_python_modules": ["utilities", "treeUtilities"],
     "python_modules": ["igraph"]
 }
 

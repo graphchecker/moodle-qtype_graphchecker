@@ -432,9 +432,15 @@ body#page-question-type-graphchecker .tests-ui .grade-container:last-child {
 }
 
 body#page-question-type-graphchecker .tests-ui .module-container {
-    background-color: #f0f0f0;
-    border-bottom: 1px solid darkgray;
     padding: 6px 8px;
+    border-bottom: 1px solid darkgray;
+    background-color: #f0f0f0;
+}
+body#page-question-type-graphchecker .tests-ui .module-container:last-child {
+    border-bottom: none;
+}
+body#page-question-type-graphchecker .tests-ui .module-container summary {
+    padding: 3px 0px;
 }
 
 /* definitions for button styling taken from atto for consistency */
@@ -500,6 +506,12 @@ body#page-question-type-graphchecker .tests-ui .button .icon {
 }
 
 body#page-question-type-graphchecker .tests-ui .test-name {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+body#page-question-type-graphchecker .tests-ui .test-used-check {
+    float: right;
     margin-left: 10px;
     font-weight: bold;
 }
@@ -573,6 +585,15 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     font-size: 18px;
 }
 
+.dialog.feedback-dialog .dialog-body label {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.dialog-body label .muted {
+    color: #555;
+}
+
 body#page-question-type-graphchecker.unscrollable {
     overflow-y: hidden;
 }
@@ -603,17 +624,17 @@ li.bulktest.graphchecker.context.quiz {
     padding: 0 3px;
 }
 
-.graph_ui_container_div div#toolbar_part_left {
+.graph_ui_container_div div.toolbar_part.left {
     border-right: 1px solid DarkGray;
     flex-stretch: 0;
 }
 
-.graph_ui_container_div div#toolbar_part_right {
+.graph_ui_container_div div.toolbar_part.right {
     border-left: 1px solid DarkGray;
     flex-stretch: 0;
 }
 
-.graph_ui_container_div div#toolbar_part_middle {
+.graph_ui_container_div div.toolbar_part.middle {
     flex-stretch: 1;
     display: inline-flex;
     flex-wrap: wrap;
@@ -632,6 +653,7 @@ li.bulktest.graphchecker.context.quiz {
 .graph_ui_container_div div.toolbar_field label.checkbox_label {
     display: inline-block;
     position: relative;
+    margin-left: 20px;
     margin-right: 10px;
     margin-bottom: 0;
     color: black;

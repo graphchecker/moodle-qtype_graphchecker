@@ -78,6 +78,12 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             });
             check['arguments'] = args;
         }
+
+        const feedback = $container.attr('data-feedback');
+        if (feedback !== undefined) {
+            check['feedback'] = feedback;
+        }
+
         return check;
     };
 
@@ -156,13 +162,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         for (let moduleName in this.modules) {
             if (this.modules.hasOwnProperty(moduleName)) {
                 let module = this.modules[moduleName];
-                this.createModuleContainer(moduleName, module)
+                let $moduleContainer = this.createModuleContainer(moduleName, module)
                     .appendTo($result);
                 let checks = module['checks'];
                 for (let checkName in checks) {
-                    if (checks.hasOwnProperty(checkName)) {
+                    if (checks.hasOwnProperty(checkName) &&
+                            !checks[checkName]['deprecated']) {
                         this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
-                            .appendTo($result);
+                            .appendTo($moduleContainer);
                     }
                 }
             }
@@ -204,6 +211,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .attr('data-module', module)
             .attr('data-method', method);
 
+        if (check.hasOwnProperty('feedback')) {
+            $container.attr('data-feedback', check['feedback']);
+        }
+
         let $header = $('<div/>')
             .addClass('test-header')
             .appendTo($container);
@@ -238,6 +249,15 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('button-group float-right')
             .appendTo($header);
 
+        if (checkInfo) {
+            if (checkInfo['feedback']) {
+                this.createButton('fa-comments')
+                    .attr('title', 'Edit feedback settings')
+                    .on('click', this.showFeedbackDialog.bind(this))
+                    .appendTo($rightButtonGroup);
+            }
+        }
+
         this.createButton('fa-trash')
             .attr('title', 'Remove this check from the list')
             .on('click', this.removeCheck.bind(this))
@@ -246,6 +266,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         if (checkInfo) {
             if (checkInfo['params']) {
                 this.createArgsContainer(checkInfo, check)
+                    .appendTo($container);
+            }
+            if (checkInfo['deprecated']) {
+                $('<div/>')
+                    .html('This check is deprecated. It will still work, but ' +
+                        'is not available in the Add check list anymore.')
+                    .addClass('invalid-feedback')
+                    .css('display', 'block')
                     .appendTo($container);
             }
         } else {
@@ -464,10 +492,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
      * @param module The name of the module.
      */
     ChecksUi.prototype.createModuleContainer = function(module) {
-        let $container = $('<div/>')
+        let $container = $('<details/>')
             .addClass('module-container');
 
-        let $header = $('<div/>')
+        let $header = $('<summary/>')
             .addClass('module-header')
             .appendTo($container);
 
@@ -533,6 +561,94 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo($('.active-tests-list'))
             .hide()
             .slideDown();
+
+        return false;
+    };
+
+    ChecksUi.prototype.showFeedbackDialog = function(e) {
+        this.$backdrop.css('display', 'block')
+            .addClass('visible');
+        $('body').addClass('unscrollable');
+
+        const $checkContainer = $(e.target).closest('.test-container');
+        const module = $checkContainer.attr('data-module');
+        const method = $checkContainer.attr('data-method');
+        const checkInfo = this.modules[module]['checks'][method];
+        const feedback = $checkContainer.attr('data-feedback');
+
+        const $body = $('<div/>');
+
+        $('<p/>').html('If the student answer fails the <b>' +
+            checkInfo['name'] + '</b> check, give:')
+            .appendTo($body);
+
+        const $defaultFeedbackRadio = $('<input/>')
+            .attr('id', 'default-feedback-radio')
+            .attr('name', 'feedback')
+            .attr('type', 'radio');
+        $('<p/>').append($defaultFeedbackRadio)
+            .append(' ')
+            .append($('<label/>').attr('for', 'default-feedback-radio')
+                .text('Default feedback')
+                .append($('<br/>'))
+                .append($('<span/>').addClass('muted').text(checkInfo['feedback']['default']))
+            )
+            .appendTo($body);
+        if (feedback === undefined) {
+            $defaultFeedbackRadio.prop('checked', true);
+        }
+
+        const availableFieldsText = checkInfo['feedback']['fields']
+            .map(s => '[[' + s + ']]').join(', ');
+
+        const $customFeedbackRadio = $('<input/>')
+            .attr('id', 'custom-feedback-radio')
+            .attr('name', 'feedback')
+            .attr('type', 'radio');
+        const $customFeedbackField = $('<input/>')
+            .attr('id', 'custom-feedback-field');
+        $('<p/>').append($customFeedbackRadio)
+            .append(' ')
+            .append($('<label/>').attr('for', 'custom-feedback-radio')
+                .text('Custom feedback')
+                .append($('<br/>'))
+                .append($customFeedbackField)
+                .append($('<br/>'))
+                .append($('<span/>').addClass('muted').text('Available fields: ' + availableFieldsText))
+            )
+            .appendTo($body);
+        if (feedback !== undefined && feedback !== '') {
+            $customFeedbackRadio.prop('checked', true);
+            $customFeedbackField.val(feedback);
+        }
+
+        const $noFeedbackRadio = $('<input/>')
+            .attr('id', 'no-feedback-radio')
+            .attr('name', 'feedback')
+            .attr('type', 'radio');
+        $('<p/>').append($noFeedbackRadio)
+            .append(' ')
+            .append($('<label/>').attr('for', 'no-feedback-radio').text('No feedback'))
+            .appendTo($body);
+        if (feedback === '') {
+            $noFeedbackRadio.prop('checked', true);
+        }
+
+        const $dialog = this.createDialog('Edit feedback settings', $body, 'OK')
+            .addClass('feedback-dialog')
+            .appendTo(this.$backdrop);
+
+        $dialog.find('.btn.btn-primary').on('click', function() {
+            if ($noFeedbackRadio.prop('checked')) {
+                $checkContainer.attr('data-feedback', '');
+            } else if ($defaultFeedbackRadio.prop('checked')) {
+                $checkContainer.removeAttr('data-feedback');
+            } else if ($customFeedbackRadio.prop('checked')) {
+                $checkContainer.attr('data-feedback', $customFeedbackField.val());
+            }
+            this.hideDialogs();
+            return false;
+        }.bind(this));
 
         return false;
     };
@@ -627,6 +743,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('test-name')
             .appendTo($header);
 
+        let used = this.hasCheck(module, method);
+        if (used) {
+            $('<span/>')
+                .html('✓')
+                .addClass('test-used-check')
+                .appendTo($header);
+        }
+
         if (check['description']) {
             //let $helpButton = this.createHelpButton(check['description'])
             //    .appendTo($header);
@@ -637,6 +761,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         }
 
         return $container;
+    };
+
+    ChecksUi.prototype.hasCheck = function(module, method) {
+        let $containers = this.$checksPanel.find('.test-container');
+        let used = false;
+        let self = this;
+        $containers.each(function() {
+            let json = self.checkContainerToJson($(this));
+            if (json['module'] === module && json['method'] === method) {
+                used = true;
+            }
+        });
+        return used;
     };
 
     ChecksUi.prototype.createDialog = function(title, content, buttonText) {

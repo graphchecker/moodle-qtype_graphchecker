@@ -8,9 +8,17 @@ root_dir = os.getcwd()
 def run(graph_type, graph, checks):
 	preprocess = importlib.import_module('preprocess')
 
-	type_file = os.path.join(root_dir, graph_type, 'type.json')
-	with open(type_file) as f:
-		type_info = json.load(f)
+	# search either in ./type.json (on the server)
+	# or in ./<graph_type>/type.json (on the tester)
+	type_file = os.path.join(root_dir, 'type.json')
+	try:
+		with open(type_file) as f:
+			type_info = json.load(f)
+	except FileNotFoundError:
+		type_file = os.path.join(root_dir, graph_type, 'type.json')
+		with open(type_file) as f:
+			type_info = json.load(f)
+
 	if 'python_modules' in type_info:
 		for module in type_info['python_modules']:
 			globals()[module] = importlib.import_module(module)
@@ -22,7 +30,7 @@ def run(graph_type, graph, checks):
 		}
 
 	try:
-		graph = preprocess.preprocess(json.loads(graph))
+		graph = preprocess.preprocess(graph)
 	except Exception as e:
 		return {
 			'type': 'preprocess_fail',
@@ -48,12 +56,15 @@ def run(graph_type, graph, checks):
 			try:
 				check_module = importlib.import_module(check['module'])
 				check_method = getattr(check_module, check['method'])
-				argument = convert_arguments(check['arguments'], check_data[check['module']]['checks'][check['method']], preprocess)
+				data = check_data[check['module']]['checks'][check['method']]
+				argument = convert_arguments(check['arguments'], data, preprocess)
 				result = check_method(graph, **argument)
 				result['module'] = check['module']
 				result['method'] = check['method']
 				if not result['correct']:
 					correct = False
+				if 'feedback' in result:
+					result['feedback'] = convert_feedback(check, data, result['feedback'])
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
@@ -90,7 +101,7 @@ def convert_argument(name, value, check, preprocess):
 			values = values[0].split(',')
 		return values
 	elif param_type == 'graph':
-		return preprocess.preprocess(json.loads(value))
+		return preprocess.preprocess(value)
 	else:
 		return value
 
@@ -114,4 +125,21 @@ def available_checks(graph_type):
 			modules[file[:-5]] = checks
 
 	return modules
+
+def convert_feedback(check, data, feedback):
+
+	# if the check specifies simple feedback, just return the feedback directly
+	if not 'feedback' in data:
+		return feedback
+
+	# else replace each feedback field in the template string
+	template = data['feedback']['default']
+	if 'feedback' in check:
+		template = check['feedback']
+
+	for field in data['feedback']['fields']:
+		if field in feedback:
+			template = template.replace('[[' + field + ']]', str(feedback[field]))
+
+	return template
 
