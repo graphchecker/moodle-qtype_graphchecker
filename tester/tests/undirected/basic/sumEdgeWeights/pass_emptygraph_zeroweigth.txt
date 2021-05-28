@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"basic","method":"sumEdgeWeights","arguments":{"expected":"0","highlighted":"all edges"}}
+pass
