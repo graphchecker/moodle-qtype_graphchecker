@@ -115,6 +115,15 @@
 
 define(['jquery'], function($) {
 
+    /**
+     * Enum: InterfaceElement
+     * Defines a set of choices regarding the names of interface elements
+     */
+    InterfaceWrapper.prototype.InterfaceElement = Object.freeze({
+        GRAPH: 'graph',
+        CHECKS: 'checks',
+    });
+
     function InterfaceWrapper(uiname, textareaId) {
         // Constructor for a new user interface.
         // uiname is the name of the interface element (e.g. ace, graph, etc)
@@ -134,8 +143,7 @@ define(['jquery'], function($) {
         var params,
             t = this; // For use by embedded functions.
 
-        this.GUTTER = 0;  // Size of gutter at base of wrapper Node (pixels)
-        this.MIN_WRAPPER_HEIGHT = 300;
+        this.MIN_WRAPPER_HEIGHT = 350;
 
         this.taId = textareaId;
         this.loadFailId = textareaId + '_loadfailerr';
@@ -159,7 +167,7 @@ define(['jquery'], function($) {
         this.wrapperNode.hide();
         this.wrapperNode.css({
             width: "100%",
-            minHeight: this.MIN_WRAPPER_HEIGHT,
+            minHeight: this.MIN_WRAPPER_HEIGHT
         });
 
         // Record a reference to this wrapper in the text area's data attribute
@@ -245,11 +253,22 @@ define(['jquery'], function($) {
             this.uiInstance = null;
         } else {
             this.isLoading = true;
-            require(['qtype_graphchecker/ui_' + this.uiname],
+
+            // Find the correct path to the referenced file
+            let partialFilePath;
+            switch(this.uiname) {
+                case this.InterfaceElement.GRAPH:
+                    partialFilePath = 'graph_checker/ui_';
+                    break;
+                case this.InterfaceElement.CHECKS:
+                    partialFilePath = 'ui_';
+                    break;
+            }
+            require(['qtype_graphchecker/' + partialFilePath + this.uiname],
                 function(ui) {
                     var uiInstance,loadFailDiv, jqLoadFailDiv, h, w;
 
-                    h = t.wrapperNode.innerHeight() - t.GUTTER;
+                    h = t.wrapperNode.innerHeight();
                     w = t.wrapperNode.innerWidth();
                     uiInstance = new ui.Constructor(t.taId, t, w, h, params);
                     if (uiInstance.failed()) {
@@ -260,7 +279,7 @@ define(['jquery'], function($) {
                         uiInstance.destroy();
                         t.uiInstance = null;
                         t.textArea.addClass('uiloadfailed');
-                        loadFailDiv = '<div id="' + t.loadFailId + '"class="uiloadfailed"></div>';
+                        loadFailDiv = '<div id="' + t.loadFailId + '" class="uiloadfailed"></div>';
                         jqLoadFailDiv = $(loadFailDiv);
                         jqLoadFailDiv.insertBefore(t.textArea);
                         setLoadFailMessage(uiInstance.failMessage(), jqLoadFailDiv);  // Insert error by AJAX
@@ -279,6 +298,7 @@ define(['jquery'], function($) {
                                 resize: 'vertical',
                                 overflow: 'hidden',
                                 minHeight: h,
+                                height: h,
                                 maxWidth: '900px',
                                 border: '1px solid darkgrey',
                                 backgroundColor: 'white'
@@ -342,7 +362,7 @@ define(['jquery'], function($) {
             if (h != this.hLast || w != this.wLast) {
                 xLeft = this.wrapperNode.offset().left;
                 maxWidth = $(window).innerWidth() - xLeft - SIZE_HACK;
-                hAdjusted = h - this.GUTTER;
+                hAdjusted = h;
                 wAdjusted = Math.min(maxWidth, w);
                 this.uiInstance.resize(wAdjusted, hAdjusted);
                 this.hLast = this.wrapperNode.innerHeight();

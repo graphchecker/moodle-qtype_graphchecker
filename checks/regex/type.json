@@ -1,0 +1,7 @@
+{
+    "name": "Regular expression",
+    "ui_plugin": "text",
+    "ui_params": {},
+    "python_modules": ["automata"]
+}
+

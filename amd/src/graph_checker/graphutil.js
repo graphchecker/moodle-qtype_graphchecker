@@ -44,7 +44,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(function() {
+define(['qtype_graphchecker/graph_checker/globals'],
+    function(globals) {
 
     function Util() {
         // Constructor for the Util class.
@@ -97,10 +98,8 @@ define(function() {
     // An enum for defining the type of edits that can be set to allowed or disallowed
     Util.prototype.Edit = Object.freeze({
         MOVE: 'move',
-        ADD_VERTEX: 'add_vertex',
-        DELETE_VERTEX: 'delete_vertex',
-        ADD_EDGE: 'add_edge',
-        DELETE_EDGE: 'delete_edge',
+        EDIT_VERTEX: 'edit_vertex',
+        EDIT_EDGE: 'edit_edge',
         VERTEX_LABELS: 'vertex_labels',
         EDGE_LABELS: 'edge_labels',
         VERTEX_COLORS: 'vertex_colors',
@@ -149,14 +148,14 @@ define(function() {
 
     Util.prototype.convertLatexShortcuts = function(text) {
         // Html greek characters.
-        for(var i = 0; i < this.greekLetterNames.length; i++) {
-            var name = this.greekLetterNames[i];
+        for(let i = 0; i < this.greekLetterNames.length; i++) {
+            let name = this.greekLetterNames[i];
             text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(913 + i + (i > 16)));
             text = text.replace(new RegExp('\\\\' + name.toLowerCase(), 'g'), String.fromCharCode(945 + i + (i > 16)));
         }
 
         // Subscripts.
-        for(var i = 0; i < 10; i++) {
+        for(let i = 0; i < 10; i++) {
             text = text.replace(new RegExp('_' + i, 'g'), String.fromCharCode(8320 + i));
         }
         text = text.replace(new RegExp('_a', 'g'), String.fromCharCode(8336));
@@ -166,8 +165,8 @@ define(function() {
     Util.prototype.drawArrow = function(c, x, y, angle) {
         // Draw an arrow head on the graphics context c at (x, y) with given angle.
 
-        var dx = Math.cos(angle);
-        var dy = Math.sin(angle);
+        let dx = Math.cos(angle);
+        let dy = Math.sin(angle);
         c.beginPath();
         c.moveTo(x, y);
         c.lineTo(x - 8 * dx + 5 * dy, y - 8 * dy - 5 * dx);
@@ -182,10 +181,10 @@ define(function() {
 
     Util.prototype.circleFromThreePoints = function(x1, y1, x2, y2, x3, y3) {
         // Return {x, y, radius} of circle through (x1, y1), (x2, y2), (x3, y3).
-        var a = this.det(x1, y1, 1, x2, y2, 1, x3, y3, 1);
-        var bx = -this.det(x1 * x1 + y1 * y1, y1, 1, x2 * x2 + y2 * y2, y2, 1, x3 * x3 + y3 * y3, y3, 1);
-        var by = this.det(x1 * x1 + y1 * y1, x1, 1, x2 * x2 + y2 * y2, x2, 1, x3 * x3 + y3 * y3, x3, 1);
-        var c = -this.det(x1 * x1 + y1 * y1, x1, y1, x2 * x2 + y2 * y2, x2, y2, x3 * x3 + y3 * y3, x3, y3);
+        let a = this.det(x1, y1, 1, x2, y2, 1, x3, y3, 1);
+        let bx = -this.det(x1 * x1 + y1 * y1, y1, 1, x2 * x2 + y2 * y2, y2, 1, x3 * x3 + y3 * y3, y3, 1);
+        let by = this.det(x1 * x1 + y1 * y1, x1, 1, x2 * x2 + y2 * y2, x2, 1, x3 * x3 + y3 * y3, x3, 1);
+        let c = -this.det(x1 * x1 + y1 * y1, x1, y1, x2 * x2 + y2 * y2, x2, y2, x3 * x3 + y3 * y3, x3, y3);
         return {
             'x': -bx / (2 * a),
             'y': -by / (2 * a),
@@ -201,6 +200,11 @@ define(function() {
     Util.prototype.isInside = function(pos, rect) {
         // True iff given point pos is inside rectangle.
         return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
+    };
+
+    Util.prototype.modulo = function (x, y) {
+        // A modulo function which also works for negative numbers. Similar to: x % y
+        return ((x % y) + y) % y;
     };
 
     Util.prototype.crossBrowserKey = function(e) {
@@ -223,103 +227,6 @@ define(function() {
         return (Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x) + Math.PI) % (2*Math.PI);
     };
 
-    Util.prototype.getAnglesOfIncidentLinks = function(links, vertex) {
-        let angles = [];
-        for (let i = 0; i < links.length; i++) {
-            let nodeA = links[i].nodeA;
-            let nodeB = links[i].nodeB;
-            //TODO: rekening houden met self links, zit er op dit moment nog niet in
-            if (nodeA === vertex || nodeB === vertex) {
-                // Calculate the angle (in radians) of the point of the link touching the selected vertex's
-                // circle with the selected node itself
-                angles.push(links[i].calculateAngle(vertex));
-            }
-        }
-        return angles;
-    };
-
-    Util.prototype.getAnglesStartLinkFSMOneIncident = function(oppositeAngle, divisibleRange, topLeft, nrDivisions) {
-        // It is to be noted that this function expects an even number of divisions
-        if (nrDivisions % 2 !== 0) {
-            throw 'nrDivisions in Util.prototype.getAnglesBasedOnDivision() is not an even number.';
-        }
-        let angles = [];
-        let range = (nrDivisions / 2) - 1;
-        for (let i = -range; i <= range; i++) {
-            let angle = (oppositeAngle + (i / nrDivisions) * divisibleRange) % (2*Math.PI);
-            if (angle < 0) {
-                angle += 2*Math.PI;
-            }
-            angles.push(angle);
-        }
-        return angles;
-    };
-
-    Util.prototype.getAnglesStartLinkFSMMultipleIncident = function(angles, topLeft, nrDivisions) {
-        // Create, for each space between two incident links (occurring in the angles array), all possible angles
-        // based on the division
-        let candidateAngles = [];
-        for (let i = 0; i < angles.length; i++) {
-            let startAngle = angles[i];
-            let endAngle = angles[i+1];
-            if (i === angles.length-1) {
-                // Special case for the last value in the array
-                endAngle = angles[0] + 2*Math.PI;
-            }
-
-            let averageAngle = (startAngle + endAngle) / 2.0;
-            let divisibleRange = Math.abs(startAngle - endAngle);
-            let foundAngles = this.getAnglesStartLinkFSMOneIncident(averageAngle, divisibleRange, topLeft, nrDivisions);
-            for (let j = 0; j < foundAngles.length; j++) {
-                candidateAngles.push(foundAngles[j]);
-            }
-        }
-        return candidateAngles;
-    };
-
-    Util.prototype.filterOutCloseAngles = function(candidateAngles, fixedAngles, proximityPercentage) {
-        // Filters out the angles in the possibleAngles array that are too close to angles in the fixedAngles array
-        // An angle is deemed to close if it is withing proximityPercentage% of 2*Math.PI of another angle
-        let validAngles = [];
-        for (let i = 0; i < candidateAngles.length; i++) {
-            let isValid = true;
-            for (let j = 0; j < fixedAngles.length; j++) {
-                let proximity = Math.abs(fixedAngles[j] - candidateAngles[i]);
-                if (proximity < proximityPercentage * 2*Math.PI) {
-                    isValid = false;
-                    break;
-                }
-            }
-
-            if (isValid) {
-                validAngles.push(candidateAngles[i]);
-            }
-        }
-
-        return validAngles;
-    };
-
-    Util.prototype.getAngleMaximumMinimumProximity = function(candidateAngles, angles) {
-        let maximumSpace = 0;
-        let candidateAngle = candidateAngles[0];
-        for (let i = 0; i < candidateAngles.length; i++) {
-            let minimumProximity = Number.MAX_SAFE_INTEGER;
-            for (let j = 0; j < angles.length; j++) {
-                let proximity = Math.abs(angles[j] - candidateAngles[i]);
-                if (proximity < minimumProximity) {
-                    minimumProximity = proximity;
-                }
-            }
-
-            if (minimumProximity > maximumSpace) {
-                maximumSpace = minimumProximity;
-                candidateAngle = candidateAngles[i];
-            }
-        }
-
-        return candidateAngle;
-    };
-
     Util.prototype.quadraticFormula = function(a, b, c) {
         let D = Math.pow(b, 2) - 4*a*c;
 
@@ -330,7 +237,7 @@ define(function() {
 
     // Function used to calculate information about the link. I.e. it calculates both the start and end point of the
     // link, and the start and end angles.
-    // This code was originally written in the function graphelements.getEndPointsAndCircle()
+    // This code was originally written in the function graph_elements.getEndPointsAndCircle()
     Util.prototype.calculateLinkInfo = function(nodeA, nodeB, circle, reverseScale, distance) {
         let rRatio = reverseScale * distance / circle.radius;
         let startAngle = Math.atan2(nodeA.y - circle.y, nodeA.x - circle.x) - rRatio;
@@ -387,6 +294,85 @@ define(function() {
         }
 
         return true;
+    };
+
+    /**
+     * Function: snapNode //TODO: refactor this class, Util, into multiple (two?) separate classes
+     * Snaps the input (i.e. currently selected) node to any other nodes not present in the selection. This selection
+     * happens either horizontally or vertically
+     *
+     * Parameters:
+     *    node - A node which is currently selected
+     *    notSelectedNodes - All nodes which are currently not selected
+     *    snapXDirection - Whether to perform snapping in the X direction or not
+     *    snapYDirection - Whether to perform snapping in the Y direction or not
+     */
+    Util.prototype.snapNode = function(node, notSelectedNodes, snapXDirection, snapYDirection) {
+        for (let i = 0; i < notSelectedNodes.length; i++) {
+            if (notSelectedNodes[i] === node) {
+                continue;
+            }
+
+            if (Math.abs(node.x - notSelectedNodes[i].x) < globals.SNAP_TO_PADDING && snapXDirection) {
+                node.x = notSelectedNodes[i].x;
+            }
+
+            if (Math.abs(node.y - notSelectedNodes[i].y) < globals.SNAP_TO_PADDING && snapYDirection) {
+                node.y = notSelectedNodes[i].y;
+            }
+        }
+    };
+
+    /**
+     * Function: isInt
+     *
+     * Parameters:
+     *    int - The integer to be checked
+     *
+     * Returns:
+     *    Whether or not the 'int' object is defined and is a integer
+     */
+    Util.prototype.isInt = function(int) {
+        return int !== undefined && Number.isInteger(int);
+    };
+
+    /**
+     * Function: isNum
+     *
+     * Parameters:
+     *    num - The number to be checked
+     *
+     * Returns:
+     *    Whether or not the 'num' object is defined and is a number
+     */
+    Util.prototype.isNum = function(num) {
+        return num !== undefined && typeof num === 'number';
+    };
+
+    /**
+     * Function: isBool
+     *
+     * Parameters:
+     *    bool - The boolean to be checked
+     *
+     * Returns:
+     *    Whether or not the 'bool' object is defined and is a boolean
+     */
+    Util.prototype.isBool = function(bool) {
+        return bool !== undefined && typeof bool === 'boolean';
+    };
+
+    /**
+     * Function: isStr
+     *
+     * Parameters:
+     *    str - The string to be checked
+     *
+     * Returns:
+     *    Whether or not the 'str' object is defined and is of type string
+     */
+    Util.prototype.isStr = function(str) {
+        return str !== undefined && Object.prototype.toString.call(str) === "[object String]";
     };
 
     return new Util();

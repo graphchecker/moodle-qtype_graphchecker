@@ -229,7 +229,6 @@ class qtype_graphchecker_question extends question_graded_automatically {
     public static function get_ui_params_for_type($type) {
         $types = qtype_graphchecker_util::get_type_data();
         $params = $types[$type]["ui_params"];
-        $params['type'] = $type;
         return $params;
     }
 
@@ -239,8 +238,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
         $params['ignore_locked'] = true;
         $params['save_locked'] = true;
         $params['allow_edits'] = [
-            'move', 'add_vertex', 'add_edge',
-            'delete_vertex', 'delete_edge',
+            'move', 'edit_vertex', 'edit_edge',
             'vertex_labels', 'edge_labels',
             'vertex_colors', 'edge_colors',
             'fsm_flags', 'petri_marking'
@@ -272,14 +270,12 @@ class qtype_graphchecker_question extends question_graded_automatically {
             $params['allow_edits'] = [];
         } else if ($this->allowed_vertex_edits === 'edges') {
             $params['allow_edits'] = [
-                'move', 'add_edge',
-                'delete_edge',
+                'move', 'edit_edge',
                 'fsm_flags', 'petri_marking'
             ];
         } else {  // 'all' or NULL (for old questions)
             $params['allow_edits'] = [
-                'move', 'add_vertex', 'add_edge',
-                'delete_vertex', 'delete_edge',
+                'move', 'edit_vertex', 'edit_edge',
                 'fsm_flags', 'petri_marking'
             ];
         }

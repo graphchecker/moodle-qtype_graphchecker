@@ -49,11 +49,6 @@ class qtype_graphchecker_edit_form extends question_edit_form {
     }
 
 
-    private static function author_edit_keys() {
-        // A list of all the language strings required by authorform.js.
-        return array();
-    }
-
     // Define the GraphChecker question edit form.
     protected function definition() {
         global $PAGE;
@@ -66,16 +61,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
         $this->make_error_div($mform);
 
-        $PAGE->requires->js_call_amd('qtype_graphchecker/textareas', 'setupAllTAs');
-
-        // Define the parameters required by the JS initEditForm amd module.
-        $strings = array();
-        foreach (self::author_edit_keys() as $key) {
-            $strings[$key] = get_string($key, 'qtype_graphchecker');
-        }
-
-        $PAGE->requires->js_call_amd('qtype_graphchecker/authorform', 'initEditForm',
-                array($strings));
+        $PAGE->requires->js_call_amd('qtype_graphchecker/authorform', 'initEditForm');
 
         parent::definition($mform);  // The superclass adds the "General" stuff.
     }

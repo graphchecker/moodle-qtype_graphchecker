@@ -67,11 +67,8 @@ define(['jquery'], function($) {
     // The create function should be called explicitly in order to create the HTML element(s) of the button
     Button.prototype.create = function (addAsFirst) {
         // Create the button, and add an unclickable icon
-        this.id = 'button_' + this.title.split(' ').join('_');
-
         let $button = $('<button/>')
             .attr({
-                "id":       this.id,
                 "class":    'toolbar_button',
                 "type":     "button",
                 "title":    this.title,
@@ -110,8 +107,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Button.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -260,14 +255,11 @@ define(['jquery'], function($) {
 
     NumberInputField.prototype.create = function() {
         // Create the number input field
-        this.id = 'numberinput_' + this.title.split(' ').join('_');
-
         let $number_input = $('<div/>')
             .attr({
                 'class':    'toolbar_field',
             }).append(this.labelText).append($('<input/>')
                 .attr({
-                    'id':       this.id,
                     'class':    'toolbar_numberinput',
                     'type':     'number',
                     'title':    this.title,
@@ -280,8 +272,12 @@ define(['jquery'], function($) {
         // Add the event listener
         $number_input[0].addEventListener('input', (event) => this.handleInteraction(event));
         $number_input[0].addEventListener('keydown', (event) => this.handleInteraction(event));
-        $number_input[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
-        $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
+        if (typeof this.onFocusInFunction !== 'undefined') {
+            $number_input[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
+        }
+        if (typeof this.onFocusOutFunction !== 'undefined') {
+            $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
+        }
         this.object = $number_input;
     };
 
@@ -291,8 +287,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     NumberInputField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -311,15 +305,10 @@ define(['jquery'], function($) {
 
     // The create function should be called explicitly in order to create the HTML element(s) of the checkbox
     Checkbox.prototype.create = function () {
-        this.id = 'checkbox_' + this.text.split(' ').join('_');
+        this.id = 'checkbox_' + this.text.split(' ').join('_') + '_' + this.toolbar.parent.id;
 
         let $checkbox = $('<div/>')
             .addClass('toolbar_field' + ' ' + this.id)
-            .append($('<label/>')
-                .attr('for', this.id)
-                .addClass('checkbox_label')
-                .text(this.text)
-            )
             .append($('<input/>')
                 .attr({
                     'id':       this.id,
@@ -331,6 +320,11 @@ define(['jquery'], function($) {
                 .attr({
                     'class':    'toolbar_checkbox toolbar_checkbox_black',
                 })
+            )
+            .append($('<label/>')
+                .attr('for', this.id)
+                .addClass('checkbox_label')
+                .text(this.text)
             )
             .appendTo(this.parent[0]);
 
@@ -356,8 +350,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Checkbox.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -381,7 +373,6 @@ define(['jquery'], function($) {
 
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
     TextField.prototype.create = function () {
-        this.id = 'textfield_' + this.placeholderText.split(' ').join('_');
         let $textfield = $('<div/>')
             .attr({
                 'class':    'field_label',
@@ -392,7 +383,6 @@ define(['jquery'], function($) {
                 })
                 .append($('<input/>')
                     .attr({
-                        'id':           this.id,
                         'class':        'toolbar_textfield',
                         'type':         'text',
                         'placeholder':  this.placeholderText,
@@ -414,8 +404,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     TextField.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     /***********************************************************************
@@ -559,8 +547,6 @@ define(['jquery'], function($) {
 
     // This function should be called before the object is removed
     Dropdown.prototype.end = function() {
-        // Focus on the toolbar, such that the CTRL-mode switch can work
-        $(this.toolbar.div).focus();
     };
 
     return {
