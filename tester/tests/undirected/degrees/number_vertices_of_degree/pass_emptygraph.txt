@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"degrees","method":"number_vertices_of_degree","arguments":{"number_of_verts":"0","degree":"2"}}
+pass

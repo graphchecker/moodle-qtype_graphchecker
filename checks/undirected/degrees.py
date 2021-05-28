@@ -20,9 +20,15 @@ def number_vertices_of_degree(student_answer, number_of_verts, degree):
 
 def vertex_degree_sequence(student_answer, degree_sequence):
     sequence = degree_sequence.split(",")
-    if len(student_answer.vs) != len(sequence):
+    lengthSeq = len(sequence)
+    
+    #border case where no sequence is given to cover for split returning one empty element
+    if (lengthSeq == 1 and sequence[0] == ''):
+        lengthSeq = 0
+
+    if (len(student_answer.vs) != lengthSeq):
         return {'correct': False,
-                'feedback': 'Number of vertices does not match the expected number of vertices'}
+                'feedback': 'Number of vertices {0}, does not match the expected number of vertices {1}'.format(len(student_answer.vs), lengthSeq)}
     student_degs = []
     for v in student_answer.vs:
         student_degs.append(v.degree())

@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"degrees","method":"vertex_degree_at_most","arguments":{"max_degree":"0"}}
+pass

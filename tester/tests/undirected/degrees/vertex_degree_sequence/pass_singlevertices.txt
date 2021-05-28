@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[{"label":"","position":[281.55080213903744,275.77541575712314],"locked":false,"color":"#ffffff","highlighted":false},{"label":"","position":[495.7219251336898,167.6069371840533],"locked":false,"color":"#ffffff","highlighted":false},{"label":"","position":[601.6042780748663,449.1577393230907],"locked":false,"color":"#ffffff","highlighted":false},{"label":"","position":[271.9251336898396,506.91175001827787],"locked":false,"color":"#ffffff","highlighted":false},{"label":"","position":[113.10160427807486,391.40372862790355],"locked":false,"color":"#ffffff","highlighted":false}],"edges":[]}
+{"type":"check","module":"degrees","method":"vertex_degree_sequence","arguments":{"degree_sequence":"0,0,0,0,0"}}
+pass

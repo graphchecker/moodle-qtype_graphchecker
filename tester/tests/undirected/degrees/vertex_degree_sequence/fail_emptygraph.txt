@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"degrees","method":"vertex_degree_sequence","arguments":{"degree_sequence":"1,1,2,3,3,3"}}
+fail

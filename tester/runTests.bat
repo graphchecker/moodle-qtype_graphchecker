@@ -4,4 +4,7 @@ for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
 cd ..
 cd coloring
 for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
+cd ..
+cd degrees
+for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
 cd ..\..\..
