@@ -11,9 +11,13 @@ def matchesDiagram(student_answer, graph_answer):
     for e in student_answer.es:
         eSource = student_answer.vs[e.source]
         eTarget = student_answer.vs[e.target]
-        fSource = graph_answer.vs.find(name=eSource['name']) 
-        fTarget = graph_answer.vs.find(name=eTarget['name'])
-        #if no edge is present in f between these verties
+        try:
+            fSource = graph_answer.vs.find(name=eSource['name']) 
+            fTarget = graph_answer.vs.find(name=eTarget['name'])
+        except:
+            return {'correct': False,
+                    'feedback': 'Error: graph does not match expected graph. Missing vertex for one of the required labels'}
+        #if no edge is present in f between these vertices
         if (graph_answer.get_eid(fSource, fTarget, directed=False, error=False) < 0):
             return {'correct': False,
                 'feedback': 'Error: graph does not match expected graph. Missing edge.'}
