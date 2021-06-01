@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
+{"type":"check","module":"heaps","method":"minheap_structure","arguments":{}}
+pass
