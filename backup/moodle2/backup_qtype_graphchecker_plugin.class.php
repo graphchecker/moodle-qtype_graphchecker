@@ -17,23 +17,15 @@
 // You should have received a copy of the GNU General Public License
 // along with GraphChecker.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
+ * Provides the information to backup GraphChecker questions.
+ *
  * @package   qtype_graphchecker
  * @copyright TU Eindhoven, The Netherlands
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version  = 2021052900;
-$plugin->requires = 2015051200;
-$plugin->cron = 0;
-$plugin->component = 'qtype_graphchecker';
-$plugin->maturity = MATURITY_BETA;
-$plugin->release = '0.3';
-
-$plugin->dependencies = array(
-    'qbehaviour_adaptive_adapted_for_coderunner' => 2018042800,
-    'qbehaviour_deferredfeedback_graphchecker' => 2020102200
-);
+class backup_qtype_graphchecker_plugin extends backup_qtype_extrafields_plugin {
+}
 
