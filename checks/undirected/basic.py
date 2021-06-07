@@ -39,6 +39,10 @@ def equivalent(student_answer, graph_answer):
             return {'correct': False, 'feedback' : ('Could not find vertex with name \'{0}\' in answer.').format(filter_orig_name(vs_graph[i]))}
         if (vs_stud[i].degree() != vs_graph[i].degree()):
             return {'correct': False, 'feedback' : ('Degree of vertex \'{0}\' does not match expected degree.').format(filter_orig_name(vs_graph[i]))}
+            
+        if (vs_stud[i]['color'] != vs_graph[i]['color']):
+            return {'correct': False, 'feedback' : ('Color of vertex with name \'{0}\' is not correct.').format(filter_orig_name(vs_graph[i]))}
+
         graph_neigh = sorted(vs_graph[i].neighbors(), key = lambda vertex: vertex['name'])
         stud_neigh = sorted(vs_stud[i].neighbors(), key = lambda vertex: vertex['name'])
         for j in range(0,len(graph_neigh)):
@@ -163,4 +167,4 @@ def vertex_count(student_answer, expected, highlighted):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': {'actual': count, 'expected': expected}}
+                'feedback': 'Number of edges does not match expected number'}

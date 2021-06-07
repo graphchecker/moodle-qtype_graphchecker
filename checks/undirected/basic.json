@@ -27,7 +27,7 @@
         },
         "equivalent": {
             "name": "Equivalent",
-            "description": "Check if the graph is equivalent (labels and connectivity) to the given graph.",
+            "description": "Check if the graph is equivalent (labels, connectivity, coloring) to the given graph.",
             "params": [
                 {
                     "param": "graph_answer",

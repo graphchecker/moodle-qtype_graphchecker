@@ -5,6 +5,8 @@ from utilities import filter_orig_name
 from treeUtilities import *
 
 def maxheap_structure(student_answer):
+    if (len(student_answer.vs) == 0):
+        return {'correct': True}
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout
@@ -12,6 +14,8 @@ def maxheap_structure(student_answer):
     return check_heap_structure(student_answer, lambda a,b : a < b, "smaller")
     
 def minheap_structure(student_answer):
+    if (len(student_answer.vs) == 0):
+        return {'correct': True}
     layout = heap_layout(student_answer)
     if not layout['correct']:
         return layout
@@ -24,7 +28,7 @@ def minheap_structure(student_answer):
 def check_heap_structure(student_answer, comparator, textual):
     #for each node, check that the children are smaller or equally large as the parent
     for v in student_answer.vs:
-        split = splitParentChildren(v)
+        split = splitParentChildren(v, True)
         if (split == None):
             return {'correct': False,
                     'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
@@ -40,7 +44,7 @@ def check_heap_structure(student_answer, comparator, textual):
 def heap_layout(student_answer):
     #find the root
     #throw error if there is more than one root, or if a node has multiple parents
-    root = findRoot(student_answer)
+    root = findRoot(student_answer, True)
     
     #check if a problem was encountered
     if (root == None):
@@ -51,7 +55,7 @@ def heap_layout(student_answer):
     noMoreChildren = False
     while len(layer) > 0:
         for v in layer:
-            value = splitParentChildren(v)
+            value = splitParentChildren(v, True)
             if (value == None):
                 return {'correct': False,
                         'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}

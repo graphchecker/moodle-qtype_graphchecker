@@ -51,7 +51,7 @@ for i in range(1, len(sys.argv)):
 		with open(testfile_name) as testfile:
 			lines = [line.strip() for line in testfile if line.strip() != '']
 		run_test(testfile_name, lines)
-	except IsADirectoryError:
+	except (IsADirectoryError, PermissionError):
 		for path in Path(testfile_name).rglob('*.txt'):
 			with open(path) as testfile:
 				lines = [line.strip() for line in testfile if line.strip() != '']

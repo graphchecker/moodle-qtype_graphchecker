@@ -62,17 +62,6 @@
                 }
             ]
         },
-        "same_highlights": {
-            "name": "Match highlighting",
-            "description": "Checks if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
-            "params": [
-                {
-                    "param": "expected",
-                    "name": "Should be",
-                    "type": "graph"
-                }
-            ]
-        },
         "radius": {
             "name": "Radius",
             "description": "Checks if the radius (minimum eccentricity) is equal to the given value.",
@@ -83,6 +72,17 @@
                     "type": "integer",
                     "default": 1,
                     "min": 0
+                }
+            ]
+        },
+        "same_highlights": {
+            "name": "Match highlighting",
+            "description": "Checks if the same set of vertices / edges is highlighted. (Assumes unique vertex labels.)",
+            "params": [
+                {
+                    "param": "expected",
+                    "name": "Should be",
+                    "type": "graph"
                 }
             ]
         },
