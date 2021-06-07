@@ -34,7 +34,7 @@ def binaryTree(student_answer, downwards):
 
 #BROKEN
 def binarySearchTree(student_answer, downwards):
-    bTree = BinaryTree(student_answer, downwards)
+    bTree = binaryTree(student_answer, downwards)
     if not bTree['correct']:
         return bTree
 
@@ -48,7 +48,7 @@ def binarySearchTree(student_answer, downwards):
                     'feedback': "The label {0} is not numerical.".format(filter_orig_name(v))}
                     
     labels.sort()
-    iOrder = InOrderTraversal(student_answer, labels, downwards)
+    iOrder = inOrderTraversal(student_answer, labels, downwards)
     if not iOrder['correct']:
         return {'correct': False, 'feedback': "The elements do not form a sorted order on an in-order traversal"}
     else:
