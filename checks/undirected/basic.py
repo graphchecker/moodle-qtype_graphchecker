@@ -167,4 +167,4 @@ def vertex_count(student_answer, expected, highlighted):
         return {'correct': True}
     else:
         return {'correct': False,
-                'feedback': {'actual': count, 'expected': expected}}
+                'feedback': 'Number of edges does not match expected number'}
