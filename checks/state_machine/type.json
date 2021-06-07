@@ -1,0 +1,8 @@
+{
+    "name": "State machine",
+    "ui_plugin": "graph",
+    "ui_params": {
+        "type": "fsm"
+    }
+}
+
