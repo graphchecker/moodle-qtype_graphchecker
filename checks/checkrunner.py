@@ -99,6 +99,8 @@ def convert_argument(name, value, check, preprocess):
 		values = value.split('\n')
 		if len(values) == 1:
 			values = values[0].split(',')
+		if len(values) == 1:
+			values = values[0].split(' ')
 		return values
 	elif param_type == 'graph':
 		return preprocess.preprocess(value)
