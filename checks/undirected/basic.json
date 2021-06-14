@@ -100,11 +100,7 @@
                     "options": ["all vertices", "only highlighted vertices"],
                     "default": "all vertices"
                 }
-            ],
-            "feedback": {
-                "fields": ["actual", "expected"],
-                "default": "Your answer had [[actual]] vertices; [[expected]] expected"
-            }
+            ]
         }
     }
 }
