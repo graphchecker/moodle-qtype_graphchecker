@@ -16,6 +16,7 @@ if len(sys.argv) < 2:
 	sys.exit(1)
 
 def run_test(name, test_spec):
+	print(name)
 	if len(test_spec) != 3:
 		print('\033[1m\033[91mfail ' + name + '\033[0m')
 		print('    test file invalid')
@@ -31,6 +32,16 @@ def run_test(name, test_spec):
 	if result['type'] == 'preprocess_fail':
 		print('\033[1m\033[91mfail ' + name + '\033[0m')
 		print('    preprocess fail: ' + result['feedback'])
+		return
+
+	if 'error' in result['results'][0]:
+		print('\033[1m\033[91mfail ' + name + '\033[0m')
+		print('    check threw an error:\n' + result['results'][0]['error'])
+		return
+
+	if not 'correct' in result['results'][0]:
+		print('\033[1m\033[91mfail ' + name + '\033[0m')
+		print('    check did not return "correct" attribute: ' + json.dumps(result['results'][0]))
 		return
 
 	if result['results'][0]['correct'] and expected == 'fail':
