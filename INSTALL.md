@@ -7,7 +7,7 @@ We will assume you have a working Jobe server, used to grade submissions. If not
 
 ## Step 1: Installing GraphChecker on the Moodle server
 
-* **Install GraphChecker itself:** Clone this repository to `question/type/graphchecker` in the Moodle directory.
+* **Install GraphChecker itself:** You have two choices. The first option is to install the latest released version of GraphChecker (recommended). To do this, go to our [releases page](https://github.com/graphchecker/moodle-qtype_graphchecker/releases), download `qtype_graphchecker.zip` for the latest release, and unzip it to `question/type` in the Moodle directory. You should now have a directory `question/type/graphchecker` with GraphChecker's files in it. The second option is to install the unreleased development version of GraphChecker straight from this Git repository. If you want to do this, clone this repository to `question/type/graphchecker` in the Moodle directory. Note that development versions can be unstable, so we do not recommend this second option for production servers.
 
 * **Install two dependencies:**
     * If it was not installed yet, install [qbehaviour_adaptive_adapted_for_coderunner](https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner). We need to make a small change to line 51 of `behaviour.php` to allow GraphChecker questions to run with this question behavior as well:
@@ -25,7 +25,7 @@ We will assume you have a working Jobe server, used to grade submissions. If not
 
 ## Step 2: Compile the JavaScript assets
 
-_(to do: we should offer pre-compiled ZIP files so that this step becomes unnecessary)_
+_This step is necessary only if you installed GraphChecker from Git. In case you downloaded and installed a release version in step 1, the compiled JavaScript assets are already present in the archive you downloaded._
 
 GraphChecker uses several JavaScript AMD modules (in `amd/src`) that need to be minified and bundled into the directory `amd/build`. Like with many other Moodle plugins, this is handled by the build runner `grunt`.
 
