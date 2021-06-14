@@ -78,11 +78,18 @@ Here, the second argument `expected` would specify how many vertices the questio
 When a check fails, it is generally desirable to show feedback to the student explaining why their answer is incorrect. GraphChecker allows checks to return one out of two types of feedback:
 
 * *Simple feedback:* the check returns a string, which is shown to the student. The feedback cannot be customized by the question author.
-* *Advanced feedback:* rather than a complete string, the check returns a list of keys. These keys are filled in at runtime into a template string, which is customizable by the question author.
+* *Advanced feedback:* rather than a complete string, the check returns a *feedback key* (such as `"correct"`, `"not a binary tree"` or whatever makes sense for the check). Each feedback key maps to a certain feedback string (this can be edited by the question author). This feedback string can contain placeholders enclosed by double brackets (for example `[[actual]]`), which are filled in by suitable values to be provided by the check.
 
-As an example of advanced feedback, consider our vertex count check. This check could declare a template string such as `Your graph had vertex count [[actual]], but [[expected]] was required`. It should then return a feedback object with keys `actual` and `expected`. This setup offers the question author flexibility, because they could for instance change the template string to `Your graph had vertex count [[actual]]` to avoid giving away the expected vertex count.
+Whether simple or advanced feedback is returned is determined by the check metadata (see below). In the case of advanced feedback, the check metadata is also responsible for defining the default mapping of feedback keys to feedback strings.
 
-Whether simple or advanced feedback is returned is determined by the check metadata (see below). In the case of advanced feedback, the check metadata is also responsible for defining the default template string.
+As an example of advanced feedback, consider our vertex count check. This check could declare two template strings:
+```json
+{
+    "correct": "Correct!",
+    "incorrect": "Your graph had [[actual]] vertices, while it should have [[expected]] vertices."
+}
+```
+The check should then return either `"correct"` or `"incorrect"` as feedback. Additionally, it should return a value for the `actual` placeholder. (Note that it would not be necessary to return a value for `expected`, as check parameters are made available automatically.) This setup offers the question author flexibility, because they could for instance change the template string to `Your graph had vertex count [[actual]]` to avoid giving away the expected vertex count.
 
 
 #### Result object
@@ -90,7 +97,8 @@ Whether simple or advanced feedback is returned is determined by the check metad
 A checker function must return an object that describes the result of the test. This object is a Python dictionary with the following keys.
 
 * `correct` *(boolean)* `True` if the check passed; `False` if the check failed.
-* `feedback` *(string or object, optional)* Feedback to the student as explained above. For a simple feedback question, it is permitted to omit the feedback altogether, in which case GraphChecker will present just the text "Correct!" or "Incorrect!".
+* `feedback` *(string, optional)* Feedback to the student as explained above. For a simple feedback question, it is permitted to omit the feedback altogether, in which case GraphChecker will present just the text "Correct!" or "Incorrect!".
+* Potentially more keys to use as feedback fields.
 
 Disregarding feedback, our vertex count check could for instance look as follows:
 
@@ -140,7 +148,7 @@ Again, each parameter is represented by a JSON object with the following keys:
 * `param` *(string)*: The argument name of the Python method implementing the check.
 * `name` *(string)*: The human-readable name that is shown in the question editor.
 * `type` *(string)*: The expected type.
-* `feedback` *(object, optional)*: If present, the check returns advanced feedback; otherwise it returns simple feedback (see above). For advanced feedback, this object specifies which feedback keys are present (key `fields` *(array of strings)*) and what the default feedback string is (key `default` *(string)*).
+* `feedback` *(object, optional)*: If present, the check returns advanced feedback; otherwise it returns simple feedback (see above). For advanced feedback, this object specifies the feedback values and their default strings.
 * Potentially more keys depending on the `type` (see below).
 
 The following parameter types are supported:
