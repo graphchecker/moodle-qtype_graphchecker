@@ -81,7 +81,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         const feedback = $container.attr('data-feedback');
         if (feedback !== undefined) {
-            check['feedback'] = feedback;
+            check['feedback'] = JSON.parse(feedback);
         }
 
         return check;
@@ -212,7 +212,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .attr('data-method', method);
 
         if (check.hasOwnProperty('feedback')) {
-            $container.attr('data-feedback', check['feedback']);
+            $container.attr('data-feedback', JSON.stringify(check['feedback']));
         }
 
         let $header = $('<div/>')
@@ -574,64 +574,35 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         const module = $checkContainer.attr('data-module');
         const method = $checkContainer.attr('data-method');
         const checkInfo = this.modules[module]['checks'][method];
-        const feedback = $checkContainer.attr('data-feedback');
+        const checkFeedback = checkInfo['feedback'];
+
+        let feedback = null;
+        try {
+            feedback = JSON.parse($checkContainer.attr('data-feedback'));
+        } catch (e) {}
 
         const $body = $('<div/>');
-
-        $('<p/>').html('If the student answer fails the <b>' +
-            checkInfo['name'] + '</b> check, give:')
+        $('<p/>')
+            .html('Use this form to customize which feedback GraphChecker ' +
+                'provides to the student for check <b>' + checkInfo['name'] + '</b>. ' +
+                'Leaving a field empty will show the default feedback shown in gray.')
             .appendTo($body);
 
-        const $defaultFeedbackRadio = $('<input/>')
-            .attr('id', 'default-feedback-radio')
-            .attr('name', 'feedback')
-            .attr('type', 'radio');
-        $('<p/>').append($defaultFeedbackRadio)
-            .append(' ')
-            .append($('<label/>').attr('for', 'default-feedback-radio')
-                .text('Default feedback')
+        for (let feedbackKey in checkFeedback) {
+            const $field = $('<input/>')
+                .addClass('feedback-input')
+                .attr('placeholder', checkFeedback[feedbackKey])
+                .attr('feedback-key', feedbackKey);
+
+            $('<p/>')
+                .html('Feedback if <b>' + feedbackKey + '</b>:')
                 .append($('<br/>'))
-                .append($('<span/>').addClass('muted').text(checkInfo['feedback']['default']))
-            )
-            .appendTo($body);
-        if (feedback === undefined) {
-            $defaultFeedbackRadio.prop('checked', true);
-        }
+                .append($field)
+                .appendTo($body);
 
-        const availableFieldsText = checkInfo['feedback']['fields']
-            .map(s => '[[' + s + ']]').join(', ');
-
-        const $customFeedbackRadio = $('<input/>')
-            .attr('id', 'custom-feedback-radio')
-            .attr('name', 'feedback')
-            .attr('type', 'radio');
-        const $customFeedbackField = $('<input/>')
-            .attr('id', 'custom-feedback-field');
-        $('<p/>').append($customFeedbackRadio)
-            .append(' ')
-            .append($('<label/>').attr('for', 'custom-feedback-radio')
-                .text('Custom feedback')
-                .append($('<br/>'))
-                .append($customFeedbackField)
-                .append($('<br/>'))
-                .append($('<span/>').addClass('muted').text('Available fields: ' + availableFieldsText))
-            )
-            .appendTo($body);
-        if (feedback !== undefined && feedback !== '') {
-            $customFeedbackRadio.prop('checked', true);
-            $customFeedbackField.val(feedback);
-        }
-
-        const $noFeedbackRadio = $('<input/>')
-            .attr('id', 'no-feedback-radio')
-            .attr('name', 'feedback')
-            .attr('type', 'radio');
-        $('<p/>').append($noFeedbackRadio)
-            .append(' ')
-            .append($('<label/>').attr('for', 'no-feedback-radio').text('No feedback'))
-            .appendTo($body);
-        if (feedback === '') {
-            $noFeedbackRadio.prop('checked', true);
+            if (feedback && feedback.hasOwnProperty(feedbackKey)) {
+                $field.val(feedback[feedbackKey]);
+            }
         }
 
         const $dialog = this.createDialog('Edit feedback settings', $body, 'OK')
@@ -639,13 +610,15 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .appendTo(this.$backdrop);
 
         $dialog.find('.btn.btn-primary').on('click', function() {
-            if ($noFeedbackRadio.prop('checked')) {
-                $checkContainer.attr('data-feedback', '');
-            } else if ($defaultFeedbackRadio.prop('checked')) {
-                $checkContainer.removeAttr('data-feedback');
-            } else if ($customFeedbackRadio.prop('checked')) {
-                $checkContainer.attr('data-feedback', $customFeedbackField.val());
-            }
+            let feedback = {};
+            $dialog.find('.feedback-input').each(function() {
+                const key = $(this).attr('feedback-key');
+                const value = $(this).val();
+                if (value) {
+                    feedback[key] = value;
+                }
+            });
+            $checkContainer.attr('data-feedback', JSON.stringify(feedback));
             this.hideDialogs();
             return false;
         }.bind(this));
