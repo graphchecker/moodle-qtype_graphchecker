@@ -154,5 +154,9 @@ def convert_feedback(check, metadata, result):
 	for field in result:
 		string = string.replace('[[' + field + ']]', str(result[field]))
 
+	# ... and also the check arguments
+	for argument in check['arguments']:
+		string = string.replace('[[' + argument + ']]', str(check['arguments'][argument]))
+
 	return string
 

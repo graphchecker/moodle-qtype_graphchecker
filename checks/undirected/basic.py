@@ -169,10 +169,8 @@ def vertex_count(student_answer, expected, highlighted):
     elif count < expected:
         return {'correct': False,
                 'feedback': 'too few vertices',
-                'actual': count,
-                'expected': expected}
+                'actual': count}
     else:
         return {'correct': False,
                 'feedback': 'too many vertices',
-                'actual': count,
-                'expected': expected}
+                'actual': count}
