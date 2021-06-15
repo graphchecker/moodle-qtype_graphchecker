@@ -39,9 +39,9 @@ Go to the plugin configuration (*Site administration > Category: Question types 
 
 ## Step 4: Installing required libraries on Jobe
 
-Our built-in checks use the graph library `igraph`, which needs to be available on the Jobe server. Be sure to install it on the Jobe server, so _not_ on the Moodle server!
+Our built-in checks use the graph library `igraph` (version 0.8.3+), which needs to be available on the Jobe server. Be sure to install it on the Jobe server, so _not_ on the Moodle server!
 
-Assuming your Jobe instance runs on Ubuntu, you can simply do `sudo apt install python3-igraph`. Otherwise `sudo pip3 install python-igraph` should do the trick.
+Assuming your Jobe instance runs on a recent version of Ubuntu, you can simply do `sudo apt install python3-igraph`. If you are running an older Ubuntu version (such as 18.04), this will install a version that is too old. In that case, you can install the latest version directly via `sudo pip3 install python-igraph`.
 
 
 ## Step 5: Testing
