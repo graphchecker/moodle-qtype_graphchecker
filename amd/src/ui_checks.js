@@ -162,15 +162,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         for (let moduleName in this.modules) {
             if (this.modules.hasOwnProperty(moduleName)) {
                 let module = this.modules[moduleName];
-                let $moduleContainer = this.createModuleContainer(moduleName, module)
-                    .appendTo($result);
+                let $moduleContainer = this.createModuleContainer(moduleName, module);
                 let checks = module['checks'];
+                let moduleHasChecks = false;
                 for (let checkName in checks) {
                     if (checks.hasOwnProperty(checkName) &&
                             !checks[checkName]['deprecated']) {
+                        moduleHasChecks = true;
                         this.createAvailableCheckContainer(moduleName, checkName, checks[checkName])
                             .appendTo($moduleContainer);
                     }
+                }
+                if (moduleHasChecks) {
+                    $moduleContainer.appendTo($result);
                 }
             }
         }
