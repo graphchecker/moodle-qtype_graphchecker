@@ -232,18 +232,19 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .on('click', this.moveCheckDown.bind(this))
             .appendTo($buttonGroup);
 
-        let checkInfo = this.modules[module]['checks'][method];
-        if (checkInfo) {
-            $('<span/>')
-                .html(checkInfo['name'])
-                .addClass('test-name')
-                .appendTo($header);
-        } else {
-            $('<span/>')
-                .html(module + '.' + method)
-                .addClass('test-name')
-                .appendTo($header);
+        let name = module + '.' + method;
+        let moduleInfo = this.modules[module];
+        let checkInfo;
+        if (moduleInfo) {
+            checkInfo = moduleInfo['checks'][method];
+            if (checkInfo) {
+                name = checkInfo['name'];
+            }
         }
+        $('<span/>')
+            .html(name)
+            .addClass('test-name')
+            .appendTo($header);
 
         let $rightButtonGroup = $('<div/>')
             .addClass('button-group float-right')
