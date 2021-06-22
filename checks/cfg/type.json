@@ -1,0 +1,7 @@
+{
+    "name": "Context-free grammar",
+    "ui_plugin": "text",
+    "ui_params": {},
+    "python_modules": ["automata"]
+}
+
