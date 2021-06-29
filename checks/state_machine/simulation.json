@@ -1,0 +1,26 @@
+{
+    "name": "Simulation",
+    "checks": {
+        "variable_after_simulation": {
+            "name": "Variable after simulation",
+            "description": "Simulates the state machine for a given list of input variables, and checks if afterwards, an output variable has the correct value.",
+            "params": [
+                {
+                    "param": "variable",
+                    "name": "Variable name",
+                    "type": "string"
+                },
+                {
+                    "param": "value",
+                    "name": "should be",
+                    "type": "integer"
+                },
+                {
+                    "param": "inputs",
+                    "name": "after inputs",
+                    "type": "string_list"
+                }
+            ]
+        }
+    }
+}
