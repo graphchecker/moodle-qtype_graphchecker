@@ -585,13 +585,8 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     font-size: 18px;
 }
 
-.dialog.feedback-dialog .dialog-body label {
-    display: inline-block;
-    vertical-align: top;
-}
-
-.dialog-body label .muted {
-    color: #555;
+.dialog.feedback-dialog .dialog-body input {
+    width: 100%;
 }
 
 body#page-question-type-graphchecker.unscrollable {

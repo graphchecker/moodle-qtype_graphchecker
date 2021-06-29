@@ -100,7 +100,12 @@
                     "options": ["all vertices", "only highlighted vertices"],
                     "default": "all vertices"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "too many vertices": "Your answer had [[actual]] vertices; [[expected]] expected",
+                "too few vertices": "Your answer had [[actual]] vertices; [[expected]] expected"
+            }
         }
     }
 }

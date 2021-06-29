@@ -64,7 +64,7 @@ def run(graph_type, graph, checks):
 				if not result['correct']:
 					correct = False
 				if 'feedback' in result:
-					result['feedback'] = convert_feedback(check, data, result['feedback'])
+					result['feedback'] = convert_feedback(check, data, result)
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()
@@ -99,6 +99,8 @@ def convert_argument(name, value, check, preprocess):
 		values = value.split('\n')
 		if len(values) == 1:
 			values = values[0].split(',')
+		if len(values) == 1:
+			values = values[0].split(' ')
 		return values
 	elif param_type == 'graph':
 		return preprocess.preprocess(value)
@@ -126,20 +128,35 @@ def available_checks(graph_type):
 
 	return modules
 
-def convert_feedback(check, data, feedback):
+# Produces the feedback string to be shown to the student.
+#
+# check - The check settings set by the question author (which contains customized
+#         feedback strings).
+# metadata - The check metadata (which contains the default feedback strings).
+# result - The result object returned by the check.
+def convert_feedback(check, metadata, result):
 
-	# if the check specifies simple feedback, just return the feedback directly
-	if not 'feedback' in data:
-		return feedback
+	# if the check metadata specifies simple feedback, just return the feedback directly
+	if not 'feedback' in metadata:
+		return result['feedback']
 
-	# else replace each feedback field in the template string
-	template = data['feedback']['default']
-	if 'feedback' in check:
-		template = check['feedback']
+	# if the check returns feedback that is ‘invalid’ (not specified in the metadata)
+	# just return that feedback directly
+	if not result['feedback'] in metadata['feedback']:
+		return result['feedback']
 
-	for field in data['feedback']['fields']:
-		if field in feedback:
-			template = template.replace('[[' + field + ']]', str(feedback[field]))
+	# else find the applicable feedback string ...
+	string = metadata['feedback'][result['feedback']]
+	if 'feedback' in check and result['feedback'] in check['feedback']:
+		string = check['feedback'][result['feedback']]
 
-	return template
+	# ... and replace each placeholder by its value in the check result
+	for field in result:
+		string = string.replace('[[' + field + ']]', str(result[field]))
+
+	# ... and also the check arguments
+	for argument in check['arguments']:
+		string = string.replace('[[' + argument + ']]', str(check['arguments'][argument]))
+
+	return string
 

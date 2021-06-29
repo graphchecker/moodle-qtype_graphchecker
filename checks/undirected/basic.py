@@ -164,7 +164,13 @@ def vertex_count(student_answer, expected, highlighted):
         if (not onlyHighlighted or v['highlighted']):
             count = count + 1
     if count == expected:
-        return {'correct': True}
+        return {'correct': True,
+                'feedback': 'correct'}
+    elif count < expected:
+        return {'correct': False,
+                'feedback': 'too few vertices',
+                'actual': count}
     else:
         return {'correct': False,
-                'feedback': 'Number of edges does not match expected number'}
+                'feedback': 'too many vertices',
+                'actual': count}
