@@ -1,0 +1,18 @@
+{
+    "name": "Structural properties",
+    "checks": {
+        "state_count": {
+            "name": "State count",
+            "description": "Checks if the Turing machine has at most the given number of states.",
+            "params": [
+                {
+                    "param": "max_states",
+                    "name": "Maximum count",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 1
+                }
+            ]
+        }
+    }
+}
