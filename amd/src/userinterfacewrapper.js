@@ -297,7 +297,7 @@ define(['jquery'], function($) {
                             t.wrapperNode.css({
                                 resize: 'vertical',
                                 overflow: 'hidden',
-                                minHeight: h,
+                                minHeight: Math.max(h, this.MIN_WRAPPER_HEIGHT),
                                 height: h,
                                 maxWidth: '900px',
                                 border: '1px solid darkgrey',
