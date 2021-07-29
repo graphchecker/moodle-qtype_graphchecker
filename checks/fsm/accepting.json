@@ -1,0 +1,35 @@
+{
+    "name": "Accept/reject",
+    "checks": {
+        "fsm_accepts": {
+            "name": "Automaton accepts words",
+            "description": "Checks if the DFA/NFA accepts all of the given words.",
+            "feedback": {
+                "correct": "Correct!",
+                "a word was rejected": "Word '[[word]]' should be accepted"
+            },
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                }
+            ]
+        },
+        "fsm_rejects": {
+            "name": "Automaton rejects words",
+            "description": "Checks if the DFA/NFA rejects all of the given words.",
+            "feedback": {
+                "correct": "Correct!",
+                "a word was accepted": "Word '[[word]]' should be rejected"
+            },
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                }
+            ]
+        }
+    }
+}

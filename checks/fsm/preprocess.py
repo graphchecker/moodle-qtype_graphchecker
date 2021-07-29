@@ -31,6 +31,9 @@ def preprocess(graph):
         p = graph['vertices'][transition['from']]['label']
         q = graph['vertices'][transition['to']]['label']
         a = transition['label']
+
+        if len(a) != 1:
+            raise Exception('Invalid transition label "' + a + '" (each transition should be labeled by a single letter, denoting the input symbol it consumes)')
         text += p + " " + q + " " + a + "\n"
 
     return text

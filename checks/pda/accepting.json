@@ -1,0 +1,35 @@
+{
+    "name": "Accept/reject",
+    "checks": {
+        "pda_accepts": {
+            "name": "PDA accepts words",
+            "description": "Checks if the PDA all of the given words.",
+            "feedback": {
+                "correct": "Correct!",
+                "a word was rejected": "Word '[[word]]' should be accepted"
+            },
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                }
+            ]
+        },
+        "pda_rejects": {
+            "name": "PDA rejects words",
+            "description": "Checks if the PDA rejects all of the given words.",
+            "feedback": {
+                "correct": "Correct!",
+                "a word was accepted": "Word '[[word]]' should be rejected"
+            },
+            "params": [
+                {
+                    "param": "word_list",
+                    "name": "Word list",
+                    "type": "string_list"
+                }
+            ]
+        }
+    }
+}

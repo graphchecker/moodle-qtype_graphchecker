@@ -2,7 +2,10 @@
     "undirected",
     "directed",
     "fsm",
-    "regex",
     "pda",
-    "petri"
+    "turing",
+    "regex",
+    "cfg",
+    "petri",
+    "state_machine"
 ]
