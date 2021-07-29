@@ -1,33 +1,39 @@
 {
-    "name": "Language",
+    "name": "Equivalence",
     "checks": {
-        "tm_accepts": {
-            "name": "Turing machine accepts words",
-            "description": "Checks if the Turing machine accepts all of the given words.",
-            "feedback": {
-                "correct": "Correct!",
-                "a word was rejected": "Word '[[word]]' should be accepted"
-            },
+        "language_equivalence_automaton": {
+            "name": "Language equivalence (to Turing machine)",
+            "description": "Checks if the Turing machine accepts exactly the same words (up until a given length) as the given Turing machine.",
             "params": [
                 {
-                    "param": "word_list",
-                    "name": "Word list",
-                    "type": "string_list"
+                    "param": "other",
+                    "name": "Turing machine",
+                    "type": "graph"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
                 }
             ]
         },
-        "tm_rejects": {
-            "name": "Turing machine rejects words",
-            "description": "Checks if the Turing machine rejects all of the given words.",
-            "feedback": {
-                "correct": "Correct!",
-                "a word was accepted": "Word '[[word]]' should be rejected"
-            },
+        "language_equivalence_words": {
+            "name": "Language equivalence (to word list)",
+            "description": "Checks if the Turing machine accepts exactly the given words (up until a given length).",
             "params": [
                 {
                     "param": "word_list",
                     "name": "Word list",
                     "type": "string_list"
+                },
+                {
+                    "param": "length",
+                    "name": "Length",
+                    "type": "integer",
+                    "min": 0,
+                    "default": 4
                 }
             ]
         }

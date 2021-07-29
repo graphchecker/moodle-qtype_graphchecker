@@ -13,6 +13,14 @@
                     "default": 1
                 }
             ]
+        },
+        "deterministic": {
+            "name": "Is deterministic",
+            "description": "Checks if the Turing machine is deterministic.",
+            "feedback": {
+                "correct": "Correct!",
+                "TM is indeterministic": "Your Turing machine is indeterministic: state [[state]] has multiple outgoing transitions reading [[tape_symbol]] from the tape"
+            }
         }
     }
 }

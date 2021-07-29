@@ -1,6 +1,4 @@
-# Tests for DFAs.
-
-from automata.notebook import parse_nfa, generate_language, parse_word_list, compare_languages
+from automata.notebook import parse_nfa, generate_language, parse_word_list, compare_languages, nfa_accepts_word
 
 def language_equivalence_automaton(student_answer, other, length):
     try:

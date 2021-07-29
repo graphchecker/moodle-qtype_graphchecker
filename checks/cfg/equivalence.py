@@ -1,40 +1,18 @@
-from automata.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list
+from automata.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list, generate_language, compare_languages
 
-def cfg_accepts(student_answer, word_list):
+def language_equivalence_words(student_answer, word_list, length):
+    word_list = " ".join(word_list)
     try:
         A = parse_simple_cfg(student_answer)
     except RuntimeError as e:
         return {'correct': False,
                 'feedback': str(e)}
-
-    word_list = " ".join(word_list)
+    A_words = generate_language(A, length)
     words = parse_word_list(word_list)
-
-    for word in words:
-        if not cfg_accepts_word(A, word):
-            return {'correct': False,
-                    'feedback': 'a word was rejected',
-                    'word': word}
-
-    return {'correct': True,
-            'feedback': 'correct'}
-
-def cfg_rejects(student_answer, word_list):
-    try:
-        A = parse_simple_cfg(student_answer)
-    except RuntimeError as e:
+    feedback = compare_languages(A_words, words)
+    if len(feedback) == 0:
+        return {'correct': True}
+    else:
         return {'correct': False,
-                'feedback': str(e)}
-
-    word_list = " ".join(word_list)
-    words = parse_word_list(word_list)
-
-    for word in words:
-        if cfg_accepts_word(A, word):
-            return {'correct': False,
-                    'feedback': 'a word was accepted',
-                    'word': word}
-
-    return {'correct': True,
-            'feedback': 'correct'}
+                'feedback': " / ".join(feedback)}
 
