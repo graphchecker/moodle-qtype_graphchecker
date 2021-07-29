@@ -1,2 +1,3 @@
+{"_version":1,"vertices":[],"edges":[]}
 {"type":"check","module":"properties","method":"girth","arguments":{"expected":"0"}}
 pass
