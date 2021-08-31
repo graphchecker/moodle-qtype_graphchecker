@@ -20,7 +20,13 @@
                     "name": "after inputs",
                     "type": "string_list"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "incorrect answer": "After input [[inputs]], your state machine incorrectly set [[variable]]=[[actual]] ([[variable]]=[[value]] expected)",
+                ">= 1 enabled transition": "Your state machine ended up with more than one enabled transition in state \"[[state]]\" (with current input [[inputs]])",
+                "infinite loop": "Your state machine ended up in an infinite loop in state \"[[state]]\" (with current input [[inputs]])"
+            }
         }
     }
 }
