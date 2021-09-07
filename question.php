@@ -42,6 +42,14 @@ class qtype_graphchecker_question extends question_graded_automatically {
 
     public $testcases = null; // Array of testcases.
 
+    // GraphChecker does not support hiding the Check button, but CodeRunner
+    // does, and its adaptive behavior expects to be able to do
+    //
+    // if ($question->hidecheck) { ... }
+    //
+    // to check for this. Hence, we just set this field to false here.
+    public $hidecheck = false;
+
     /**
      * Start a new attempt at this question, storing any information that will
      * be needed later in the step. It is retrieved and applied by

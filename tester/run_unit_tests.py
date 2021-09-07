@@ -16,7 +16,6 @@ if len(sys.argv) < 2:
 	sys.exit(1)
 
 def run_test(name, test_spec):
-	print(name)
 	if len(test_spec) != 3:
 		print('\033[1m\033[91mfail ' + name + '\033[0m')
 		print('    test file invalid')

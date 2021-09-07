@@ -13,13 +13,13 @@ def preprocess(graph):
 			label_part = label_part.strip()
 			label_part_split = label_part.split('=')
 			if len(label_part_split) != 2:
-				raise Exception('Label of state "' + label + '" is invalid' +
+				raise Exception('Label of state "' + vertex['label'] + '" is invalid ' +
 						'(could not parse "' + label_part + '")')
 			variable, value = label_part_split
 			try:
 				value = int(value)
 			except ValueError:
-				raise Exception('Label of state "' + label + '" is invalid' +
+				raise Exception('Label of state "' + vertex['label'] + '" is invalid ' +
 						'(value "' + value + '" of variable "' +
 						variable + '" needs to be an integer)')
 			s[variable] = value
