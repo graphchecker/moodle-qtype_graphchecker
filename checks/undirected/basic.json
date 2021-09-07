@@ -3,7 +3,11 @@
     "checks": {
         "connected": {
             "name": "Connectedness",
-            "description": "Checks if the graph is connected."
+            "description": "Checks if the graph is connected.",
+            "feedback": {
+                "correct": "Correct!",
+                "disconnected": "Graph is not connected."
+            }
         },
         "edge_count": {
             "name": "Edge count",
@@ -23,7 +27,11 @@
                     "options": ["all edges", "only highlighted edges"],
                     "default": "all edges"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "different edge count": "Number of edges [[edgeCount]] does not match expected number [[expectedEdgeCount]]."
+            }
         },
         "equivalent": {
             "name": "Equivalent",
@@ -34,7 +42,17 @@
                     "name" : "Expected graph",
                     "type" : "graph"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "vertex count wrong": "Number of vertices [[vertexCount]] does not match the expected number of vertices [[expectedVertexCount]].",
+                "edge count wrong": "Number of edges [[edgeCount]] does not match the expected number of edges [[expectedEdgeCount]].",
+                "missing vertex": "Could not find vertex with name [[vertexLabel]] in answer.",
+                "degree wrong": "Vertex [[vertexLabel]] has degree [[vertexDegree]], expected degree [[expectedDegree]].",
+                "color wrong": "Vertex [[vertexLabel]] has color [[vertexColor]], expected color [[expectedColor]].",
+                "neighborhood wrong": "Neighbors for vertex with label '[[vertexLabel]]' do not match expected neighbors.",
+                "edge label wrong": "Edge label [[edgeLabel]] does not match with expected label for edge from '[[fromLabel]]' to '[[toLabel]]'."
+            }
         },
         "same_highlights": {
             "name": "Match highlighting",
@@ -45,7 +63,14 @@
                     "name": "Should be",
                     "type": "graph"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "not isomorphic graphs": "Graph does not match original input graph.",
+                "highlighted vertices mismatched": "Highlighted vertices do not match expected answer.",
+                "highlighted edges mismatched": "Highlighted edges do not match expected answer."
+                
+            }
         },
         "no_cycles": {
             "name": "No cycles",
@@ -58,11 +83,23 @@
                     "options": ["all edges", "only highlighted edges"],
                     "default": "all edges"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "has cycle": "Your answer contains a cycle."
+            }
         },
         "mst": {
             "name": "Is MST highlighted",
-            "description": "Checks if the highlighted edges form a MST."
+            "description": "Checks if the highlighted edges form a MST.",
+            "feedback": {
+                "correct": "Correct!",
+                "not all integer labels": "Not all labels are integer.",
+                "not integer label": "The edge label [[edgeLabel]] is not integer.",
+                "wrong sum": "The sum of edge weights [[weightSum]] did not match the expected sum of edge weights [[expectedSum]].",
+                "has cycle": "Your answer contains a cycle.",
+                "different edge count": "Number of edges [[edgeCount]] does not match expected number [[expectedEdgeCount]]."
+            }
         },
         "sumEdgeWeights": {
             "name": "Sum edge weights",
@@ -80,7 +117,12 @@
                     "options": ["all edges", "only highlighted edges"],
                     "default": "all edges"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "not integer label": "The edge label [[edgeLabel]] is not integer.",
+                "wrong sum": "The sum of edge weights [[weightSum]] did not match the expected sum of edge weights [[expectedSum]]."
+            }
         },
         "vertex_count": {
             "name": "Vertex count",
@@ -103,8 +145,8 @@
             ],
             "feedback": {
                 "correct": "Correct!",
-                "too many vertices": "Your answer had [[actual]] vertices; [[expected]] expected",
-                "too few vertices": "Your answer had [[actual]] vertices; [[expected]] expected"
+                "too many vertices": "Your answer had [[actual]] vertices; [[expected]] expected.",
+                "too few vertices": "Your answer had [[actual]] vertices; [[expected]] expected."
             }
         }
     }

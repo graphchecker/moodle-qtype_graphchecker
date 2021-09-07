@@ -1,7 +1,8 @@
 def vertex_degree_at_most(student_answer, max_degree):
     for v in student_answer.vs:
         if v.degree() > max_degree:
-            v_name = 'Some vertex' if not v['name'] else 'Vertex ' + v['name']
+            v_name = filter_orig_name(v['name'])
+            v_name = 'Some vertex' if not v_name else 'Vertex ' + v_name
             return {'correct': False,
                     'feedback': '{0} has degree {1}, but the maximum degree should be {2}'.format(v_name, v.degree(), max_degree)}
     return {'correct': True}
