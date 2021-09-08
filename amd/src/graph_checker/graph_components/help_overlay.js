@@ -19,13 +19,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         let self = this;
         this.parent = parent;
         this.graphUIWrapper = graphUIWrapper;
-        // Create the background div
-        this.div = $(document.createElement("div"));
-        this.div.attr({
-            class: "graphchecker_overlay",
-            tabindex: 0
-        });
-        $(this.div).on('click', function () {
+
+        const hideDialogs = function() {
             // Hide the background element only after the CSS transition has finished
             self.div.removeClass('visible');
             setTimeout(function () {
@@ -35,17 +30,28 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
                 // Enable the resizing of the graph interface wrapper again
                 self.graphUIWrapper.enableResize();
             }.bind(this), 500);
-        });
+        };
+
+        this.div = $('<div/>')
+            .addClass('backdrop')
+            .on('click', hideDialogs);
 
         // Create the dialog div
-        this.divDialog = $(document.createElement("div"));
-        this.divDialog.attr({
-            class: 'dialog',
-            tabindex: 0
-        });
-        $(this.divDialog).on('click', function () {
-            return false;  // avoid bubbling to the backdrop
-        });
+        const $header = $('<div/>')
+            .addClass('dialog-header')
+            .append($('<div/>')
+                .append($('<i/>').addClass('fa fa-times'))
+                .addClass('btn btn-light close-button')
+                .on('click', hideDialogs))
+            .append('Help');
+
+        this.divDialog = $('<div/>')
+            .addClass('dialog')
+            .append($header)
+            .on('click', function(e) {
+                e.stopPropagation();  // avoid bubbling to the backdrop
+            });
+
         this.div.append(this.divDialog);
     }
 
@@ -133,7 +139,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         let aHighlightable = (highlightableList[0] === "edge" ? "an " : "a ") + highlightable;
 
         // Create the first part of the help text
-        let introductoryText = "<div class='dialog-header'>Graph Help</div>";
+        let introductoryText = "";
         if (hasDrawMode) {
             introductoryText += "<p>To enter your answer as a graph, you can use Select mode (to edit existing " + editables + ") "
                 + "and Draw mode (to draw new " + editables + ").</p>"

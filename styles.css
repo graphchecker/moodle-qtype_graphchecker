@@ -384,8 +384,7 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop,
-.graphchecker_overlay {
+body#page-question-type-graphchecker .backdrop {
     position: fixed;
     display: none;
     left: 0;
@@ -399,8 +398,7 @@ body#page-question-type-graphchecker .tests-ui .backdrop,
     overflow-y: scroll;
 }
 
-body#page-question-type-graphchecker .tests-ui .backdrop.visible,
-.graphchecker_overlay.visible {
+body#page-question-type-graphchecker .backdrop.visible {
     opacity: 1;
 }
 
