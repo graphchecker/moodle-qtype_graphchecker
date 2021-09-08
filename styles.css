@@ -384,6 +384,7 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     margin-bottom: 15px;
 }
 
+.tests-ui .backdrop,
 .graph_ui_container_div .backdrop {
     position: fixed;
     display: none;
@@ -398,6 +399,7 @@ body#page-question-type-graphchecker .tests-ui .available-tests-list {
     overflow-y: scroll;
 }
 
+.tests-ui .backdrop.visible,
 .graph_ui_container_div .backdrop.visible {
     opacity: 1;
 }
