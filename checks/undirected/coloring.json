@@ -12,7 +12,11 @@
                     "default": 4,
                     "min": 1
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "color count wrong": "Too many colors used. Used [[colorCount]] instead of [[expectedColorCount]] colors."
+            }
         }
     }
 }

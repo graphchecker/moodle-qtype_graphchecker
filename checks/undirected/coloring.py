@@ -12,5 +12,9 @@ def coloring(student_answer, noColors):
             if wVert['color'] == v['color']:
                 return {'correct': False, 'feedback' : 'Vertices \'{0}\' en \'{1}\' are adjacent and have the same color.'.format(filter_orig_name(v),filter_orig_name(wVert))}
     if len(colors) > noColors:
-        return {'correct': False, 'feedback' : 'Too many colors used. Used {0} instead of {1} colors.'.format(len(colors),noColors)}
+        return {'correct': False,
+                'feedback' : 'color count wrong',
+                'colorCount': len(colors),
+                'expectedColorCount': noColors
+               }
     return {'correct': True}

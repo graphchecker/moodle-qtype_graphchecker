@@ -19,7 +19,11 @@
                     "default": 1,
                     "min": 0
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "vertex of degree count wrong": "Number of vertices with degree [[degree]] is [[vertexCount]], but there should be [[expectedVertexCount]] vertices with that degree."
+            }
         },
         "vertex_degree_sequence": {
             "name": "Degree sequence",
@@ -30,7 +34,12 @@
                     "name": "Expected sequence",
                     "type": "string"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "vertex count wrong": "Number of vertices is [[vertexCount]], this does not match the expected number of vertices: [[expectedVertexCount]].",
+                "degree sequence wrong": "Degree sequence does not match expected degree sequence. Expected a vertex with degree [[expectedDegree]] but found one with degree [[foundDegree]]."
+            }
         },
         "vertex_degree_at_most": {
             "name": "Vertex degree at most",
@@ -43,7 +52,11 @@
                     "default": 1,
                     "min": 0
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "max degree too high": "Vertex [[vertexLabel]] has degree [[vertexDegree]], but the maximum degree should be [[maxDegree]]."
+            }
         }
     }
 }

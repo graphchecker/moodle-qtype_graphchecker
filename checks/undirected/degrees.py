@@ -1,9 +1,17 @@
+from utilities import filter_orig_name
+
 def vertex_degree_at_most(student_answer, max_degree):
     for v in student_answer.vs:
         if v.degree() > max_degree:
-            v_name = 'Some vertex' if not v['name'] else 'Vertex ' + v['name']
+            v_name = filter_orig_name(v)
+            if not v_name:
+                v_name = '-no label-'
             return {'correct': False,
-                    'feedback': '{0} has degree {1}, but the maximum degree should be {2}'.format(v_name, v.degree(), max_degree)}
+                    'feedback': 'max degree too high',
+                    'vertexLabel': v_name,
+                    'vertexDegree': v.degree(),
+                    'maxDegree': max_degree
+                    }
     return {'correct': True}
 
 def number_vertices_of_degree(student_answer, number_of_verts, degree):
@@ -14,7 +22,11 @@ def number_vertices_of_degree(student_answer, number_of_verts, degree):
 
     if found != number_of_verts:
         return {'correct': False,
-                'feedback': 'Number of vertices with degree {0}, is {1}, but should be {2}'.format(degree, found, number_of_verts)}
+                'feedback': 'vertex of degree count wrong',
+                'degree': degree,
+                'vertexCount': found,
+                'expectedVertexCount': number_of_verts
+               }
     else:
         return {'correct': True}
 
@@ -28,7 +40,9 @@ def vertex_degree_sequence(student_answer, degree_sequence):
 
     if (len(student_answer.vs) != lengthSeq):
         return {'correct': False,
-                'feedback': 'Number of vertices {0}, does not match the expected number of vertices {1}'.format(len(student_answer.vs), lengthSeq)}
+                'feedback': 'vertex count wrong',
+                'vertexCount': len(student_answer.vs),
+                'expectedVertexCount': lengthSeq}
     student_degs = []
     for v in student_answer.vs:
         student_degs.append(v.degree())
@@ -38,7 +52,9 @@ def vertex_degree_sequence(student_answer, degree_sequence):
     for deg, stu_deg in zip(sequence, student_degs):
         if int(deg) != stu_deg:
             return {'correct': False,
-                    'feedback': 'Degree sequence does not match expected degree sequence. Expected a vertex with degree {0} but found one with degree {1}.'.format(deg, stu_deg)}
+                    'feedback': 'degree sequence wrong',
+                    'expectedDegree': deg,
+                    'foundDegree': stu_deg}
 
     return {'correct': True}
 
