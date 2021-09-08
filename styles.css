@@ -581,6 +581,12 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     margin-bottom: 20px;
 }
 
+.dialog-header .close-button {
+    float: right;
+    background-color: white;
+    border: none;
+}
+
 .dialog-section {
     font-size: 18px;
 }

@@ -759,11 +759,20 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
     };
 
     ChecksUi.prototype.createDialog = function(title, content, buttonText) {
-        let $dialog = $('<div/>')
-            .addClass('dialog')
+        const self = this;
+        const $header = $('<div/>')
+            .addClass('dialog-header')
             .append($('<div/>')
-                .addClass('dialog-header')
-                .html(title))
+                .append($('<i/>').addClass('fa fa-times'))
+                .addClass('btn btn-light close-button')
+                .on('click', function() {
+                    self.hideDialogs();
+                }))
+            .append(title);
+
+        const $dialog = $('<div/>')
+            .addClass('dialog')
+            .append($header)
             .append($('<div/>')
                 .addClass('dialog-body')
                 .append(content))
