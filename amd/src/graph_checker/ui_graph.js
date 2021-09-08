@@ -115,7 +115,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.helpOverlay, this.graphEventHandler) : null;
 
         // Creates and sets the HTML help text for the help overlay
-        this.helpOverlay.setHelpText(this, this.templateParams, this.isType, this.allowEdits);
+        this.helpOverlay.setHelpText(this, this.templateParams);
 
         // The div that contains the entire graph UI (i.e. the toolbar, graph, and help overlay, etc.)
         this.containerDiv = $(document.createElement('div'));
