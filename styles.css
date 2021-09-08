@@ -589,6 +589,10 @@ body#page-question-type-graphchecker .tests-ui .btn-link {
     width: 100%;
 }
 
+.dialog.feedback-dialog .dialog-body .default-feedback {
+    color: #777;
+}
+
 body#page-question-type-graphchecker.unscrollable {
     overflow-y: hidden;
 }

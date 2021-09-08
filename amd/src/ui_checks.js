@@ -596,13 +596,17 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         for (let feedbackKey in checkFeedback) {
             const $field = $('<input/>')
                 .addClass('feedback-input')
-                .attr('placeholder', checkFeedback[feedbackKey])
                 .attr('feedback-key', feedbackKey);
+
+            const $defaultFeedback = $('<p/>')
+                .addClass('default-feedback')
+                .text(checkFeedback[feedbackKey]);
 
             $('<p/>')
                 .html('Feedback if <b>' + feedbackKey + '</b>:')
                 .append($('<br/>'))
                 .append($field)
+                .append($defaultFeedback)
                 .appendTo($body);
 
             if (feedback && feedback.hasOwnProperty(feedbackKey)) {
