@@ -63,6 +63,7 @@ abstract class qtype_graphchecker_sandbox {
     const UNKNOWN_SERVER_ERROR = 7;
     const JOBE_400_ERROR    = 8;  // Jobe returned an HTTP code of 400.
     const SERVER_OVERLOAD   = 9;
+    const TIME_LIMIT        = 10;
 
 
     // Values of the result 'attribute' of the object returned by a call to
@@ -133,6 +134,7 @@ abstract class qtype_graphchecker_sandbox {
             self::UNKNOWN_SERVER_ERROR  => 'errorstring-unknown',
             self::JOBE_400_ERROR  => 'errorstring-jobe400',
             self::SERVER_OVERLOAD => 'errorstring-overload',
+            self::TIME_LIMIT => 'errorstring-timelimit',
         );
         $errorcode = $runresult->error;
         if (!isset($errorstrings[$errorcode])) {

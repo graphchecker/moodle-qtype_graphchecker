@@ -50,13 +50,14 @@ $string['enable_sandbox_desc'] = 'Permit use of the specified sandbox for runnin
 $string['errorstring-ok'] = 'OK';
 $string['errorstring-autherror'] = 'Unauthorised to use sandbox';
 $string['errorstring-jobe400'] = 'Error from Jobe sandbox server: ';
-$string['errorstring-overload'] = 'Job could not be run due to server overload. Perhaps try again shortly?';
+$string['errorstring-overload'] = 'Your answer could not be checked due to server overload. Please wait a moment and try again.';
 $string['errorstring-pastenotfound'] = 'Requesting status of non-existent job';
 $string['errorstring-wronglangid'] = 'Non-existent language requested';
 $string['errorstring-accessdenied'] = 'Access to sandbox denied';
 $string['errorstring-submissionlimitexceeded'] = 'Sandbox submission limit reached';
 $string['errorstring-submissionfailed'] = 'Submission to sandbox failed';
 $string['errorstring-unknown'] = 'Unexpected error while executing checks. The sandbox server may be down or overloaded. Perhaps try again shortly?';
+$string['errorstring-timelimit'] = 'It took too long to grade your answer. Please wait a moment and try again, or ask the teacher for help.';
 
 $string['graphcheckersettings'] = 'GraphChecker settings';
 $string['graph_ui_invalidserialisation'] = 'GraphUI: invalid serialisation';

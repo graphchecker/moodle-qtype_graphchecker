@@ -195,6 +195,8 @@ class qtype_graphchecker_jobesandbox extends qtype_graphchecker_sandbox {
             return (object) array('error' => $errorcode, 'stderr' => $this->response);
         } else if ($this->response->outcome == self::RESULT_SERVER_OVERLOAD) {
             return (object) array('error' => self::SERVER_OVERLOAD);
+        } else if ($this->response->outcome == self::RESULT_TIME_LIMIT) {
+            return (object) array('error' => self::TIME_LIMIT);
         } else {
             $stderr = $this->filter_file_path($this->response->stderr);
             // Any stderr output is treated as a runtime error.

@@ -121,7 +121,8 @@ class qtype_graphchecker_testing_outcome {
         if ($this->invalid()) {
             return html_writer::tag('pre', $this->errormessage);
         } else if ($this->run_failed()) {
-            return get_string('run_failed', 'qtype_graphchecker');
+            return get_string('run_failed', 'qtype_graphchecker') .
+                ' (error: "' . s($this->errormessage) . '")';
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if ($this->preprocessor_error()) {
