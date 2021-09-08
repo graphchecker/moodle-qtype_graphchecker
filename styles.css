@@ -555,6 +555,10 @@ body#page-question-type-graphchecker .tests-ui textarea.argument-value {
     resize: vertical;
 }
 
+body#page-question-type-graphchecker .tests-ui .argument-value.continue-field {
+    width: 300px;
+}
+
 body#page-question-type-graphchecker .tests-ui .btn-link {
     position: relative;
     left: 5px;

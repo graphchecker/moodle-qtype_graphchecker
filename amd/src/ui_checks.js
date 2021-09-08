@@ -92,7 +92,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             'type': 'grade'
         };
         grade['points'] = $container.find('.points-field').val();
-        grade['continue'] = $container.find('.continue-field').val() !== 'stop checking';
+        grade['continue'] = $container.find('.continue-field').val() !== 'do not award points for the checks below';
         return grade;
     };
 
@@ -380,14 +380,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .addClass('continue-field')
             .appendTo($continueRow);
         $('<option/>')
-            .text('continue with the checks below')
+            .text('still award points for the checks below')
             .appendTo($continueSelect);
         $('<option/>')
-            .text('stop checking')
+            .text('do not award points for the checks below')
             .appendTo($continueSelect);
 
         if (grade && !grade['continue']) {
-            $continueSelect.val('stop checking');
+            $continueSelect.val('do not award points for the checks below');
         }
 
         return $container;
