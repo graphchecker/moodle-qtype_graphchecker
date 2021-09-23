@@ -63,15 +63,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
         $PAGE->requires->js_call_amd('qtype_graphchecker/authorform', 'initEditForm');
 
-        parent::definition($mform);  // The superclass adds the "General" stuff.
-    }
-
-
-    // Defines the bit of the GraphChecker question edit form after the "General"
-    // section and before the footer stuff.
-    public function definition_inner($mform) {
-
         // add Answer type field
+        $mform->addElement('header', 'answertypehdr',
+                    get_string('answertype', 'qtype_graphchecker'), '');
+        $mform->setExpanded('answertypehdr', 1);
+
         $types = $this->get_types_array();
         $typeselectorelements = array();
         $typeselectorelements[] = $mform->createElement('select', 'answertype',
@@ -81,29 +77,13 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 get_string('answertype', 'qtype_graphchecker'), $typeselectorelements, null, false);
         $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
 
-        // vertex attributes
-        $vertexAttrBoxes = [];
-        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_labels',
-                'Labels', null, null);
-        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_colors',
-                'Colors', null, null);
-        $mform->addGroup($vertexAttrBoxes, 'vertex_attributes',
-                'Node attributes', [''], false);
-        $mform->addHelpButton('vertex_attributes', 'vertex_attributes', 'qtype_graphchecker');
-        $mform->setDefault('vertex_attr_labels', true);
-        $mform->setDefault('vertex_attr_colors', false);
+        parent::definition($mform);  // The superclass adds the "General" stuff.
+    }
 
-        // edge attributes
-        $edgeAttrBoxes = [];
-        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_labels',
-                'Labels', null, null);
-        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_colors',
-                'Colors', null, null);
-        $mform->addGroup($edgeAttrBoxes, 'edge_attributes',
-                'Edge attributes', [''], false);
-        $mform->addHelpButton('edge_attributes', 'edge_attributes', 'qtype_graphchecker');
-        $mform->setDefault('edge_attr_labels', true);
-        $mform->setDefault('edge_attr_colors', false);
+
+    // Defines the bit of the GraphChecker question edit form after the "General"
+    // section and before the footer stuff.
+    public function definition_inner($mform) {
 
         // add other sections
         $this->add_student_interaction_field($mform);
@@ -194,6 +174,31 @@ class qtype_graphchecker_edit_form extends question_edit_form {
                 'Allow adding/removing', $add_remove_choices);
         $mform->setDefault('allowed_vertex_edits', 'all');
         $mform->addHelpButton('allowed_vertex_edits', 'allowed_vertex_edits', 'qtype_graphchecker');
+
+        // vertex attributes
+        $vertexAttrBoxes = [];
+        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_labels',
+                'Labels', null, null);
+        $vertexAttrBoxes[] =& $mform->createElement('advcheckbox', 'vertex_attr_colors',
+                'Colors', null, null);
+        $mform->addGroup($vertexAttrBoxes, 'vertex_attributes',
+                'Node attributes', [''], false);
+        $mform->addHelpButton('vertex_attributes', 'vertex_attributes', 'qtype_graphchecker');
+        $mform->setDefault('vertex_attr_labels', true);
+        $mform->setDefault('vertex_attr_colors', false);
+
+        // edge attributes
+        $edgeAttrBoxes = [];
+        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_labels',
+                'Labels', null, null);
+        $edgeAttrBoxes[] =& $mform->createElement('advcheckbox', 'edge_attr_colors',
+                'Colors', null, null);
+        $mform->addGroup($edgeAttrBoxes, 'edge_attributes',
+                'Edge attributes', [''], false);
+        $mform->addHelpButton('edge_attributes', 'edge_attributes', 'qtype_graphchecker');
+        $mform->setDefault('edge_attr_labels', true);
+        $mform->setDefault('edge_attr_colors', false);
+
 
         // highlighting
         $highlightBoxes = [];
