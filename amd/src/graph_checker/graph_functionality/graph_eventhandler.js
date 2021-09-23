@@ -61,11 +61,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // If the click was a left mouse click, then proceed with event handling
         if (e.button === 0) {
+            console.log('clicked:', this.par.getClickedObject());  // eslint-disable-line
+
             // Depending on the mode, perform different tasks
-            if (this.par.getUIMode() === util.ModeType.DRAW) {
-                // Potentially create a new node
-                this.createNewNode(mouse, allowedEditsFunc, isTypeFunc);
-            } else if (this.par.getUIMode() === util.ModeType.SELECT) {
+            if (this.par.getUIMode() === util.ModeType.MOVE || this.par.getClickedObject()) {
                 // Potentially select one object, or add/remove multiple objects to/from the selection, or initialize
                 // the selection rectangle
                 this.selectObjects(e, mouse);
@@ -75,6 +74,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
                 // Perform selection-interaction with the canvas
                 this.initializeObjectDragging(mouse);
+            } else if (this.par.getUIMode() === util.ModeType.ADD) {
+                // Potentially create a new node
+                this.createNewNode(mouse, allowedEditsFunc, isTypeFunc);
             }
 
             // Redraw the Canvas
@@ -94,10 +96,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         let allowedEditsFunc = this.par.allowEdits;
         let isTypeFunc = this.par.isType;
 
-        if (!e.ctrlKey && this.par.getTempDrawModeActive()) {
+        if (!e.ctrlKey && this.par.getTempMoveModeActive()) {
             // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
             // This happens for example when releasing the CTRL key on an alert box popup
-            this.par.disableTemporaryDrawMode();
+            this.par.disableTemporaryMoveMode();
         }
 
         // Upon mouseup, check what condition applies and perform according actions
@@ -110,9 +112,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             this.par.setClickedObject(false);
         } else if (this.par.getSelectionRectangle()) {
             this.selectWithinSelectionRectangle(e, allowedEditsFunc, isTypeFunc);
-        } else if (this.par.getUIMode() === util.ModeType.SELECT) {
+        /*} else if (this.par.getUIMode() === util.ModeType.SELECT) {
             this.uponGraphDragRelease(e, allowedEditsFunc, isTypeFunc);
-            this.par.setClickedObject(null);
+            this.par.setClickedObject(null);*/
         } else {
             this.par.setClickedObject(null);
         }
@@ -128,10 +130,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
      *    e - The generated event
      */
     GraphEventHandler.prototype.mouseenter = function(e) {
-        if (!e.ctrlKey && this.par.isTempDrawModeActive) {
+        if (!e.ctrlKey && this.par.isTempMoveModeActive) {
             // If the CTRL key is not pressed while the temporary draw mode is active, we disable temporary draw mode
             // This happens for example when releasing the CTRL key on an alert box popup
-            this.par.disableTemporaryDrawMode();
+            this.par.disableTemporaryMoveMode();
         }
     };
 
@@ -167,14 +169,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.par.setMousePosition({x: mouse.x, y: mouse.y});
 
         // Depending on the mode, perform different tasks
-        if (this.par.getUIMode() === util.ModeType.DRAW) {
+        if (this.par.getUIMode() === util.ModeType.ADD) {
             this.provisionallyCreateLink(mouse, allowedEditsFunc, isTypeFunc);
 
             // Disable the selection rectangle if we are in temporary draw mode
-            if (this.par.getTempDrawModeActive()) {
+            if (this.par.getTempMoveModeActive()) {
                 this.par.setSelectionRectangle(null);
             }
-        } else if (this.par.getUIMode() === util.ModeType.SELECT) {
+        } else if (this.par.getUIMode() === util.ModeType.MOVE) {
             // Move selected objects and possible apply snapping
             this.moveObjects(mouse, allowedEditsFunc, isTypeFunc);
 
@@ -271,9 +273,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Check whether the control key is pressed
         if (pressedKey === 17) {
-            // Set the mode to SELECT if it is not set already
-            if (this.par.getUIMode() !== util.ModeType.SELECT && this.par.getTempDrawModeActive()) {
-                this.par.disableTemporaryDrawMode();
+            // Set the mode to ADD if it is not set already
+            if (this.par.getUIMode() !== util.ModeType.ADD && this.par.getTempMoveModeActive()) {
+                this.par.disableTemporaryMoveMode();
             }
         }
     };
@@ -857,9 +859,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         if (pressedKey === 17) {
             // Control key. If adding objects is allowed, set the mode to Draw
-            if (this.par.getUIMode() !== util.ModeType.DRAW &&
-                (allowedEditsFunc(this.par, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.par, util.Edit.EDIT_EDGE))) {
-                this.par.enableTemporaryDrawMode();
+            if (this.par.getUIMode() !== util.ModeType.MOVE) {
+                this.par.enableTemporaryMoveMode();
             }
         }
     };

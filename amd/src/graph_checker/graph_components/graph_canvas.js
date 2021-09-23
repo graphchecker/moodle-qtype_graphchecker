@@ -130,7 +130,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // If draw mode is active and the user hovers over an empty area, draw a shadow node to indicate that the user
         // can create a node here
-        if (uiMode === util.ModeType.DRAW && mousePosition && !currentLink &&
+        if (uiMode === util.ModeType.ADD && mousePosition && !currentLink &&
             !getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) &&
             allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX)) {
 
@@ -198,7 +198,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Draw the nodes with the draw option
         for (let i = 0; i < nodes.length; i++) {
-            let drawNodeShadow = uiMode === util.ModeType.DRAW && mousePosition &&
+            let drawNodeShadow = uiMode === util.ModeType.ADD && mousePosition &&
                 getObjectOnMousePosFunc(graphRepr, mousePosition.x, mousePosition.y, true) === nodes[i] &&
                 allowEditsFunc(graphUi, util.Edit.EDIT_VERTEX);
             if (drawNodeShadow) {

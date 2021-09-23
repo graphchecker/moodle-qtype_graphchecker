@@ -101,19 +101,19 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             if (self.parent.allowEdits(self.parent, util.Edit.EDIT_VERTEX) || self.parent.allowEdits(self.parent,
                 util.Edit.EDIT_EDGE)) {
                 // Left buttons
-                // Create the select button
-                let selectButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-mouse-pointer', "Select mode", self.onModeButtonPressed,
-                    util.ModeType.SELECT);
-                selectButton.create();
-                self.leftButtons['select'] = selectButton;
+                // Create the add button
+                let addButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Add mode", self.onModeButtonPressed,
+                    util.ModeType.ADD);
+                addButton.create();
+                self.leftButtons['add'] = addButton;
 
-                // Create the draw button
-                let drawButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
-                    self.buttonSize.w, self.buttonSize.h, 'fa-pencil', "Draw mode (Ctrl)", self.onModeButtonPressed,
-                    util.ModeType.DRAW);
-                drawButton.create();
-                self.leftButtons['draw'] = drawButton;
+                // Create the move button
+                let moveButton = new toolbar_elements.ToggleButton(self, self.toolbarLeftPart,
+                    self.buttonSize.w, self.buttonSize.h, 'fa-arrows', "Move mode (Ctrl)", self.onModeButtonPressed,
+                    util.ModeType.MOVE);
+                moveButton.create();
+                self.leftButtons['move'] = moveButton;
             }
 
             // Right buttons
@@ -159,7 +159,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
             // If the graph type is 'Petri net', and the initial mode is 'Draw', show the buttons for selection
             // different types of petri nodes: places and transitions
-            if (self.parent.isType(self.parent, util.Type.PETRI) && self.uiMode === util.ModeType.DRAW) {
+            if (self.parent.isType(self.parent, util.Type.PETRI) && self.uiMode === util.ModeType.ADD) {
                 self.addPetriNodeTypeOptions();
 
                 // Set the place button to highlighted
@@ -167,7 +167,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             }
 
             self.resize();
-            self.parent.setUIMode(util.ModeType.SELECT);
+            self.parent.setUIMode(util.ModeType.ADD);
         });
 
         this.div.on('keydown', function (e) {
@@ -183,7 +183,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
             self.parent.setUIMode(buttonModeType);
 
             // Remove the FSM options from display if the mode is switched to draw mode
-            if (buttonModeType === util.ModeType.DRAW) {
+            if (buttonModeType === util.ModeType.ADD) {
                 self.removeSelectionOptions();
                 self.removeFSMNodeSelectionOptions();
                 self.removePetriSelectionOptions();
@@ -432,8 +432,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     (toolbar.parent.allowEdits(toolbar.parent, util.Edit.EDIT_VERTEX) || toolbar.parent.allowEdits(toolbar.parent,
                         util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
-                if (toolbar.parent.uiMode !== util.ModeType.DRAW) {
-                    toolbar.parent.enableTemporaryDrawMode();
+                if (toolbar.parent.uiMode !== util.ModeType.MOVE) {
+                    toolbar.parent.enableTemporaryMoveMode();
                 }
             }
         } else if (event instanceof InputEvent) {
@@ -517,8 +517,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                     (this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_VERTEX) ||
                         this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
-                if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {
-                    this.toolbar.parent.enableTemporaryDrawMode();
+                if (this.toolbar.parent.uiMode !== util.ModeType.MOVE) {
+                    this.toolbar.parent.enableTemporaryMoveMode();
                 }
             }
         }
@@ -813,8 +813,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
                         this.toolbar.parent.allowEdits(this.toolbar.parent, util.Edit.EDIT_EDGE))) {
                 // Also set focus, and activate temporary draw mode if draw mode is not active already
                 $(this.toolbar.parent.graphCanvas.canvas).focus();
-                if (this.toolbar.parent.uiMode !== util.ModeType.DRAW) {
-                    this.toolbar.parent.enableTemporaryDrawMode();
+                if (this.toolbar.parent.uiMode !== util.ModeType.MOVE) {
+                    this.toolbar.parent.enableTemporaryMoveMode();
                 }
             }
         } else {

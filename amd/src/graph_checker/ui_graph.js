@@ -81,8 +81,8 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // Some variables denoting the state of the graph, w.r.t. drawing
         this.readOnly = this.textArea.prop('readonly'); // Whether the graph is readonly or also editable
-        this.uiMode = util.ModeType.SELECT; // Set the UI mode to be 'Select' initially
-        this.isTempDrawModeActive = false;
+        this.uiMode = util.ModeType.ADD; // Set the UI mode to be 'Add' initially
+        this.isTempMoveModeActive = false;
         this.petriNodeType = util.PetriNodeType.NONE; // The current Petri node type, when creating new Petri net nodes
 
         // More variables for configuring the state of the graph, w.r.t. selection
@@ -254,26 +254,24 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     /**
-     * Function: enableTemporaryDrawMode
-     * Enables temporary draw mode
+     * Function: enableTemporaryMoveMode
+     * Enables temporary move mode, while holding Ctrl
      */
-    GraphUI.prototype.enableTemporaryDrawMode = function() {
-        if (this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) {
-            // Assign the latest selected object
-            this.previousSelectedObjects = this.selectedObjects;
+    GraphUI.prototype.enableTemporaryMoveMode = function() {
+        // Assign the latest selected object
+        this.previousSelectedObjects = this.selectedObjects;
 
-            // Set the mode to Draw
-            this.setUIMode(util.ModeType.DRAW);
-            this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
-            this.isTempDrawModeActive = true;
+        // Set the mode to Move
+        this.setUIMode(util.ModeType.MOVE);
+        this.selectedObjects = this.previousSelectedObjects; // Re-add the selected objects
+        this.isTempMoveModeActive = true;
 
-            // Manually trigger a mousemove event, to correct the place of the hypothetical draw node location
-            // (shown as a shadow), by using the saved client (mouse) position
-            let evt = new Event('mousemove');
-            evt.clientX = this.graphEventHandler.previousClientPos.x;
-            evt.clientY = this.graphEventHandler.previousClientPos.y;
-            this.graphCanvas.canvas[0].dispatchEvent(evt);
-        }
+        // Manually trigger a mousemove event, to correct the place of the hypothetical draw node location
+        // (shown as a shadow), by using the saved client (mouse) position
+        let evt = new Event('mousemove');
+        evt.clientX = this.graphEventHandler.previousClientPos.x;
+        evt.clientY = this.graphEventHandler.previousClientPos.y;
+        this.graphCanvas.canvas[0].dispatchEvent(evt);
     };
 
     /**
@@ -298,9 +296,9 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         // Set the UI mode, and set the selected objects
-        this.setUIMode(util.ModeType.SELECT);
+        this.setUIMode(util.ModeType.ADD);
         this.selectedObjects = this.previousSelectedObjects;
-        this.isTempDrawModeActive = false;
+        this.isTempMoveModeActive = false;
 
         // Enable the delete button if something is selected
         if ((this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) &&
@@ -962,60 +960,52 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         this.uiMode = modeType;
         this.clickedObject = null;
 
-        if (this.uiMode === util.ModeType.DRAW) {
-            // Deselect all selected objects
-            this.selectedObjects = [];
-
-            // Disable the delete button
-            if (this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE)) {
-                this.toolbar.rightButtons['delete'].setDisabled();
-            }
-
+        if (this.uiMode === util.ModeType.ADD) {
             // If the graph type is Petri net
             if (this.isType(this, util.Type.PETRI)) {
                 this.toolbar.addPetriNodeTypeOptions();
             }
 
             // Style the buttons correctly
-            if (this.toolbar.leftButtons['select']) {
-                this.toolbar.leftButtons['select'].setDeselected();
+            if (this.toolbar.leftButtons['add']) {
+                this.toolbar.leftButtons['add'].setSelected();
             }
-            if (this.toolbar.leftButtons['draw']) {
-                this.toolbar.leftButtons['draw'].setSelected();
+            if (this.toolbar.leftButtons['move']) {
+                this.toolbar.leftButtons['move'].setDeselected();
             }
-        } else if (this.uiMode === util.ModeType.SELECT) {
+        } else if (this.uiMode === util.ModeType.MOVE) {
             if (this.isType(this, util.Type.PETRI)) {
                 this.toolbar.removePetriNodeTypeOptions();
             }
 
             // Style the buttons correctly
-            if (this.toolbar.leftButtons['select']) {
-                this.toolbar.leftButtons['select'].setSelected();
+            if (this.toolbar.leftButtons['add']) {
+                this.toolbar.leftButtons['add'].setDeselected();
             }
-            if (this.toolbar.leftButtons['draw']) {
-                this.toolbar.leftButtons['draw'].setDeselected();
+            if (this.toolbar.leftButtons['move']) {
+                this.toolbar.leftButtons['move'].setSelected();
             }
         }
     };
 
     /**
-     * Function: getTempDrawModeActive
+     * Function: getTempMoveModeActive
      *
      * Returns:
-     *    Whether the temporary draw mode is currently active or not
+     *    Whether the temporary move mode is currently active or not
      */
-    GraphUI.prototype.getTempDrawModeActive = function() {
-        return this.isTempDrawModeActive;
+    GraphUI.prototype.getTempMoveModeActive = function() {
+        return this.isTempMoveModeActive;
     };
 
     /**
-     * Function: setTempDrawModeActive
+     * Function: setTempMoveModeActive
      *
      * Parameters:
-     *    value - The value to which to set the tempDrawmode variable
+     *    value - The value to which to set the tempMoveMode variable
      */
-    GraphUI.prototype.setTempDrawModeActive = function(value) {
-        this.isTempDrawModeActive = value;
+    GraphUI.prototype.setTempMoveModeActive = function(value) {
+        this.isTempMoveModeActive = value;
     };
 
     /**
