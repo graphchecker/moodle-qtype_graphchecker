@@ -179,6 +179,10 @@ define(['jquery'], function($) {
         this.uiInstance = null;  // Defined by loadUi asynchronously
         this.loadUi(uiname, this.templateParams);  // Load the required UI element
 
+        // Allow for disabling this wrapper, which means that it will not be
+        // reloaded on Ctrl+Alt+M.
+        this.disabled = false;
+
         // Add event handlers
         $(document).mousemove(function() {
             t.checkForResize();
@@ -196,7 +200,7 @@ define(['jquery'], function($) {
             if (e.keyCode === KEY_M && e.ctrlKey && e.altKey) {
                 if (t.uiInstance !== null || t.loadFailed) {
                     t.stop();
-                } else {
+                } else if (!t.disabled) {
                     t.restart();        // Reactivate
                 }
             }

@@ -39,11 +39,15 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
         function setUi($textArea, uiName) {
+            console.log(uiName); // eslint-disable-line
 
             let uiWrapper = $textArea.data('current-ui-wrapper');
 
             if (uiName === "text") {
                 if (uiWrapper) {
+                    // disable the wrapper to make sure it won't be reactivated
+                    // on pressing Ctrl+Alt+M
+                    uiWrapper.disabled = true;
                     uiWrapper.stop();
                 }
                 return;
@@ -53,8 +57,10 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             // otherwise, just reload
             if (!uiWrapper || uiWrapper.uiname !== uiName) {
                 uiWrapper = new ui.InterfaceWrapper(uiName, $textArea.attr('id'));
+                $textArea.data('current-ui-wrapper', uiWrapper);
 
             } else {
+                uiWrapper.disabled = false;
                 let params = {};
                 if ($textArea.attr('data-params')) {
                     params = JSON.parse($textArea.attr('data-params'));
