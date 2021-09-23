@@ -3,6 +3,7 @@
     "ui_plugin": "graph",
     "ui_params": {
         "type": "fsm"
-    }
+    },
+    "python_explanation": "For state machines, the answer is represented in a custom format: an object with keys <code>states</code> (a list of states) and <code>transitions</code> (a list of transitions, each with a <code>from</code> and a <code>to</code> attribute)."
 }
 

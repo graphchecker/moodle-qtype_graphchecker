@@ -54,17 +54,29 @@ def run(graph_type, graph, checks):
 				correct = True
 		else:
 			try:
-				check_module = importlib.import_module(check['module'])
-				check_method = getattr(check_module, check['method'])
-				data = check_data[check['module']]['checks'][check['method']]
-				argument = convert_arguments(check['arguments'], data, preprocess)
-				result = check_method(graph, **argument)
+				if check['module'] == 'custom' and check['method'] == 'custom':
+					check_code = check['arguments']['code']
+					result = {}
+					vars = {
+						'student_answer': graph,
+						'result': result,
+					}
+					exec(check_code, vars)
+					result = vars['result']
+					if not 'correct' in result:
+						raise Exception('\'correct\' key not found in custom check output')
+				else:
+					check_module = importlib.import_module(check['module'])
+					check_method = getattr(check_module, check['method'])
+					data = check_data[check['module']]['checks'][check['method']]
+					argument = convert_arguments(check['arguments'], data, preprocess)
+					result = check_method(graph, **argument)
+					if 'feedback' in result:
+						result['feedback'] = convert_feedback(check, data, result)
 				result['module'] = check['module']
 				result['method'] = check['method']
 				if not result['correct']:
 					correct = False
-				if 'feedback' in result:
-					result['feedback'] = convert_feedback(check, data, result)
 				results.append(result)
 			except:
 				stacktrace = traceback.format_exc()

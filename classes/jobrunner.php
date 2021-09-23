@@ -126,7 +126,8 @@ class qtype_graphchecker_jobrunner {
         foreach ($checksArray as $check) {
             // only look at type "check", not "grade"
             if (!array_key_exists("type", $check) ||
-                    $check["type"] === "check") {
+                    $check["type"] === "check" &&
+                    $check['module'] !== 'custom') {
                 $module = $check['module'];
                 $modules[] = $module;
             }
@@ -158,12 +159,16 @@ class qtype_graphchecker_jobrunner {
                 throw new Exception('Illegal module name');
             }
 
+            if ($module === 'custom') {
+                continue;
+            }
+
             $name = $module . '.py';
             $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $name;
             $filemap[$name] = file_get_contents($full_name);
 
             // JSON file
-            if ($module != 'preprocess') {
+            if ($module !== 'preprocess') {
                 $name = $module . '.json';
                 $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $question->answertype . '/' . $name;
                 $filemap[$name] = file_get_contents($full_name);

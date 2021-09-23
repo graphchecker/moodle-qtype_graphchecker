@@ -187,6 +187,10 @@ class qtype_graphchecker_testing_outcome {
             throw new Exception('Illegal module name');
         }
 
+        if ($module === 'custom' && $method === 'custom') {
+            return 'Custom check';
+        }
+
         // load module JSON
         $name = $module . '.json';
         $full_name = $CFG->dirroot . '/question/type/graphchecker/checks/' . $answertype . '/' . $name;

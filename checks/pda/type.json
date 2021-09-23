@@ -4,6 +4,7 @@
     "ui_params": {
         "type": "fsm"
     },
-    "python_modules": ["automata"]
+    "python_modules": ["automata"],
+    "python_explanation": "For DFA's, NFA's, PDA's, and Turing machines, the answer is encoded as a string that can be read by the gamba-tools library."
 }
 

@@ -4,6 +4,7 @@
     "ui_params": {
         "type": "directed"
     },
-    "python_modules": ["igraph"]
+    "python_modules": ["igraph"],
+    "python_explanation": "For directed graphs, the answer is encoded as an <code>igraph.Graph</code>. See igraph's <a href=\"https://igraph.org/python/#docs\">documentation</a> for details."
 }
 

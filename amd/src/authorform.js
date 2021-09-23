@@ -111,6 +111,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                     $preloadField.attr('data-params', jsonParams);
 
                     $checksField.attr('data-available-checks', JSON.stringify(data['available_checks']));
+                    $checksField.attr('data-python-explanation', data['python_explanation']);
 
                     setUis(data['ui_plugin']);
                 }

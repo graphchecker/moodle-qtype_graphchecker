@@ -3,6 +3,7 @@
     "ui_plugin": "graph",
     "ui_params": {
         "type": "petri"
-    }
+    },
+    "python_explanation": "For Petri nets, the answer is encoded as an <code>pm4py.objects.petri.petrinet.PetriNet</code>. See PM4Py's <a href=\"https://pm4py.fit.fraunhofer.de/docs\">documentation</a> for details."
 }
 

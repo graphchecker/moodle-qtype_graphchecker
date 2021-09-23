@@ -106,6 +106,25 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         let modulesJson = this.$textArea.attr('data-available-checks');
         this.modules = JSON.parse(modulesJson);
+        this.modules['custom'] = {
+            'name': 'Custom',
+            'checks': {
+                'custom': {
+                    'name': 'Custom check',
+                    'description': 'If the checks above are not sufficient for ' +
+                        'your needs, you can provide Python code to implement ' +
+                        'your own custom check.',
+                    'params': [
+                        {
+                            'param': 'code',
+                            'name': 'Code',
+                            'type': 'code'
+                        }
+                    ]
+                }
+            }
+        };
+        this.pythonExplanation = this.$textArea.attr('data-python-explanation');
 
         this.$activeChecksList = $('<div/>')
             .addClass('active-tests-list')
@@ -467,6 +486,21 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                     $field.val(value);
                 }
 
+            } else if (type === 'code') {
+                $('<textarea/>')
+                    .addClass('argument-value')
+                    .val(value)
+                    .hide()
+                    .appendTo($argumentRow);
+
+                let $buttonGroup = $('<div/>')
+                    .addClass('button-group')
+                    .appendTo($argumentRow);
+                this.createButton('fa-pencil')
+                    .attr('title', 'Edit the code to be used for the custom check')
+                    .on('click', this.showEditCodeDialog.bind(this))
+                    .appendTo($buttonGroup);
+
             } else if (type === 'graph') {
                 $('<textarea/>')
                     .addClass('argument-value')
@@ -628,6 +662,47 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 }
             });
             $checkContainer.attr('data-feedback', JSON.stringify(feedback));
+            this.hideDialogs();
+            return false;
+        }.bind(this));
+
+        return false;
+    };
+
+    ChecksUi.prototype.showEditCodeDialog = function(e) {
+        this.$backdrop.css('display', 'block')
+            .addClass('visible');
+        $('body').addClass('unscrollable');
+
+        let $argumentRow = $(e.target).closest('.argument-row');
+        let $codeField = $argumentRow.find('.argument-value');
+
+        let $body = $('<div/>');
+
+        let helpText = '<p>In the text field below, enter the Python code implementing your custom check.</p>';
+        helpText += '<ul>';
+        helpText += '<li>You can access the student\'s answer using the variable <code>student_answer</code>.';
+        if (this.pythonExplanation) {
+            helpText += ' ' + this.pythonExplanation;
+        }
+        helpText += '</li>';
+        helpText += '<li>Grade the answer and place the result into a variable <code>result</code> as follows:' +
+            '<pre>result = {\n    \'correct\': &lt;True|False&gt;,\n    \'feedback\': &lt;some feedback string&gt;\n}</pre></li>';
+        helpText += '</ul>';
+        $('<div/>')
+            .html(helpText)
+            .appendTo($body);
+
+        let $newField = $('<textarea/>')
+            .attr('id', 'code-editor-field')
+            .val($codeField.val())
+            .appendTo($body);
+
+        let $dialog = this.createDialog('Edit custom check code', $body, 'OK')
+            .appendTo(this.$backdrop);
+
+        $dialog.find('.btn.btn-primary').on('click', function() {
+            $codeField.val($newField.val());
             this.hideDialogs();
             return false;
         }.bind(this));

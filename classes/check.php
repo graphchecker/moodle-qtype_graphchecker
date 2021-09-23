@@ -54,6 +54,9 @@ class qtype_graphchecker_check {
     }
 
     public static function has_check($answertype, $module, $method) {
+        if ($module === 'custom' && $method === 'custom') {
+            return true;
+        }
         $modules = qtype_graphchecker_check::get_available_checks($answertype);
         if (!array_key_exists($module, $modules)) {
             return false;
