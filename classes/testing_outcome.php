@@ -126,10 +126,10 @@ class qtype_graphchecker_testing_outcome {
         } else if ($this->combinator_error()) {
             return get_string('badquestion', 'qtype_graphchecker') . html_writer::tag('pre', $this->errormessage);
         } else if ($this->preprocessor_error()) {
-            return 'Sample answer failed a sanity check:' . html_writer::tag('p', $this->errormessage);
+            return 'Feedback answer failed a sanity check:' . html_writer::tag('p', $this->errormessage);
         }
 
-        $message = 'Sample answer fails checks (' . $this->grade * 100 . '% of points awarded):<ul>';
+        $message = 'Feedback answer fails checks (' . $this->grade * 100 . '% of points awarded):<ul>';
         foreach ($this->testresults as $result) {
             $checkName = $this->get_test_name($question->answertype, $result["module"], $result["method"]);
             if (array_key_exists('error', $result)) {

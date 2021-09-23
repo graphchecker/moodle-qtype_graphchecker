@@ -34,7 +34,7 @@ require_once($CFG->dirroot . '/lib/questionlib.php');
 
 /**
  * GraphChecker's question type class. This includes the specific fields
- * needed for GraphChecker questions (answer type, preload, sample answer,
+ * needed for GraphChecker questions (answer type, preload, feedback answer,
  * etc.)
  */
 class qtype_graphchecker extends question_type {
@@ -196,7 +196,7 @@ class qtype_graphchecker extends question_type {
      * Imports question from the Moodle XML format.
      *
      * Overridden because we need to avoid the superclass code that tries to
-     * read answers (we have only one sample answer and it is an extra question
+     * read answers (we have only one feedback answer and it is an extra question
      * field).
      */
     public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {

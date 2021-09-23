@@ -725,12 +725,12 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             .val($graphField.val())
             .appendTo($body);
 
-        let $copyFromSampleButton = $('<button/>')
+        let $copyFromFeedbackButton = $('<button/>')
             .addClass('btn')
-            .text('Copy from sample answer')
+            .text('Copy from feedback answer')
             .appendTo($body);
 
-        $copyFromSampleButton.on('click', function() {
+        $copyFromFeedbackButton.on('click', function() {
             $('#id_answer').data('current-ui-wrapper').stop();
             $newField.data('current-ui-wrapper').stop();
             $newField.val($('#id_answer').val());
@@ -739,12 +739,12 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             return false;
         });
 
-        let $copyToSampleButton = $('<button/>')
+        let $copyToFeedbackButton = $('<button/>')
             .addClass('btn')
-            .text('Copy to sample answer')
+            .text('Copy to feedback answer')
             .appendTo($body);
 
-        $copyToSampleButton.on('click', function() {
+        $copyToFeedbackButton.on('click', function() {
             $('#id_answer').data('current-ui-wrapper').stop();
             $newField.data('current-ui-wrapper').stop();
             $('#id_answer').val($newField.val());

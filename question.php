@@ -170,7 +170,7 @@ class qtype_graphchecker_question extends question_graded_automatically {
 
 
     public function get_correct_answer() {
-        // Return the sample answer, if supplied.
+        // Return the feedback answer, if supplied.
         if (!isset($this->answer)) {
             return null;
         } else {

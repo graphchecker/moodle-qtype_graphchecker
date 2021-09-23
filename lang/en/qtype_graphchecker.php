@@ -25,16 +25,16 @@
 $string['aborted'] = 'Testing was aborted due to an error.';
 $string['allowed_vertex_edits'] = 'Allow adding/removing';
 $string['allowed_vertex_edits_help'] = 'This decides whether the student is able to add/remove nodes and edges.';
-$string['answer'] = 'Sample answer';
+$string['answer'] = 'Feedback answer';
 $string['answerprompt'] = 'Answer:';
-$string['answer_help'] = 'A sample answer can be entered here, so that it can be shown to students during review. Note that this sample answer is not used for grading purposes: only the checks above determine if the student\'s answer is correct. The buttons below the editor can be used to copy the preloaded answer into the sample answer, or vice versa.';
-$string['answer'] = 'Sample answer';
+$string['answer_help'] = 'A feedback answer can be entered here, so that it can be revealed to students during review. Note that this feedback answer is not used for grading purposes: only the checks above determine if the student\'s answer is correct. The buttons below the editor can be used to copy the preloaded answer into the feedback answer, or vice versa.';
+$string['answer'] = 'Feedback answer';
 $string['answerbox_group'] = 'Answer box';
 $string['answerpreload'] = 'Preloaded answer';
 $string['answerpreload_help'] = 'The student\'s answer box will be pre-filled with the contents of this field. If the student is intended to draw a graph from scratch, this should be left empty.';
 $string['answertype'] = 'Answer type';
-$string['answertype_help'] = 'Change which type of answer the student is required to give. Depending on the selection, the proper editor will be shown. Changing the answer type will clear the Answer box preload, Checks, and Sample answer sections below.';
-$string['answertype_changed'] = 'Changing the answer type will clear the Answer box preload, Checks, and Sample answer sections. Are you sure you want to continue?';
+$string['answertype_help'] = 'Change which type of answer the student is required to give. Depending on the selection, the proper editor will be shown. Changing the answer type will clear the Answer box preload, Checks, and Feedback answer sections below.';
+$string['answertype_changed'] = 'Changing the answer type will clear the Answer box preload, Checks, and Feedback answer sections. Are you sure you want to continue?';
 $string['asolutionis'] = 'Example solution:';
 
 $string['badquestion'] = 'Error in question';
@@ -102,8 +102,8 @@ $string['run_failed'] = 'Failed to run checks';
 $string['ui_fallback'] = 'Falling back to raw text area.';
 $string['unserializefailed'] = 'Stored test results could not be deserialised. Perhaps try regrading?';
 
-$string['validateonsave'] = 'Check sample answer on save';
-$string['validateonsave_help'] = 'The <b>Copy from/to preload</b> buttons allow you to use the preloaded answer set above as a base for drawing the sample answer, or the other way round.<br>The <b>Check sample answer on save</b> checkbox, if checked, will validate that the checks pass for the sample answer when you save this question; this ensures that the sample answer is actually correct.';
+$string['validateonsave'] = 'Check feedback answer on save';
+$string['validateonsave_help'] = 'The <b>Copy from/to preload</b> buttons allow you to use the preloaded answer set above as a base for drawing the sample answer, or the other way round.<br>The <b>Check feedback answer on save</b> checkbox, if checked, will validate that the checks pass for the feedback answer when you save this question. This ensures that the feedback answer is actually correct.';
 $string['vertex_attributes'] = 'Node attributes';
 $string['vertex_attributes_help'] = 'Specify which attributes nodes have: labels, colors, or both.';
 $string['vertexedits'] = 'Allowed edits';

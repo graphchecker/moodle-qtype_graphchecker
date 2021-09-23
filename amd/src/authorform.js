@@ -28,7 +28,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
     // Set up the author edit form UI plugins and event handlers.
     function initEditForm() {
-        let $sampleAnswerField = $('#id_answer'),
+        let $feedbackAnswerField = $('#id_answer'),
             $preloadField = $('#id_answerpreload'),
             $checksField = $('#id_checks'),
             $typeCombo = $('#id_answertype'),
@@ -69,16 +69,16 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             }
         }
 
-        // Set the correct Ui controller on both the sample answer and the answer preload.
+        // Set the correct Ui controller on both the feedback answer and the answer preload.
         function setUis(pluginName) {
-            setUi($sampleAnswerField, pluginName);
+            setUi($feedbackAnswerField, pluginName);
             setUi($preloadField, pluginName);
             setUi($checksField, 'checks');
         }
 
         function stopUis() {
-            if ($sampleAnswerField.data('current-ui-wrapper')) {
-                $sampleAnswerField.data('current-ui-wrapper').stop();
+            if ($feedbackAnswerField.data('current-ui-wrapper')) {
+                $feedbackAnswerField.data('current-ui-wrapper').stop();
             }
             if ($preloadField.data('current-ui-wrapper')) {
                 $preloadField.data('current-ui-wrapper').stop();
@@ -104,7 +104,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                     params['vertex_colors'] = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'];
                     params['edge_colors'] = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white'];
                     let jsonParams = JSON.stringify(params);
-                    $sampleAnswerField.attr('data-params', jsonParams);
+                    $feedbackAnswerField.attr('data-params', jsonParams);
 
                     params['save_locked'] = true;
                     jsonParams = JSON.stringify(params);
@@ -127,14 +127,14 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         $typeCombo.on('change', function() {
             stopUis();
             let needsToClear =
-                    $sampleAnswerField.val() !== '' ||
+                    $feedbackAnswerField.val() !== '' ||
                     $preloadField.val() !== '' ||
                     $checksField.val() !== '[]';
             if (needsToClear) {
                 if (window.confirm('Changing the answer type will clear the ' +
-                        'Answer box preload, Checks, and Sample answer ' +
+                        'Answer box preload, Checks, and Feedback answer ' +
                         'sections below.')) {
-                    $sampleAnswerField.val('');
+                    $feedbackAnswerField.val('');
                     $preloadField.val('');
                     $checksField.val('[]');
                 } else {
@@ -146,22 +146,22 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         $copyFromPreloadButton.on('click', function() {
             $preloadField.data('current-ui-wrapper').stop();
-            $sampleAnswerField.data('current-ui-wrapper').stop();
+            $feedbackAnswerField.data('current-ui-wrapper').stop();
 
-            $sampleAnswerField.val($preloadField.val());
+            $feedbackAnswerField.val($preloadField.val());
 
             $preloadField.data('current-ui-wrapper').restart();
-            $sampleAnswerField.data('current-ui-wrapper').restart();
+            $feedbackAnswerField.data('current-ui-wrapper').restart();
         });
 
         $copyToPreloadButton.on('click', function() {
             $preloadField.data('current-ui-wrapper').stop();
-            $sampleAnswerField.data('current-ui-wrapper').stop();
+            $feedbackAnswerField.data('current-ui-wrapper').stop();
 
-            $preloadField.val($sampleAnswerField.val());
+            $preloadField.val($feedbackAnswerField.val());
 
             $preloadField.data('current-ui-wrapper').restart();
-            $sampleAnswerField.data('current-ui-wrapper').restart();
+            $feedbackAnswerField.data('current-ui-wrapper').restart();
         });
     }
 

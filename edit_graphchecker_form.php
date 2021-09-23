@@ -108,15 +108,15 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         // add other sections
         $this->add_student_interaction_field($mform);
         $this->add_checks_field($mform);
-        $this->add_sample_answer_field($mform);
+        $this->add_feedback_answer_field($mform);
     }
 
 
     /**
-     * Add a field for a sample answer to this problem (optional)
+     * Add a field for a feedback answer to this problem (optional)
      * @param object $mform the form being built
      */
-    protected function add_sample_answer_field($mform) {
+    protected function add_feedback_answer_field($mform) {
         global $CFG;
         $mform->addElement('header', 'answerhdr',
                     get_string('answer', 'qtype_graphchecker'), '');
@@ -323,7 +323,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
             return $errors;
         }
 
-        $testresult = $this->validate_sample_answer($data);
+        $testresult = $this->validate_feedback_answer($data);
         if ($testresult) {
             $errors['answer'] = $testresult;
         }
@@ -360,7 +360,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
 
     /**
      * Construct a question object containing all the fields from $data.
-     * Used when validating the sample answer.
+     * Used when validating the feedback answer.
      */
     private function make_question_from_form_data($data) {
         global $DB;
@@ -375,7 +375,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         }
         $question->isnew = true;
 
-        // Clean the question object, get inherited fields and run the sample answer.
+        // Clean the question object, get inherited fields and run the feedback answer.
         $qtype = new qtype_graphchecker();
         $questiontype = $question->answertype;
         list($category) = explode(',', $question->category);
@@ -385,11 +385,11 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         return $question;
     }
 
-    // Check the sample answer (if there is one)
-    // Return an empty string if there is no sample answer and no attachments,
-    // or if the sample answer passes all the tests.
+    // Check the feedback answer (if there is one)
+    // Return an empty string if there is no feedback answer and no attachments,
+    // or if the feedback answer passes all the tests.
     // Otherwise return a suitable error message for display in the form.
-    private function validate_sample_answer($data) {
+    private function validate_feedback_answer($data) {
 
         try {
             $question = $this->make_question_from_form_data($data);

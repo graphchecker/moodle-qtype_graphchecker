@@ -235,9 +235,9 @@ class qtype_graphchecker_renderer extends qtype_renderer {
 
 
     /**
-     * Return the HTML to display the sample answer, if given.
+     * Return the HTML to display the feedback answer, if given.
      * @param question_attempt $qa
-     * @return string The html for displaying the sample answer.
+     * @return string The html for displaying the feedback answer.
      */
     public function correct_response(question_attempt $qa) {
         global $PAGE;
@@ -246,10 +246,10 @@ class qtype_graphchecker_renderer extends qtype_renderer {
         $fieldname = $qa->get_qt_field_name('sampleanswer');
         $fieldid = 'id_' . $fieldname;
         $heading = get_string('asolutionis', 'qtype_graphchecker');
-        $html = html_writer::start_tag('div', array('class' => 'sample code'));
+        $html = html_writer::start_tag('div');
         $html .= html_writer::tag('h4', $heading);
         $taattributes = array(
-                'class' => 'graphchecker-sample-answer edit_code',
+                'class' => 'graphchecker-feedback-answer edit_code',
                 'name'  => $fieldname,
                 'id'    => $fieldid,
                 'readonly' => true,
