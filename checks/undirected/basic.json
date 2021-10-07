@@ -41,6 +41,20 @@
                     "param": "graph_answer",
                     "name" : "Expected graph",
                     "type" : "graph"
+                },
+                {
+                    "param": "colors_choice",
+                    "name" : "Require color equivalence",
+                    "type": "choice",
+                    "options": ["no", "yes"],
+                    "default": "no"
+                },
+                {
+                    "param": "edge_choice",
+                    "name" : "Require edge label equivalence",
+                    "type": "choice",
+                    "options": ["no", "yes"],
+                    "default": "no"
                 }
             ],
             "feedback": {

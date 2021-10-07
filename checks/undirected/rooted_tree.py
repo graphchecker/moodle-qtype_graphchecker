@@ -42,7 +42,7 @@ def binarySearchTree(student_answer, downwards):
     for v in student_answer.vs:
         try:
             label = filter_orig_name(v)
-            labels.append(label)
+            labels.append(int(label))
         except:
             return {'correct': False,
                     'feedback': "The label {0} is not numerical.".format(filter_orig_name(v))}
@@ -96,7 +96,7 @@ def traverse(node, labels, downwards):
     (left,right) = children(node, downwards)
     if (not left == None):
         labels = traverse(left, labels, downwards)
-    if (filter_orig_name(node) == labels[0]):
+    if (filter_orig_name(node) == str(labels[0])):
         labels.pop(0)
     else:
         raise IncorrectLabelsException("Labels do not match at node: {0} and label: {1}".format(filter_orig_name(node),labels[0]))
