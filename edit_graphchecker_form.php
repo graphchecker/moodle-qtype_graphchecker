@@ -232,7 +232,10 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->addElement('select', 'penalty',
                 get_string('penaltyforeachincorrecttry', 'question'), $penaltyoptions);
         $mform->addHelpButton('penalty', 'penaltyforeachincorrecttry', 'question');
-        $mform->setDefault('penalty', 0.3333333);
+        //$mform->setDefault('penalty', 0.3333333);
+        // TODO temporarily set penalty default to 0 because penalties are
+        // broken with regrades (#229)
+        $mform->setDefault('penalty', 0);
     }
 
 
