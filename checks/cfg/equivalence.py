@@ -1,4 +1,4 @@
-from automata.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list, generate_language, compare_languages
+from gambatools.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list, generate_language, compare_languages
 
 def language_equivalence_words(student_answer, word_list, length):
     word_list = " ".join(word_list)

@@ -1,6 +1,6 @@
 # Tests for DFAs.
 
-from automata.notebook import parse_dfa, generate_language, parse_word_list, compare_languages
+from gambatools.notebook import parse_dfa, generate_language, parse_word_list, compare_languages
 
 def check_dfa_language_from_words(student_answer, word_list, length):
     word_list = " ".join(word_list)

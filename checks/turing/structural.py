@@ -1,4 +1,4 @@
-from automata.notebook import parse_tm
+from gambatools.notebook import parse_tm
 import json
 
 def state_count(student_answer, max_states):
@@ -17,7 +17,7 @@ def state_count(student_answer, max_states):
 
 def deterministic(student_answer):
 
-    # note: cannot use the automata library for this, because its parse_tm
+    # note: cannot use the gambatools library for this, because its parse_tm
     # function, when faced with a non-deterministic TM, just picks one of the
     # transitions arbitrarily without flagging an error
 
