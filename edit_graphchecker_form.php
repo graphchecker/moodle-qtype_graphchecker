@@ -54,7 +54,7 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         global $PAGE;
 
         $mform = $this->_form;
-        $this->answertype = 'undirected';
+        $this->answertype = '';
         if (!empty($this->question->options->answertype)) {
             $this->answertype = $this->question->options->answertype;
         }
@@ -69,13 +69,19 @@ class qtype_graphchecker_edit_form extends question_edit_form {
         $mform->setExpanded('answertypehdr', 1);
 
         $types = $this->get_types_array();
+        if (!$this->answertype) {
+            array_unshift($types, '');  // add the empty type
+        }
         $typeselectorelements = array();
         $typeselectorelements[] = $mform->createElement('select', 'answertype',
                 null, $types);
-        $mform->setDefault('answertype', 'undirected');
-        $mform->addElement('group', 'coderunner_type_group',
+        $mform->addElement('group', 'answertype',
                 get_string('answertype', 'qtype_graphchecker'), $typeselectorelements, null, false);
-        $mform->addHelpButton('coderunner_type_group', 'answertype', 'qtype_graphchecker');
+        $mform->setDefault('answertype', '');
+        $mform->addHelpButton('answertype', 'answertype', 'qtype_graphchecker');
+        $mform->addRule('answertype',
+                get_string('missing_answertype', 'qtype_graphchecker'),
+                'required');
 
         parent::definition($mform);  // The superclass adds the "General" stuff.
     }
