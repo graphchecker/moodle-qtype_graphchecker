@@ -10,7 +10,14 @@
                         "name": "should be",
                         "type": "graph"
                     }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "mismatched graph": "Error: graph does not match expected graph.",
+                "missing labeled vertex": "Error: one of the vertices appears to have the wrong label.",
+                "missing edge": "Edge given between two vertices which should not be given.",
+                "vertical order": "Vertical ordering is not correct."
+            }
         }
     }
 }

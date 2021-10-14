@@ -7,7 +7,8 @@ from treeUtilities import *
 def matchesDiagram(student_answer, graph_answer):
     if not student_answer.isomorphic(graph_answer):
         return {'correct': False,
-                'feedback': 'Error: graph does not match expected graph.'}
+            'feedback': 'mismatched graph'
+            }
     for e in student_answer.es:
         eSource = student_answer.vs[e.source]
         eTarget = student_answer.vs[e.target]
@@ -16,12 +17,16 @@ def matchesDiagram(student_answer, graph_answer):
             fTarget = graph_answer.vs.find(name=eTarget['name'])
         except:
             return {'correct': False,
-                    'feedback': 'Error: graph does not match expected graph. Missing vertex for one of the required labels'}
+                    'feedback': 'missing labeled vertex'
+                   }
         #if no edge is present in f between these vertices
         if (graph_answer.get_eid(fSource, fTarget, directed=False, error=False) < 0):
             return {'correct': False,
-                'feedback': 'Error: graph does not match expected graph. Missing edge.'}
+                    'feedback': 'missing edge'
+                   }
         #if not same orientation
         if ((eSource['y'] < eTarget['y']) != (fSource['y'] < fTarget['y'])):
-            return {'correct': False, 'feedback': 'Edges do not match expected edges or vertical ordering incorrect.'}
+            return {'correct': False,
+                    'feedback': 'vertical order'
+                   }
     return {'correct': True}
