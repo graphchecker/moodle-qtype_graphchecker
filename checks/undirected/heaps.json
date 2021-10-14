@@ -3,11 +3,27 @@
     "checks": {
         "maxheap_structure": {
             "name": "Max-heap structure",
-            "description": "Checks if the given graph a valid max-heap (layout and contents)."
+            "description": "Checks if the given graph a valid max-heap (layout and contents).",
+            "feedback": {
+                "correct": "Correct!",
+                "layout problem": "There is a problem with the layout that makes distinguishing the heap impossible.",
+                "level incorrect": "The vertices do not form left-to-right filled levels in the heap.",
+                "too many children": "Vertex [[vertexLabel]] has more than 2 children.",
+                "missing left child": "Vertex [[vertexLabel]] has a right child but no left child.",
+                "child parent wrong": "Vertex [[vertexLabel1]] is [[greater_smaller]] than it's child [[vertexLabel2]]."
+                }
         },
         "minheap_structure": {
             "name": "Min-heap structure",
-            "description": "Checks if the given graph a valid min-heap (layout and contents)."
+            "description": "Checks if the given graph a valid min-heap (layout and contents).",
+            "feedback": {
+                "correct": "Correct!",
+                "layout problem": "There is a problem with the layout that makes distinguishing the heap impossible.",
+                "level incorrect": "The vertices do not form left-to-right filled levels in the heap.",
+                "too many children": "Vertex [[vertexLabel]] has more than 2 children.",
+                "missing left child": "Vertex [[vertexLabel]] has a right child but no left child.",
+                "child parent wrong": "Vertex [[vertexLabel1]] is [[greater_smaller]] than it's child [[vertexLabel2]]."
+                }
         }
     }
 }
