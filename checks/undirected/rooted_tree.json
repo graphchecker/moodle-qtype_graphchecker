@@ -22,7 +22,13 @@
                         "options": ["top", "bottom"],
                         "default": "top"
                     }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "layout problem": "There is a problem with the layout that makes distinguishing the tree impossible.",
+                "depth wrong": "Vertex [[vertexLabel]] should have depth [[depthExpected]] but has depth [[depthReal]].",
+                "missing vertex": "Vertex with label [[vertexLabel]] could not be found."
+            }
         },
         "binaryTree": {
             "name": "Binary tree",
@@ -35,7 +41,14 @@
                     "options": ["top", "bottom"],
                     "default": "top"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "same height of nodes": "Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.",
+                "too many parents": "Not a binary tree: node [[vertexLabel]] has more than one parent.",
+                "too many children": "Not a binary tree: node [[vertexLabel]] has more than two children.",
+                "too many roots": "Not a binary tree: there is more than one root in the drawing."
+            }
         },
         "binarySearchTree": {
             "name": "Binary search tree.",
@@ -48,7 +61,16 @@
                     "options": ["top", "bottom"],
                     "default": "top"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "same height of nodes": "Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.",
+                "too many parents": "Not a binary tree: node [[vertexLabel]] has more than one parent.",
+                "too many children": "Not a binary tree: node [[vertexLabel]] has more than two children.",
+                "too many roots": "Not a binary tree: there is more than one root in the drawing.",
+                "label not numerical": "The label [[vertexLabel]] is not numerical.",
+                "not sorted order": "The elements do not form a sorted order on an in-order traversal."
+            }
         },
         "inOrderTraversal": {
             "name": "In-order traversal",
@@ -67,7 +89,13 @@
                     "options": ["top", "bottom"],
                     "default": "top"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "too few nodes": "Expected [[missingLabelsSize]] additional labels to be found.",
+                "too many nodes": "There are more elements in the answer than expected.",
+                "mismatched labels": "Labels do not match at node: [[vertexLabel]] and label: [[expectedLabel]]."
+            }
         },
         "inLeaf": {
             "name": "Elements in leaves",
@@ -86,7 +114,12 @@
                     "options": ["top", "bottom"],
                     "default": "top"
                 }
-            ]
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "not in leaf": "Element [[element]] was not in a leaf.",
+                "missing element": "Not all required elements are in a leaf. For example '[[exampleElement]]' is not in a leaf."
+            }
         }
     }
 }
