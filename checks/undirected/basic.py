@@ -27,7 +27,9 @@ def edge_count(student_answer, expected, highlighted):
                 'edgeCount': count,
                 'expectedEdgeCount': expected}
 
-def equivalent(student_answer, graph_answer):
+def equivalent(student_answer, graph_answer, colors_choice, edge_choice):
+    check_colors = colors_choice == "yes"
+    check_edge_labels = edge_choice == "yes"
     if len(student_answer.vs) != len(graph_answer.vs):
         return {'correct': False,
                 'feedback' : 'vertex count wrong',
@@ -55,7 +57,7 @@ def equivalent(student_answer, graph_answer):
                     'vertexDegree': vs_stud[i].degree(),
                     'expectedDegree': vs_graph[i].degree()}
             
-        if (vs_stud[i]['color'] != vs_graph[i]['color']):
+        if (check_colors and vs_stud[i]['color'] != vs_graph[i]['color']):
             return {'correct': False,
                     'feedback' : 'color wrong',
                     'vertexLabel': filter_orig_name(vs_graph[i]),
@@ -69,16 +71,17 @@ def equivalent(student_answer, graph_answer):
                 return {'correct': False,
                         'feedback': 'neighborhood wrong',
                         'vertexLabel': filter_orig_name(vs_graph[i])}
-        graph_edges = sorted(vs_graph[i].all_edges(), key = lambda edge: edge['label'])
-        stud_edges = sorted(vs_stud[i].all_edges(), key = lambda edge: edge['label'])
-        
-        for j in range(0, len(graph_edges)):
-            if (graph_edges[j]['label'] != stud_edges[j]['label']):
-                return {'correct': False,
-                        'feedback': 'edge label wrong',
-                        'edgeLabel': str(stud_edges[j]['label']),
-                        'fromLabel': filter_orig_name(student_answer.vs[stud_edges[j].source]),
-                        'toLabel': filter_orig_name(student_answer.vs[stud_edges[j].target])}
+        if (check_edge_labels):
+            graph_edges = sorted(vs_graph[i].all_edges(), key = lambda edge: edge['label'])
+            stud_edges = sorted(vs_stud[i].all_edges(), key = lambda edge: edge['label'])
+            
+            for j in range(0, len(graph_edges)):
+                if (graph_edges[j]['label'] != stud_edges[j]['label']):
+                    return {'correct': False,
+                            'feedback': 'edge label wrong',
+                            'edgeLabel': str(stud_edges[j]['label']),
+                            'fromLabel': filter_orig_name(student_answer.vs[stud_edges[j].source]),
+                            'toLabel': filter_orig_name(student_answer.vs[stud_edges[j].target])}
     return {'correct': True}
 
 def mst(student_answer):

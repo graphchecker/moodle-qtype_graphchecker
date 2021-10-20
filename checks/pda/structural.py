@@ -1,6 +1,6 @@
 # Tests for PDAs.
 
-from automata.notebook import parse_pda
+from gambatools.notebook import parse_pda
 
 def state_count(student_answer, max_states):
     try:

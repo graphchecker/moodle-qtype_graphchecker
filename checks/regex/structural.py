@@ -1,6 +1,6 @@
 # Tests for DFAs.
 
-from automata.notebook import parse_dfa, parse_nfa
+from gambatools.notebook import parse_dfa, parse_nfa
 
 def length(student_answer, max_length):
     l = len(student_answer)

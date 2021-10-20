@@ -36,6 +36,8 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             $copyFromPreloadButton = $('#id_copyfrompreload'),
             $copyToPreloadButton = $('#id_copytopreload');
 
+        updateFormHiddenState();
+
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
         function setUi($textArea, uiName) {
@@ -90,6 +92,9 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
 
         function updateUis() {
             type = $typeCombo.val();
+            if (type === '0') {
+                return;
+            }
 
             $.getJSON(M.cfg.wwwroot + '/question/type/graphchecker/api/typeinfo.php',
                 {
@@ -122,6 +127,26 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
             });
         }
 
+        function updateFormHiddenState() {
+            if ($typeCombo.val() === '0') {
+                $('#id_generalheader').addClass("hidden-no-type");
+                $('#id_studentinteractionhdr').addClass("hidden-no-type");
+                $('#id_checkshdr').addClass("hidden-no-type");
+                $('#id_answerhdr').addClass("hidden-no-type");
+                $('#id_tagsheader').addClass("hidden-no-type");
+                $('#fgroup_id_updatebuttonar').addClass("hidden-no-type");
+                $('#fgroup_id_buttonar').addClass("hidden-no-type");
+            } else {
+                $('#id_generalheader').removeClass("hidden-no-type");
+                $('#id_studentinteractionhdr').removeClass("hidden-no-type");
+                $('#id_checkshdr').removeClass("hidden-no-type");
+                $('#id_answerhdr').removeClass("hidden-no-type");
+                $('#id_tagsheader').removeClass("hidden-no-type");
+                $('#fgroup_id_updatebuttonar').removeClass("hidden-no-type");
+                $('#fgroup_id_buttonar').removeClass("hidden-no-type");
+            }
+        }
+
         updateUis();  // Set up UI controllers on answer and answerpreload.
 
         $typeCombo.on('change', function() {
@@ -142,6 +167,7 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
                 }
             }
             updateUis();
+            updateFormHiddenState();
         });
 
         $copyFromPreloadButton.on('click', function() {

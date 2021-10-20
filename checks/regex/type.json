@@ -2,7 +2,7 @@
     "name": "Regular expression",
     "ui_plugin": "text",
     "ui_params": {},
-    "python_modules": ["automata"],
+    "python_modules": ["gambatools"],
     "python_explanation": "The regex is represented simply as a string."
 }
 

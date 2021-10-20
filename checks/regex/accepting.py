@@ -1,4 +1,4 @@
-from automata.notebook import parse_simple_regexp, generate_language, parse_word_list, compare_languages, regexp_accepts_word
+from gambatools.notebook import parse_simple_regexp, generate_language, parse_word_list, compare_languages, regexp_accepts_word
 
 def regex_accepts(student_answer, word_list):
     try:

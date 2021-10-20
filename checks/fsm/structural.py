@@ -1,6 +1,6 @@
 # Tests for DFAs.
 
-from automata.notebook import parse_dfa, parse_nfa
+from gambatools.notebook import parse_dfa, parse_nfa
 
 def state_count(student_answer, max_states):
     try:

@@ -17,22 +17,25 @@ def binaryTree(student_answer, downwards):
         split = splitParentChildren(v, down)
         if split == None:
             return {'correct': False,
-                    'feedback': 'Not a binary tree: two adjacent nodes are at the same height and have no clear relationship.'}
+                    'feedback': 'same height of nodes'}
         (par, chil) = split
         if len(par) > 1:
             return {'correct': False,
-                    'feedback': 'Not a binary tree: node {0} has two parents.'.format(filter_orig_name(v))}
+                    'feedback': 'too many parents',
+                    'vertexLabel': filter_orig_name(v)
+                    }
         elif len(par) == 0:
             root += 1
         if len(chil) > 2:
             return {'correct': False,
-                    'feedback': 'Not a binary tree: node {0} has more than two children.'.format(filter_orig_name(v))}
+                    'feedback': 'too many children',
+                    'vertexLabel': filter_orig_name(v)
+                    }
     if root > 1:
         return {'correct': False,
-                'feedback': ('Not a binary tree: there is more than one root in the drawing.')}
+                'feedback': 'too many roots'}
     return {'correct': True }
 
-#BROKEN
 def binarySearchTree(student_answer, downwards):
     bTree = binaryTree(student_answer, downwards)
     if not bTree['correct']:
@@ -42,15 +45,17 @@ def binarySearchTree(student_answer, downwards):
     for v in student_answer.vs:
         try:
             label = filter_orig_name(v)
-            labels.append(label)
+            labels.append(int(label))
         except:
             return {'correct': False,
-                    'feedback': "The label {0} is not numerical.".format(filter_orig_name(v))}
+                    'feedback': 'label not numerical',
+                    'vertexLabel' : filter_orig_name(v)
+                   }
                     
     labels.sort()
     iOrder = inOrderTraversal(student_answer, labels, downwards)
     if not iOrder['correct']:
-        return {'correct': False, 'feedback': "The elements do not form a sorted order on an in-order traversal"}
+        return {'correct': False, 'feedback': 'not sorted order'}
     else:
         return {'correct': True}
 
@@ -70,11 +75,11 @@ def nodeDepth(student_answer, label, depth, downwards):
                 split = splitParentChildren(v, down)
                 if split == None:
                     return {'correct': False,
-                            'feedback': 'There is a problem with the layout that makes distinguishing the tree impossible.'}
+                            'feedback': 'layout problem'}
                 (par, chil) = split
                 if len(par) > 1:
                     return {'correct': False,
-                            'feedback': 'There is a problem with the layout that makes distinguishing the tree impossible.'}
+                            'feedback': 'layout problem'}
                 elif len(par) == 1:
                     dep += 1
                     v = par[0]
@@ -82,27 +87,31 @@ def nodeDepth(student_answer, label, depth, downwards):
                     return {'correct': True}
                 else:
                     return {'correct': False,
-                            'feedback': 'Vertex {0} should have depth {1} but has depth {2}'.format(label, depth, dep)}
+                            'feedback': 'depth wrong',
+                            'vertexLabel': label,
+                            'depthReal': dep,
+                            'depthExpected': depth
+                            }
     return {'correct': False,
-            'feedback': 'Vertex with label {0} could not be found.'.format(label)}
+            'feedback': 'missing vertex',
+            'vertexLabel': label
+           }
 
 #helper
-class IncorrectLabelsException(Exception):
-    """Raised when the input labels don't match"""
-    pass
-    
-#helper
 def traverse(node, labels, downwards):
+    exc = None
     (left,right) = children(node, downwards)
     if (not left == None):
-        labels = traverse(left, labels, downwards)
-    if (filter_orig_name(node) == labels[0]):
+        (labels, exc) = traverse(left, labels, downwards)
+    if (len(labels) == 0):
+        return (labels, {'correct':False, "feedback": "too many nodes"})
+    if (filter_orig_name(node) == str(labels[0])):
         labels.pop(0)
     else:
-        raise IncorrectLabelsException("Labels do not match at node: {0} and label: {1}".format(filter_orig_name(node),labels[0]))
+        return (labels, {'correct':False, "feedback": "mismatched labels", "vertexLabel": filter_orig_name(node), "expectedLabel": labels[0] } )
     if (not right == None):
-        labels = traverse(right, labels, downwards)
-    return labels
+        (labels, exc) = traverse(right, labels, downwards)
+    return (labels, exc)
 
 def inOrderTraversal(student_answer, labels, downwards):
     if downwards == "top":
@@ -119,15 +128,16 @@ def inOrderTraversal(student_answer, labels, downwards):
     #check if a problem was encountered
     if (root == None):
         return {'correct': False,
-                'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
+                'feedback': 'layout problem'}
 
-    try:
-        labels = traverse(root, labels, downwards)
-        if (len(labels) > 0):
-            return {'correct': False, 'feedback': "Expected {0} additional labels to be found.".format(len(labels))}
-    except IncorrectLabelsException as e:
-        return {'correct': False, 'feedback': str(e)}
-        
+    (labels, exc) = traverse(root, labels, downwards)
+    if not exc == None:
+        return exc
+    elif (len(labels) > 0):
+        return {'correct': False,
+                'feedback': 'too few nodes',
+                'missingLabelsSize': len(labels)
+               }
     return {'correct': True}
 
 def inLeaf(student_answer, labels, downwards):
@@ -146,9 +156,15 @@ def inLeaf(student_answer, labels, downwards):
                 return None
             (par, chil) = split
             if len(chil) != 0:
-                return {'correct': False, 'feedback': "Element {0} was not in a leaf".format(v_orig)}
+                return {'correct': False,
+                        'feedback': 'not in leaf',
+                        'element': v_orig
+                       }
             labels.remove(v_orig)
     if (len(labels) != 0):
-       return {'correct': False, 'feedback': "Not all required elements are in a leaf"}
+       return {'correct': False,
+               'feedback': "missing element",
+               'exampleElement': labels[0]
+              }
     else:
         return {'correct': True}

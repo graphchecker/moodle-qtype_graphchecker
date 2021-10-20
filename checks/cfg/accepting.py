@@ -1,4 +1,4 @@
-from automata.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list, generate_language, compare_languages
+from gambatools.notebook import parse_simple_cfg, cfg_accepts_word, parse_word_list, generate_language, compare_languages
 
 def cfg_accepts(student_answer, word_list):
     try:

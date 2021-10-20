@@ -73,6 +73,8 @@ $string['jobe_host_desc'] = 'The host name of the Jobe server plus the port numb
 $string['lock_preload_box'] = 'Lock preload';
 $string['lock_preload_box_help'] = 'Checking this box will make the preloaded answer uneditable. That is, the student will not be able to remove nodes and edges from the preload, or change their attributes. However, it is still possible to drag nodes from the preload around, and to add new edges between them.';
 
+$string['missing_answertype'] = 'Answer type is a required field';
+
 $string['options'] = 'Options';
 
 $string['pluginname'] = 'GraphChecker';

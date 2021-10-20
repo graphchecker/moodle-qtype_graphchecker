@@ -860,3 +860,8 @@ li.bulktest.graphchecker.context.quiz {
     cursor: default;
     user-select: none;
 }
+
+body#page-question-type-graphchecker .hidden-no-type {
+    display: none;
+}
+

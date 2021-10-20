@@ -31,14 +31,17 @@ def check_heap_structure(student_answer, comparator, textual):
         split = splitParentChildren(v, True)
         if (split == None):
             return {'correct': False,
-                    'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
+                    'feedback': 'layout problem'}
         (par, chil) = split
         valueV = int(filter_orig_name(v))
         for w in chil:
             valueW = int(filter_orig_name(w))
             if comparator(valueV, valueW):
                 return {'correct': False,
-                        'feedback': 'Vertex {0} is {1} than it\'s child {2}.'.format(filter_orig_name(v), textual, filter_orig_name(w))}
+                        'feedback': 'child parent wrong',
+                        'vertexLabel1': filter_orig_name(v),
+                        'greater_smaller': textual,
+                        'vertexLabel2': filter_orig_name(w)}
     return {'correct': True}
     
 def heap_layout(student_answer):
@@ -49,7 +52,7 @@ def heap_layout(student_answer):
     #check if a problem was encountered
     if (root == None):
         return {'correct': False,
-                'feedback': 'There is a problem with the layout that makes distinguishing the heap impossible.'}
+                'feedback': 'layout problem'}
     layer = [root]
     nextLayer = []
     noMoreChildren = False
@@ -62,14 +65,18 @@ def heap_layout(student_answer):
             (par, chil) = value
             if noMoreChildren and len(chil) > 0:
                 return {'correct': False,
-                        'feedback': 'The vertices do not form left-to-right filled levels in the heap.'}
+                        'feedback': 'level incorrect'}
             if (len(chil) > 2):
                 return {'correct': False,
-                        'feedback': 'Vertex {0} has more than 2 children.'.format(filter_orig_name(v))}
+                        'feedback': 'too many children',
+                        'vertexLabel': filter_orig_name(v),
+                       }
             elif len(chil) == 1:
                 if chil[0]['x'] > v['x']:
                     return {'correct': False,
-                            'feedback': 'Vertex {0} has a right child but no left child.'.format(filter_orig_name(v))}
+                            'feedback': 'missing left child',
+                            'vertexLabel': filter_orig_name(v)
+                           }
                 noMoreChildren = True
             elif len(chil) == 0:
                 noMoreChildren = True
