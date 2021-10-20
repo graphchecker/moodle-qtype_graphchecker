@@ -44,7 +44,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graph_checker/globals'],
+define(['qtype_graphchecker/ui_graph/globals'],
     function(globals) {
 
     function Util() {
@@ -117,8 +117,8 @@ define(['qtype_graphchecker/graph_checker/globals'],
 
     // An enum for defining the mode type of the graph UI
     Util.prototype.ModeType = Object.freeze({
-        SELECT: 'select',           // Indicates that the UI is in select mode
-        DRAW: 'draw'                // Indicates that the UI is in draw mode
+        ADD: 'add',                // Indicates that the UI is in add mode
+        MOVE: 'move'           // Indicates that the UI is in move mode
     });
 
     // An enum for defining the type of the checkboxes graph UI

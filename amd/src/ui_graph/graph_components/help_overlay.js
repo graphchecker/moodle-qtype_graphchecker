@@ -5,7 +5,7 @@
  * @copyright TU Eindhoven, The Netherlands
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, util) {
+define(['jquery', 'qtype_graphchecker/ui_graph/graphutil'], function ($, util) {
 
     /**
      * Function: HelpOverlay
@@ -104,7 +104,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         }
         let editable = editableList.join("/");
         let anEditable = (editableList[0] === "edge" ? "an " : "a ") + editable;
-        let editables = editableList.map(e => e + "s").join("/");
+        //let editables = editableList.map(e => e + "s").join("/");
 
         let labelEditableList = [];
         if (graphUi.allowEdits(graphUi, util.Edit.VERTEX_LABELS)) {
@@ -136,9 +136,12 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
         let highlightable = highlightableList.join("/");
         let aHighlightable = (highlightableList[0] === "edge" ? "an " : "a ") + highlightable;
 
+        const addIcon = "<i class=\"fa fa-pencil\"></i>";
+        const moveIcon = "<i class=\"fa fa-arrows\"></i>";
+
         // Create the first part of the help text
         let introductoryText = "";
-        if (hasDrawMode) {
+        /*if (hasDrawMode) {
             introductoryText += "<p>To enter your answer as a graph, you can use Select mode (to edit existing " + editables + ") "
                 + "and Draw mode (to draw new " + editables + ").</p>"
                 + "<p>Toggle between the modes by clicking "
@@ -147,87 +150,84 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
                 + "<i class=\"fa fa-pencil\"></i>. "
                 + "Additionally, while in Select mode you can temporarily use Draw mode "
                 + "by pressing the Ctrl key.</p>";
-        } else {
-            introductoryText += "<p>To give your answer, you can do the following:</p>";
+        } else {*/
+            introductoryText += "<p>To draw and edit your answer, use the following functionality:</p>";
+        //}
+
+        let actionsText = "<ul class='dialog-help'>";
+        if (canEditVertex) {
+            if (isPetri) {
+                actionsText += "<li><b>Create new place:</b> &nbsp;"
+                    + "Go to Add mode (" + addIcon + "), "
+                    + "click the "
+                    + "<i class=\"fa fa-circle-o\"></i>"
+                    + " button, and then on an empty space.</li>";
+                actionsText += "<li><b>Create new transition:</b> &nbsp;"
+                    + "Go to Add mode (" + addIcon + "), "
+                    + "click the "
+                    + "<i class=\"fa fa-square-o\"></i>"
+                    + " button, and then on an empty space.</li>";
+            } else {
+                actionsText += "<li><b>Create new " + node + ":</b> &nbsp;"
+                    + "Go to Add mode (" + addIcon + ") and "
+                    + "click on an empty space.</li>";
+            }
+        }
+        if (canEditEdge) {
+            actionsText += "<li><b>Create new " + edge + ":</b> &nbsp;"
+                + "Go to Add mode (" + addIcon + "), "
+                + "click on " + aNode + " and drag to another " + node + ".</li>"
+                + "<li><b>Create self-loop:</b> &nbsp;"
+                + "Go to Add mode (" + addIcon + "), "
+                + "click on " + aNode + " and drag to the same " + node + ".</li>";
         }
 
-        // Create the help text for the select mode
-        let selectModeText = "";
-        if (hasDrawMode) {
-            selectModeText = "<div class='dialog-section'>Select mode:</div>";
-        }
-        selectModeText += "<ul class='dialog-help'>";
-        selectModeText += "<li><b>Select " + node + ":</b> &nbsp;"
-            + "Click " + aNode + "."
-            + (canEditVertex ? " Dragging it moves the " + node + "." : "") + "</li>";
-        selectModeText += "<li><b>Select " + edge + ":</b> &nbsp;"
-            + "Click " + anEdge + "."
-            + (canEditEdge ? " Dragging it changes the arc curvature." : "") + "</li>";
+        actionsText += "<li><b>Select " + node + "/" + edge + ":</b> &nbsp;"
+            + "Click the " + node + "/" + edge + ". "
+            + "Hold Shift to add/subtract from the selection instead of replacing it.";
+        actionsText += "<li><b>Move " + node + ":</b> &nbsp;"
+            + "Go to Move mode (" + moveIcon + "), select the " + node + ", and drag it. "
+            + "(You can do the same with " + anEdge + " to change its curvature.)";
+        actionsText += "<li><b>Select several " + node + "s/" + edge + "s at once:</b> &nbsp;"
+            + "Go to Move mode (" + moveIcon + ") and draw a rectangle by dragging from an empty space. "
+            + "Everything inside the rectangle will be selected.";
 
         if (isFSM && graphUi.allowEdits(graphUi, util.Edit.FSM_FLAGS)) {
-            selectModeText += "<li><b>Mark state as initial/final:</b> &nbsp;"
-                + "Select a state and click the initial/final checkboxes in the toolbar.</li>";
+            actionsText += "<li><b>Mark state as initial/final:</b> &nbsp;"
+                + "Select the state and click the initial/final checkboxes in the toolbar.</li>";
         }
 
         if (isPetri && graphUi.allowEdits(graphUi, util.Edit.PETRI_MARKING)) {
-            selectModeText += "<li><b>Edit marking:</b> &nbsp;"
-                + "Select a place and edit its number of tokens using the field "
+            actionsText += "<li><b>Edit marking:</b> &nbsp;"
+                + "Select the place and edit its number of tokens using the field "
                 + "in the toolbar.</li>";
         }
 
         if (labelEditable) {
-            selectModeText += "<li><b>Edit " + labelEditable + " label:</b> &nbsp;"
+            actionsText += "<li><b>Edit " + labelEditable + " label:</b> &nbsp;"
                 + "Select " + aLabelEditable + " and edit the label text field "
-                + "in the toolbar. You can add a one-character subscript by adding an underscore followed "
+                + "in the toolbar."
+                /*+ "You can add a one-character subscript by adding an underscore followed "
                 + "by the subscript (i.e., <i>a_1</i>). You can type Greek letters using a backslash followed by "
-                + "the letter name (i.e., <i>\\alpha</i>).</li>";
+                + "the letter name (i.e., <i>\\alpha</i>).</li>"*/;
         }
 
         if (colorEditable) {
-            selectModeText += "<li><b>Edit " + colorEditable + " color:</b> &nbsp;"
+            actionsText += "<li><b>Edit " + colorEditable + " color:</b> &nbsp;"
                 + "Select " + aColorEditable + " and pick a color from the color dropdown in the toolbar.</li>";
         }
 
         if (highlightable) {
-            selectModeText += "<li><b>Highlight " + highlightable + ":</b> &nbsp;"
+            actionsText += "<li><b>Highlight " + highlightable + ":</b> &nbsp;"
                 + "Select " + aHighlightable + " and select the highlight checkbox in the toolbar.</li>";
         }
 
         if (hasDrawMode) {
-            selectModeText += "<li><b>Delete " + editable + ":</b> &nbsp;"
+            actionsText += "<li><b>Delete " + editable + ":</b> &nbsp;"
                 + "Select " + anEditable + " and click "
-                + "<i class=\"fa fa-trash\"></i>, or press the 'Delete' (Windows / Linux) or 'Fn-Delete' (Mac) key.</li>";
+                + "<i class=\"fa fa-trash\"></i>, or press the 'Delete' (Windows/Linux) or 'Fn-Delete' (Mac) key.</li>";
         }
-        selectModeText += "</ul>";
-
-        // Create the help text for the draw mode
-        let drawModeText = "";
-        if (hasDrawMode) {
-            drawModeText = "<br><div class='dialog-section'>Draw mode:</div>"
-                + "<ul class='dialog-help'>";
-            if (canEditVertex) {
-                if (isPetri) {
-                    drawModeText += "<li><b>Create new place:</b> &nbsp;"
-                        + "Click the "
-                        + "<i class=\"fa fa-circle-o\"></i>"
-                        + " button, and then on an empty space.</li>";
-                    drawModeText += "<li><b>Create new transition:</b> &nbsp;"
-                        + "Click the "
-                        + "<i class=\"fa fa-square-o\"></i>"
-                        + " button, and then on an empty space.</li>";
-                } else {
-                    drawModeText += "<li><b>Create new " + node + ":</b> &nbsp;"
-                        + "Click on an empty space.</li>";
-                }
-            }
-            if (canEditEdge) {
-                drawModeText += "<li><b>Create new " + edge + ":</b> &nbsp;"
-                    + "Click on " + aNode + " and drag to another " + node + ".</li>"
-                    + "<li><b>Create self-loop:</b> &nbsp;"
-                    + "Click on " + aNode + " and drag to the same " + node + ".</li>";
-            }
-            drawModeText += "</ul>";
-        }
+        actionsText += "</ul>";
 
         let undoText = "<br><p>You can undo and redo any changes you made with the "
             + "<i class=\"fa fa-undo\"></i>"
@@ -237,7 +237,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/graphutil'], function ($, ut
             + " it is locked, meaning it cannot be edited.</p>";
 
         // Sets the HTML help text (i.e. the concatenation of multiple texts) to the dialog object
-        let text = introductoryText + selectModeText + drawModeText + undoText;
+        let text = introductoryText + actionsText + undoText;
         this.divDialog.append(text);
     };
 
