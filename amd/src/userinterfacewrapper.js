@@ -262,7 +262,7 @@ define(['jquery'], function($) {
             let partialFilePath;
             switch(this.uiname) {
                 case this.InterfaceElement.GRAPH:
-                    partialFilePath = 'graph_checker/ui_';
+                    partialFilePath = 'ui_graph/ui_';
                     break;
                 case this.InterfaceElement.CHECKS:
                     partialFilePath = 'ui_';

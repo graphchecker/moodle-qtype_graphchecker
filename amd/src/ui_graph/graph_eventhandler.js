@@ -6,9 +6,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
-        'qtype_graphchecker/graph_checker/graph_components/graph_links', 'qtype_graphchecker/graph_checker/toolbar_elements'],
+define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_graph/graphutil',
+        'qtype_graphchecker/ui_graph/graph_components/graph_nodes',
+        'qtype_graphchecker/ui_graph/graph_components/graph_links', 'qtype_graphchecker/ui_graph/toolbar_elements'],
     function ($, globals, util, node_elements, link_elements, toolbar_elements) {
 
     /**
@@ -61,8 +61,6 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
         // If the click was a left mouse click, then proceed with event handling
         if (e.button === 0) {
-            console.log('clicked:', this.par.getClickedObject());  // eslint-disable-line
-
             // Depending on the mode, perform different tasks
             if (this.par.getUIMode() === util.ModeType.MOVE || this.par.getClickedObject()) {
                 // Potentially select one object, or add/remove multiple objects to/from the selection, or initialize
@@ -858,7 +856,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
         }
 
         if (pressedKey === 17) {
-            // Control key. If adding objects is allowed, set the mode to Draw
+            // Control key: temporary Move mode
             if (this.par.getUIMode() !== util.ModeType.MOVE) {
                 this.par.enableTemporaryMoveMode();
             }

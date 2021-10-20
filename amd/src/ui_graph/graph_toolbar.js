@@ -46,9 +46,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
-        'qtype_graphchecker/graph_checker/graph_components/graph_links', 'qtype_graphchecker/graph_checker/toolbar_elements'],
+define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_graph/graphutil',
+        'qtype_graphchecker/ui_graph/graph_components/graph_nodes',
+        'qtype_graphchecker/ui_graph/graph_components/graph_links', 'qtype_graphchecker/ui_graph/toolbar_elements'],
     function($, globals, util, node_elements, link_elements, toolbar_elements) {
 
     /***********************************************************************
@@ -456,11 +456,14 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     GraphToolbar.prototype.onFocusOutLabelTextfield = function (textfieldObject, event) {
         // If the label has changed, and is valid, between the selecting and deselecting the label (focussing),
         // then update the graph stack
+        console.log('onFocusOut blah');  // eslint-disable-line
         let labelValue = textfieldObject.object[0].childNodes[1].childNodes[0].value;
         let isValidLabel = this.toolbar.parent.checkStringValidity(labelValue, textfieldObject.selectedObject);
+        console.log('isValidLabel', isValidLabel);  // eslint-disable-line
 
         if (isValidLabel) {
             if (event.target.value !== textfieldObject.labelInitial && isValidLabel) {
+                console.log('onGraphChange()');  // eslint-disable-line
                 this.toolbar.parent.onGraphChange();
             }
         } else {

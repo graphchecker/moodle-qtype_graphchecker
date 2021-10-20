@@ -48,14 +48,14 @@
  */
 
 
-define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecker/graph_checker/graphutil',
-        'qtype_graphchecker/graph_checker/graph_components/graph_nodes',
-        'qtype_graphchecker/graph_checker/graph_components/graph_links',
-        'qtype_graphchecker/graph_checker/graph_components/graph_representation',
-        'qtype_graphchecker/graph_checker/graph_functionality/graph_eventhandler',
-        'qtype_graphchecker/graph_checker/graph_components/graph_canvas',
-        'qtype_graphchecker/graph_checker/graph_components/help_overlay', 'qtype_graphchecker/graph_checker/graph_toolbar',
-        'qtype_graphchecker/graph_checker/toolbar_elements'],
+define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_graph/graphutil',
+        'qtype_graphchecker/ui_graph/graph_components/graph_nodes',
+        'qtype_graphchecker/ui_graph/graph_components/graph_links',
+        'qtype_graphchecker/ui_graph/graph_components/graph_representation',
+        'qtype_graphchecker/ui_graph/graph_eventhandler',
+        'qtype_graphchecker/ui_graph/graph_components/graph_canvas',
+        'qtype_graphchecker/ui_graph/graph_components/help_overlay', 'qtype_graphchecker/ui_graph/graph_toolbar',
+        'qtype_graphchecker/ui_graph/toolbar_elements'],
     function($, globals, util, node_elements, link_elements, graph_representation, graph_eventhandler, graph_canvas, help_overlay,
              ui_toolbar, toolbar_elements) {
 
@@ -218,7 +218,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     /**
-     * Function: checkStringValidity
+     * Function: checkLabelValidity
      * If the label is invalid, this is indicated by a red border around the input field
      *
      * Parameters:
@@ -275,13 +275,10 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
     };
 
     /**
-     * Function: disableTemporaryDrawMode
-     * Disables temporary draw mode. Sets the according settings (e.g. internal, selected objects, toolbar fields, etc.)
+     * Function: disableTemporaryMoveMode
+     * Disables temporary move mode. Sets the according settings (e.g. internal, selected objects, toolbar fields, etc.)
      */
-    GraphUI.prototype.disableTemporaryDrawMode = function() {
-        if (!(this.allowEdits(this, util.Edit.EDIT_VERTEX) || this.allowEdits(this, util.Edit.EDIT_EDGE))) {
-            return;
-        }
+    GraphUI.prototype.disableTemporaryMoveMode = function() {
 
         // A variable denoting whether the label input has focus or not
         let hasLabelFocus = false;
@@ -951,7 +948,7 @@ define(['jquery', 'qtype_graphchecker/graph_checker/globals', 'qtype_graphchecke
 
     /**
      * Function: setUIMode
-     * Sets the interaction UI mode type, which is either selecting or drawing
+     * Sets the interaction UI mode type to Add or Move.
      *
      * Parameters:
      *    modeType - The mode type which is to be set

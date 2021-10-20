@@ -44,7 +44,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
-define(['qtype_graphchecker/graph_checker/globals'],
+define(['qtype_graphchecker/ui_graph/globals'],
     function(globals) {
 
     function Util() {
