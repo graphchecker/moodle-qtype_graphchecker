@@ -1,35 +1,6 @@
 {
     "name": "Binary tree properties",
     "checks": {
-        "nodeDepth": {
-            "name": "Vertex depth",
-            "description": "Checks if the vertex with the given unique label is at the given depth.",
-            "params": [
-                    {
-                        "param": "label",
-                        "name": "The vertex with label ",
-                        "type": "string"
-                    },
-                    {
-                        "param": "depth",
-                        "name": "has depth ",
-                        "type": "integer"
-                    },
-                    {
-                        "param": "downwards",
-                        "name": "Tree root is placed at the",
-                        "type": "choice",
-                        "options": ["top", "bottom"],
-                        "default": "top"
-                    }
-            ],
-            "feedback": {
-                "correct": "Correct!",
-                "layout problem": "There is a problem with the layout that makes distinguishing the tree impossible.",
-                "depth wrong": "Vertex [[vertexLabel]] should have depth [[depthExpected]] but has depth [[depthReal]].",
-                "missing vertex": "Vertex with label [[vertexLabel]] could not be found."
-            }
-        },
         "binaryTree": {
             "name": "Binary tree",
             "description": "Checks if the given graph is a binary tree.",
@@ -119,6 +90,58 @@
                 "correct": "Correct!",
                 "not in leaf": "Element [[element]] was not in a leaf.",
                 "missing element": "Not all required elements are in a leaf. For example '[[exampleElement]]' is not in a leaf."
+            }
+        },
+        "nodeDepth": {
+            "name": "Vertex depth",
+            "description": "Checks if the vertex with the given unique label is at the given depth.",
+            "params": [
+                    {
+                        "param": "label",
+                        "name": "The vertex with label ",
+                        "type": "string"
+                    },
+                    {
+                        "param": "depth",
+                        "name": "has depth ",
+                        "type": "integer"
+                    },
+                    {
+                        "param": "downwards",
+                        "name": "Tree root is placed at the",
+                        "type": "choice",
+                        "options": ["top", "bottom"],
+                        "default": "top"
+                    }
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "layout problem": "There is a problem with the layout that makes distinguishing the tree impossible.",
+                "depth wrong": "Vertex [[vertexLabel]] should have depth [[depthExpected]] but has depth [[depthReal]].",
+                "missing vertex": "Vertex with label [[vertexLabel]] could not be found."
+            }
+        },
+        "treeHeight": {
+            "name": "Tree height",
+            "description": "Checks if the binary tree has the given height.",
+            "params": [
+                    {
+                        "param": "height",
+                        "name": "Tree height should be",
+                        "type": "integer"
+                    },
+                    {
+                        "param": "downwards",
+                        "name": "Tree root is placed at the",
+                        "type": "choice",
+                        "options": ["top", "bottom"],
+                        "default": "top"
+                    }
+            ],
+            "feedback": {
+                "correct": "Correct!",
+                "layout problem": "There is a problem with the layout that makes distinguishing the tree impossible.",
+                "height wrong": "The tree should have height [[heightExpected]] but has depth [[heightReal]]."
             }
         }
     }

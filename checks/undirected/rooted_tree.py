@@ -96,8 +96,48 @@ def nodeDepth(student_answer, label, depth, downwards):
             'feedback': 'missing vertex',
             'vertexLabel': label
            }
+           
+def treeHeight(student_answer, height, downwards):
+    if downwards == "top":
+        down = True
+    elif downwards == "bottom":
+        down = False
+    else:
+        raise Exception('Unknown parameter value supplied. Contact support.')
+
+    root = findRoot(student_answer, downwards)
+    if (root == None):
+        return {'correct': False,
+                'feedback': 'layout problem'}
+
+    heightData = computeHeight(root, downwards)
+    if (not heightData['correct']):
+        return heightData
+    elif (heightData['height'] == height):
+        return {'correct': True}
+    else:
+        return {'correct': False,
+                'feedback': 'height wrong',
+                'heightReal': heightData['height'],
+                'heightExpected': height
+               }
 
 #helper
+def computeHeight(node, downwards):
+    split = splitParentChildren(node, downwards)
+    if split == None:
+        return {'correct': False,
+                'feedback': 'layout problem'}
+    (parent, children) = split
+    height = -1
+    for child in children:
+        heightData = computeHeight(child, downwards)
+        if (not heightData['correct']):
+            return heightData
+        height = max(height, heightData['height'])
+    return {'correct': True,
+            'height': height+1}
+
 def traverse(node, labels, downwards):
     exc = None
     (left,right) = children(node, downwards)

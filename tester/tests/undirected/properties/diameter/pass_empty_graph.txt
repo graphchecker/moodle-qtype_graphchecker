@@ -1,3 +1,0 @@
-{"_version":1,"vertices":[],"edges":[]}
-{"type":"check","module":"properties","method":"diameter","arguments":{"expected":"nan"}}
-pass

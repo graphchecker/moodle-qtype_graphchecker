@@ -1,0 +1,3 @@
+{"_version":1,"vertices":[{"label":"","position":[404.296875,147.74411916732788],"locked":false,"color":"#ffffff","highlighted":false}],"edges":[]}
+{"type":"check","module":"rooted_tree","method":"treeHeight","arguments":{"height":"0","downwards":"top"}}
+pass

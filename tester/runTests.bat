@@ -16,5 +16,8 @@ for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
 cd ..
 cd properties
 for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
+cd ..
+cd rooted_tree
+for /R %%f in (.\*) do python ..\..\..\run_unit_tests.py "%%f"
 cd ..\..\..
 pause
