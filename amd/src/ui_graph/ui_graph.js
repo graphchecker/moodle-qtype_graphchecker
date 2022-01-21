@@ -412,7 +412,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
             }
 
             // Remove the options in the toolbar based on the selected object
-            graphUI.toolbar.removeSelectionOptions();
+            graphUI.toolbar.updateButtonVisibility([]);
             graphUI.toolbar.removeFSMNodeSelectionOptions();
             graphUI.toolbar.removePetriSelectionOptions();
 
@@ -733,7 +733,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
         this.load();
 
         // Reload the toolbar
-        this.toolbar.addSelectionOptions(this.selectedObjects);
+        this.toolbar.updateButtonVisibility(this.selectedObjects);
 
         if (this.isType(this, util.Type.FSM)) {
             this.toolbar.addFSMNodeSelectionOptions(this.selectedObjects);

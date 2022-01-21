@@ -333,7 +333,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
             this.ui.setPreviousSelectedObjects(this.ui.getSelectedObjects());
 
             // Also enable the editing fields
-            this.ui.toolbar.addSelectionOptions(this.ui.getSelectedObjects());
+            this.ui.toolbar.updateButtonVisibility(this.ui.getSelectedObjects());
             this.ui.toolbar.rightButtons['delete'].setEnabled();
             if (isTypeFunc(this.ui, util.Type.FSM)) {
                 this.ui.toolbar.addFSMNodeSelectionOptions(this.ui.getSelectedObjects());
@@ -400,9 +400,6 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
         // toolbar
         if (this.ui.getClickedObject() instanceof node_elements.Node || this.isObjectLink(this.ui.getClickedObject())) {
 
-            // Display the selection options
-            this.ui.toolbar.addSelectionOptions(this.ui.getSelectedObjects());
-
             // Activate the delete button
             if (!containsLockedObjects) {
                 // Check if we can activate the delete button
@@ -416,14 +413,12 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
                 this.ui.toolbar.rightButtons['delete'].setDisabled();
             }
         } else {
-            // Remove displaying the selection options
-            this.ui.toolbar.removeSelectionOptions();
-
             // Deactivate the delete button
             if (allowedEditsFunc(this.ui, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.ui, util.Edit.EDIT_EDGE)) {
                 this.ui.toolbar.rightButtons['delete'].setDisabled();
             }
         }
+        this.ui.toolbar.updateButtonVisibility(this.ui.getSelectedObjects());
 
         // If the type is FSM, display the according buttons in the toolbar
         if (isTypeFunc(this.ui, util.Type.FSM)) {
@@ -710,7 +705,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
         }
 
         // (Re)Enable the correct editing fields
-        this.ui.toolbar.addSelectionOptions(this.ui.getSelectedObjects());
+        this.ui.toolbar.updateButtonVisibility(this.ui.getSelectedObjects());
 
         // Enable the delete button as well
         if (allowedEditsFunc(this.ui, util.Edit.EDIT_EDGE)) {
@@ -764,7 +759,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
 
         // Add the appropriate selection options in the toolbar
         if (this.ui.getSelectedObjects().length) {
-            this.ui.toolbar.addSelectionOptions(this.ui.getSelectedObjects());
+            this.ui.toolbar.updateButtonVisibility(this.ui.getSelectedObjects());
 
             if (!containsLockedObjects) {
                 if (allowedEditsFunc(this.ui, util.Edit.EDIT_VERTEX) || allowedEditsFunc(this.ui, util.Edit.EDIT_EDGE)) {
@@ -846,7 +841,7 @@ define(['jquery', 'qtype_graphchecker/ui_graph/globals', 'qtype_graphchecker/ui_
         } else if (pressedKey === 27) {
             // Escape key. Deselect the objects, and remove the selection options
             this.ui.setSelectedObjects([]);
-            this.ui.toolbar.removeSelectionOptions();
+            this.ui.toolbar.updateButtonVisibility([]);
             if (isTypeFunc(this.ui, util.Type.FSM)) {
                 this.ui.toolbar.removeFSMNodeSelectionOptions();
             }

@@ -278,7 +278,15 @@ define(['jquery'], function($) {
         if (typeof this.onFocusOutFunction !== 'undefined') {
             $number_input[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
         }
-        this.object = $number_input;
+        this.$element = $number_input;
+    };
+
+    NumberInputField.prototype.show = function () {
+        this.$element.show();
+    };
+
+    NumberInputField.prototype.hide = function () {
+        this.$element.hide();
     };
 
     NumberInputField.prototype.handleInteraction = function(event) {
@@ -330,7 +338,15 @@ define(['jquery'], function($) {
 
         // Add the event listener
         $checkbox[0].addEventListener('change', (event) => this.handleInteraction(event));
-        this.object = $checkbox;
+        this.$element = $checkbox;
+    };
+
+    Checkbox.prototype.show = function () {
+        this.$element.show();
+    };
+
+    Checkbox.prototype.hide = function () {
+        this.$element.hide();
     };
 
     Checkbox.prototype.handleInteraction = function(event) {
@@ -395,7 +411,15 @@ define(['jquery'], function($) {
         $textfield[0].addEventListener('keydown', (event) => this.handleInteraction(event));
         $textfield[0].addEventListener('focusin', (event) => this.onFocusInFunction(this, event));
         $textfield[0].addEventListener('focusout', (event) => this.onFocusOutFunction(this, event));
-        this.object = $textfield;
+        this.$element = $textfield;
+    };
+
+    TextField.prototype.show = function () {
+        this.$element.show();
+    };
+
+    TextField.prototype.hide = function () {
+        this.$element.hide();
     };
 
     TextField.prototype.handleInteraction = function(event) {
@@ -425,7 +449,7 @@ define(['jquery'], function($) {
     // The create function should be called explicitly in order to create the HTML element(s) of the text field
     Dropdown.prototype.create = function () {
         // Create a custom dropdown menu, so we can display colored Font Awesome items (e.g. circles)
-        let $dropdownField = $('<div/>').attr({
+        this.$dropdownField = $('<div/>').attr({
             'class':    'custom_dropdown_field',
         }).append($('<i/>')
             .addClass('icon fa fa-angle-down custom_dropdown_icon'));
@@ -433,7 +457,7 @@ define(['jquery'], function($) {
         // $dropdownField and $dropdownMenu
         let $dropdownMenu = $('<div/>').attr({
             'class':    'custom_dropdown_itemlist_wrapper hide',
-            'style':    'left: ' + (-$($dropdownField).outerWidth()) + 'px;',
+            'style':    'left: ' + (-$(this.$dropdownField).outerWidth()) + 'px;',
         }).append($('<div/>').attr({
             'class':    'custom_dropdown_itemlist',
         }));
@@ -453,17 +477,17 @@ define(['jquery'], function($) {
                         'style':    'pointer-events: none;',
                     })
                     .text(' ' + this.dropDownOptions[i]));
-            $itemDiv[0].addEventListener('click', (event) => this.handleDropdownItemClick(event, $dropdownField[0]));
+            $itemDiv[0].addEventListener('click', (event) => this.handleDropdownItemClick(event, this.$dropdownField[0]));
             $dropdownMenu[0].firstChild.append($itemDiv[0]);
         }
 
         // Add an event listener for selecting
-        $dropdownField[0].addEventListener('click', (event) => this.handleDropdownMenuClick(event, $dropdownField[0]));
-        this.field = $dropdownField;
+        this.$dropdownField[0].addEventListener('click', (event) => this.handleDropdownMenuClick(event, this.$dropdownField[0]));
+        this.field = this.$dropdownField;
 
         // Set the location of the dropdown menu
-        let outerDivWidth = $($dropdownField[0]).outerWidth();
-        let outerDivHeight = $($dropdownField[0]).height();
+        let outerDivWidth = $(this.$dropdownField[0]).outerWidth();
+        let outerDivHeight = $(this.$dropdownField[0]).height();
         $($dropdownMenu).css({left: -outerDivWidth, top: outerDivHeight/2.0 - 1});
 
         // Append both divs to an outer wrapper div
@@ -471,9 +495,17 @@ define(['jquery'], function($) {
             .attr({
                 'class':    'field_label',
             }).append(this.labelText + ':')
-            .append($dropdownField).append($dropdownMenu);
+            .append(this.$dropdownField).append($dropdownMenu);
         $(this.parent[0]).append($outerDiv);
         this.object = $outerDiv;
+    };
+
+    Dropdown.prototype.show = function () {
+        this.$dropdownField.show();
+    };
+
+    Dropdown.prototype.hide = function () {
+        this.$dropdownField.hide();
     };
 
     Dropdown.prototype.handleDropdownMenuClick = function(event, dropdownFieldElement) {
