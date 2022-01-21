@@ -41,8 +41,6 @@ define(['jquery', 'qtype_graphchecker/userinterfacewrapper'], function($, ui) {
         // Set up the UI controller for the textarea whose name is
         // given as the first parameter to the given UI controller.
         function setUi($textArea, uiName) {
-            console.log(uiName); // eslint-disable-line
-
             let uiWrapper = $textArea.data('current-ui-wrapper');
 
             if (uiName === "text") {
