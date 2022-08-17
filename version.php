@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2022012100;
-$plugin->requires = 2015051200;
+$plugin->version  = 2022081700;
+$plugin->requires = 2022041900;
 $plugin->cron = 0;
 $plugin->component = 'qtype_graphchecker';
 $plugin->maturity = MATURITY_BETA;
