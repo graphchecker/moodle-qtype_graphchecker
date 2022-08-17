@@ -1,6 +1,6 @@
 # Installing GraphChecker
 
-At the moment, we support Moodle 3.8 and 3.9. Slightly older versions may work, but no guarantees.
+At the moment, we support Moodle 4.0. Older versions (3.8–3.11) should work as well. Even older versions *may* work too, but no guarantees.
 
 We will assume you have a working Jobe server, used to grade submissions. If not, please follow the [Jobe documentation](https://github.com/trampgeek/jobe) to set one up. (In case your Moodle installation already has CodeRunner installed correctly, and a Jobe server to go along with it, you can use the same server also for GraphChecker.)
 
@@ -50,7 +50,7 @@ Assuming your Jobe instance runs on a recent version of Ubuntu, you can simply d
 
 The installation should now be complete. To test that GraphChecker works correctly, you can perform the following procedure (which also will give you an idea of how GraphChecker's interface works):
 
-* In any quiz, click *Edit quiz* and add a new question. When asked which question type you want to add, select GraphChecker.
+* In any quiz, click *Questions* and add a new question. When asked which question type you want to add, select GraphChecker.
 * Enter ‘Two vertices’ for the question name and ‘Draw any graph with two vertices.’ for the question text. Make sure that the answer type is set to *Undirected graph*.
 * In the section *Checks*, click *Add check*. In the dialog box that appears, click the plus icon next to *Vertex count*, so that the *Vertex count* check will be added to the list of checks.
 * Set the expected number of vertices to 2 using the input box in the check.
