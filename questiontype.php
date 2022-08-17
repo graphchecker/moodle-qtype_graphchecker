@@ -90,57 +90,6 @@ class qtype_graphchecker extends question_type {
     }
 
 
-    // Load the question options (all the question extension fields and
-    // testcases) from the database into the question.
-    // The various fields are initialised from the prototype, then overridden
-    // by any non-null values in the specific question.
-    //
-    // As a special case, required by edit_graphchecker_form, an option
-    // 'mergedtemplateparams' is set by merging the prototype question's
-    // template parameters with the given question's template parameters,
-    // with the caveat that template parameters with embedded twig code that
-    // aren't valid JSON are ignored.
-    public function get_question_options($question) {
-        global $CFG, $DB, $OUTPUT;
-        parent::get_question_options($question);
-        $options =& $question->options;
-        $qtype = $options->answertype;
-        $context = $this->question_context($question);
-
-        return true;
-    }
-
-    /**
-     * Get the context for a question.
-     *
-     * @param stdClass $question a row from either the question or question_graphchecker_opts tables.
-     * @return context the corresponding context id.
-     */
-    public static function question_context($question) {
-        return context::instance_by_id(self::question_contextid($question));
-    }
-
-    /**
-     * Get the context id for a question.
-     *
-     * @param stdClass $question a row from either the question or question_graphchecker_opts tables.
-     * @return int the corresponding context id.
-     */
-    public static function question_contextid($question) {
-        global $DB;
-
-        if (isset($question->contextid)) {
-            return $question->contextid;
-        } else {
-            $questionid = isset($question->questionid) ? $question->questionid : $question->id;
-            $sql = "SELECT contextid FROM {question_categories}, {question}
-                     WHERE {question}.id = ?
-                       AND {question}.category = {question_categories}.id";
-            return $DB->get_field_sql($sql, array($questionid), MUST_EXIST);
-        }
-    }
-
-
     /******************** EDIT FORM OPTIONS ************************/
 
     /**

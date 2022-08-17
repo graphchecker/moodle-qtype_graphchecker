@@ -62,7 +62,7 @@ class qtype_graphchecker_check {
             return false;
         }
         $methods = $modules[$module]->checks;
-        return array_key_exists($method, $methods);
+        return property_exists($methods, $method);
     }
 
     public static function get_available_checks($answertype) {
